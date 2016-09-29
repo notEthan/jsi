@@ -1,5 +1,5 @@
 require "scorpio/version"
 
 module Scorpio
-  # Your code goes here...
+  autoload :Model, 'scorpio/model'
 end
