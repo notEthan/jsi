@@ -35,9 +35,13 @@ ActiveRecord::Schema.define do
   end
 end
 
-class Article < ActiveRecord::Base
-end
-class Author < ActiveRecord::Base
+# we will namespace the models under Blog so that the top-level namespace
+# can be used by the scorpio model classes
+class Blog
+  class Article < ActiveRecord::Base
+  end
+  class Author < ActiveRecord::Base
+  end
 end
 
 # controllers
@@ -46,7 +50,7 @@ class Blog
   get '/v1/articles' do
     check_accept
 
-    articles = Article.all
+    articles = Blog::Article.all
     format_response(200, articles.map(&:serializable_hash))
   end
 end
