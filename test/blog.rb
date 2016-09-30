@@ -53,4 +53,8 @@ class Blog
     articles = Blog::Article.all
     format_response(200, articles.map(&:serializable_hash))
   end
+  get '/v1/articles/:id' do |id|
+    article = find_or_halt(Blog::Article, id: id)
+    format_response(200, article.serializable_hash)
+  end
 end
