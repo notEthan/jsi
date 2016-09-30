@@ -23,16 +23,21 @@ module Scorpio
         api_description['resources'][self.resource_name]['methods'].each do |method_name, method_desc|
           unless respond_to?(method_name)
             define_singleton_method(method_name) do
-              http_method = method_desc['httpMethod'].downcase.to_sym
-              uri = method_desc['path']
-              response = connection.run_request(http_method, uri, nil, nil).tap do |response|
-                raise unless response.success?
-              end
-              response.body.map do |response_attributes|
-                new(response_attributes)
-              end
+              call_api_method(method_name)
             end
           end
+        end
+      end
+
+      def call_api_method(method_name)
+        method_desc = api_description['resources'][self.resource_name]['methods'][method_name]
+        http_method = method_desc['httpMethod'].downcase.to_sym
+        uri = method_desc['path']
+        response = connection.run_request(http_method, uri, nil, nil).tap do |response|
+          raise unless response.success?
+        end
+        response.body.map do |response_attributes|
+          new(response_attributes)
         end
       end
     end
