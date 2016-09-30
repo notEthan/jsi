@@ -1,9 +1,15 @@
+require 'api_hammer/ycomb'
+require 'addressable/template'
 module Scorpio
   class Model
     class << self
       inheritable_accessors = {
         :resource_name => nil,
         :api_description => nil,
+        :schema_keys => [],
+        :schemas_by_key => {},
+        :schemas_by_id => {},
+        :base_url => nil,
       }
       inheritable_accessors.each do |accessor, default_value|
         define_method(accessor) { default_value }
@@ -20,6 +26,10 @@ module Scorpio
 
       def set_api_description(api_description)
         self.api_description = api_description
+        (api_description['schemas'] || {}).each do |schema_key, schema|
+          schemas_by_id[schema['id']] = schema
+          schemas_by_key[schema_key] = schema
+        end
         api_description['resources'][self.resource_name]['methods'].each do |method_name, method_desc|
           unless respond_to?(method_name)
             define_singleton_method(method_name) do |attributes = {}|
@@ -29,17 +39,43 @@ module Scorpio
         end
       end
 
+      def deref_schema(schema)
+        schema && schemas_by_id[schema['$ref']] || schema
+      end
+
       def call_api_method(method_name, attributes = {})
         attributes = Scorpio.stringify_symbol_keys(attributes)
         method_desc = api_description['resources'][self.resource_name]['methods'][method_name]
         http_method = method_desc['httpMethod'].downcase.to_sym
-        uri = method_desc['path']
-        response = connection.run_request(http_method, uri, nil, nil).tap do |response|
+        relative_uri = Addressable::Template.new(method_desc['path']).expand(attributes)
+        url = Addressable::URI.parse(base_url) + relative_uri
+        response = connection.run_request(http_method, url, nil, nil).tap do |response|
           raise unless response.success?
         end
-        response.body.map do |response_attributes|
-          new(response_attributes)
-        end
+        response_schema = method_desc['response']
+        ycomb do |rec|
+          proc do |object, schema|
+            schema = deref_schema(schema)
+            if schema
+              if schemas_by_key.any? { |key, as| as['id'] == schema['id'] && schema_keys.include?(key) }
+                new(object)
+              elsif schema['type'] == 'object'
+                object.map do |key, value|
+                  schema_for_value = schema['properties'][key] || schema['additionalProperties']
+                  {key => rec.call(value, schema_for_value)}
+                end.inject({}, &:update)
+              elsif schema['type'] == 'array'
+                object.map do |element|
+                  rec.call(element, schema['items'])
+                end
+              else
+                object
+              end
+            else
+              object
+            end
+          end
+        end.call(response.body, response_schema)
       end
     end
 
