@@ -1,5 +1,39 @@
 module Scorpio
   class Model
+    class << self
+      inheritable_accessors = {:resource_name => nil}
+      inheritable_accessors.each do |accessor, default_value|
+        define_method(accessor) { default_value }
+        define_method(:"#{accessor}=") do |id|
+          singleton_class.instance_exec(id) do |id_|
+            begin
+              remove_method(accessor)
+            rescue NameError
+            end
+            define_method(accessor) { id_ }
+          end
+        end
+      end
+
+      def load_schema_ymls(*yml_files)
+        yml_files.each do |yml_file|
+          schema_hash = YAML.load_file(yml_file)
+          schema_hash['resources'][self.resource_name]['methods'].each do |method_name, method_desc|
+            define_singleton_method(method_name) do
+              http_method = method_desc['httpMethod'].downcase.to_sym
+              uri = method_desc['path']
+              response = connection.run_request(http_method, uri, nil, nil).tap do |response|
+                raise unless response.success?
+              end
+              response.body.map do |response_attributes|
+                new(response_attributes)
+              end
+            end
+          end
+        end
+      end
+    end
+
     def initialize(attributes = {}, options = {})
       unless attributes.is_a?(Hash)
         raise(ArgumentError, "attributes must be a hash; got: #{attributes.inspect}")

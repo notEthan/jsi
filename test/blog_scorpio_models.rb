@@ -1,4 +1,8 @@
 class Article < Scorpio::Model
+  self.resource_name = 'articles'
+
+  load_schema_ymls('test/blog_description.yml')
+
   class << self
     def connection
       Faraday.new(:url => 'https://blog.example.com') do |c|
@@ -6,12 +10,6 @@ class Article < Scorpio::Model
         c.request :api_hammer_request_logger, Blog.logger
         c.adapter :rack, Blog.new
         c.response :json, :content_type => /\bjson$/
-      end
-    end
-    def index
-      articles_resp = connection.get('/v1/articles')
-      articles_resp.body.map do |attrs|
-        new(attrs)
       end
     end
   end

@@ -1,0 +1,21 @@
+discoveryVersion: v1
+name: blog
+title: "Scorpio Blog"
+description: "REST service for the Scorpio Blog"
+documentationLink: https://github.com/notEthan/scorpio
+servicePath: /
+resources:
+  articles:
+    methods:
+      index:
+        path: v1/articles
+        httpMethod: GET
+        response:
+          type: array
+          items:
+            type: object
+      read:
+        path: v1/articles/{id}
+        httpMethod: GET
+        response:
+          type: object
