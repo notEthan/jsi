@@ -13,9 +13,18 @@ resources:
         response:
           type: array
           items:
-            type: object
+            $ref: https://blog.example.com/schemas/articles/v1.0.0
       read:
         path: v1/articles/{id}
         httpMethod: GET
         response:
-          type: object
+          $ref: https://blog.example.com/schemas/articles/v1.0.0
+schemas:
+  articles:
+    id: https://blog.example.com/schemas/articles/v1.0.0
+    type: object
+    properties:
+      title:
+        type: string
+      author_id:
+        type: integer
