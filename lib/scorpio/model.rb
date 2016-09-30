@@ -22,14 +22,15 @@ module Scorpio
         self.api_description = api_description
         api_description['resources'][self.resource_name]['methods'].each do |method_name, method_desc|
           unless respond_to?(method_name)
-            define_singleton_method(method_name) do
-              call_api_method(method_name)
+            define_singleton_method(method_name) do |attributes = {}|
+              call_api_method(method_name, attributes)
             end
           end
         end
       end
 
-      def call_api_method(method_name)
+      def call_api_method(method_name, attributes = {})
+        attributes = Scorpio.stringify_symbol_keys(attributes)
         method_desc = api_description['resources'][self.resource_name]['methods'][method_name]
         http_method = method_desc['httpMethod'].downcase.to_sym
         uri = method_desc['path']
