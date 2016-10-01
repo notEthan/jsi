@@ -53,6 +53,10 @@ module Scorpio
           raise unless response.success?
         end
         response_schema = method_desc['response']
+        response_object_to_instances(response.body, response_schema)
+      end
+
+      def response_object_to_instances(object, schema)
         ycomb do |rec|
           proc do |object, schema|
             schema = deref_schema(schema)
@@ -75,7 +79,7 @@ module Scorpio
               object
             end
           end
-        end.call(response.body, response_schema)
+        end.call(object, schema)
       end
     end
 
