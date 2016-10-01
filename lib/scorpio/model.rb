@@ -12,13 +12,13 @@ module Scorpio
       ]
       inheritable_accessors.each do |(accessor, default_value)|
         define_method(accessor) { default_value }
-        define_method(:"#{accessor}=") do |id|
-          singleton_class.instance_exec(id) do |id_|
+        define_method(:"#{accessor}=") do |value|
+          singleton_class.instance_exec(value) do |value_|
             begin
               remove_method(accessor)
             rescue NameError
             end
-            define_method(accessor) { id_ }
+            define_method(accessor) { value_ }
           end
         end
       end
