@@ -52,6 +52,16 @@ module Scorpio
         schema && schemas_by_id[schema['$ref']] || schema
       end
 
+      MODULES_FOR_JSON_SCHEMA_TYPES = {
+        'object' => [Hash],
+        'array' => [Array, Set],
+        'string' => [String],
+        'integer' => [Integer],
+        'number' => [Numeric],
+        'boolean' => [TrueClass, FalseClass],
+        'null' => [NilClass],
+      }
+
       def call_api_method(method_name, attributes = {})
         attributes = Scorpio.stringify_symbol_keys(attributes)
         method_desc = api_description['resources'][self.resource_name]['methods'][method_name]
@@ -70,12 +80,12 @@ module Scorpio
         if schema
           if schemas_by_key.any? { |key, as| as['id'] == schema['id'] && schema_keys.include?(key) }
             new(object)
-          elsif schema['type'] == 'object'
+          elsif schema['type'] == 'object' && MODULES_FOR_JSON_SCHEMA_TYPES['object'].any? { |m| object.is_a?(m) }
             object.map do |key, value|
               schema_for_value = schema['properties'][key] || schema['additionalProperties']
               {key => response_object_to_instances(value, schema_for_value)}
             end.inject({}, &:update)
-          elsif schema['type'] == 'array'
+          elsif schema['type'] == 'array' && MODULES_FOR_JSON_SCHEMA_TYPES['array'].any? { |m| object.is_a?(m) }
             object.map do |element|
               response_object_to_instances(element, schema['items'])
             end
