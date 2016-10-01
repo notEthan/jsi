@@ -1,4 +1,3 @@
-require 'api_hammer/ycomb'
 require 'addressable/template'
 module Scorpio
   class Model
@@ -67,29 +66,25 @@ module Scorpio
       end
 
       def response_object_to_instances(object, schema)
-        ycomb do |rec|
-          proc do |object, schema|
-            schema = deref_schema(schema)
-            if schema
-              if schemas_by_key.any? { |key, as| as['id'] == schema['id'] && schema_keys.include?(key) }
-                new(object)
-              elsif schema['type'] == 'object'
-                object.map do |key, value|
-                  schema_for_value = schema['properties'][key] || schema['additionalProperties']
-                  {key => rec.call(value, schema_for_value)}
-                end.inject({}, &:update)
-              elsif schema['type'] == 'array'
-                object.map do |element|
-                  rec.call(element, schema['items'])
-                end
-              else
-                object
-              end
-            else
-              object
+        schema = deref_schema(schema)
+        if schema
+          if schemas_by_key.any? { |key, as| as['id'] == schema['id'] && schema_keys.include?(key) }
+            new(object)
+          elsif schema['type'] == 'object'
+            object.map do |key, value|
+              schema_for_value = schema['properties'][key] || schema['additionalProperties']
+              {key => response_object_to_instances(value, schema_for_value)}
+            end.inject({}, &:update)
+          elsif schema['type'] == 'array'
+            object.map do |element|
+              response_object_to_instances(element, schema['items'])
             end
+          else
+            object
           end
-        end.call(object, schema)
+        else
+          object
+        end
       end
     end
 
