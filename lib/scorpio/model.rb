@@ -46,6 +46,20 @@ module Scorpio
             end
           end
         end
+        update_instance_accessors
+      end
+
+      def update_instance_accessors
+        schemas_by_key.select { |k, _| schema_keys.include?(k) }.each do |schema_key, schema|
+          unless schema['type'] == 'object'
+            raise "schema key #{schema_key} for #{self} is not of type object - type must be object for Scorpio Model to represent this schema" # TODO class
+          end
+          schema['properties'].each do |property_name, property_schema|
+            define_method(property_name) do
+              self[property_name]
+            end
+          end
+        end
       end
 
       def deref_schema(schema)
