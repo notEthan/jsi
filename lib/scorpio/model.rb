@@ -2,15 +2,15 @@ require 'addressable/template'
 module Scorpio
   class Model
     class << self
-      inheritable_accessors = {
-        :resource_name => nil,
-        :api_description => nil,
-        :schema_keys => [],
-        :schemas_by_key => {},
-        :schemas_by_id => {},
-        :base_url => nil,
-      }
-      inheritable_accessors.each do |accessor, default_value|
+      inheritable_accessors = [
+        [:resource_name, nil],
+        [:api_description, nil],
+        [:schema_keys, []],
+        [:schemas_by_key, {}],
+        [:schemas_by_id, {}],
+        [:base_url, nil],
+      ]
+      inheritable_accessors.each do |(accessor, default_value)|
         define_method(accessor) { default_value }
         define_method(:"#{accessor}=") do |id|
           singleton_class.instance_exec(id) do |id_|
