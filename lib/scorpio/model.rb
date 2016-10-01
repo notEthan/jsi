@@ -25,15 +25,25 @@ module Scorpio
       end
 
       def set_api_description(api_description)
+        # TODO full validation against google api rest description
+        unless api_description.is_a?(Hash)
+          raise ArgumentError, "given api description was not a hash; got: #{api_description.inspect}"
+        end
         self.api_description = api_description
         (api_description['schemas'] || {}).each do |schema_key, schema|
+          unless schema['id']
+            raise ArgumentError, "schema #{schema_key} did not contain an id"
+          end
           schemas_by_id[schema['id']] = schema
           schemas_by_key[schema_key] = schema
         end
-        api_description['resources'][self.resource_name]['methods'].each do |method_name, method_desc|
-          unless respond_to?(method_name)
-            define_singleton_method(method_name) do |attributes = {}|
-              call_api_method(method_name, attributes)
+        if resource_name
+          resource_api_methods = ((api_description['resources'] || {})[resource_name] || {})['methods'] || {}
+          resource_api_methods.each do |method_name, method_desc|
+            unless respond_to?(method_name)
+              define_singleton_method(method_name) do |attributes = {}|
+                call_api_method(method_name, attributes)
+              end
             end
           end
         end
