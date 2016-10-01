@@ -34,4 +34,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "api_hammer"
   spec.add_development_dependency "activerecord"
   spec.add_development_dependency "sqlite3"
+  spec.add_development_dependency "database_cleaner"
 end
