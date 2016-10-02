@@ -28,4 +28,17 @@ describe 'blog' do
     assert_equal('sports', article['title'])
     assert_equal('sports', article.title)
   end
+  it 'tries to read an article without a required path variable' do
+    blog_article
+    e = assert_raises(ArgumentError) do
+      Article.read({})
+    end
+    assert_equal('path v1/articles/{id} for method read requires attributes which were missing: ["id"]',
+      e.message)
+    e = assert_raises(ArgumentError) do
+      Article.read({id: ''})
+    end
+    assert_equal('path v1/articles/{id} for method read requires attributes which were empty: ["id"]',
+      e.message)
+  end
 end
