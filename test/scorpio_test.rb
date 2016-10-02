@@ -41,9 +41,16 @@ describe 'blog' do
     assert_equal('path v1/articles/{id} for method read requires attributes which were empty: ["id"]',
       e.message)
   end
-  it 'updates an article' do
+  it 'updates an article on the class' do
     blog_article
     Article.patch({id: blog_article.id, title: 'politics'})
+    assert_equal('politics', Article.read(id: blog_article.id).title)
+  end
+  it 'updates an article on the instance' do
+    blog_article
+    article = Article.read(id: blog_article.id)
+    article.title = 'politics'
+    article.patch
     assert_equal('politics', Article.read(id: blog_article.id).title)
   end
 end
