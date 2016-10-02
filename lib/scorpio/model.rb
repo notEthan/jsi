@@ -80,8 +80,19 @@ module Scorpio
         attributes = Scorpio.stringify_symbol_keys(attributes)
         method_desc = api_description['resources'][self.resource_name]['methods'][method_name]
         http_method = method_desc['httpMethod'].downcase.to_sym
-        relative_uri = Addressable::Template.new(method_desc['path']).expand(attributes)
-        url = Addressable::URI.parse(base_url) + relative_uri
+        path_template = Addressable::Template.new(method_desc['path'])
+        missing_variables = path_template.variables - attributes.keys
+        if missing_variables.any?
+          raise(ArgumentError, "path #{method_desc['path']} for method #{method_name} requires attributes " +
+            "which were missing: #{missing_variables.inspect}")
+        end
+        empty_variables = path_template.variables.select { |v| attributes[v].to_s.empty? }
+        if empty_variables.any?
+          raise(ArgumentError, "path #{method_desc['path']} for method #{method_name} requires attributes " +
+            "which were empty: #{empty_variables.inspect}")
+        end
+        path = path_template.expand(attributes)
+        url = Addressable::URI.parse(base_url) + path
         response = connection.run_request(http_method, url, nil, nil).tap do |response|
           raise unless response.success?
         end
