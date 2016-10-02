@@ -3,14 +3,14 @@ module Scorpio
   class Model
     class << self
       inheritable_accessors = [
-        [:resource_name, nil],
         [:api_description, nil],
-        [:schema_keys, []],
+        [:resource_name, nil, {update_methods: true}],
+        [:schema_keys, [], {update_methods: true}],
         [:schemas_by_key, {}],
         [:schemas_by_id, {}],
         [:base_url, nil],
       ]
-      inheritable_accessors.each do |(accessor, default_value)|
+      inheritable_accessors.each do |(accessor, default_value, options)|
         define_method(accessor) { default_value }
         define_method(:"#{accessor}=") do |value|
           singleton_class.instance_exec(value) do |value_|
@@ -19,6 +19,9 @@ module Scorpio
             rescue NameError
             end
             define_method(accessor) { value_ }
+          end
+          if options && options[:update_methods]
+            update_dynamic_methods
           end
         end
       end
@@ -36,16 +39,11 @@ module Scorpio
           schemas_by_id[schema['id']] = schema
           schemas_by_key[schema_key] = schema
         end
-        if resource_name
-          resource_api_methods = ((api_description['resources'] || {})[resource_name] || {})['methods'] || {}
-          resource_api_methods.each do |method_name, method_desc|
-            unless respond_to?(method_name)
-              define_singleton_method(method_name) do |attributes = {}|
-                call_api_method(method_name, attributes)
-              end
-            end
-          end
-        end
+        update_dynamic_methods
+      end
+
+      def update_dynamic_methods
+        update_class_api_methods
         update_instance_accessors
       end
 
@@ -55,8 +53,23 @@ module Scorpio
             raise "schema key #{schema_key} for #{self} is not of type object - type must be object for Scorpio Model to represent this schema" # TODO class
           end
           schema['properties'].each do |property_name, property_schema|
-            define_method(property_name) do
-              self[property_name]
+            unless method_defined?(property_name)
+              define_method(property_name) do
+                self[property_name]
+              end
+            end
+          end
+        end
+      end
+
+      def update_class_api_methods
+        if self.resource_name && api_description
+          resource_api_methods = ((api_description['resources'] || {})[resource_name] || {})['methods'] || {}
+          resource_api_methods.each do |method_name, method_desc|
+            unless respond_to?(method_name)
+              define_singleton_method(method_name) do |attributes = {}|
+                call_api_method(method_name, attributes)
+              end
             end
           end
         end
