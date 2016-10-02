@@ -7,8 +7,10 @@ class ScorpioTest < Minitest::Test
 end
 
 describe 'blog' do
+  let(:blog_article) { Blog::Article.create!(title: "sports") }
+
   it 'indexes articles' do
-    Blog::Article.create!(title: "sports")
+    blog_article
 
     articles = Article.index
 
@@ -19,8 +21,8 @@ describe 'blog' do
     assert_equal('sports', article['title'])
     assert_equal('sports', article.title)
   end
-  it 'reads articles' do
-    blog_article = Blog::Article.create!(title: "sports")
+  it 'reads an article' do
+    blog_article
     article = Article.read(id: blog_article.id)
     assert(article.is_a?(Article))
     assert_equal('sports', article['title'])
