@@ -93,11 +93,22 @@ module Scorpio
         end
         path = path_template.expand(attributes)
         url = Addressable::URI.parse(base_url) + path
-        response = connection.run_request(http_method, url, nil, nil).tap do |response|
-          raise unless response.success?
+        body = request_body_for_api_method(method_name, attributes)
+        response = connection.run_request(http_method, url, body, nil).tap do |response|
+          raise response.body.to_s unless response.success?
         end
         response_schema = method_desc['response']
         response_object_to_instances(response.body, response_schema)
+      end
+
+      def request_body_for_api_method(method_name, attributes)
+        method_desc = (((api_description['resources'] || {})[resource_name] || {})['methods'] || {})[method_name]
+        request_schema = deref_schema(method_desc['request'])
+        if request_schema && request_schema['type'] == 'object'
+          attributes
+        else
+          nil
+        end
       end
 
       def response_object_to_instances(object, schema)
