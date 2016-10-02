@@ -1,7 +1,10 @@
 module Scorpio
   class Model
     class << self
-      inheritable_accessors = {:resource_name => nil}
+      inheritable_accessors = {
+        :resource_name => nil,
+        :api_description => nil,
+      }
       inheritable_accessors.each do |accessor, default_value|
         define_method(accessor) { default_value }
         define_method(:"#{accessor}=") do |id|
@@ -15,10 +18,10 @@ module Scorpio
         end
       end
 
-      def load_schema_ymls(*yml_files)
-        yml_files.each do |yml_file|
-          schema_hash = YAML.load_file(yml_file)
-          schema_hash['resources'][self.resource_name]['methods'].each do |method_name, method_desc|
+      def set_api_description(api_description)
+        self.api_description = api_description
+        api_description['resources'][self.resource_name]['methods'].each do |method_name, method_desc|
+          unless respond_to?(method_name)
             define_singleton_method(method_name) do
               http_method = method_desc['httpMethod'].downcase.to_sym
               uri = method_desc['path']

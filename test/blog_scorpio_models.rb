@@ -1,7 +1,7 @@
 class Article < Scorpio::Model
   self.resource_name = 'articles'
 
-  load_schema_ymls('test/blog_description.yml')
+  set_api_description(YAML.load_file('test/blog_description.yml'))
 
   class << self
     def connection
