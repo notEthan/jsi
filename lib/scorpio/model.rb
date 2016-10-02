@@ -58,6 +58,11 @@ module Scorpio
                 self[property_name]
               end
             end
+            unless method_defined?(:"#{property_name}=")
+              define_method(:"#{property_name}=") do |value|
+                self[property_name] = value
+              end
+            end
           end
         end
       end
@@ -157,6 +162,10 @@ module Scorpio
 
     def [](key)
       @attributes[key]
+    end
+
+    def []=(key, value)
+      @attributes[key] = value
     end
 
     def ==(other)
