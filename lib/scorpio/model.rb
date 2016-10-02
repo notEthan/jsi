@@ -43,7 +43,7 @@ module Scorpio
       end
 
       def update_dynamic_methods
-        update_class_api_methods
+        update_class_and_instance_api_methods
         update_instance_accessors
       end
 
@@ -67,13 +67,27 @@ module Scorpio
         end
       end
 
-      def update_class_api_methods
+      def update_class_and_instance_api_methods
         if self.resource_name && api_description
           resource_api_methods = ((api_description['resources'] || {})[resource_name] || {})['methods'] || {}
           resource_api_methods.each do |method_name, method_desc|
+            # class method
             unless respond_to?(method_name)
               define_singleton_method(method_name) do |attributes = {}|
                 call_api_method(method_name, attributes)
+              end
+            end
+
+            # instance method
+            unless method_defined?(method_name)
+              request_schema = deref_schema(method_desc['request'])
+              request_resource_is_self = request_schema &&
+                request_schema['id'] &&
+                schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && schema_keys.include?(key) }
+              if request_resource_is_self
+                define_method(method_name) do
+                  self.class.call_api_method(method_name, self.attributes)
+                end
               end
             end
           end
