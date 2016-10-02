@@ -148,14 +148,8 @@ module Scorpio
     end
 
     def initialize(attributes = {}, options = {})
-      unless attributes.is_a?(Hash)
-        raise(ArgumentError, "attributes must be a hash; got: #{attributes.inspect}")
-      end
-      @attributes = attributes.map { |k,v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
-      unless options.is_a?(Hash)
-        raise(ArgumentError, "options must be a hash; got: #{options.inspect}")
-      end
-      @options = options.map { |k,v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
+      @attributes = Scorpio.stringify_symbol_keys(attributes)
+      @options = Scorpio.stringify_symbol_keys(options)
     end
 
     attr_reader :attributes
