@@ -1,9 +1,11 @@
-class Article < Scorpio::Model
+class BlogModel < Scorpio::Model
+  self.base_url = 'https://blog.example.com/'
+  set_api_description(YAML.load_file('test/blog_description.yml'))
+end
+
+class Article < BlogModel
   self.resource_name = 'articles'
   self.schema_keys = ['articles']
-  self.base_url = 'https://blog.example.com/'
-
-  set_api_description(YAML.load_file('test/blog_description.yml'))
 
   class << self
     def connection
