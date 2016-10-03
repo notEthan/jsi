@@ -3,16 +3,21 @@ module Scorpio
   class Model
     class << self
       inheritable_accessors = [
-        [:api_description, nil],
-        [:resource_name, nil, {update_methods: true}],
-        [:schema_keys, [], {update_methods: true}],
-        [:schemas_by_key, {}],
-        [:schemas_by_id, {}],
-        [:base_url, nil],
+        [:api_description],
+        [:resource_name, {update_methods: true}],
+        [:schema_keys, {default_value: [], update_methods: true}],
+        [:schemas_by_key, {default_value: {}}],
+        [:schemas_by_id, {default_value: {}}],
+        [:base_url],
       ]
-      inheritable_accessors.each do |(accessor, default_value, options)|
-        define_method(accessor) { default_value }
-        define_method(:"#{accessor}=") do |value|
+      def define_inheritable_accessor(accessor, options = {})
+        if options[:default_getter]
+          define_singleton_method(accessor, &options[:default_getter])
+        else
+          default_value = options[:default_value]
+          define_singleton_method(accessor) { default_value }
+        end
+        define_singleton_method(:"#{accessor}=") do |value|
           singleton_class.instance_exec(value) do |value_|
             begin
               remove_method(accessor)
@@ -20,10 +25,13 @@ module Scorpio
             end
             define_method(accessor) { value_ }
           end
-          if options && options[:update_methods]
+          if options[:update_methods]
             update_dynamic_methods
           end
         end
+      end
+      inheritable_accessors.each do |(accessor, options)|
+        Scorpio::Model.define_inheritable_accessor(accessor, options || {})
       end
 
       def set_api_description(api_description)
