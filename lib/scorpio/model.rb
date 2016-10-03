@@ -1,4 +1,6 @@
 require 'addressable/template'
+require 'json-schema'
+
 module Scorpio
   class Model
     class << self
@@ -30,11 +32,20 @@ module Scorpio
     define_inheritable_accessor(:schemas_by_id, default_value: {})
     define_inheritable_accessor(:base_url)
     class << self
-      def set_api_description(api_description)
-        # TODO full validation against google api rest description
-        unless api_description.is_a?(Hash)
-          raise ArgumentError, "given api description was not a hash; got: #{api_description.inspect}"
+      def api_description_schema
+        @api_description_schema ||= begin
+          rest = YAML.load_file(Pathname.new(__FILE__).join('../../../getRest.yml'))
+          rest['schemas'].each do |name, schema_hash|
+            # URI hax because google doesn't put a URI in the id field properly
+            schema = JSON::Schema.new(schema_hash, Addressable::URI.parse(''))
+            JSON::Validator.add_schema(schema)
+          end
+          rest['schemas']['RestDescription']
         end
+      end
+
+      def set_api_description(api_description)
+        JSON::Validator.validate!(api_description_schema, api_description)
         self.api_description = api_description
         (api_description['schemas'] || {}).each do |schema_key, schema|
           unless schema['id']
