@@ -90,7 +90,7 @@ module Scorpio
                 schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && schema_keys.include?(key) }
               if request_resource_is_self
                 define_method(method_name) do
-                  self.class.call_api_method(method_name, self.attributes)
+                  call_api_method(method_name)
                 end
               end
             end
@@ -188,6 +188,10 @@ module Scorpio
 
     def ==(other)
       @attributes == other.instance_eval { @attributes }
+    end
+
+    def call_api_method(method_name)
+      self.class.call_api_method(method_name, self.attributes)
     end
 
     alias eql? ==
