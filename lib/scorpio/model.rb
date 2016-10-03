@@ -2,14 +2,6 @@ require 'addressable/template'
 module Scorpio
   class Model
     class << self
-      inheritable_accessors = [
-        [:api_description],
-        [:resource_name, {update_methods: true}],
-        [:schema_keys, {default_value: [], update_methods: true}],
-        [:schemas_by_key, {default_value: {}}],
-        [:schemas_by_id, {default_value: {}}],
-        [:base_url],
-      ]
       def define_inheritable_accessor(accessor, options = {})
         if options[:default_getter]
           define_singleton_method(accessor, &options[:default_getter])
@@ -30,10 +22,14 @@ module Scorpio
           end
         end
       end
-      inheritable_accessors.each do |(accessor, options)|
-        Scorpio::Model.define_inheritable_accessor(accessor, options || {})
-      end
-
+    end
+    define_inheritable_accessor(:api_description)
+    define_inheritable_accessor(:resource_name, update_methods: true)
+    define_inheritable_accessor(:schema_keys, default_value: [], update_methods: true)
+    define_inheritable_accessor(:schemas_by_key, default_value: {})
+    define_inheritable_accessor(:schemas_by_id, default_value: {})
+    define_inheritable_accessor(:base_url)
+    class << self
       def set_api_description(api_description)
         # TODO full validation against google api rest description
         unless api_description.is_a?(Hash)
