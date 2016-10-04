@@ -14,6 +14,16 @@ resources:
           type: array
           items:
             $ref: https://blog.example.com/schemas/articles/v1.0.0
+      index_with_root:
+        path: v1/articles_with_root
+        httpMethod: GET
+        response:
+          type: object
+          properties:
+            articles:
+              type: array
+              items:
+                $ref: https://blog.example.com/schemas/articles/v1.0.0
       read:
         path: v1/articles/{id}
         httpMethod: GET

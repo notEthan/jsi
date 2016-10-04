@@ -21,6 +21,18 @@ describe 'blog' do
     assert_equal('sports', article['title'])
     assert_equal('sports', article.title)
   end
+  it 'indexes articles with root' do
+    blog_article
+
+    articles = Article.index_with_root
+    assert_instance_of(Hash, articles)
+    assert_equal(1, articles['articles'].size)
+    article = articles['articles'][0]
+    assert_equal(1, article['id'])
+    assert(article.is_a?(Article))
+    assert_equal('sports', article['title'])
+    assert_equal('sports', article.title)
+  end
   it 'reads an article' do
     blog_article
     article = Article.read(id: blog_article.id)
