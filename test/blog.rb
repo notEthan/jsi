@@ -39,6 +39,8 @@ end
 # can be used by the scorpio model classes
 class Blog
   class Article < ActiveRecord::Base
+    # validates_enthusiasm_of :title
+    validate { errors.add(:title, "with gusto!") if title && !title[/!\z/] }
   end
   class Author < ActiveRecord::Base
   end

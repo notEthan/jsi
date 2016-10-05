@@ -7,7 +7,7 @@ class ScorpioTest < Minitest::Test
 end
 
 describe 'blog' do
-  let(:blog_article) { Blog::Article.create!(title: "sports") }
+  let(:blog_article) { Blog::Article.create!(title: "sports!") }
 
   it 'indexes articles' do
     blog_article
@@ -18,8 +18,8 @@ describe 'blog' do
     article = articles[0]
     assert_equal(1, article['id'])
     assert(article.is_a?(Article))
-    assert_equal('sports', article['title'])
-    assert_equal('sports', article.title)
+    assert_equal('sports!', article['title'])
+    assert_equal('sports!', article.title)
   end
   it 'indexes articles with root' do
     blog_article
@@ -32,15 +32,15 @@ describe 'blog' do
     article = articles['articles'][0]
     assert_equal(1, article['id'])
     assert(article.is_a?(Article))
-    assert_equal('sports', article['title'])
-    assert_equal('sports', article.title)
+    assert_equal('sports!', article['title'])
+    assert_equal('sports!', article.title)
   end
   it 'reads an article' do
     blog_article
     article = Article.read(id: blog_article.id)
     assert(article.is_a?(Article))
-    assert_equal('sports', article['title'])
-    assert_equal('sports', article.title)
+    assert_equal('sports!', article['title'])
+    assert_equal('sports!', article.title)
   end
   it 'tries to read an article without a required path variable' do
     blog_article
@@ -57,15 +57,15 @@ describe 'blog' do
   end
   it 'updates an article on the class' do
     blog_article
-    Article.patch({id: blog_article.id, title: 'politics'})
-    assert_equal('politics', Article.read(id: blog_article.id).title)
+    Article.patch({id: blog_article.id, title: 'politics!'})
+    assert_equal('politics!', Article.read(id: blog_article.id).title)
   end
   it 'updates an article on the instance' do
     blog_article
     article = Article.read(id: blog_article.id)
-    article.title = 'politics'
+    article.title = 'politics!'
     article.patch
-    assert_equal('politics', Article.read(id: blog_article.id).title)
+    assert_equal('politics!', Article.read(id: blog_article.id).title)
   end
   it 'instantiates an article with bad argument' do
     assert_raises(ArgumentError) { Article.new("foo") }
