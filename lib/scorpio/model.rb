@@ -31,6 +31,10 @@ module Scorpio
     define_inheritable_accessor(:schemas_by_key, default_value: {})
     define_inheritable_accessor(:schemas_by_id, default_value: {})
     define_inheritable_accessor(:base_url)
+
+    define_inheritable_accessor(:faraday_request_middleware, default_value: [])
+    define_inheritable_accessor(:faraday_adapter, default_getter: proc { Faraday.default_adapter })
+    define_inheritable_accessor(:faraday_response_middleware, default_value: [])
     class << self
       def api_description_schema
         @api_description_schema ||= begin
@@ -122,6 +126,24 @@ module Scorpio
         'boolean' => [TrueClass, FalseClass],
         'null' => [NilClass],
       }
+
+      def connection
+        Faraday.new do |c|
+          unless faraday_request_middleware.any? { |m| [*m].first == :json }
+            c.request :json
+          end
+          faraday_request_middleware.each do |m|
+            c.request(*m)
+          end
+          c.adapter(*faraday_adapter)
+          faraday_response_middleware.each do |m|
+            c.response(*m)
+          end
+          unless faraday_response_middleware.any? { |m| [*m].first == :json }
+            c.response :json, :content_type => /\bjson$/, :preserve_raw => true
+          end
+        end
+      end
 
       def call_api_method(method_name, attributes = {})
         attributes = Scorpio.stringify_symbol_keys(attributes)
