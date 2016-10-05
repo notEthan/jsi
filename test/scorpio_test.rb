@@ -65,4 +65,14 @@ describe 'blog' do
     article.patch
     assert_equal('politics', Article.read(id: blog_article.id).title)
   end
+  it 'instantiates an article with bad argument' do
+    assert_raises(ArgumentError) { Article.new("foo") }
+  end
+  it 'checks equality' do
+    assert_equal(Article.read(id: blog_article.id), Article.read(id: blog_article.id))
+  end
+  it 'consistently keys a hash' do
+    hash = {Article.read(id: blog_article.id) => 0}
+    assert_equal(0, hash[Article.read(id: blog_article.id)])
+  end
 end
