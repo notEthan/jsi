@@ -67,6 +67,14 @@ describe 'blog' do
     article.patch
     assert_equal('politics!', Article.read(id: blog_article.id).title)
   end
+  it 'updates an article with an unsuccessful response' do
+    blog_article
+    err = assert_raises(Scorpio::UnprocessableEntity422Error) do
+      Article.patch({id: blog_article.id, title: 'politics?'})
+    end
+    assert_equal({"title" => ["with gusto!"]}, JSON.parse(err.message)['errors'])
+    assert_equal('sports!', Article.read(id: blog_article.id).title)
+  end
   it 'instantiates an article with bad argument' do
     assert_raises(ArgumentError) { Article.new("foo") }
   end
