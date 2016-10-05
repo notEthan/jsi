@@ -175,7 +175,14 @@ module Scorpio
             new(object)
           elsif schema['type'] == 'object' && MODULES_FOR_JSON_SCHEMA_TYPES['object'].any? { |m| object.is_a?(m) }
             object.map do |key, value|
-              schema_for_value = schema['properties'] && schema['properties'][key] || schema['additionalProperties']
+              schema_for_value = schema['properties'] && schema['properties'][key] ||
+                if schema['patternProperties']
+                  _, pattern_schema = schema['patternProperties'].detect do |pattern, _|
+                    key =~ Regexp.new(pattern)
+                  end
+                  pattern_schema
+                end ||
+                schema['additionalProperties']
               {key => response_object_to_instances(value, schema_for_value)}
             end.inject({}, &:update)
           elsif schema['type'] == 'array' && MODULES_FOR_JSON_SCHEMA_TYPES['array'].any? { |m| object.is_a?(m) }
