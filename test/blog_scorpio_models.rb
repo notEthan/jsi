@@ -13,7 +13,7 @@ class Article < BlogModel
         c.request :json
         c.request :api_hammer_request_logger, Blog.logger
         c.adapter :rack, Blog.new
-        c.response :json, :content_type => /\bjson$/
+        c.response :json, :content_type => /\bjson$/, :preserve_raw => true
       end
     end
   end
