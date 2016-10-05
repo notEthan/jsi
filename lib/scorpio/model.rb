@@ -142,7 +142,17 @@ module Scorpio
         url = Addressable::URI.parse(base_url) + path
         body = request_body_for_api_method(method_name, attributes)
         response = connection.run_request(http_method, url, body, nil).tap do |response|
-          raise response.body.to_s unless response.success?
+          error_class = Scorpio.error_classes_by_status[response.status]
+          error_class ||= if (400..499).include?(response.status)
+            ClientError
+          elsif (500..599).include?(response.status)
+            ServerError
+          elsif !response.success?
+            HTTPError
+          end
+          if error_class
+            raise error_class.new(response.env[:raw_body]).tap { |e| e.response = response }
+          end
         end
         response_schema = method_desc['response']
         response_object_to_instances(response.body, response_schema)
