@@ -55,6 +55,12 @@ describe 'blog' do
     assert_equal('path v1/articles/{id} for method read requires attributes which were empty: ["id"]',
       e.message)
   end
+  it 'tries to read a nonexistent article' do
+    err = assert_raises(Scorpio::NotFound404Error) do
+      Article.read(id: 99)
+    end
+    assert_equal({"article" => ["Unknown article! id: 99"]}, JSON.parse(err.message)['errors'])
+  end
   it 'updates an article on the class' do
     blog_article
     Article.patch({id: blog_article.id, title: 'politics!'})
