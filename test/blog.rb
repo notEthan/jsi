@@ -11,6 +11,7 @@ class Blog < Sinatra::Base
   set :static, false
   disable :protection
   set :logger, ::Logger.new(STDOUT)
+  logger.level = ::Logger::WARN
   define_method(:logger) { self.class.logger }
   use_with_lint ApiHammer::RequestLogger, logger
 end
