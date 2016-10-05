@@ -5,6 +5,7 @@ module Scorpio
   class Error < StandardError; end
   class HTTPError < Error
     define_singleton_method(:status) { |status| Scorpio.error_classes_by_status[status] = self }
+    attr_accessor :response
   end
   class ClientError < HTTPError; end
   class ServerError < HTTPError; end
