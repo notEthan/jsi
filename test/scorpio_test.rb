@@ -26,6 +26,8 @@ describe 'blog' do
 
     articles = Article.index_with_root
     assert_instance_of(Hash, articles)
+    assert_equal('v1', articles['version'])
+    assert_equal('hi!', articles['note'])
     assert_equal(1, articles['articles'].size)
     article = articles['articles'][0]
     assert_equal(1, article['id'])

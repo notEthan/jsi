@@ -57,7 +57,15 @@ class Blog
     check_accept
 
     articles = Blog::Article.all
-    format_response(200, {'articles' => articles.map(&:serializable_hash)})
+    body = {
+      # this is on the response schema, an array with items whose id indicates they are articles
+      'articles' => articles.map(&:serializable_hash),
+      # this is on the response schema, not indicating it is an article
+      'version' => 'v1',
+      # this is not in the response schema at all
+      'note' => 'hi!',
+    }
+    format_response(200, body)
   end
   get '/v1/articles/:id' do |id|
     article = find_or_halt(Blog::Article, id: id)
