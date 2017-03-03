@@ -28,6 +28,8 @@ describe 'blog' do
     assert_instance_of(Hash, articles)
     assert_equal('v1', articles['version'])
     assert_equal('hi!', articles['note'])
+    assert_instance_of(Article, articles['best_article'])
+    assert_equal(articles['articles'].last, articles['best_article'])
     assert_equal(1, articles['articles'].size)
     article = articles['articles'][0]
     assert_equal(1, article['id'])

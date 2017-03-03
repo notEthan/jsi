@@ -63,6 +63,8 @@ class Blog
     body = {
       # this is on the response schema, an array with items whose id indicates they are articles
       'articles' => articles.map(&:serializable_hash),
+      # in the response schema, a single article
+      'best_article' => articles.last.serializable_hash,
       # this is on the response schema, not indicating it is an article
       'version' => 'v1',
       # this is not in the response schema at all
