@@ -177,7 +177,7 @@ module Scorpio
           end
         end
         response_schema = method_desc['response']
-        response_object_to_instances(response.body, response_schema)
+        response_object_to_instances(response.body, response_schema, 'persisted' => true)
       end
 
       def request_body_for_api_method(method_name, attributes)
@@ -190,11 +190,11 @@ module Scorpio
         end
       end
 
-      def response_object_to_instances(object, schema)
+      def response_object_to_instances(object, schema, initialize_options = {})
         schema = deref_schema(schema)
         if schema
           if schemas_by_key.any? { |key, as| as['id'] == schema['id'] && schema_keys.include?(key) }
-            new(object)
+            new(object, initialize_options)
           elsif schema['type'] == 'object' && MODULES_FOR_JSON_SCHEMA_TYPES['object'].any? { |m| object.is_a?(m) }
             object.map do |key, value|
               schema_for_value = schema['properties'] && schema['properties'][key] ||
@@ -227,6 +227,10 @@ module Scorpio
 
     attr_reader :attributes
     attr_reader :options
+
+    def persisted?
+      !!@options['persisted']
+    end
 
     def [](key)
       @attributes[key]
