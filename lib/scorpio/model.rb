@@ -206,7 +206,7 @@ module Scorpio
                 end ||
                 schema['additionalProperties']
               {key => response_object_to_instances(value, schema_for_value)}
-            end.inject({}, &:update)
+            end.inject(object.class.new, &:update)
           elsif schema['type'] == 'array' && MODULES_FOR_JSON_SCHEMA_TYPES['array'].any? { |m| object.is_a?(m) }
             object.map do |element|
               response_object_to_instances(element, schema['items'])
