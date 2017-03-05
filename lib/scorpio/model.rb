@@ -293,10 +293,8 @@ module Scorpio
       def response_object_to_instances(object, schema, initialize_options = {})
         schema = deref_schema(schema)
         if schema
-          if schemas_by_key.any? { |key, as| as['id'] == schema['id'] && schema_keys.include?(key) }
-            new(object, initialize_options)
-          elsif schema['type'] == 'object' && MODULES_FOR_JSON_SCHEMA_TYPES['object'].any? { |m| object.is_a?(m) }
-            object.map do |key, value|
+          if schema['type'] == 'object' && MODULES_FOR_JSON_SCHEMA_TYPES['object'].any? { |m| object.is_a?(m) }
+            out = object.map do |key, value|
               schema_for_value = schema['properties'] && schema['properties'][key] ||
                 if schema['patternProperties']
                   _, pattern_schema = schema['patternProperties'].detect do |pattern, _|
@@ -307,6 +305,12 @@ module Scorpio
                 schema['additionalProperties']
               {key => response_object_to_instances(value, schema_for_value)}
             end.inject(object.class.new, &:update)
+            model = models_by_schema_id[schema['id']]
+            if model
+              model.new(out, initialize_options)
+            else
+              out
+            end
           elsif schema['type'] == 'array' && MODULES_FOR_JSON_SCHEMA_TYPES['array'].any? { |m| object.is_a?(m) }
             object.map do |element|
               response_object_to_instances(element, schema['items'])
