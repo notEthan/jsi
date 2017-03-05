@@ -28,11 +28,19 @@ module Scorpio
         end
       end
     end
-    define_inheritable_accessor(:api_description)
+    define_inheritable_accessor(:api_description_class)
+    define_inheritable_accessor(:api_description, on_set: proc { self.api_description_class = self })
     define_inheritable_accessor(:resource_name, update_methods: true)
-    define_inheritable_accessor(:schema_keys, default_value: [], update_methods: true)
+    define_inheritable_accessor(:schema_keys, default_value: [], update_methods: true, on_set: proc do
+      schema_keys.each do |key|
+        api_description_class.models_by_schema_id = api_description_class.models_by_schema_id.merge(schemas_by_key[key]['id'] => self)
+        api_description_class.models_by_schema_key = api_description_class.models_by_schema_key.merge(key => self)
+      end
+    end)
     define_inheritable_accessor(:schemas_by_key, default_value: {})
     define_inheritable_accessor(:schemas_by_id, default_value: {})
+    define_inheritable_accessor(:models_by_schema_id, default_value: {})
+    define_inheritable_accessor(:models_by_schema_key, default_value: {})
     define_inheritable_accessor(:base_url)
 
     define_inheritable_accessor(:faraday_request_middleware, default_value: [])
