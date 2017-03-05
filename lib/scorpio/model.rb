@@ -201,6 +201,72 @@ module Scorpio
         end
       end
 
+      def request_body_for_schema(object, schema)
+        schema = deref_schema(schema)
+        if object.is_a?(Scorpio::Model)
+          # TODO request_schema_fail unless schema is for given model type 
+          request_body_for_schema(object.represent_for_schema(schema), schema)
+        else
+          if object.is_a?(Hash)
+            object.map do |key, value|
+              if schema
+                if schema['type'] == 'object'
+                  # TODO code dup with response_object_to_instances
+                  if schema['properties'] && schema['properties'][key]
+                    subschema = schema['properties'][key]
+                    include_pair = true
+                  else
+                    if schema['patternProperties']
+                      _, pattern_schema = schema['patternProperties'].detect do |pattern, _|
+                        key =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+                      end
+                    end
+                    if pattern_schema
+                      subschema = pattern_schema
+                      include_pair = true
+                    else
+                      if schema['additionalProperties'] == false
+                        include_pair = false
+                      elsif schema['additionalProperties'] == nil
+                        # TODO decide on this (can combine with `else` if treating nil same as schema present)
+                        include_pair = true
+                        subschema = nil
+                      else
+                        include_pair = true
+                        subschema = schema['additionalProperties']
+                      end
+                    end
+                  end
+                else
+                  request_schema_fail(object, schema)
+                end
+              end
+              if include_pair
+                {key => request_body_for_schema(value, subschema)}
+              else
+                {}
+              end
+            end.inject({}, &:update)
+          elsif object.is_a?(Array) || object.is_a?(Set)
+            object.map do |el|
+              if schema
+                if schema['type'] == 'array'
+                  # TODO index based subschema or whatever else works for array
+                  subschema = schema['items']
+                else
+                  request_schema_fail(object, schema)
+                end
+              end
+              request_body_for_schema(el, subschema)
+            end
+          else
+            # TODO maybe raise on anything not jsonifiable 
+            # TODO check conformance to schema, request_schema_fail if not
+            object
+          end
+        end
+      end
+
       def response_object_to_instances(object, schema, initialize_options = {})
         schema = deref_schema(schema)
         if schema
