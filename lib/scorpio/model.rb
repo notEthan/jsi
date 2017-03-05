@@ -12,12 +12,15 @@ module Scorpio
           define_singleton_method(accessor) { default_value }
         end
         define_singleton_method(:"#{accessor}=") do |value|
-          singleton_class.instance_exec(value) do |value_|
+          singleton_class.instance_exec(value, self) do |value_, klass|
             begin
               remove_method(accessor)
             rescue NameError
             end
             define_method(accessor) { value_ }
+            if options[:on_set]
+              klass.instance_exec(&options[:on_set])
+            end
           end
           if options[:update_methods]
             update_dynamic_methods
