@@ -208,7 +208,8 @@ module Scorpio
             HTTPError
           end
           if error_class
-            raise error_class.new(response.env[:raw_body]).tap { |e| e.response = response }
+            message = response.env[:raw_body] || response.env.body
+            raise error_class.new(message).tap { |e| e.response = response }
           end
         end
         response_schema = method_desc['response']
