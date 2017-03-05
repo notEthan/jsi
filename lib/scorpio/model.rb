@@ -314,13 +314,14 @@ module Scorpio
     def initialize(attributes = {}, options = {})
       @attributes = Scorpio.stringify_symbol_keys(attributes)
       @options = Scorpio.stringify_symbol_keys(options)
+      @persisted = !!@options['persisted']
     end
 
     attr_reader :attributes
     attr_reader :options
 
     def persisted?
-      !!@options['persisted']
+      @persisted
     end
 
     def [](key)
@@ -336,7 +337,28 @@ module Scorpio
     end
 
     def call_api_method(method_name, call_params: nil)
-      self.class.call_api_method(method_name, call_params: call_params, model_attributes: self.attributes)
+      response = self.class.call_api_method(method_name, call_params: call_params, model_attributes: self.attributes)
+
+      # if we're making a POST or PUT and the request schema is this resource, we'll assume that
+      # the request is persisting this resource
+      api_method = self.class.api_description['resources'][self.class.resource_name]['methods'][method_name]
+      request_schema = self.class.deref_schema(api_method['request'])
+      request_resource_is_self = request_schema &&
+        request_schema['id'] &&
+        self.class.schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && self.class.schema_keys.include?(key) }
+      response_schema = self.class.deref_schema(api_method['response'])
+      response_resource_is_self = response_schema &&
+        response_schema['id'] &&
+        self.class.schemas_by_key.any? { |key, as| as['id'] == response_schema['id'] && self.class.schema_keys.include?(key) }
+      if request_resource_is_self && %w(PUT POST).include?(api_method['httpMethod'])
+        @persisted = true
+
+        if response_resource_is_self
+          @attributes = response.attributes
+        end
+      end
+
+      response
     end
 
     alias eql? ==
