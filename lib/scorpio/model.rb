@@ -215,16 +215,6 @@ module Scorpio
         response_object_to_instances(response.body, response_schema, 'persisted' => true)
       end
 
-      def request_body_for_api_method(method_name, attributes)
-        method_desc = (((api_description['resources'] || {})[resource_name] || {})['methods'] || {})[method_name]
-        request_schema = deref_schema(method_desc['request'])
-        if request_schema && request_schema['type'] == 'object'
-          attributes
-        else
-          nil
-        end
-      end
-
       def request_body_for_schema(object, schema)
         schema = deref_schema(schema)
         if object.is_a?(Scorpio::Model)
@@ -345,8 +335,8 @@ module Scorpio
       @attributes == other.instance_eval { @attributes }
     end
 
-    def call_api_method(method_name)
-      self.class.call_api_method(method_name, self.attributes)
+    def call_api_method(method_name, call_params: nil)
+      self.class.call_api_method(method_name, call_params: call_params, model_attributes: self.attributes)
     end
 
     alias eql? ==
