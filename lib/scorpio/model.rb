@@ -2,6 +2,9 @@ require 'addressable/template'
 require 'json-schema'
 
 module Scorpio
+  # see also Faraday::Env::MethodsWithBodies
+  METHODS_WITH_BODIES = %w(post put patch options)
+
   class Model
     class << self
       def define_inheritable_accessor(accessor, options = {})
@@ -103,8 +106,8 @@ module Scorpio
           resource_api_methods.each do |method_name, method_desc|
             # class method
             unless respond_to?(method_name)
-              define_singleton_method(method_name) do |attributes = {}|
-                call_api_method(method_name, attributes)
+              define_singleton_method(method_name) do |call_params = nil|
+                call_api_method(method_name, call_params: call_params)
               end
             end
 
@@ -115,8 +118,8 @@ module Scorpio
                 request_schema['id'] &&
                 schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && schema_keys.include?(key) }
               if request_resource_is_self
-                define_method(method_name) do
-                  call_api_method(method_name)
+                define_method(method_name) do |call_params = nil|
+                  call_api_method(method_name, call_params: call_params)
                 end
               end
             end
@@ -156,24 +159,45 @@ module Scorpio
         end
       end
 
-      def call_api_method(method_name, attributes = {})
-        attributes = Scorpio.stringify_symbol_keys(attributes)
+      def call_api_method(method_name, call_params: nil, model_attributes: nil)
+        call_params = Scorpio.stringify_symbol_keys(call_params || {})
+        model_attributes = Scorpio.stringify_symbol_keys(model_attributes || {})
         method_desc = api_description['resources'][self.resource_name]['methods'][method_name]
         http_method = method_desc['httpMethod'].downcase.to_sym
         path_template = Addressable::Template.new(method_desc['path'])
-        missing_variables = path_template.variables - attributes.keys
+        template_params = model_attributes.merge(call_params)
+        missing_variables = path_template.variables - call_params.keys - model_attributes.keys
         if missing_variables.any?
           raise(ArgumentError, "path #{method_desc['path']} for method #{method_name} requires attributes " +
             "which were missing: #{missing_variables.inspect}")
         end
-        empty_variables = path_template.variables.select { |v| attributes[v].to_s.empty? }
+        empty_variables = path_template.variables.select { |v| template_params[v].to_s.empty? }
         if empty_variables.any?
           raise(ArgumentError, "path #{method_desc['path']} for method #{method_name} requires attributes " +
             "which were empty: #{empty_variables.inspect}")
         end
-        path = path_template.expand(attributes)
+        path = path_template.expand(template_params)
         url = Addressable::URI.parse(base_url) + path
-        body = request_body_for_api_method(method_name, attributes)
+        # assume that call_params must be included somewhere. model_attributes are a source of required things
+        # but not required to be here.
+        other_params = call_params.reject { |k, _| path_template.variables.include?(k) }
+
+        method_desc = (((api_description['resources'] || {})[resource_name] || {})['methods'] || {})[method_name]
+        request_schema = deref_schema(method_desc['request'])
+        if request_schema
+          # TODO deal with model_attributes / call_params better in nested whatever
+          body = request_body_for_schema(model_attributes.merge(call_params), request_schema)
+        else
+          if other_params.any?
+            if METHODS_WITH_BODIES.any? { |m| m == http_method.downcase }
+              body = other_params
+            else
+              # TODO pay more attention to 'parameters' api method attribute
+              url.query_values = other_params
+            end
+          end
+        end
+
         response = connection.run_request(http_method, url, body, nil).tap do |response|
           error_class = Scorpio.error_classes_by_status[response.status]
           error_class ||= if (400..499).include?(response.status)
