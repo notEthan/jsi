@@ -374,6 +374,11 @@ module Scorpio
       response
     end
 
+    # TODO
+    def represent_for_schema(schema)
+      @attributes
+    end
+
     alias eql? ==
 
     def hash
