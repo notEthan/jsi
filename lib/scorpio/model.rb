@@ -113,19 +113,33 @@ module Scorpio
 
             # instance method
             unless method_defined?(method_name)
-              # we define an instance method if the request has any properties or attributes in common with the
-              # schema attributes of this model
               request_schema = deref_schema(method_desc['request'])
-              request_attributes = request_schema && request_schema['type'] == 'object' && request_schema['properties'] ?
-                request_schema['properties'].keys : []
-              request_attributes |= method_desc['parameters'] ? method_desc['parameters'].keys : []
+
+              # define an instance method if the request schema is for this model 
+              request_resource_is_self = request_schema &&
+                request_schema['id'] &&
+                schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && schema_keys.include?(key) }
+
+              # also define an instance method depending on certain attributes the request description 
+              # might have in common with the model's schema attributes
+              request_attributes = []
+              # if the path has attributes in common with model schema attributes, we'll define on 
+              # instance method
               request_attributes |= Addressable::Template.new(method_desc['path']).variables
+              # TODO if the method request schema has attributes in common with the model schema attributes,
+              # should we define an instance method?
+              #request_attributes |= request_schema && request_schema['type'] == 'object' && request_schema['properties'] ?
+              #  request_schema['properties'].keys : []
+              # TODO if the method parameters have attributes in common with the model schema attributes,
+              # should we define an instance method?
+              #request_attributes |= method_desc['parameters'] ? method_desc['parameters'].keys : []
 
               schema_attributes = schema_keys.map do |schema_key|
                 schema = schemas_by_key[schema_key]
                 schema['type'] == 'object' && schema['properties'] ? schema['properties'].keys : []
               end.inject([], &:|)
-              if (request_attributes & schema_attributes).any?
+
+              if request_resource_is_self || (request_attributes & schema_attributes).any?
                 define_method(method_name) do |call_params = nil|
                   call_api_method(method_name, call_params: call_params)
                 end
