@@ -309,6 +309,10 @@ module Scorpio
         end
       end
 
+      def request_schema_fail(object, schema)
+        raise("object does not conform to schema.\nobject = #{object.inspect}\nschema = #{JSON.pretty_generate(schema, quirks_mode: true)}")
+      end
+
       def response_object_to_instances(object, schema, initialize_options = {})
         schema = deref_schema(schema)
         if schema
