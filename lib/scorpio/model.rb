@@ -231,7 +231,7 @@ module Scorpio
             HTTPError
           end
           if error_class
-            message = response.env[:raw_body] || response.env.body
+            message = "Error calling #{method_name} on #{self}:\n" + (response.env[:raw_body] || response.env.body)
             raise error_class.new(message).tap { |e| e.response = response }
           end
         end
