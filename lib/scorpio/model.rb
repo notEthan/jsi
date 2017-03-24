@@ -275,8 +275,12 @@ module Scorpio
                       end
                     end
                   end
-                else
+                elsif schema['type']
                   request_schema_fail(object, schema)
+                else
+                  # TODO not sure
+                  include_pair = true
+                  subschema = nil
                 end
               end
               if include_pair
