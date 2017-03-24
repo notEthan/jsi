@@ -209,6 +209,7 @@ module Scorpio
         if request_schema
           # TODO deal with model_attributes / call_params better in nested whatever
           body = request_body_for_schema(model_attributes.merge(call_params), request_schema)
+          body.update(call_params)
         else
           if other_params.any?
             if METHODS_WITH_BODIES.any? { |m| m == http_method.downcase }
