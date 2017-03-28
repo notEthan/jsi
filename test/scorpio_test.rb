@@ -88,6 +88,12 @@ describe 'blog' do
   it 'instantiates an article with bad argument' do
     assert_raises(ArgumentError) { Article.new("foo") }
   end
+  it 'reports schema failure when the request does not match the request schema' do
+    err = assert_raises(Scorpio::RequestSchemaFailure) do
+      # title is supposed to be a string
+      Article.post('title' => {'music' => '!'})
+    end
+  end
   it 'checks equality' do
     assert_equal(Article.read(id: blog_article.id), Article.read(id: blog_article.id))
   end
