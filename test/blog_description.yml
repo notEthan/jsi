@@ -33,6 +33,13 @@ resources:
         httpMethod: GET
         response:
           $ref: https://blog.example.com/schemas/articles/v1.0.0
+      post:
+        path: v1/articles
+        httpMethod: POST
+        request:
+          $ref: https://blog.example.com/schemas/articles/v1.0.0
+        response:
+          $ref: https://blog.example.com/schemas/articles/v1.0.0
       patch:
         path: v1/articles/{id}
         httpMethod: PATCH

@@ -76,6 +76,14 @@ class Blog
     article = find_or_halt(Blog::Article, id: id)
     format_response(200, article.serializable_hash)
   end
+  post '/v1/articles' do
+    article = Article.create(parsed_body)
+    if article.persisted?
+      format_response(200, article.serializable_hash)
+    else
+      halt_unprocessable_entity(article.errors.messages)
+    end
+  end
   patch '/v1/articles/:id' do |id|
     article_attrs = parsed_body
     article = find_or_halt(Blog::Article, id: id)
