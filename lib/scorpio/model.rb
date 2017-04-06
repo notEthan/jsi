@@ -1,5 +1,6 @@
 require 'addressable/template'
 require 'json-schema'
+require 'faraday_middleware'
 
 module Scorpio
   # see also Faraday::Env::MethodsWithBodies
