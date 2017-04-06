@@ -330,7 +330,7 @@ module Scorpio
                   pattern_schema
                 end ||
                 schema['additionalProperties']
-              {key => response_object_to_instances(value, schema_for_value)}
+              {key => response_object_to_instances(value, schema_for_value, initialize_options)}
             end.inject(object.class.new, &:update)
             model = models_by_schema_id[schema['id']]
             if model
@@ -340,7 +340,7 @@ module Scorpio
             end
           elsif schema['type'] == 'array' && MODULES_FOR_JSON_SCHEMA_TYPES['array'].any? { |m| object.is_a?(m) }
             object.map do |element|
-              response_object_to_instances(element, schema['items'])
+              response_object_to_instances(element, schema['items'], initialize_options)
             end
           else
             object
