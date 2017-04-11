@@ -228,20 +228,21 @@ module Scorpio
           end
         end
 
-        response = connection.run_request(http_method, url, body, nil).tap do |response|
-          error_class = Scorpio.error_classes_by_status[response.status]
-          error_class ||= if (400..499).include?(response.status)
-            ClientError
-          elsif (500..599).include?(response.status)
-            ServerError
-          elsif !response.success?
-            HTTPError
-          end
-          if error_class
-            message = "Error calling #{method_name} on #{self}:\n" + (response.env[:raw_body] || response.env.body)
-            raise error_class.new(message).tap { |e| e.response = response }
-          end
+        response = connection.run_request(http_method, url, body, nil)
+
+        error_class = Scorpio.error_classes_by_status[response.status]
+        error_class ||= if (400..499).include?(response.status)
+          ClientError
+        elsif (500..599).include?(response.status)
+          ServerError
+        elsif !response.success?
+          HTTPError
         end
+        if error_class
+          message = "Error calling #{method_name} on #{self}:\n" + (response.env[:raw_body] || response.env.body)
+          raise error_class.new(message).tap { |e| e.response = response }
+        end
+
         response_schema = method_desc['response']
         response_object_to_instances(response.body, response_schema, 'persisted' => true)
       end
