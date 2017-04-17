@@ -244,7 +244,8 @@ module Scorpio
         end
 
         response_schema = method_desc['response']
-        response_object_to_instances(response.body, response_schema, 'persisted' => true)
+        source = {'method_name' => method_name, 'call_params' => call_params, 'url' => url.to_s}
+        response_object_to_instances(response.body, response_schema, 'persisted' => true, 'source' => source)
       end
 
       def request_body_for_schema(object, schema)
