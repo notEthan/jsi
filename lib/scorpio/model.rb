@@ -189,13 +189,14 @@ module Scorpio
       end
 
       def call_api_method(method_name, call_params: nil, model_attributes: nil)
-        call_params = Scorpio.stringify_symbol_keys(call_params || {})
+        call_params = Scorpio.stringify_symbol_keys(call_params) if call_params.is_a?(Hash)
         model_attributes = Scorpio.stringify_symbol_keys(model_attributes || {})
         method_desc = api_description['resources'][self.resource_name]['methods'][method_name]
         http_method = method_desc['httpMethod'].downcase.to_sym
         path_template = Addressable::Template.new(method_desc['path'])
-        template_params = model_attributes.merge(call_params)
-        missing_variables = path_template.variables - call_params.keys - model_attributes.keys
+        template_params = model_attributes
+        template_params = template_params.merge(call_params) if call_params.is_a?(Hash)
+        missing_variables = path_template.variables - template_params.keys
         if missing_variables.any?
           raise(ArgumentError, "path #{method_desc['path']} for method #{method_name} requires attributes " +
             "which were missing: #{missing_variables.inspect}")
@@ -209,21 +210,34 @@ module Scorpio
         url = Addressable::URI.parse(base_url) + path
         # assume that call_params must be included somewhere. model_attributes are a source of required things
         # but not required to be here.
-        other_params = call_params.reject { |k, _| path_template.variables.include?(k) }
+        other_params = call_params
+        if other_params.is_a?(Hash)
+          other_params.reject! { |k, _| path_template.variables.include?(k) }
+        end
 
         method_desc = (((api_description['resources'] || {})[resource_name] || {})['methods'] || {})[method_name]
         request_schema = deref_schema(method_desc['request'])
         if request_schema
           # TODO deal with model_attributes / call_params better in nested whatever
-          body = request_body_for_schema(model_attributes.merge(call_params), request_schema)
-          body.update(call_params)
+          if call_params.nil?
+            body = request_body_for_schema(model_attributes, request_schema)
+          elsif call_params.is_a?(Hash)
+            body = request_body_for_schema(model_attributes.merge(call_params), request_schema)
+            body.update(call_params)
+          else
+            body = call_params
+          end
         else
           if other_params.any?
             if METHODS_WITH_BODIES.any? { |m| m == http_method.downcase }
               body = other_params
             else
-              # TODO pay more attention to 'parameters' api method attribute
-              url.query_values = other_params
+              if other_params.is_a?(Hash)
+                # TODO pay more attention to 'parameters' api method attribute
+                url.query_values = other_params
+              else
+                raise
+              end
             end
           end
         end
