@@ -228,8 +228,8 @@ module Scorpio
             body = call_params
           end
         else
-          if other_params.any?
-            if METHODS_WITH_BODIES.any? { |m| m == http_method.downcase }
+          if other_params
+            if METHODS_WITH_BODIES.any? { |m| m.to_s == http_method.downcase.to_s }
               body = other_params
             else
               if other_params.is_a?(Hash)
