@@ -64,6 +64,8 @@ module Scorpio
   error_classes_by_status.freeze
 
   autoload :Model, 'scorpio/model'
+  autoload :OpenAPI, 'scorpio/openapi'
+  autoload :Google, 'scorpio/google_api_document'
 
   class << self
     def stringify_symbol_keys(hash)
