@@ -87,15 +87,43 @@ module Scorpio
           deref_schema(subschema, path)
         end
 
+        define_method(:pointer_path) do |*path|
+          esc = {'^' => '^^', '~' => '~0', '/' => '~1'} # '/' => '^/' ?
+          (path).map { |part| part.to_s.gsub(/[\^~\/]/) { |m| esc[m] } }.join("/")
+        end
+        define_method(:fragment) do |*path|
+          "#/" + pointer_path(*path)
+        end
+
         define_method(:[]) do |property_name|
-          begin
-            property_schema = subschema_for_property(property_name)
+          @object_mapped ||= {}
+          @object_mapped[property_name] ||= begin
+
+            match_schema = proc do |schema, schema_path, object|
+              if schema['oneOf']
+                matched, mi = schema['oneOf'].each_with_index.detect do |oneof, i|
+                  JSON::Validator.validate(document, object, fragment: fragment(*schema_path, 'oneOf', i))
+                end
+                if matched
+                  [matched, schema_path + ['oneOf', mi]]
+                else
+                  [schema, schema_path]
+                end
+              else
+                [schema, schema_path]
+              end
+            end
+
+            property_schema, property_schema_path = subschema_for_property(property_name)
             if property_schema && property_schema['type'] == 'object' && object[property_name].is_a?(Hash)
-              Scorpio.class_for_schema(property_schema, document).new(object[property_name])
+              schema, match_path = match_schema.call(property_schema, property_schema_path, object[property_name])
+              Scorpio.class_for_schema(schema, document, match_path).new(object[property_name])
             elsif property_schema && property_schema['type'] == 'array' && object[property_name].is_a?(Array)
+              item_schema, item_schema_path = deref_schema(property_schema['items'], property_schema_path + ['items'])
               object[property_name].map do |e|
-                if property_schema['items'] && property_schema['items']['type'] == 'object' && e.is_a?(Hash)
-                  Scorpio.class_for_schema(property_schema['items'], document).new(e)
+                schema, schema_path = deref_schema(*match_schema.call(item_schema, item_schema_path, e))
+                if schema && schema['type'] == 'object' && e.is_a?(Hash)
+                  Scorpio.class_for_schema(schema, document, schema_path).new(e)
                 else
                   e
                 end
