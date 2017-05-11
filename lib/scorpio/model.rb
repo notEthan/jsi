@@ -392,7 +392,7 @@ module Scorpio
     end
 
     def ==(other)
-      @attributes == other.instance_eval { @attributes }
+      self.class == other.class && @attributes == other.instance_eval { @attributes }
     end
 
     def call_api_method(method_name, call_params: nil)
@@ -428,7 +428,7 @@ module Scorpio
     alias eql? ==
 
     def hash
-      @attributes.hash
+      [self.class, @attributes].hash
     end
   end
 end
