@@ -6,7 +6,7 @@ module Scorpio
   module Google
     apidoc_schema_doc = YAML.load_file(File.join(File.dirname(__FILE__), '../../getRest.yml'))
     api_document_class = proc do |key|
-      Scorpio.class_for_schema(apidoc_schema_doc['schemas'][key], apidoc_schema_doc)
+      Scorpio.class_for_schema(apidoc_schema_doc['schemas'][key], apidoc_schema_doc, ['schemas', key])
     end
 
     # naming these is not strictly necessary, but is nice to have.

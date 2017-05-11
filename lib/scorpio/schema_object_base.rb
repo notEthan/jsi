@@ -7,12 +7,14 @@ module Scorpio
   class SchemaObjectBase
   end
 
-  CLASS_FOR_SCHEMA = Hash.new do |h, (schema_, document_)|
-    h[[schema_, document_]] = Class.new(SchemaObjectBase).instance_exec(schema_, document_) do |schema, document|
+  CLASS_FOR_SCHEMA = Hash.new do |h, (schema_, document_, schema_path_)|
+    h[[schema_, document_, schema_path_]] = Class.new(SchemaObjectBase).instance_exec(schema_, document_, schema_path_) do |schema, document, schema_path|
       define_singleton_method(:class_schema) { schema }
       define_singleton_method(:document) { document }
+      define_singleton_method(:schema_path) { schema_path }
       define_method(:class_schema) { schema }
       define_method(:document) { document }
+      define_method(:schema_path) { schema_path }
 
       define_method(:initialize) do |object|
         @object = object
@@ -23,8 +25,8 @@ module Scorpio
     end
   end
 
-  def self.class_for_schema(schema, document)
-    CLASS_FOR_SCHEMA[[schema, document]]
+  def self.class_for_schema(schema, document, schema_path)
+    CLASS_FOR_SCHEMA[[schema, document, schema_path]]
   end
 
   def self.module_for_schema(schema_)
@@ -44,45 +46,45 @@ module Scorpio
           JSON::Validator.validate!(module_schema, object)
         end
 
-        define_method(:deref_schema) do |schema_to_deref|
+        define_method(:deref_schema) do |schema_to_deref, path|
           if schema_to_deref && schema_to_deref['$ref']
             if schema_to_deref['$ref'] =~ /\A#/
               path = $'
               pointer = Hana::Pointer.new(path)
-              pointer.eval(document)
+              [pointer.eval(document), Hana::Pointer.parse(path)]
             elsif document['schemas'] && document['schemas'][schema_to_deref['$ref']]
-              document['schemas'][schema_to_deref['$ref']]
+              [document['schemas'][schema_to_deref['$ref']], ['schemas', schema_to_deref['$ref']]]
             else
               # TODO? store hash mapping schema['$ref'] -> schema ... or use json validator's cache?
-              schema_to_deref
+              [schema_to_deref, path]
             end
           else
-            schema_to_deref
+            [schema_to_deref, path]
           end
         end
 
         define_method(:subschema_for_property) do |property|
-          subschema = begin
+          subschema, path = begin
             if module_schema['properties'] && module_schema['properties'][property]
-              module_schema['properties'][property]
+              [module_schema['properties'][property], schema_path + ['properties', property]]
             else
               if module_schema['patternProperties']
-                _, pattern_schema = module_schema['patternProperties'].detect do |pattern, _|
+                pattern, pattern_schema = module_schema['patternProperties'].detect do |pattern, _|
                   property =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
                 end
               end
               if pattern_schema
-                pattern_schema
+                [pattern_schema, schema_path + ['patternProperties', pattern]]
               else
                 if module_schema['additionalProperties']
-                  module_schema['additionalProperties']
+                  [module_schema['additionalProperties'], schema_path + ['additionalProperties']]
                 else
-                  nil
+                  [nil, nil]
                 end
               end
             end
           end
-          deref_schema(subschema)
+          deref_schema(subschema, path)
         end
 
         define_method(:[]) do |property_name|

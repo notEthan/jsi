@@ -4,10 +4,10 @@ module Scorpio
   module OpenAPI
     openapi_schema_doc = ::JSON.parse(Scorpio.root.join('documents/swagger.io/v2/schema.json').read)
     openapi_class = proc do |definitions_key|
-      Scorpio.class_for_schema(openapi_schema_doc['definitions'][definitions_key], openapi_schema_doc)
+      Scorpio.class_for_schema(openapi_schema_doc['definitions'][definitions_key], openapi_schema_doc, ['definitions', definitions_key])
     end
 
-    Document = Scorpio.class_for_schema(openapi_schema_doc, openapi_schema_doc)
+    Document = Scorpio.class_for_schema(openapi_schema_doc, openapi_schema_doc, [])
 
     # naming these is not strictly necessary, but is nice to have.
     # generated: puts Scorpio::OpenAPI::Document.document['definitions'].select { |k,v| v['type'] == 'object' }.keys.map { |k| "#{k[0].upcase}#{k[1..-1]} = openapi_class.call('#{k}')" }
