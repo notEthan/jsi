@@ -88,19 +88,21 @@ module Scorpio
         end
 
         define_method(:[]) do |property_name|
-          property_schema = subschema_for_property(property_name)
-          if property_schema && property_schema['type'] == 'object' && object[property_name].is_a?(Hash)
-            Scorpio.class_for_schema(property_schema, document).new(object[property_name])
-          elsif property_schema && property_schema['type'] == 'array' && object[property_name].is_a?(Array)
-            object[property_name].map do |e|
-              if property_schema['items'] && property_schema['items']['type'] == 'object' && e.is_a?(Hash)
-                Scorpio.class_for_schema(property_schema['items'], document).new(e)
-              else
-                e
+          begin
+            property_schema = subschema_for_property(property_name)
+            if property_schema && property_schema['type'] == 'object' && object[property_name].is_a?(Hash)
+              Scorpio.class_for_schema(property_schema, document).new(object[property_name])
+            elsif property_schema && property_schema['type'] == 'array' && object[property_name].is_a?(Array)
+              object[property_name].map do |e|
+                if property_schema['items'] && property_schema['items']['type'] == 'object' && e.is_a?(Hash)
+                  Scorpio.class_for_schema(property_schema['items'], document).new(e)
+                else
+                  e
+                end
               end
+            else
+              object[property_name]
             end
-          else
-            object[property_name]
           end
         end
 
