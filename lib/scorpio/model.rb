@@ -34,45 +34,45 @@ module Scorpio
         end
       end
     end
-    define_inheritable_accessor(:api_description_class)
-    define_inheritable_accessor(:api_description, on_set: proc { self.api_description_class = self })
+    define_inheritable_accessor(:swagger_document_class)
+    define_inheritable_accessor(:swagger_document, on_set: proc { self.swagger_document_class = self })
     define_inheritable_accessor(:resource_name, update_methods: true)
-    define_inheritable_accessor(:schema_keys, default_value: [], update_methods: true, on_set: proc do
-      schema_keys.each do |key|
-        api_description_class.models_by_schema_id = api_description_class.models_by_schema_id.merge(schemas_by_key[key]['id'] => self)
-        api_description_class.models_by_schema_key = api_description_class.models_by_schema_key.merge(key => self)
+    define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
+      definition_keys.each do |key|
+        swagger_document_class.models_by_schema = swagger_document_class.models_by_schema.merge(schemas_by_key[key] => self)
       end
     end)
     define_inheritable_accessor(:schemas_by_key, default_value: {})
+    define_inheritable_accessor(:schemas_by_path)
     define_inheritable_accessor(:schemas_by_id, default_value: {})
-    define_inheritable_accessor(:models_by_schema_id, default_value: {})
-    define_inheritable_accessor(:models_by_schema_key, default_value: {})
+    define_inheritable_accessor(:models_by_schema, default_value: {})
     define_inheritable_accessor(:base_url)
 
     define_inheritable_accessor(:faraday_request_middleware, default_value: [])
     define_inheritable_accessor(:faraday_adapter, default_getter: proc { Faraday.default_adapter })
     define_inheritable_accessor(:faraday_response_middleware, default_value: [])
     class << self
-      def api_description_schema
-        @api_description_schema ||= begin
-          rest = YAML.load_file(Pathname.new(__FILE__).join('../../../getRest.yml'))
-          rest['schemas'].each do |name, schema_hash|
-            # URI hax because google doesn't put a URI in the id field properly
-            schema = JSON::Schema.new(schema_hash, Addressable::URI.parse(''))
-            JSON::Validator.add_schema(schema)
-          end
-          rest['schemas']['RestDescription']
+      def set_swagger_document(swagger_document)
+        if swagger_document.is_a?(Hash)
+          swagger_document = OpenAPI::Document.new(swagger_document)
         end
-      end
-
-      def set_api_description(api_description)
-        JSON::Validator.validate!(api_description_schema, api_description)
-        self.api_description = api_description
-        (api_description['schemas'] || {}).each do |schema_key, schema|
-          unless schema['id']
-            raise ArgumentError, "schema #{schema_key} did not contain an id"
+        swagger_document.paths.each do |path, path_item|
+          path_item.each do |http_method, operation|
+            next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
+            operation.path = path
+            operation.http_method = http_method
           end
-          schemas_by_id[schema['id']] = schema
+        end
+
+        swagger_document.validate!
+        self.schemas_by_path = {}
+        self.swagger_document = swagger_document
+        (swagger_document.definitions || {}).each do |schema_key, schema|
+          if schema['id']
+            # this isn't actually allowed by swagger's definition. whatever.
+            schemas_by_id[schema['id']] = schema
+          end
+          schemas_by_path["#/definition/#{schema_key}"] = schema
           schemas_by_key[schema_key] = schema
         end
         update_dynamic_methods
@@ -84,9 +84,9 @@ module Scorpio
       end
 
       def all_schema_properties
-        schemas_by_key.select { |k, _| schema_keys.include?(k) }.map do |schema_key, schema|
+        schemas_by_key.select { |k, _| definition_keys.include?(k) }.map do |schema_key, schema|
           unless schema['type'] == 'object'
-            raise "schema key #{schema_key} for #{self} is not of type object - type must be object for Scorpio Model to represent this schema" # TODO class
+            raise "definition key #{schema_key} for #{self} is not of type object - type must be object for Scorpio Model to represent this schema" # TODO class
           end
           schema['properties'].keys
         end.inject([], &:|)
@@ -107,49 +107,83 @@ module Scorpio
         end
       end
 
+      def operation_for_resource_class?(operation)
+        return false unless resource_name
+
+        return true if operation['x-resource'] == self.resource_name
+
+        return true if operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
+
+        request_schema = operation.body_parameter['schema'] if operation.body_parameter
+        if request_schema && schemas_by_key.any? { |key, as| as == request_schema && definition_keys.include?(key) }
+          return true
+        end
+
+        return false
+      end
+
+      def operation_for_resource_instance?(operation)
+        return false unless operation_for_resource_class?(operation)
+
+        request_schema = operation.body_parameter['schema'] if operation.body_parameter
+
+        # define an instance method if the request schema is for this model 
+        request_resource_is_self = request_schema &&
+          schemas_by_key.any? { |key, as| as == request_schema && definition_keys.include?(key) }
+
+        # also define an instance method depending on certain attributes the request description 
+        # might have in common with the model's schema attributes
+        request_attributes = []
+        # if the path has attributes in common with model schema attributes, we'll define on 
+        # instance method
+        request_attributes |= Addressable::Template.new(operation.path).variables
+        # TODO if the method request schema has attributes in common with the model schema attributes,
+        # should we define an instance method?
+        #request_attributes |= request_schema && request_schema['type'] == 'object' && request_schema['properties'] ?
+        #  request_schema['properties'].keys : []
+        # TODO if the method parameters have attributes in common with the model schema attributes,
+        # should we define an instance method?
+        #request_attributes |= method_desc['parameters'] ? method_desc['parameters'].keys : []
+
+        schema_attributes = definition_keys.map do |schema_key|
+          schema = schemas_by_key[schema_key]
+          schema['type'] == 'object' && schema['properties'] ? schema['properties'].keys : []
+        end.inject([], &:|)
+
+        return request_resource_is_self || (request_attributes & schema_attributes).any?
+      end
+
+      def operation_method_name(operation)
+        raise(ArgumentError, operation.inspect) unless operation.is_a?(Scorpio::OpenAPI::Operation)
+        if operation['x-resource-method']
+          method_name = operation['x-resource-method']
+        elsif resource_name && operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
+          method_name = $1
+        else
+          method_name = operation.operationId || raise("operation #{operation.inspect} has no operationId")
+        end
+        method_name = '_' + method_name unless method_name[/\A[a-zA-Z_]/]
+        method_name.gsub(/[^\w]/, '_')
+      end
+
       def update_class_and_instance_api_methods
-        if self.resource_name && api_description
-          resource_api_methods = ((api_description['resources'] || {})[resource_name] || {})['methods'] || {}
-          resource_api_methods.each do |method_name, method_desc|
+        swagger_document.paths.each do |path, path_item|
+          path_item.each do |http_method, operation|
+            next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
+            operation.path = path
+            operation.http_method = http_method
+            method_name = operation_method_name(operation)
             # class method
-            unless respond_to?(method_name)
+            if operation_for_resource_class?(operation) && !respond_to?(method_name)
               define_singleton_method(method_name) do |call_params = nil|
-                call_api_method(method_name, call_params: call_params)
+                call_operation(operation, call_params: call_params)
               end
             end
 
             # instance method
-            unless method_defined?(method_name)
-              request_schema = deref_schema(method_desc['request'])
-
-              # define an instance method if the request schema is for this model 
-              request_resource_is_self = request_schema &&
-                request_schema['id'] &&
-                schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && schema_keys.include?(key) }
-
-              # also define an instance method depending on certain attributes the request description 
-              # might have in common with the model's schema attributes
-              request_attributes = []
-              # if the path has attributes in common with model schema attributes, we'll define on 
-              # instance method
-              request_attributes |= Addressable::Template.new(method_desc['path']).variables
-              # TODO if the method request schema has attributes in common with the model schema attributes,
-              # should we define an instance method?
-              #request_attributes |= request_schema && request_schema['type'] == 'object' && request_schema['properties'] ?
-              #  request_schema['properties'].keys : []
-              # TODO if the method parameters have attributes in common with the model schema attributes,
-              # should we define an instance method?
-              #request_attributes |= method_desc['parameters'] ? method_desc['parameters'].keys : []
-
-              schema_attributes = schema_keys.map do |schema_key|
-                schema = schemas_by_key[schema_key]
-                schema['type'] == 'object' && schema['properties'] ? schema['properties'].keys : []
-              end.inject([], &:|)
-
-              if request_resource_is_self || (request_attributes & schema_attributes).any?
-                define_method(method_name) do |call_params = nil|
-                  call_api_method(method_name, call_params: call_params)
-                end
+            if operation_for_resource_instance?(operation) && !method_defined?(method_name)
+              define_method(method_name) do |call_params = nil|
+                call_operation(operation, call_params: call_params)
               end
             end
           end
@@ -188,22 +222,21 @@ module Scorpio
         end
       end
 
-      def call_api_method(method_name, call_params: nil, model_attributes: nil)
+      def call_operation(operation, call_params: nil, model_attributes: nil)
         call_params = Scorpio.stringify_symbol_keys(call_params) if call_params.is_a?(Hash)
         model_attributes = Scorpio.stringify_symbol_keys(model_attributes || {})
-        method_desc = api_description['resources'][self.resource_name]['methods'][method_name]
-        http_method = method_desc['httpMethod'].downcase.to_sym
-        path_template = Addressable::Template.new(method_desc['path'])
+        http_method = operation.http_method.downcase.to_sym
+        path_template = Addressable::Template.new(operation.path)
         template_params = model_attributes
         template_params = template_params.merge(call_params) if call_params.is_a?(Hash)
         missing_variables = path_template.variables - template_params.keys
         if missing_variables.any?
-          raise(ArgumentError, "path #{method_desc['path']} for method #{method_name} requires attributes " +
+          raise(ArgumentError, "path #{operation.path} for operation #{operation.operationId} requires attributes " +
             "which were missing: #{missing_variables.inspect}")
         end
         empty_variables = path_template.variables.select { |v| template_params[v].to_s.empty? }
         if empty_variables.any?
-          raise(ArgumentError, "path #{method_desc['path']} for method #{method_name} requires attributes " +
+          raise(ArgumentError, "path #{operation.path} for operation #{operation.operationId} requires attributes " +
             "which were empty: #{empty_variables.inspect}")
         end
         path = path_template.expand(template_params)
@@ -215,8 +248,7 @@ module Scorpio
           other_params.reject! { |k, _| path_template.variables.include?(k) }
         end
 
-        method_desc = (((api_description['resources'] || {})[resource_name] || {})['methods'] || {})[method_name]
-        request_schema = deref_schema(method_desc['request'])
+        request_schema = operation.body_parameter && deref_schema(operation.body_parameter['schema'])
         if request_schema
           # TODO deal with model_attributes / call_params better in nested whatever
           if call_params.nil?
@@ -253,13 +285,21 @@ module Scorpio
           HTTPError
         end
         if error_class
-          message = "Error calling #{method_name} on #{self}:\n" + (response.env[:raw_body] || response.env.body)
+          message = "Error calling operation #{operation.operationId} on #{self}:\n" + (response.env[:raw_body] || response.env.body)
           raise error_class.new(message).tap { |e| e.response = response }
         end
 
-        response_schema = method_desc['response']
-        source = {'method_name' => method_name, 'call_params' => call_params, 'url' => url.to_s}
-        response_object_to_instances(response.body, response_schema, 'persisted' => true, 'source' => source)
+        if operation.responses
+          _, operation_response = operation.responses.detect { |k, v| k.to_s == response.status.to_s }
+          operation_response ||= operation.responses['default']
+          response_schema = operation_response.schema if operation_response
+        end
+        initialize_options = {
+          'persisted' => true,
+          'source' => {'operationId' => operation.operationId, 'call_params' => call_params, 'url' => url.to_s},
+          'response' => response,
+        }
+        response_object_to_instances(response.body, response_schema, initialize_options)
       end
 
       def request_body_for_schema(object, schema)
@@ -351,7 +391,7 @@ module Scorpio
                 schema['additionalProperties']
               {key => response_object_to_instances(value, schema_for_value, initialize_options)}
             end.inject(object.class.new, &:update)
-            model = models_by_schema_id[schema['id']]
+            model = models_by_schema[schema]
             if model
               model.new(out, initialize_options)
             else
@@ -395,20 +435,21 @@ module Scorpio
       self.class == other.class && @attributes == other.instance_eval { @attributes }
     end
 
-    def call_api_method(method_name, call_params: nil)
-      response = self.class.call_api_method(method_name, call_params: call_params, model_attributes: self.attributes)
+    def call_operation(operation, call_params: nil)
+      response = self.class.call_operation(operation, call_params: call_params, model_attributes: self.attributes)
 
       # if we're making a POST or PUT and the request schema is this resource, we'll assume that
       # the request is persisting this resource
-      api_method = self.class.api_description['resources'][self.class.resource_name]['methods'][method_name]
-      request_schema = self.class.deref_schema(api_method['request'])
+      request_schema = operation.body_parameter && self.class.deref_schema(operation.body_parameter['schema'])
       request_resource_is_self = request_schema &&
         request_schema['id'] &&
-        self.class.schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && self.class.schema_keys.include?(key) }
-      response_schema = self.class.deref_schema(api_method['response'])
+        self.class.schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && self.class.definition_keys.include?(key) }
+      if @options['response'] && @options['response'].status && operation.responses
+        _, response_schema = operation.responses.detect { |k, v| k.to_s == @options['response'].status.to_s }
+      end
+      response_schema = self.class.deref_schema(response_schema)
       response_resource_is_self = response_schema &&
-        response_schema['id'] &&
-        self.class.schemas_by_key.any? { |key, as| as['id'] == response_schema['id'] && self.class.schema_keys.include?(key) }
+        self.class.schemas_by_key.any? { |key, as| as == response_schema && self.class.definition_keys.include?(key) }
       if request_resource_is_self && %w(PUT POST).include?(api_method['httpMethod'])
         @persisted = true
 
