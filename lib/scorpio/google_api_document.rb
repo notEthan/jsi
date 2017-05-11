@@ -128,7 +128,10 @@ module Scorpio
             #},
           },
           host: ad.rootUrl ? Addressable::URI.parse(ad.rootUrl).host : ad.baseUrl ? Addressable::URI.parse(ad.rootUrl).host : ad.name, # uhh ... got nothin' better 
-          basePath: ad.servicePath || ad.basePath || (ad.baseUrl ? Addressable::URI.parse(ad.baseUrl).path : '/'),
+          basePath: begin
+            path = ad.servicePath || ad.basePath || (ad.baseUrl ? Addressable::URI.parse(ad.baseUrl).path : '/')
+            path =~ %r(\A/) ? path : "/" + path
+          end,
           schemes: ad.rootUrl ? [Addressable::URI.parse(ad.rootUrl).scheme] : ad.baseUrl ? [Addressable::URI.parse(ad.rootUrl).scheme] : [], #/definitions/schemesList
           consumes: ['application/json'], # we'll just make this assumption
           produces: ['application/json'],
