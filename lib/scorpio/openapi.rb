@@ -43,5 +43,17 @@ module Scorpio
     Oauth2AccessCodeSecurity    = openapi_class.call('oauth2AccessCodeSecurity')
     Oauth2Scopes                = openapi_class.call('oauth2Scopes')
     JsonReference               = openapi_class.call('jsonReference')
+
+    class Operation
+      attr_accessor :path
+      attr_accessor :http_method
+
+      # there should only be one body parameter; this returns it
+      def body_parameter
+        (parameters || []).detect do |parameter|
+          parameter['in'] == 'body'
+        end
+      end
+    end
   end
 end
