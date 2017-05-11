@@ -7,33 +7,36 @@ module Scorpio
   class SchemaObjectBase
   end
 
-  CLASS_FOR_SCHEMA = Hash.new do |h, (schema_, document_, schema_path_)|
-    h[[schema_, document_, schema_path_]] = Class.new(SchemaObjectBase).instance_exec(schema_, document_, schema_path_) do |schema, document, schema_path|
-      define_singleton_method(:class_schema) { schema }
-      define_singleton_method(:document) { document }
-      define_singleton_method(:schema_path) { schema_path }
-      define_method(:class_schema) { schema }
-      define_method(:document) { document }
-      define_method(:schema_path) { schema_path }
+  CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
+    h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
+      define_singleton_method(:schema_node) { schema_node }
+      define_singleton_method(:class_schema) { schema_node.content }
+      define_singleton_method(:schema_document) { schema_node.document }
+      define_singleton_method(:schema_path) { schema_node.path }
+      define_method(:schema_node) { schema_node }
+      define_method(:class_schema) { schema_node.content }
+      define_method(:schema_document) { schema_node.document }
+      define_method(:schema_path) { schema_node.path }
 
       define_method(:initialize) do |object|
         @object = object
       end
       attr_reader :object
 
-      prepend(Scorpio.module_for_schema(schema))
+      prepend(Scorpio.module_for_schema(schema_node))
     end
   end
 
-  def self.class_for_schema(schema, document, schema_path)
-    CLASS_FOR_SCHEMA[[schema, document, schema_path]]
+  def self.class_for_schema(schema_node)
+    CLASS_FOR_SCHEMA[schema_node]
   end
 
-  def self.module_for_schema(schema_)
+  def self.module_for_schema(schema_node_)
     Module.new.tap do |m|
-      m.instance_exec(schema_) do |module_schema|
-        raise(ArgumentError, module_schema.inspect) unless module_schema.is_a?(Hash)
-        raise(ArgumentError, module_schema.inspect) unless module_schema['type'] == 'object'
+      m.instance_exec(schema_node_) do |module_schema_node|
+        raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.is_a?(Scorpio::JSON::Node)
+        raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.content.is_a?(Hash)
+        raise(ArgumentError, module_schema_node.inspect) unless module_schema_node['type'].content == 'object'
 
         # Hash methods
         define_method(:each) { |&b| object.keys.each { |k| b.call(k, self[k]) } }
@@ -45,92 +48,61 @@ module Scorpio
         # ones that do look at the value ... TODO implement
         %w(each_key values invert value? has_value?)
 
-        define_method(:module_schema) do
-          module_schema
+        define_method(:module_schema_node) do
+          module_schema_node
         end
 
         define_method(:validate!) do
-          ::JSON::Validator.validate!(module_schema, object)
-        end
-
-        define_method(:deref_schema) do |schema_to_deref, path|
-          if schema_to_deref && schema_to_deref['$ref']
-            if schema_to_deref['$ref'] =~ /\A#/
-              path = $'
-              pointer = Hana::Pointer.new(path)
-              [pointer.eval(document), Hana::Pointer.parse(path)]
-            elsif document['schemas'] && document['schemas'][schema_to_deref['$ref']]
-              [document['schemas'][schema_to_deref['$ref']], ['schemas', schema_to_deref['$ref']]]
-            else
-              # TODO? store hash mapping schema['$ref'] -> schema ... or use json validator's cache?
-              [schema_to_deref, path]
-            end
-          else
-            [schema_to_deref, path]
-          end
+          ::JSON::Validator.validate!(module_schema_node.content, object)
         end
 
         define_method(:subschema_for_property) do |property|
-          subschema, path = begin
-            if module_schema['properties'] && module_schema['properties'][property]
-              [module_schema['properties'][property], schema_path + ['properties', property]]
+          subschema_node = begin
+            if schema_node['properties'] && schema_node['properties'][property]
+              schema_node['properties'][property]
             else
-              if module_schema['patternProperties']
-                pattern, pattern_schema = module_schema['patternProperties'].detect do |pattern, _|
+              if schema_node['patternProperties']
+                _, pattern_schema_node = schema_node['patternProperties'].detect do |pattern, _|
                   property =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
                 end
               end
-              if pattern_schema
-                [pattern_schema, schema_path + ['patternProperties', pattern]]
+              if pattern_schema_node
+                pattern_schema_node
               else
-                if module_schema['additionalProperties']
-                  [module_schema['additionalProperties'], schema_path + ['additionalProperties']]
+                if schema_node['additionalProperties']
+                  schema_node['additionalProperties']
                 else
-                  [nil, nil]
+                  nil
                 end
               end
             end
           end
-          deref_schema(subschema, path)
-        end
-
-        define_method(:pointer_path) do |*path|
-          esc = {'^' => '^^', '~' => '~0', '/' => '~1'} # '/' => '^/' ?
-          (path).map { |part| part.to_s.gsub(/[\^~\/]/) { |m| esc[m] } }.join("/")
-        end
-        define_method(:fragment) do |*path|
-          "#/" + pointer_path(*path)
         end
 
         define_method(:[]) do |property_name|
           @object_mapped ||= {}
           @object_mapped[property_name] ||= begin
 
-            match_schema = proc do |schema, schema_path, object|
-              if schema['oneOf']
-                matched, mi = schema['oneOf'].each_with_index.detect do |oneof, i|
-                  ::JSON::Validator.validate(document, object, fragment: fragment(*schema_path, 'oneOf', i))
+            match_schema = proc do |schema_node, object|
+              if schema_node['oneOf']
+                matched = schema_node['oneOf'].map(&:deref).detect do |oneof|
+                  ::JSON::Validator.validate(oneof.document, object, fragment: oneof.fragment)
                 end
-                if matched
-                  [matched, schema_path + ['oneOf', mi]]
-                else
-                  [schema, schema_path]
-                end
+                matched || schema_node
               else
-                [schema, schema_path]
+                schema_node
               end
             end
 
-            property_schema, property_schema_path = subschema_for_property(property_name)
-            if property_schema && property_schema['type'] == 'object' && object[property_name].is_a?(Hash)
-              schema, match_path = match_schema.call(property_schema, property_schema_path, object[property_name])
-              Scorpio.class_for_schema(schema, document, match_path).new(object[property_name])
-            elsif property_schema && property_schema['type'] == 'array' && object[property_name].is_a?(Array)
-              item_schema, item_schema_path = deref_schema(property_schema['items'], property_schema_path + ['items'])
+            property_schema_node = subschema_for_property(property_name)
+            if property_schema_node && property_schema_node['type'] && property_schema_node['type'].content == 'object' && object[property_name].is_a?(Hash)
+              schema_node = match_schema.call(property_schema_node, object[property_name])
+              Scorpio.class_for_schema(schema_node).new(object[property_name])
+            elsif property_schema_node && property_schema_node['type'] && property_schema_node['type'].content == 'array' && object[property_name].is_a?(Array)
               object[property_name].map do |e|
-                schema, schema_path = deref_schema(*match_schema.call(item_schema, item_schema_path, e))
-                if schema && schema['type'] == 'object' && e.is_a?(Hash)
-                  Scorpio.class_for_schema(schema, document, schema_path).new(e)
+                schema_node = match_schema.call(property_schema_node['items'], e)
+                if schema_node && schema_node['type'] && schema_node['type'].content == 'object' && e.is_a?(Hash)
+                  Scorpio.class_for_schema(schema_node).new(e)
                 else
                   e
                 end
@@ -141,7 +113,7 @@ module Scorpio
           end
         end
 
-        (module_schema['properties'] || []).each do |property_name, property_schema|
+        (module_schema_node['properties'] || {}).each do |property_name, property_schema|
           define_method(property_name) do
             self[property_name]
           end
