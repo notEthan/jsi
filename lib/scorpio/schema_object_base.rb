@@ -35,8 +35,15 @@ module Scorpio
         raise(ArgumentError, module_schema.inspect) unless module_schema.is_a?(Hash)
         raise(ArgumentError, module_schema.inspect) unless module_schema['type'] == 'object'
 
+        # Hash methods
         define_method(:each) { |&b| object.keys.each { |k| b.call(k, self[k]) } }
         include Enumerable
+        # ones that don't look at the value - TODO incomplete
+        %w(to_h empty? each_key keys has_key? key? length size).each do |method_name|
+          define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
+        end
+        # ones that do look at the value ... TODO implement
+        %w(each_key values invert value? has_value?)
 
         define_method(:module_schema) do
           module_schema
