@@ -163,7 +163,9 @@ module Scorpio
         # check we haven't got anything that shouldn't go in a openapi document
         openapi = ycomb do |rec|
           proc do |object|
-            if object.is_a?(Hash)
+            if object.is_a?(Scorpio::JSON::Node)
+              rec.call(object.content)
+            elsif object.is_a?(Hash)
               object.map { |k, v| {rec.call(k) => rec.call(v)} }.inject({}, &:update)
             elsif object.is_a?(Array)
               object.map(&rec)
