@@ -17,7 +17,11 @@ module Scorpio
       define_method(:schema_path) { schema_node.path }
 
       define_method(:initialize) do |object|
-        @object = object
+        if object.is_a?(Scorpio::JSON::Node)
+          @object = object
+        else
+          @object = Scorpio::JSON::Node.new_by_type(object, [])
+        end
       end
       attr_reader :object
 
