@@ -43,10 +43,10 @@ module Scorpio
         rescue TypeError => e
           raise(e.class, e.message + "\nsubscripting from #{content.inspect} (#{content.class}): #{k.inspect} (#{k.class})", e.backtrace)
         end
-        if content[k]
+        if el.is_a?(Hash) || el.is_a?(Array)
           self.class.new(document, path + [k]).deref
         else
-          nil
+          el
         end
       end
 
