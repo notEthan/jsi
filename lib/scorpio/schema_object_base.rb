@@ -55,7 +55,7 @@ module Scorpio
         end
 
         define_method(:validate!) do
-          ::JSON::Validator.validate!(module_schema_node.content, object)
+          ::JSON::Validator.validate!(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
         end
 
         define_method(:subschema_for_property) do |property|
