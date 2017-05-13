@@ -60,8 +60,23 @@ module Scorpio
           return self.class.new_by_type(document, Hana::Pointer.parse(match.post_match)).deref
         end
 
+        # HAX for how google does refs and ids
+        if document_node['schemas'].respond_to?(:to_hash)
+          if document_node['schemas'][content['$ref']]
+            return document_node['schemas'][content['$ref']]
+          end
+          _, deref_by_id = document_node['schemas'].detect { |_k, schema| schema['id'] == content['$ref'] }
+          if deref_by_id
+            return deref_by_id
+          end
+        end
+
         #raise(NotImplementedError, "cannot dereference #{content['$ref']}") # TODO
         return self
+      end
+
+      def document_node
+        Node.new_by_type(document, [])
       end
 
       ESC = {'^' => '^^', '~' => '~0', '/' => '~1'} # '/' => '^/' ?
