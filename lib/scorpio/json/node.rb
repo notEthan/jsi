@@ -1,6 +1,18 @@
 module Scorpio
   module JSON
     class Node
+      def self.new_by_type(document, path)
+        node = Node.new(document, path)
+        content = node.content
+        if content.is_a?(Hash)
+          HashNode.new(document, path)
+        elsif content.is_a?(Array)
+          ArrayNode.new(document, path)
+        else
+          node
+        end
+      end
+
       def initialize(document, path)
         raise(ArgumentError, "path must be an array. got: #{path.inspect} (#{path.class})") unless path.is_a?(Array)
         @document = document
@@ -25,18 +37,6 @@ module Scorpio
         end
       end
 
-      def each
-        if content.is_a?(Hash)
-          content.each_key { |k| yield k, self[k] }
-        elsif content.is_a?(Array)
-          content.each_index { |i| yield self[i] }
-        else
-          raise(ArgumentError, "#each not implemented for #{content.class}: #{content.inspect}")
-        end
-        self
-      end
-      include Enumerable
-
       def [](k)
         begin
           el = content[k]
@@ -44,7 +44,7 @@ module Scorpio
           raise(e.class, e.message + "\nsubscripting from #{content.inspect} (#{content.class}): #{k.inspect} (#{k.class})", e.backtrace)
         end
         if el.is_a?(Hash) || el.is_a?(Array)
-          self.class.new(document, path + [k]).deref
+          self.class.new_by_type(document, path + [k]).deref
         else
           el
         end
@@ -57,7 +57,7 @@ module Scorpio
 
         match = content['$ref'].match(/\A#/)
         if match
-          return self.class.new(document, Hana::Pointer.parse(match.post_match))
+          return self.class.new_by_type(document, Hana::Pointer.parse(match.post_match))
         end
 
         #raise(NotImplementedError, "cannot dereference #{content['$ref']}") # TODO
@@ -84,6 +84,44 @@ module Scorpio
 
       def hash
         fingerprint.hash
+      end
+    end
+
+    class ArrayNode < Node
+      def each
+        content.each_index { |i| yield self[i] }
+        self
+      end
+      include Enumerable
+
+      def to_ary
+        to_a
+      end
+    end
+
+    class HashNode < Node
+      def each
+        content.each_key { |k| yield k, self[k] }
+        self
+      end
+      include Enumerable
+
+      def to_hash
+        inject({}) { |h, (k, v)| h[k] = v; h }
+      end
+
+      # hash methods - define only those which do not modify the hash.
+
+      # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
+      key_methods = %w(each_key empty? include? has_key? key key? keys length member? size)
+      key_methods.each do |method_name|
+        define_method(method_name) { |*a, &b| content.public_send(method_name, *a, &b) }
+      end
+
+      # methods which use key and value
+      hash_methods = %w(any? compact dig each_pair each_value fetch fetch_values has_value? invert merge rassoc reject select to_h transform_values value? values values_at)
+      hash_methods.each do |method_name|
+        define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
       end
     end
   end
