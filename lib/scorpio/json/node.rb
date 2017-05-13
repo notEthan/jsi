@@ -51,17 +51,17 @@ module Scorpio
       end
 
       def deref
-        if content.is_a?(Hash) && content['$ref'].is_a?(String)
-          match = content['$ref'].match(/\A#/)
-          if match
-            self.class.new(document, Hana::Pointer.parse(match.post_match))
-          else
-            #raise(NotImplementedError, "cannot dereference #{content['$ref']}")
-            self # TODO
-          end
-        else
-          self
+        content = self.content
+
+        return self unless content.is_a?(Hash) && content['$ref'].is_a?(String)
+
+        match = content['$ref'].match(/\A#/)
+        if match
+          return self.class.new(document, Hana::Pointer.parse(match.post_match))
         end
+
+        #raise(NotImplementedError, "cannot dereference #{content['$ref']}") # TODO
+        return self
       end
 
       ESC = {'^' => '^^', '~' => '~0', '/' => '~1'} # '/' => '^/' ?
