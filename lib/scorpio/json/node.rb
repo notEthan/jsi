@@ -38,6 +38,11 @@ module Scorpio
       include Enumerable
 
       def [](k)
+        begin
+          el = content[k]
+        rescue TypeError => e
+          raise(e.class, e.message + "\nsubscripting from #{content.inspect} (#{content.class}): #{k.inspect} (#{k.class})", e.backtrace)
+        end
         if content[k]
           self.class.new(document, path + [k]).deref
         else
