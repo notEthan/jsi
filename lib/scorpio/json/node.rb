@@ -57,7 +57,7 @@ module Scorpio
 
         match = content['$ref'].match(/\A#/)
         if match
-          return self.class.new_by_type(document, Hana::Pointer.parse(match.post_match))
+          return self.class.new_by_type(document, Hana::Pointer.parse(match.post_match)).deref
         end
 
         #raise(NotImplementedError, "cannot dereference #{content['$ref']}") # TODO
