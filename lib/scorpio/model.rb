@@ -38,7 +38,11 @@ module Scorpio
     define_inheritable_accessor(:resource_name, update_methods: true)
     define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
       definition_keys.each do |key|
-        openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schemas_by_key[key] => self)
+        schema_as_key = schemas_by_key[key]
+        schema_as_key = schema_as_key.object if schema_as_key.is_a?(Scorpio::OpenAPI::Schema)
+        schema_as_key = schema_as_key.content if schema_as_key.is_a?(Scorpio::JSON::Node)
+
+        openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schema_as_key => self)
       end
     end)
     define_inheritable_accessor(:schemas_by_key, default_value: {})
@@ -390,7 +394,10 @@ module Scorpio
                 schema['additionalProperties']
               {key => response_object_to_instances(value, schema_for_value, initialize_options)}
             end.inject(object.class.new, &:update)
-            model = models_by_schema[schema]
+            schema_as_key = schema
+            schema_as_key = schema_as_key.object if schema_as_key.is_a?(Scorpio::OpenAPI::Schema)
+            schema_as_key = schema_as_key.content if schema_as_key.is_a?(Scorpio::JSON::Node)
+            model = models_by_schema[schema_as_key]
             if model
               model.new(out, initialize_options)
             else
