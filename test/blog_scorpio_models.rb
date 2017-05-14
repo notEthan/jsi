@@ -4,7 +4,7 @@
 # resources - it sets no resource_name and defines no schema_keys.
 class BlogModel < Scorpio::Model
   self.base_url = 'https://blog.example.com/'
-  set_api_description(YAML.load_file('test/blog_description.yml'))
+  set_openapi_document(Scorpio::Google::RestDescription.new(YAML.load_file('test/blog_description.yml')).to_openapi_document)
   self.faraday_request_middleware = [[:api_hammer_request_logger, Blog.logger]]
   self.faraday_adapter = [:rack, Blog.new]
 end
@@ -14,5 +14,5 @@ end
 # specified to BlogModel) 
 class Article < BlogModel
   self.resource_name = 'articles'
-  self.schema_keys = ['articles']
+  self.definition_keys = ['articles']
 end

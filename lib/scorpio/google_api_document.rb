@@ -18,20 +18,29 @@ module Scorpio
     RestResource    = api_document_class.call('RestResource')
 
     class RestDescription
-      def to_openapi_document
-        Scorpio::OpenAPI::Document.new(to_openapi_hash)
+      def to_openapi_document(options = {})
+        Scorpio::OpenAPI::Document.new(to_openapi_hash(options))
       end
 
-      def to_openapi_hash
-        ad = self
+      def to_openapi_hash(options = {})
+        # we will be modifying the api document (RestDescription). clone self and modify that one.
+        ad = self.class.new(::JSON.parse(::JSON.generate(object.document)))
         ad_methods = []
         if ad['methods']
           ad_methods += ad['methods'].map do |mn, m|
-            m.class.new(m.object.merge('method_name' => mn))
+            m.tap do
+              m.send(:define_singleton_method, :resource_name) { }
+              m.send(:define_singleton_method, :method_name) { mn }
+            end
           end
         end
         ad_methods += ad.resources.map do |rn, r|
-          (r['methods'] || {}).map { |mn, m| m.class.new(m.object.merge('resource_name' => rn, 'method_name' => mn)) }
+          (r['methods'] || {}).map do |mn, m|
+            m.tap do
+              m.send(:define_singleton_method, :resource_name) { rn }
+              m.send(:define_singleton_method, :method_name) { mn }
+            end
+          end
         end.inject([], &:+)
 
         paths = ad_methods.group_by { |m| m['path'] }.map do |path, path_methods|
@@ -48,12 +57,12 @@ module Scorpio
               #operation['tags'] = []
               #operation['summary'] = 
               operation['description'] = method['description'] if method['description']
-              if method['resource_name']
-                operation['x-resource'] = method['resource_name']
-                operation['x-resource-method'] = method['method_name']
+              if method.resource_name && options[:x]
+                operation['x-resource'] = method.resource_name
+                operation['x-resource-method'] = method.method_name
               end
               #operation['externalDocs'] = 
-              operation['operationId'] = method['id'] || (method['resource_name'] ? "#{method['resource_name']}.#{method['method_name']}" : method['method_name'])
+              operation['operationId'] = method['id'] || (method.resource_name ? "#{method.resource_name}.#{method.method_name}" : method.method_name)
               #operation['produces'] = 
               #operation['consumes'] = 
               if method['parameters']
