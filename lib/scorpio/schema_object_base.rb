@@ -36,7 +36,7 @@ module Scorpio
       m.instance_exec(schema_node_) do |module_schema_node|
         raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.is_a?(Scorpio::JSON::Node)
         raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.content.is_a?(Hash)
-        raise(ArgumentError, module_schema_node.inspect) unless module_schema_node['type'].content == 'object'
+        raise(ArgumentError, module_schema_node.inspect) unless module_schema_node['type'] == 'object'
 
         # Hash methods
         define_method(:each) { |&b| object.keys.each { |k| b.call(k, self[k]) } }
@@ -95,13 +95,13 @@ module Scorpio
             end
 
             property_schema_node = subschema_for_property(property_name)
-            if property_schema_node && property_schema_node['type'] && property_schema_node['type'].content == 'object' && object[property_name].is_a?(Hash)
+            if property_schema_node && property_schema_node['type'] && property_schema_node['type'] == 'object' && object[property_name].is_a?(Hash)
               schema_node = match_schema.call(property_schema_node, object[property_name])
               Scorpio.class_for_schema(schema_node).new(object[property_name])
-            elsif property_schema_node && property_schema_node['type'] && property_schema_node['type'].content == 'array' && object[property_name].is_a?(Array)
+            elsif property_schema_node && property_schema_node['type'] && property_schema_node['type'] == 'array' && object[property_name].is_a?(Array)
               object[property_name].map do |e|
                 schema_node = match_schema.call(property_schema_node['items'], e)
-                if schema_node && schema_node['type'] && schema_node['type'].content == 'object' && e.is_a?(Hash)
+                if schema_node && schema_node['type'] && schema_node['type'] == 'object' && e.is_a?(Hash)
                   Scorpio.class_for_schema(schema_node).new(e)
                 else
                   e
