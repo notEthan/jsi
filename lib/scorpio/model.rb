@@ -178,13 +178,13 @@ module Scorpio
           faraday_request_middleware.each do |m|
             c.request(*m)
           end
-          c.adapter(*faraday_adapter)
           faraday_response_middleware.each do |m|
             c.response(*m)
           end
           unless faraday_response_middleware.any? { |m| [*m].first == :json }
             c.response :json, :content_type => /\bjson$/, :preserve_raw => true
           end
+          c.adapter(*faraday_adapter)
         end
       end
 
