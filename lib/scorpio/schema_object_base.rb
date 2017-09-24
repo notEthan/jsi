@@ -50,7 +50,7 @@ module Scorpio
         end
 
         define_method(:validate!) do
-          JSON::Validator.validate!(module_schema, object)
+          ::JSON::Validator.validate!(module_schema, object)
         end
 
         define_method(:deref_schema) do |schema_to_deref, path|
@@ -109,7 +109,7 @@ module Scorpio
             match_schema = proc do |schema, schema_path, object|
               if schema['oneOf']
                 matched, mi = schema['oneOf'].each_with_index.detect do |oneof, i|
-                  JSON::Validator.validate(document, object, fragment: fragment(*schema_path, 'oneOf', i))
+                  ::JSON::Validator.validate(document, object, fragment: fragment(*schema_path, 'oneOf', i))
                 end
                 if matched
                   [matched, schema_path + ['oneOf', mi]]
