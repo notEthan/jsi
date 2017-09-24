@@ -161,17 +161,21 @@ module Scorpio
         return request_resource_is_self || (request_attributes & schema_attributes).any?
       end
 
-      def operation_method_name(operation)
-        raise(ArgumentError, operation.inspect) unless operation.is_a?(Scorpio::OpenAPI::Operation)
-        if operation['x-resource-method']
-          method_name = operation['x-resource-method']
-        elsif resource_name && operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
-          method_name = $1
-        else
-          method_name = operation.operationId || raise("operation #{operation.inspect} has no operationId")
+      def method_names_by_operation
+        @method_names_by_operation ||= Hash.new do |h, operation|
+          h[operation] = begin
+            raise(ArgumentError, operation.inspect) unless operation.is_a?(Scorpio::OpenAPI::Operation)
+            if operation['x-resource-method']
+              method_name = operation['x-resource-method']
+            elsif resource_name && operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
+              method_name = $1
+            else
+              method_name = operation.operationId || raise("operation #{operation.inspect} has no operationId")
+            end
+            method_name = '_' + method_name unless method_name[/\A[a-zA-Z_]/]
+            method_name.gsub(/[^\w]/, '_')
+          end
         end
-        method_name = '_' + method_name unless method_name[/\A[a-zA-Z_]/]
-        method_name.gsub(/[^\w]/, '_')
       end
 
       def update_class_and_instance_api_methods
@@ -180,7 +184,7 @@ module Scorpio
             next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
             operation.path = path
             operation.http_method = http_method
-            method_name = operation_method_name(operation)
+            method_name = method_names_by_operation[operation]
             # class method
             if operation_for_resource_class?(operation) && !respond_to?(method_name)
               define_singleton_method(method_name) do |call_params = nil|
