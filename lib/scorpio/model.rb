@@ -72,14 +72,16 @@ module Scorpio
 
         openapi_document.validate!
         self.schemas_by_path = {}
+        self.schemas_by_key = {}
+        self.schemas_by_id = {}
         self.openapi_document = openapi_document
         (openapi_document.definitions || {}).each do |schema_key, schema|
           if schema['id']
             # this isn't actually allowed by openapi's definition. whatever.
-            schemas_by_id[schema['id']] = schema
+            self.schemas_by_id = self.schemas_by_id.merge(schema['id'] => schema)
           end
-          schemas_by_path["#/definition/#{schema_key}"] = schema
-          schemas_by_key[schema_key] = schema
+          self.schemas_by_path = self.schemas_by_path.merge(schema.object.fragment => schema)
+          self.schemas_by_key = self.schemas_by_key.merge(schema_key => schema)
         end
         update_dynamic_methods
       end
