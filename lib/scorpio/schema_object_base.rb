@@ -50,9 +50,20 @@ module Scorpio
     include FingerprintHash
   end
 
+  # this module is just a namespace for schema classes.
+  module SchemaClasses
+  end
+
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
     h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
-      prepend(Scorpio.module_for_schema(schema_node))
+      include(Scorpio.module_for_schema(schema_node))
+
+      name = self.module_schema.id.gsub(/[^\w]/, '_')
+      name = 'X' + name unless name[/\A[a-zA-Z_]/]
+      name = name[0].upcase + name[1..-1]
+      SchemaClasses.const_set(name, self)
+
+      self
     end
   end
 
