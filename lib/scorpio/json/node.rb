@@ -38,13 +38,19 @@ module Scorpio
       end
 
       def [](k)
+        node = self
+        content = node.content
+        if content.is_a?(Hash) && !content.key?(k)
+          node = node.deref
+          content = node.content
+        end
         begin
           el = content[k]
         rescue TypeError => e
           raise(e.class, e.message + "\nsubscripting from #{content.inspect} (#{content.class}): #{k.inspect} (#{k.class})", e.backtrace)
         end
         if el.is_a?(Hash) || el.is_a?(Array)
-          self.class.new_by_type(document, path + [k]).deref
+          self.class.new_by_type(node.document, node.path + [k])
         else
           el
         end
