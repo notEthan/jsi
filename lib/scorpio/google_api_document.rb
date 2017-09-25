@@ -172,11 +172,33 @@ module Scorpio
             openapi = ycomb do |rec|
               proc do |object|
                 if object.respond_to?(:to_hash)
-                  if object['$ref'] && (object['$ref'] == schema['id'] || object['$ref'] == "#/schemas/#{name}" || object['$ref'] == name)
-                    object.merge(object.map { |k, v| {k => k == '$ref' ? "#/definitions/#{name}" : rec.call(v)} }.inject({}, &:update))
-                  else
-                    object.merge(object.map { |k, v| {k => rec.call(v)} }.inject({}, &:update))
-                  end
+                  object.merge(object.map do |k, v|
+                    if k == '$ref' && (v == schema['id'] || v == "#/schemas/#{name}" || v == name)
+                      {k => "#/definitions/#{name}"}
+                    else
+                      # we want to strip the containers from this before we merge.
+                      # this is kind of annoying. wish I had a better way.
+                      ycomb do |striprec|
+                        proc do |stripobject|
+                          stripobject = stripobject.object if stripobject.is_a?(Scorpio::SchemaObjectBase)
+                          stripobject = stripobject.content if stripobject.is_a?(Scorpio::JSON::Node)
+                          if stripobject.is_a?(Hash)
+                            stripresult = stripobject.map { |k, v| {striprec.call(k) => striprec.call(v)} }.inject({}, &:update)
+                            stripresult
+                          elsif stripobject.is_a?(Array)
+                            stripresult = stripobject.map(&striprec)
+                            stripresult
+                          elsif stripobject.is_a?(Symbol)
+                            stripobject.to_s
+                          elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| stripobject.is_a?(c) }
+                            stripobject
+                          else
+                            raise(stripobject.inspect)
+                          end
+                        end
+                      end.call({k => rec.call(v)})
+                    end
+                  end.inject({}, &:merge))
                 elsif object.respond_to?(:to_ary)
                   object.map(&rec)
                 else
