@@ -1,3 +1,5 @@
+require 'scorpio/typelike_modules'
+
 module Scorpio
   module JSON
     class Node
@@ -109,6 +111,8 @@ module Scorpio
         to_a
       end
 
+      include Arraylike
+
       # array methods - define only those which do not modify the array.
 
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a)
@@ -136,6 +140,8 @@ module Scorpio
       def to_hash
         inject({}) { |h, (k, v)| h[k] = v; h }
       end
+
+      include Hashlike
 
       # hash methods - define only those which do not modify the hash.
 

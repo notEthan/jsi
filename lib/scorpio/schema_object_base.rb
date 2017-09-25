@@ -1,4 +1,5 @@
 require 'json'
+require 'scorpio/typelike_modules'
 
 module Scorpio
   # base class for representing an instance of an object described by a schema
@@ -52,6 +53,8 @@ module Scorpio
         define_method(:to_hash) do
           inject({}) { |h, (k, v)| h[k] = v; h }
         end
+
+        include Hashlike
 
         # hash methods - define only those which do not modify the hash.
 
