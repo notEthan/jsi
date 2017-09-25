@@ -87,7 +87,7 @@ module Scorpio
         define_method(:subschema_for_property) do |property|
           subschema_node = begin
             if schema_node['properties'] && schema_node['properties'][property]
-              schema_node['properties'][property]
+              schema_node['properties'][property].deref
             else
               if schema_node['patternProperties']
                 _, pattern_schema_node = schema_node['patternProperties'].detect do |pattern, _|
@@ -95,10 +95,10 @@ module Scorpio
                 end
               end
               if pattern_schema_node
-                pattern_schema_node
+                pattern_schema_node.deref
               else
                 if schema_node['additionalProperties']
-                  schema_node['additionalProperties']
+                  schema_node['additionalProperties'].deref
                 else
                   nil
                 end
