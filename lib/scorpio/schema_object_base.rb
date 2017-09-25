@@ -65,9 +65,27 @@ module Scorpio
         end
 
         define_method(:merge) do |other|
-          other = other.object if other.is_a?(Scorpio::SchemaObjectBase)
-          other = other.content if other.is_a?(Scorpio::JSON::Node)
-          self.class.new(object.merge(other))
+          # we want to strip the containers from this before we merge
+          # this is kind of annoying. wish I had a better way.
+          other_stripped = ycomb do |striprec|
+            proc do |stripobject|
+              stripobject = stripobject.object if stripobject.is_a?(Scorpio::SchemaObjectBase)
+              stripobject = stripobject.content if stripobject.is_a?(Scorpio::JSON::Node)
+              if stripobject.is_a?(Hash)
+                stripobject.map { |k, v| {striprec.call(k) => striprec.call(v)} }.inject({}, &:update)
+              elsif stripobject.is_a?(Array)
+                stripobject.map(&striprec)
+              elsif stripobject.is_a?(Symbol)
+                stripobject.to_s
+              elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| stripobject.is_a?(c) }
+                stripobject
+              else
+                raise(stripobject.inspect)
+              end
+            end
+          end.call(other)
+
+          self.class.new(object.merge(other_stripped))
         end
 
         define_method(:module_schema_node) do

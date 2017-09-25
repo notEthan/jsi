@@ -176,24 +176,19 @@ module Scorpio
                     if k == '$ref' && (v == schema['id'] || v == "#/schemas/#{name}" || v == name)
                       {k => "#/definitions/#{name}"}
                     else
-                      # we want to strip the containers from this before we merge.
-                      # this is kind of annoying. wish I had a better way.
-                      ycomb do |striprec|
-                        proc do |stripobject|
-                          stripobject = stripobject.object if stripobject.is_a?(Scorpio::SchemaObjectBase)
-                          stripobject = stripobject.content if stripobject.is_a?(Scorpio::JSON::Node)
-                          if stripobject.is_a?(Hash)
-                            stripresult = stripobject.map { |k, v| {striprec.call(k) => striprec.call(v)} }.inject({}, &:update)
-                            stripresult
-                          elsif stripobject.is_a?(Array)
-                            stripresult = stripobject.map(&striprec)
-                            stripresult
-                          elsif stripobject.is_a?(Symbol)
-                            stripobject.to_s
-                          elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| stripobject.is_a?(c) }
-                            stripobject
+                      ycomb do |toopenapirec|
+                        proc do |toopenapiobject|
+                          toopenapiobject = toopenapiobject.to_openapi if toopenapiobject.respond_to?(:to_openapi)
+                          if toopenapiobject.respond_to?(:to_hash)
+                            toopenapiobject.map { |k, v| {toopenapirec.call(k) => toopenapirec.call(v)} }.inject({}, &:update)
+                          elsif toopenapiobject.respond_to?(:to_ary)
+                            toopenapiobject.map(&toopenapirec)
+                          elsif toopenapiobject.is_a?(Symbol)
+                            toopenapiobject.to_s
+                          elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| toopenapiobject.is_a?(c) }
+                            toopenapiobject
                           else
-                            raise(stripobject.inspect)
+                            raise(toopenapiobject.inspect)
                           end
                         end
                       end.call({k => rec.call(v)})
