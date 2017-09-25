@@ -5,8 +5,8 @@ require 'yaml'
 module Scorpio
   module Google
     apidoc_schema_doc = YAML.load_file(File.join(File.dirname(__FILE__), '../../getRest.yml'))
-    api_document_class = proc do |key|
-      Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type(apidoc_schema_doc, ['schemas', key]))
+    api_document_class = proc do |*key|
+      Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type(apidoc_schema_doc, ['schemas', *key]))
     end
 
     # naming these is not strictly necessary, but is nice to have.
