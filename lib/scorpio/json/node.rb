@@ -152,9 +152,51 @@ module Scorpio
       end
 
       # methods which use key and value
-      hash_methods = %w(any? compact dig each_pair each_value fetch fetch_values has_value? invert merge rassoc reject select to_h transform_values value? values values_at)
+      hash_methods = %w(any? compact dig each_pair each_value fetch fetch_values has_value? invert rassoc reject select to_h transform_values value? values values_at)
       hash_methods.each do |method_name|
         define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+      end
+
+      # methods that return a modified copy
+      def merge(other)
+        # we need to preserve the rest of the document, but modify the content at our path.
+        #
+        # this is actually a bit tricky. we can't modify the original document, obviously.
+        # we could do a deep copy, but that's expensive. instead, we make a copy of each array
+        # or hash in the path above this node. this node's content is merged with `other`, and
+        # that is recursively merged up to the document root. the recursion is done with a
+        # y combinator, for no other reason than that was a fun way to implement it.
+        merged_document = ycomb do |rec|
+          proc do |subdocument, subpath|
+            if subpath == []
+              subdocument.merge(other.is_a?(JSON::Node) ? other.content : other)
+            else
+              car = subpath[0]
+              cdr = subpath[1..-1]
+              if subdocument.is_a?(Array)
+                if car.is_a?(String) && car =~ /\A\d+\z/
+                  car = car.to_i
+                end
+                unless car.is_a?(Integer)
+                  raise(TypeError, "bad subscript #{car.pretty_inspect} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect}")
+                end
+              end
+              car_object = rec.call(subdocument[car], cdr)
+              if car_object == subdocument[car]
+                subdocument
+              elsif subdocument.is_a?(Hash)
+                subdocument.merge({car => car_object})
+              elsif subdocument.is_a?(Array)
+                subdocument.dup.tap do |arr|
+                  arr[car] = car_object
+                end
+              else
+                raise(TypeError, "bad subscript: #{car.pretty_inspect} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect}")
+              end
+            end
+          end
+        end.call(document, path)
+        self.class.new(merged_document, path)
       end
     end
   end
