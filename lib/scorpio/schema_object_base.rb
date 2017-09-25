@@ -59,11 +59,16 @@ module Scorpio
 
         # methods which use key and value
         hash_methods = %w(compact each_pair each_value fetch fetch_values has_value? invert
-          merge rassoc reject select to_h transform_values value? values values_at)
+          rassoc reject select to_h transform_values value? values values_at)
         hash_methods.each do |method_name|
           define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
         end
 
+        define_method(:merge) do |other|
+          other = other.object if other.is_a?(Scorpio::SchemaObjectBase)
+          other = other.content if other.is_a?(Scorpio::JSON::Node)
+          self.class.new(object.merge(other))
+        end
 
         define_method(:module_schema_node) do
           module_schema_node
