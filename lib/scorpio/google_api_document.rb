@@ -161,9 +161,9 @@ module Scorpio
               proc do |object|
                 if object.respond_to?(:to_hash)
                   if object['$ref'] && (object['$ref'] == schema['id'] || object['$ref'] == "#/schemas/#{name}" || object['$ref'] == name)
-                    object.map { |k, v| {k => k == '$ref' ? "#/definitions/#{name}" : rec.call(v)} }.inject({}, &:update)
+                    object.merge(object.map { |k, v| {k => k == '$ref' ? "#/definitions/#{name}" : rec.call(v)} }.inject({}, &:update))
                   else
-                    object.map { |k, v| {k => rec.call(v)} }.inject({}, &:update)
+                    object.merge(object.map { |k, v| {k => rec.call(v)} }.inject({}, &:update))
                   end
                 elsif object.respond_to?(:to_ary)
                   object.map(&rec)
