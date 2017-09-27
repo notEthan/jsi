@@ -1,13 +1,12 @@
-# retrieved from https://www.googleapis.com/discovery/v1/apis/discovery/v1/rest
+---
 kind: discovery#restDescription
-etag: '"C5oy1hgQsABtYOYIOXWcR3BgYqU/Pyg0A4J33Dq212hoe9BYpSm0dl4"'
+etag: '"YWOzh2SDasdU84ArJnpYek-OMdg/K3nEDF6hixE8Pks2-9Ysn9j9prQ"'
 discoveryVersion: v1
 id: discovery:v1
 name: discovery
 version: v1
 title: APIs Discovery Service
-description: Provides information about other Google APIs, such as what APIs are available,
-  the resource, and method details for each API.
+description: Provides information about other Google APIs, such as what APIs are available, the resource, and method details for each API.
 ownerDomain: google.com
 ownerName: Google
 icons:
@@ -19,7 +18,7 @@ baseUrl: https://www.googleapis.com/discovery/v1/
 basePath: "/discovery/v1/"
 rootUrl: https://www.googleapis.com/
 servicePath: discovery/v1/
-batchPath: batch
+batchPath: batch/discovery/v1
 parameters:
   alt:
     type: string
@@ -36,8 +35,7 @@ parameters:
     location: query
   key:
     type: string
-    description: API key. Your API key identifies your project and provides you with
-      API access, quota, and reports. Required unless you provide an OAuth 2.0 token.
+    description: API key. Your API key identifies your project and provides you with API access, quota, and reports. Required unless you provide an OAuth 2.0 token.
     location: query
   oauth_token:
     type: string
@@ -50,14 +48,11 @@ parameters:
     location: query
   quotaUser:
     type: string
-    description: Available to use for quota purposes for server-side applications.
-      Can be any arbitrary string assigned to a user, but should not exceed 40 characters.
-      Overrides userIp if both are provided.
+    description: Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters. Overrides userIp if both are provided.
     location: query
   userIp:
     type: string
-    description: IP address of the site where the request originates. Use this if
-      you want to enforce per-user limits.
+    description: IP address of the site where the request originates. Use this if you want to enforce per-user limits.
     location: query
 schemas:
   DirectoryList:
@@ -66,8 +61,7 @@ schemas:
     properties:
       discoveryVersion:
         type: string
-        description: Indicate the version of the Discovery API used to generate this
-          doc.
+        description: Indicate the version of the Discovery API used to generate this doc.
         default: v1
       items:
         type: array
@@ -131,20 +125,17 @@ schemas:
     properties:
       "$ref":
         type: string
-        description: A reference to another schema. The value of this property is
-          the "id" of another schema.
+        description: A reference to another schema. The value of this property is the "id" of another schema.
       additionalProperties:
         "$ref": JsonSchema
-        description: If this is a schema for an object, this property is the schema
-          for any additional properties with dynamic keys on this object.
+        description: If this is a schema for an object, this property is the schema for any additional properties with dynamic keys on this object.
       annotations:
         type: object
         description: Additional information about this property.
         properties:
           required:
             type: array
-            description: A list of methods for which this property is required on
-              requests.
+            description: A list of methods for which this property is required on requests.
             items:
               type: string
       default:
@@ -160,25 +151,21 @@ schemas:
           type: string
       enumDescriptions:
         type: array
-        description: The descriptions for the enums. Each position maps to the corresponding
-          value in the "enum" array.
+        description: The descriptions for the enums. Each position maps to the corresponding value in the "enum" array.
         items:
           type: string
       format:
         type: string
-        description: 'An additional regular expression or key that helps constrain
-          the value. For more details see: http://tools.ietf.org/html/draft-zyp-json-schema-03#section-5.23'
+        description: 'An additional regular expression or key that helps constrain the value. For more details see: http://tools.ietf.org/html/draft-zyp-json-schema-03#section-5.23'
       id:
         type: string
         description: Unique identifier for this schema.
       items:
         "$ref": JsonSchema
-        description: If this is a schema for an array, this property is the schema
-          for each element in the array.
+        description: If this is a schema for an array, this property is the schema for each element in the array.
       location:
         type: string
-        description: Whether this parameter goes in the query or the path for REST
-          requests.
+        description: Whether this parameter goes in the query or the path for REST requests.
       maximum:
         type: string
         description: The maximum value of this parameter.
@@ -187,21 +174,16 @@ schemas:
         description: The minimum value of this parameter.
       pattern:
         type: string
-        description: 'The regular expression this parameter must conform to. Uses
-          Java 6 regex format: http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html'
+        description: 'The regular expression this parameter must conform to. Uses Java 6 regex format: http://docs.oracle.com/javase/6/docs/api/java/util/regex/Pattern.html'
       properties:
         type: object
-        description: If this is a schema for an object, list the schema for each property
-          of this object.
+        description: If this is a schema for an object, list the schema for each property of this object.
         additionalProperties:
           "$ref": JsonSchema
-          description: A single property of this object. The value is itself a JSON
-            Schema object describing this property.
+          description: A single property of this object. The value is itself a JSON Schema object describing this property.
       readOnly:
         type: boolean
-        description: The value is read-only, generated by the service. The value cannot
-          be modified by the client. If the value is included in a POST, PUT, or PATCH
-          request, it is ignored by the service.
+        description: The value is read-only, generated by the service. The value cannot be modified by the client. If the value is included in a POST, PUT, or PATCH request, it is ignored by the service.
       repeated:
         type: boolean
         description: Whether this parameter may appear multiple times.
@@ -210,13 +192,10 @@ schemas:
         description: Whether the parameter is required.
       type:
         type: string
-        description: 'The value type for this schema. A list of values can be found
-          here: http://tools.ietf.org/html/draft-zyp-json-schema-03#section-5.1'
+        description: 'The value type for this schema. A list of values can be found here: http://tools.ietf.org/html/draft-zyp-json-schema-03#section-5.1'
       variant:
         type: object
-        description: In a variant data type, the value of one property is used to
-          determine how to interpret the entire entity. Its value must exist in a
-          map of descriminant values to schema names.
+        description: In a variant data type, the value of one property is used to determine how to interpret the entire entity. Its value must exist in a map of descriminant values to schema names.
         properties:
           discriminant:
             type: string
@@ -262,18 +241,15 @@ schemas:
       batchPath:
         type: string
         description: The path for REST batch requests.
-        default: batch
       canonicalName:
         type: string
-        description: Indicates how the API name should be capitalized and split into
-          various parts. Useful for generating pretty class names.
+        description: Indicates how the API name should be capitalized and split into various parts. Useful for generating pretty class names.
       description:
         type: string
         description: The description of this API.
       discoveryVersion:
         type: string
-        description: Indicate the version of the Discovery API used to generate this
-          doc.
+        description: Indicate the version of the Discovery API used to generate this doc.
         default: v1
       documentationLink:
         type: string
@@ -284,8 +260,7 @@ schemas:
         readOnly: true
       exponentialBackoffDefault:
         type: boolean
-        description: Enable exponential backoff for suitable methods in the generated
-          clients.
+        description: Enable exponential backoff for suitable methods in the generated clients.
       features:
         type: array
         description: A list of supported features for this API.
@@ -324,9 +299,7 @@ schemas:
         description: The name of this API.
       ownerDomain:
         type: string
-        description: The domain of the owner of this API. Together with the ownerName
-          and a packagePath values, this can be used to generate a library for this
-          API which would have a unique fully qualified name.
+        description: The domain of the owner of this API. Together with the ownerName and a packagePath values, this can be used to generate a library for this API which would have a unique fully qualified name.
       ownerName:
         type: string
         description: The name of the owner of this API. See ownerDomain.
@@ -348,8 +321,7 @@ schemas:
         description: The resources in this API.
         additionalProperties:
           "$ref": RestResource
-          description: An individual resource description. Contains methods and sub-resources
-            related to this resource.
+          description: An individual resource description. Contains methods and sub-resources related to this resource.
       revision:
         type: string
         description: The version of this API.
@@ -382,15 +354,13 @@ schemas:
         description: Description of this method.
       etagRequired:
         type: boolean
-        description: Whether this method requires an ETag to be specified. The ETag
-          is sent as an HTTP If-Match or If-None-Match header.
+        description: Whether this method requires an ETag to be specified. The ETag is sent as an HTTP If-Match or If-None-Match header.
       httpMethod:
         type: string
         description: HTTP method used by this method.
       id:
         type: string
-        description: A unique ID for this method. This property can be used to match
-          methods between different versions of Discovery.
+        description: A unique ID for this method. This property can be used to match methods between different versions of Discovery.
       mediaUpload:
         type: object
         description: Media upload parameters.
@@ -413,13 +383,11 @@ schemas:
                 properties:
                   multipart:
                     type: boolean
-                    description: True if this endpoint supports uploading multipart
-                      media.
+                    description: True if this endpoint supports uploading multipart media.
                     default: 'true'
                   path:
                     type: string
-                    description: The URI path to be used for upload. Should be used
-                      in conjunction with the basePath property at the api-level.
+                    description: The URI path to be used for upload. Should be used in conjunction with the basePath property at the api-level.
               simple:
                 type: object
                 description: Supports uploading as a single HTTP request.
@@ -430,13 +398,10 @@ schemas:
                     default: 'true'
                   path:
                     type: string
-                    description: The URI path to be used for upload. Should be used
-                      in conjunction with the basePath property at the api-level.
+                    description: The URI path to be used for upload. Should be used in conjunction with the basePath property at the api-level.
       parameterOrder:
         type: array
-        description: Ordered list of required parameters, serves as a hint to clients
-          on how to structure their method signatures. The array is ordered such that
-          the "most-significant" parameter appears first.
+        description: Ordered list of required parameters, serves as a hint to clients on how to structure their method signatures. The array is ordered such that the "most-significant" parameter appears first.
         items:
           type: string
       parameters:
@@ -447,8 +412,7 @@ schemas:
           description: Details for a single parameter in this method.
       path:
         type: string
-        description: The URI path of this REST method. Should be used in conjunction
-          with the basePath property at the api-level.
+        description: The URI path of this REST method. Should be used in conjunction with the basePath property at the api-level.
       request:
         type: object
         description: The schema for the request.
@@ -482,9 +446,7 @@ schemas:
         description: Whether this method supports subscriptions.
       useMediaDownloadService:
         type: boolean
-        description: Indicates that downloads from this method should use the download
-          service URL (i.e. "/download"). Only applies if the method supports media
-          download.
+        description: Indicates that downloads from this method should use the download service URL (i.e. "/download"). Only applies if the method supports media download.
   RestResource:
     id: RestResource
     type: object
