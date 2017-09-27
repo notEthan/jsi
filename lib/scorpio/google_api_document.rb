@@ -1,10 +1,9 @@
 require 'api_hammer/ycomb'
 require 'scorpio/schema_object_base'
-require 'yaml'
 
 module Scorpio
   module Google
-    apidoc_schema_doc = YAML.load_file(File.join(File.dirname(__FILE__), '../../getRest.yml'))
+    apidoc_schema_doc = ::JSON.parse(Scorpio.root.join('documents/www.googleapis.com/discovery/v1/apis/discovery/v1/rest').read)
     api_document_class = proc do |*key|
       Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type(apidoc_schema_doc, ['schemas', *key]))
     end
