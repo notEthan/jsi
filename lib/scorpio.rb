@@ -1,7 +1,12 @@
 require "scorpio/version"
+require "pathname"
 require "api_hammer/ycomb"
 
 module Scorpio
+  def self.root
+    @root ||= Pathname.new(__FILE__).dirname.parent.expand_path
+  end
+
   proc { |v| define_singleton_method(:error_classes_by_status) { v } }.call({})
   class Error < StandardError; end
   class HTTPError < Error
