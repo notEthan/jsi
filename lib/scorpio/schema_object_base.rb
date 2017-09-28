@@ -114,9 +114,12 @@ module Scorpio
             match_schema = proc do |schema_node, object|
               object = object.content if object.is_a?(Scorpio::JSON::Node)
               if schema_node && schema_node['oneOf']
-                matched = schema_node['oneOf'].map(&:deref).detect do |oneof|
-                  ::JSON::Validator.validate(oneof.document, object, fragment: oneof.fragment)
-                end
+                matched = schema_node['oneOf'].map(&:deref).map do |oneof|
+                  oneof_matched = match_schema.call(oneof, object)
+                  if ::JSON::Validator.validate(oneof_matched.document, object, fragment: oneof_matched.fragment)
+                    oneof_matched
+                  end
+                end.compact.first
                 matched || schema_node
               else
                 schema_node
