@@ -7,6 +7,11 @@ module Scorpio
     @root ||= Pathname.new(__FILE__).dirname.parent.expand_path
   end
 
+  # generally put in code paths that are not expected to be valid control flow paths.
+  # rather a NotImplementedCorrectlyError. but that's too long.
+  class Bug < NotImplementedError
+  end
+
   proc { |v| define_singleton_method(:error_classes_by_status) { v } }.call({})
   class Error < StandardError; end
   class HTTPError < Error
