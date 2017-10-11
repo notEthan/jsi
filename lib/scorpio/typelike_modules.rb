@@ -9,7 +9,7 @@ module Scorpio
         text "\#{<#{obj.class.name}>"
         group_sub {
           nest(2) {
-            breakable ' '
+            breakable(obj.any? { true } ? ' ' : '')
             seplist(obj, nil, :each_pair) { |k, v|
               group {
                 pp k
@@ -34,7 +34,7 @@ module Scorpio
         text "\#[<#{obj.class.name}>"
         group_sub {
           nest(2) {
-            breakable ' '
+            breakable(obj.any? { true } ? ' ' : '')
             seplist(obj, nil, :each) { |e|
               pp e
             }
