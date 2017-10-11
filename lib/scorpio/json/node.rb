@@ -84,6 +84,9 @@ module Scorpio
         pointer.fragment
       end
 
+      def object_group_text
+        "fragment=#{fragment.inspect}"
+      end
       def fingerprint
         {class: self.class, document: document, path: path}
       end
