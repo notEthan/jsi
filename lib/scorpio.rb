@@ -69,6 +69,7 @@ module Scorpio
   autoload :OpenAPI, 'scorpio/openapi'
   autoload :Google, 'scorpio/google_api_document'
   autoload :JSON, 'scorpio/json'
+  autoload :Schema, 'scorpio/schema'
 
   class << self
     def stringify_symbol_keys(hash)
