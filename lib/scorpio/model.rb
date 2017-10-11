@@ -63,7 +63,7 @@ module Scorpio
           path_item.each do |http_method, operation|
             next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
             unless operation.is_a?(Scorpio::OpenAPI::Operation)
-              raise("bad operation at #/paths/#{path}/#{http_method}: #{operation.inspect}")
+              raise("bad operation at #{operation.fragment}: #{operation.inspect}")
             end
             operation.path = path
             operation.http_method = http_method

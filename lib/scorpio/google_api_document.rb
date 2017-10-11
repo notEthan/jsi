@@ -20,6 +20,23 @@ module Scorpio
     RestMethodRequest = api_document_class.call('RestMethod', 'properties', 'request')
     RestMethodResponse = api_document_class.call('RestMethod', 'properties', 'response')
 
+    # google does a weird thing where it defines a schema with a $ref property where a json-schema is to be used in the document (method request and response fields), instead of just setting the schema to be the json-schema schema. we'll share a module across those schema classes that really represent schemas. is this confusingly meta enough?
+    module SchemaLike
+      def to_openapi
+        dup_doc = ::JSON.parse(::JSON.generate(object.content))
+        # openapi does not want an id field on schemas
+        dup_doc.delete('id')
+        if dup_doc['properties'].is_a?(Hash)
+          required_properties = dup_doc['properties'].map do |key, value|
+            key if value.is_a?(Hash) && value['required']
+          end.compact
+          dup_doc['required'] = required_properties unless required_properties.empty?
+        end
+        dup_doc
+      end
+    end
+    [JsonSchema, RestMethodRequest, RestMethodResponse].each { |klass| klass.send(:include, SchemaLike) }
+
     class RestDescription
       def to_openapi_document(options = {})
         Scorpio::OpenAPI::Document.new(to_openapi_hash(options))
@@ -112,8 +129,7 @@ module Scorpio
                 operation['responses'] = {
                   'default' => {
                     description: 'default response',
-                    # we don't want an id field. openapi doesn't like it.
-                    schema: method['response'].reject { |k, v| k == 'id' },
+                    schema: method['response'],
                   },
                 }
               end
@@ -151,10 +167,7 @@ module Scorpio
           paths: paths, #/definitions/paths
         }
         if ad.schemas
-          openapi['definitions'] = {}
-          ad.schemas.each do |name, schema|
-            openapi['definitions'][name] = schema.reject { |k, v| k == 'id' }
-          end
+          openapi['definitions'] = ad.schemas
           ad.schemas.each do |name, schema|
             openapi = ycomb do |rec|
               proc do |object|
@@ -176,6 +189,7 @@ module Scorpio
         # check we haven't got anything that shouldn't go in a openapi document
         openapi = ycomb do |rec|
           proc do |object|
+            object = object.to_openapi if object.respond_to?(:to_openapi)
             if object.respond_to?(:to_hash)
               object.map { |k, v| {rec.call(k) => rec.call(v)} }.inject({}, &:update)
             elsif object.respond_to?(:to_ary)
