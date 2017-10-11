@@ -87,6 +87,23 @@ module Scorpio
       def object_group_text
         "fragment=#{fragment.inspect}"
       end
+      def inspect
+        "\#<#{self.class.name} #{object_group_text} #{content.inspect}>"
+      end
+      def pretty_print(q)
+        q.instance_exec(self) do |obj|
+          text "\#<#{obj.class.name} #{object_group_text}"
+          group_sub {
+            nest(2) {
+              breakable ' '
+              pp obj.content
+            }
+          }
+          breakable ''
+          text '>'
+        end
+      end
+
       def fingerprint
         {class: self.class, document: document, path: path}
       end
