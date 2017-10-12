@@ -9,14 +9,6 @@ module Scorpio
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
     h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
       define_singleton_method(:schema_node) { schema_node }
-      define_singleton_method(:class_schema) { schema_node.content }
-      define_singleton_method(:schema_document) { schema_node.document }
-      define_singleton_method(:schema_path) { schema_node.path }
-      define_method(:schema_node) { schema_node }
-      define_method(:class_schema) { schema_node.content }
-      define_method(:schema_document) { schema_node.document }
-      define_method(:schema_path) { schema_node.path }
-
       define_method(:initialize) do |object|
         if object.is_a?(Scorpio::JSON::Node)
           @object = object
