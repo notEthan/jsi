@@ -4,19 +4,20 @@ require 'scorpio/typelike_modules'
 module Scorpio
   # base class for representing an instance of an object described by a schema
   class SchemaObjectBase
+    def initialize(object)
+      if object.is_a?(Scorpio::JSON::Node)
+        @object = object
+      else
+        @object = Scorpio::JSON::Node.new_by_type(object, [])
+      end
+    end
+
+    attr_reader :object
   end
 
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
     h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
       define_singleton_method(:schema_node) { schema_node }
-      define_method(:initialize) do |object|
-        if object.is_a?(Scorpio::JSON::Node)
-          @object = object
-        else
-          @object = Scorpio::JSON::Node.new_by_type(object, [])
-        end
-      end
-      attr_reader :object
 
       prepend(Scorpio.module_for_schema(schema_node))
     end
