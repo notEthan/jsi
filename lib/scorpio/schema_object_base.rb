@@ -44,6 +44,10 @@ module Scorpio
       end
     end
 
+    def object_group_text
+      object.class.inspect + ' ' + object.object_group_text
+    end
+
     def fingerprint
       {class: self.class, object: object}
     end
