@@ -21,7 +21,14 @@ module Scorpio
   proc { |v| define_singleton_method(:error_classes_by_status) { v } }.call({})
   class Error < StandardError; end
   class HTTPError < Error
-    define_singleton_method(:status) { |status| Scorpio.error_classes_by_status[status] = self }
+    define_singleton_method(:status) do |status = nil|
+      if status
+        @status = status
+        Scorpio.error_classes_by_status[status] = self
+      else
+        @status
+      end
+    end
     attr_accessor :faraday_response, :response_object
   end
   # HTTP Error classes' canonical names are like Scorpio::HTTPErrors::BadRequest400Error, but can
