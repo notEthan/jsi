@@ -13,6 +13,16 @@ module Scorpio
     end
 
     attr_reader :object
+
+    def fully_validate
+      ::JSON::Validator.fully_validate(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
+    end
+    def validate
+      ::JSON::Validator.validate(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
+    end
+    def validate!
+      ::JSON::Validator.validate!(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
+    end
   end
 
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
@@ -140,16 +150,6 @@ module Scorpio
 
         define_method(:module_schema_node) do
           module_schema_node
-        end
-
-        define_method(:fully_validate) do
-          ::JSON::Validator.fully_validate(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
-        end
-        define_method(:validate) do
-          ::JSON::Validator.validate(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
-        end
-        define_method(:validate!) do
-          ::JSON::Validator.validate!(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
         end
 
         module_schema = Scorpio::Schema.new(module_schema_node)
