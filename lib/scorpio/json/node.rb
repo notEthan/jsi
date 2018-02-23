@@ -97,6 +97,21 @@ module Scorpio
       def to_ary
         to_a
       end
+
+      # array methods - define only those which do not modify the array.
+
+      # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a)
+      index_methods = %w(each_index empty? length size)
+      index_methods.each do |method_name|
+        define_method(method_name) { |*a, &b| content.public_send(method_name, *a, &b) }
+      end
+
+      # methods which use index and value.
+      # flatten is omitted. flatten should not exist.
+      array_methods = %w(& | * + - <=> abbrev assoc at bsearch bsearch_index combination compact count cycle dig fetch index first include? join last pack permutation rassoc repeated_combination reject reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip)
+      array_methods.each do |method_name|
+        define_method(method_name) { |*a, &b| to_a.public_send(method_name, *a, &b) }
+      end
     end
 
     class HashNode < Node
