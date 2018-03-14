@@ -15,7 +15,7 @@ module Scorpio
 
       def initialize(document, path)
         raise(ArgumentError, "path must be an array. got: #{path.inspect} (#{path.class})") unless path.is_a?(Array)
-        @document = document
+        define_singleton_method(:document) { document }
         @path = path.dup.freeze
         @pointer = ::JSON::Schema::Pointer.new(:reference_tokens, path)
       end
