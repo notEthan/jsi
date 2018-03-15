@@ -463,13 +463,13 @@ module Scorpio
       request_schema = operation.body_parameter && self.class.deref_schema(operation.body_parameter['schema'])
       request_resource_is_self = request_schema &&
         request_schema['id'] &&
-        self.class.schemas_by_key.any? { |key, as| as['id'] == request_schema['id'] && self.class.definition_keys.include?(key) }
+        self.class.schemas_by_key.any? { |key, as| (as['id'] ? as['id'] == request_schema['id'] : as == request_schema) && self.class.definition_keys.include?(key) }
       if @options['response'] && @options['response'].status && operation.responses
         _, response_schema = operation.responses.detect { |k, v| k.to_s == @options['response'].status.to_s }
       end
       response_schema = self.class.deref_schema(response_schema)
       response_resource_is_self = response_schema &&
-        self.class.schemas_by_key.any? { |key, as| as == response_schema && self.class.definition_keys.include?(key) }
+        self.class.schemas_by_key.any? { |key, as| (as['id'] ? as['id'] == response_schema['id'] : as == response_schema) && self.class.definition_keys.include?(key) }
       if request_resource_is_self && %w(PUT POST).include?(api_method['httpMethod'])
         @persisted = true
 
