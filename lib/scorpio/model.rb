@@ -450,6 +450,11 @@ module Scorpio
       self.class == other.class && @attributes == other.instance_eval { @attributes }
     end
 
+    def call_api_method(method_name, call_params: nil)
+      operation = self.class.method_names_by_operation.invert[method_name] || raise(ArgumentError)
+      call_operation(operation, call_params: call_params)
+    end
+
     def call_operation(operation, call_params: nil)
       response = self.class.call_operation(operation, call_params: call_params, model_attributes: self.attributes)
 
