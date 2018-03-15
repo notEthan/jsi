@@ -111,7 +111,8 @@ module Scorpio
           @object_mapped[property_name] ||= begin
 
             match_schema = proc do |schema_node, object|
-              if schema_node['oneOf']
+              object = object.content if object.is_a?(Scorpio::JSON::Node)
+              if schema_node && schema_node['oneOf']
                 matched = schema_node['oneOf'].map(&:deref).detect do |oneof|
                   ::JSON::Validator.validate(oneof.document, object, fragment: oneof.fragment)
                 end
@@ -121,15 +122,14 @@ module Scorpio
               end
             end
 
-            property_schema_node = subschema_for_property(property_name)
-            if property_schema_node && property_schema_node['type'] && property_schema_node['type'] == 'object' && object[property_name].is_a?(Hash)
-              schema_node = match_schema.call(property_schema_node, object[property_name])
-              Scorpio.class_for_schema(schema_node).new(object[property_name])
-            elsif property_schema_node && property_schema_node['type'] && property_schema_node['type'] == 'array' && object[property_name].is_a?(Array)
+            property_schema_node = match_schema.call(subschema_for_property(property_name), object[property_name])
+            if property_schema_node && property_schema_node['type'] == 'object' && object.content[property_name].respond_to?(:to_hash)
+              Scorpio.class_for_schema(property_schema_node).new(object[property_name])
+            elsif property_schema_node && property_schema_node['type'] == 'array' && object.content[property_name].respond_to?(:to_ary)
               object[property_name].map do |e|
-                schema_node = match_schema.call(property_schema_node['items'], e)
-                if schema_node && schema_node['type'] && schema_node['type'] == 'object' && e.is_a?(Hash)
-                  Scorpio.class_for_schema(schema_node).new(e)
+                item_schema_node = match_schema.call(property_schema_node['items'], e)
+                if item_schema_node && item_schema_node['type'] == 'object' && e.respond_to?(:to_hash)
+                  Scorpio.class_for_schema(item_schema_node).new(e)
                 else
                   e
                 end
