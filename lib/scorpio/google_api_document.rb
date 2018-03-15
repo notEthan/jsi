@@ -17,6 +17,10 @@ module Scorpio
     RestMethod      = api_document_class.call('RestMethod')
     RestResource    = api_document_class.call('RestResource')
 
+    # not generated
+    RestMethodRequest = api_document_class.call('RestMethod', 'properties', 'request')
+    RestMethodResponse = api_document_class.call('RestMethod', 'properties', 'response')
+
     class RestDescription
       def to_openapi_document(options = {})
         Scorpio::OpenAPI::Document.new(to_openapi_hash(options))
