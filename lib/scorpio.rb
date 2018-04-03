@@ -1,5 +1,6 @@
 require "scorpio/version"
 require "pathname"
+require "pp"
 require "api_hammer/ycomb"
 require "scorpio/json-schema-fragments"
 
