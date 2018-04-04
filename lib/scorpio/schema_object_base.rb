@@ -80,7 +80,7 @@ module Scorpio
               elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| stripobject.is_a?(c) }
                 stripobject
               else
-                raise(stripobject.inspect)
+                raise(TypeError, "bad (not jsonifiable) object: #{stripobject.pretty_inspect}")
               end
             end
           end.call(other)

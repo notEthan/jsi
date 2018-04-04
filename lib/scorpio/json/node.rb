@@ -16,7 +16,7 @@ module Scorpio
       end
 
       def initialize(document, path)
-        raise(ArgumentError, "path must be an array. got: #{path.inspect} (#{path.class})") unless path.is_a?(Array)
+        raise(ArgumentError, "path must be an array. got: #{path.pretty_inspect} (#{path.class})") unless path.is_a?(Array)
         define_singleton_method(:document) { document }
         @path = path.dup.freeze
         @pointer = ::JSON::Schema::Pointer.new(:reference_tokens, path)
@@ -40,7 +40,7 @@ module Scorpio
         begin
           el = content[k]
         rescue TypeError => e
-          raise(e.class, e.message + "\nsubscripting from #{content.inspect} (#{content.class}): #{k.inspect} (#{k.class})", e.backtrace)
+          raise(e.class, e.message + "\nsubscripting from #{content.pretty_inspect} (#{content.class}): #{k.pretty_inspect} (#{k.class})", e.backtrace)
         end
         if el.is_a?(Hash) || el.is_a?(Array)
           self.class.new_by_type(node.document, node.path + [k])

@@ -75,7 +75,7 @@ module Scorpio
           path_item.each do |http_method, operation|
             next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
             unless operation.is_a?(Scorpio::OpenAPI::Operation)
-              raise("bad operation at #{operation.fragment}: #{operation.inspect}")
+              raise("bad operation at #{operation.fragment}: #{operation.pretty_inspect}")
             end
             operation.path = path
             operation.http_method = http_method
@@ -176,13 +176,13 @@ module Scorpio
       def method_names_by_operation
         @method_names_by_operation ||= Hash.new do |h, operation|
           h[operation] = begin
-            raise(ArgumentError, operation.inspect) unless operation.is_a?(Scorpio::OpenAPI::Operation)
+            raise(ArgumentError, operation.pretty_inspect) unless operation.is_a?(Scorpio::OpenAPI::Operation)
             if operation['x-resource-method']
               method_name = operation['x-resource-method']
             elsif resource_name && operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
               method_name = $1
             else
-              method_name = operation.operationId || raise("operation #{operation.inspect} has no operationId")
+              method_name = operation.operationId || raise("no operationId on operation: #{operation.pretty_inspect}")
             end
             method_name = '_' + method_name unless method_name[/\A[a-zA-Z_]/]
             method_name.gsub(/[^\w]/, '_')
@@ -397,7 +397,7 @@ module Scorpio
       end
 
       def request_schema_fail(object, schema)
-        raise(RequestSchemaFailure, "object does not conform to schema.\nobject = #{object.inspect}\nschema = #{::JSON.pretty_generate(schema, quirks_mode: true)}")
+        raise(RequestSchemaFailure, "object does not conform to schema.\nobject = #{object.pretty_inspect}\nschema = #{::JSON.pretty_generate(schema, quirks_mode: true)}")
       end
 
       def response_object_to_instances(object, schema, initialize_options = {})
