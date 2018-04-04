@@ -11,18 +11,27 @@ module Scorpio
     class << self
       def define_inheritable_accessor(accessor, options = {})
         if options[:default_getter]
+          # the value before the field is set (overwritten) is the result of the default_getter proc
           define_singleton_method(accessor, &options[:default_getter])
         else
+          # the value before the field is set (overwritten) is the default_value (which is nil if not specified)
           default_value = options[:default_value]
           define_singleton_method(accessor) { default_value }
         end
+        # field setter method. redefines the getter, replacing the method with one that returns the
+        # setter's argument (that being inherited to the scope of the define_method(accessor) block
         define_singleton_method(:"#{accessor}=") do |value|
+          # the setter operates on the singleton class of the receiver (self)
           singleton_class.instance_exec(value, self) do |value_, klass|
+            # remove a previous getter. NameError is raised if a getter is not defined on this class;
+            # this may be ignored.
             begin
               remove_method(accessor)
             rescue NameError
             end
+            # getter method
             define_method(accessor) { value_ }
+            # invoke on_set callback defined on the class
             if options[:on_set]
               klass.instance_exec(&options[:on_set])
             end
@@ -33,7 +42,10 @@ module Scorpio
         end
       end
     end
+    # the class on which the openapi document is defined. subclasses use the openapi document set on this class
+    # (except in the unlikely event it is overwritten by a subclass)
     define_inheritable_accessor(:openapi_document_class)
+    # the openapi document
     define_inheritable_accessor(:openapi_document, on_set: proc { self.openapi_document_class = self })
     define_inheritable_accessor(:resource_name, update_methods: true)
     define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
