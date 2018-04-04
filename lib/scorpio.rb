@@ -1,4 +1,5 @@
 require "scorpio/version"
+require "api_hammer/ycomb"
 
 module Scorpio
   proc { |v| define_singleton_method(:error_classes_by_status) { v } }.call({})
