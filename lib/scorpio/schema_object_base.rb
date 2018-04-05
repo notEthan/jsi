@@ -24,7 +24,7 @@ module Scorpio
   end
 
   def self.class_for_schema(schema_node)
-    CLASS_FOR_SCHEMA[schema_node]
+    CLASS_FOR_SCHEMA[schema_node.deref]
   end
 
   def self.module_for_schema(schema_node_)
