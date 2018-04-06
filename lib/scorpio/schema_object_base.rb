@@ -135,8 +135,6 @@ module Scorpio
     Module.new.tap do |m|
       m.instance_exec(schema_node_) do |module_schema_node|
         raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.is_a?(Scorpio::JSON::Node)
-        raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.content.is_a?(Hash)
-        raise(ArgumentError, module_schema_node.inspect) unless [nil, 'object'].include?(module_schema_node['type'])
 
         define_method(:module_schema_node) do
           module_schema_node
