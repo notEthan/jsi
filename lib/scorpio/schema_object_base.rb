@@ -28,6 +28,34 @@ module Scorpio
   end
 
   module SchemaObjectBaseHash
+    # Hash methods
+    def each
+      return to_enum(__method__) { object.size } unless block_given?
+      object.each_key { |k| yield(k, self[k]) }
+      self
+    end
+    include Enumerable
+
+    def to_hash
+      inject({}) { |h, (k, v)| h[k] = v; h }
+    end
+
+    include Hashlike
+
+    # hash methods - define only those which do not modify the hash.
+
+    # methods that don't look at the value; can skip the overhead of #[]
+    key_methods = %w(each_key empty? include? has_key? key key? keys length member? size)
+    key_methods.each do |method_name|
+      define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
+    end
+
+    # methods which use key and value
+    hash_methods = %w(compact each_pair each_value fetch fetch_values has_value? invert
+      rassoc reject select to_h transform_values value? values values_at)
+    hash_methods.each do |method_name|
+      define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+    end
   end
 
   module SchemaObjectBaseArray
@@ -39,37 +67,6 @@ module Scorpio
         raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.is_a?(Scorpio::JSON::Node)
         raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.content.is_a?(Hash)
         raise(ArgumentError, module_schema_node.inspect) unless [nil, 'object'].include?(module_schema_node['type'])
-
-        # Hash methods
-        define_method(:each) { |&b| object.each { |k, _| b.call(k, self[k]) } }
-        include Enumerable
-        # ones that don't look at the value - TODO incomplete
-        %w(to_hash to_h empty? each_key keys has_key? key? length size).each do |method_name|
-          define_method(method_name) { |*a, &b| object.content.public_send(method_name, *a, &b) }
-        end
-        # ones that do look at the value ... TODO implement
-        %w(each_key values invert value? has_value?)
-        define_method(:to_hash) do
-          inject({}) { |h, (k, v)| h[k] = v; h }
-        end
-
-        include Hashlike
-
-        # hash methods - define only those which do not modify the hash.
-
-        # methods that don't look at the value; can skip the overhead of #[]
-        key_methods = %w(each_key empty? include? has_key? key key? keys length member? size)
-        key_methods.each do |method_name|
-          define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
-        end
-
-        # methods which use key and value
-        hash_methods = %w(compact each_pair each_value fetch fetch_values has_value? invert
-          rassoc reject select to_h transform_values value? values values_at)
-        hash_methods.each do |method_name|
-          define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
-        end
-
         define_method(:merge) do |other|
           # we want to strip the containers from this before we merge
           # this is kind of annoying. wish I had a better way.
