@@ -71,5 +71,23 @@ module Scorpio
         schema_node['anyOf'].respond_to?(:to_ary) &&
           schema_node['anyOf'].all? { |someof_node| self.class.new(someof_node).describes_hash? }
     end
+
+    def described_hash_property_names
+      Set.new.tap do |property_names|
+        if schema_node['properties'].respond_to?(:to_hash)
+          property_names.merge(schema_node['properties'].keys)
+        end
+        if schema_node['required'].respond_to?(:to_ary)
+          property_names.merge(schema_node['required'].to_ary)
+        end
+        # we _could_ look at the properties of 'default' and each 'enum' but ... nah.
+        # we should look at dependencies (TODO).
+        %w(oneOf allOf anyOf).select { |k| schema_node[k].respond_to?(:to_ary) }.each do |schemas_key|
+          schema_node[schemas_key].map(&:deref).map do |someof_node|
+            property_names.merge(self.class.new(someof_node).described_hash_property_names)
+          end
+        end
+      end
+    end
   end
 end
