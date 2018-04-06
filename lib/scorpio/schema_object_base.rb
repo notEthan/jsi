@@ -59,6 +59,35 @@ module Scorpio
   end
 
   module SchemaObjectBaseArray
+    def each
+      return to_enum(__method__) { object.size } unless block_given?
+      object.each_index { |i| yield(self[i]) }
+      self
+    end
+    include Enumerable
+
+    def to_ary
+      to_a
+    end
+
+    include Arraylike
+
+    def [](i_)
+      # it would make more sense for this to be an array here, but but Array doesn't have a nice memoizing
+      # constructor, so it's a hash with integer keys
+      @object_mapped ||= Hash.new do |hash, i|
+        hash[i] = begin
+          index_schema = module_schema.subschema_for_index(i)
+
+          if index_schema && object[i].is_a?(JSON::Node)
+            Scorpio.class_for_schema(index_schema.schema_node).new(object[i])
+          else
+            object[i]
+          end
+        end
+      end
+      @object_mapped[i_]
+    end
   end
 
   def self.module_for_schema(schema_node_)
