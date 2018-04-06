@@ -27,6 +27,12 @@ module Scorpio
     CLASS_FOR_SCHEMA[schema_node.deref]
   end
 
+  module SchemaObjectBaseHash
+  end
+
+  module SchemaObjectBaseArray
+  end
+
   def self.module_for_schema(schema_node_)
     Module.new.tap do |m|
       m.instance_exec(schema_node_) do |module_schema_node|
@@ -162,10 +168,17 @@ module Scorpio
           end
         end
 
-        (module_schema_node['properties'] || {}).each do |property_name, property_schema|
-          define_method(property_name) do
-            self[property_name]
+        module_schema = Scorpio::Schema.new(module_schema_node)
+        if module_schema.describes_hash?
+          include SchemaObjectBaseHash
+
+          module_schema.described_hash_property_names.each do |property_name|
+            define_method(property_name) do
+              self[property_name]
+            end
           end
+        elsif module_schema.describes_array?
+          include SchemaObjectBaseArray
         end
       end
     end
