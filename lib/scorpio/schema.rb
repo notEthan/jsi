@@ -4,6 +4,27 @@ module Scorpio
       @schema_node = schema_node
     end
     attr_reader :schema_node
+
+    def subschema_for_property(property_name)
+      if schema_node['properties'].respond_to?(:to_hash) && schema_node['properties'][property_name].respond_to?(:to_hash)
+        self.class.new(schema_node['properties'][property_name].deref)
+      else
+        if schema_node['patternProperties'].respond_to?(:to_hash)
+          _, pattern_schema_node = schema_node['patternProperties'].detect do |pattern, _|
+            property_name =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+          end
+        end
+        if pattern_schema_node
+          self.class.new(pattern_schema_node.deref)
+        else
+          if schema_node['additionalProperties'].is_a?(Scorpio::JSON::Node)
+            self.class.new(schema_node['additionalProperties'].deref)
+          else
+            nil
+          end
+        end
+      end
+    end
     def describes_array?
       schema_node['type'] == 'array' ||
         schema_node['items'] ||

@@ -135,29 +135,6 @@ module Scorpio
           ::JSON::Validator.validate!(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
         end
 
-        define_method(:subschema_for_property) do |property|
-          subschema_node = begin
-            if schema_node['properties'] && schema_node['properties'][property]
-              schema_node['properties'][property].deref
-            else
-              if schema_node['patternProperties']
-                _, pattern_schema_node = schema_node['patternProperties'].detect do |pattern, _|
-                  property =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
-                end
-              end
-              if pattern_schema_node
-                pattern_schema_node.deref
-              else
-                if schema_node['additionalProperties']
-                  schema_node['additionalProperties'].deref
-                else
-                  nil
-                end
-              end
-            end
-          end
-        end
-
         define_method(:[]) do |property_name|
           @object_mapped ||= {}
           @object_mapped[property_name] ||= begin
