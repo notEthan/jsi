@@ -25,6 +25,21 @@ module Scorpio
         end
       end
     end
+
+    def subschema_for_index(index)
+      if schema_node['items'].is_a?(Scorpio::JSON::ArrayNode)
+        if index < schema_node['items'].size
+          self.class.new(schema_node['items'][index].deref)
+        elsif schema_node['additionalItems'].is_a?(Node)
+          self.class.new(schema_node['additionalItems'].deref)
+        end
+      elsif schema_node['items'].is_a?(Scorpio::JSON::Node)
+        self.class.new(schema_node['items'].deref)
+      else
+        nil
+      end
+    end
+
     def describes_array?
       schema_node['type'] == 'array' ||
         schema_node['items'] ||
