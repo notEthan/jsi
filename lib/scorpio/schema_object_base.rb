@@ -56,6 +56,30 @@ module Scorpio
     hash_methods.each do |method_name|
       define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
     end
+
+    def merge(other)
+      # we want to strip the containers from this before we merge
+      # this is kind of annoying. wish I had a better way.
+      other_stripped = ycomb do |striprec|
+        proc do |stripobject|
+          stripobject = stripobject.object if stripobject.is_a?(Scorpio::SchemaObjectBase)
+          stripobject = stripobject.content if stripobject.is_a?(Scorpio::JSON::Node)
+          if stripobject.is_a?(Hash)
+            stripobject.map { |k, v| {striprec.call(k) => striprec.call(v)} }.inject({}, &:update)
+          elsif stripobject.is_a?(Array)
+            stripobject.map(&striprec)
+          elsif stripobject.is_a?(Symbol)
+            stripobject.to_s
+          elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| stripobject.is_a?(c) }
+            stripobject
+          else
+            raise(TypeError, "bad (not jsonifiable) object: #{stripobject.pretty_inspect}")
+          end
+        end
+      end.call(other)
+
+      self.class.new(object.merge(other_stripped))
+    end
   end
 
   module SchemaObjectBaseArray
@@ -96,29 +120,6 @@ module Scorpio
         raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.is_a?(Scorpio::JSON::Node)
         raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.content.is_a?(Hash)
         raise(ArgumentError, module_schema_node.inspect) unless [nil, 'object'].include?(module_schema_node['type'])
-        define_method(:merge) do |other|
-          # we want to strip the containers from this before we merge
-          # this is kind of annoying. wish I had a better way.
-          other_stripped = ycomb do |striprec|
-            proc do |stripobject|
-              stripobject = stripobject.object if stripobject.is_a?(Scorpio::SchemaObjectBase)
-              stripobject = stripobject.content if stripobject.is_a?(Scorpio::JSON::Node)
-              if stripobject.is_a?(Hash)
-                stripobject.map { |k, v| {striprec.call(k) => striprec.call(v)} }.inject({}, &:update)
-              elsif stripobject.is_a?(Array)
-                stripobject.map(&striprec)
-              elsif stripobject.is_a?(Symbol)
-                stripobject.to_s
-              elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| stripobject.is_a?(c) }
-                stripobject
-              else
-                raise(TypeError, "bad (not jsonifiable) object: #{stripobject.pretty_inspect}")
-              end
-            end
-          end.call(other)
-
-          self.class.new(object.merge(other_stripped))
-        end
 
         define_method(:module_schema_node) do
           module_schema_node
