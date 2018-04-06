@@ -89,6 +89,7 @@ module Scorpio
 
     class ArrayNode < Node
       def each
+        return to_enum(__method__) { content.size } unless block_given?
         content.each_index { |i| yield self[i] }
         self
       end
@@ -116,6 +117,7 @@ module Scorpio
 
     class HashNode < Node
       def each
+        return to_enum(__method__) { content.size } unless block_given?
         content.each_key { |k| yield k, self[k] }
         self
       end
