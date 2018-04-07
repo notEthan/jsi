@@ -17,24 +17,15 @@ module Scorpio
         raise(ArgumentError, "path must be an array. got: #{path.inspect} (#{path.class})") unless path.is_a?(Array)
         @document = document
         @path = path.dup.freeze
+        @pointer = ::JSON::Schema::Pointer.new(:reference_tokens, path)
       end
 
       attr_reader :path
       attr_reader :document
+      attr_reader :pointer
 
       def content
-        path.inject(document) do |element, part|
-          if element.is_a?(Array)
-            if part.is_a?(String) && part =~ /\A\d+\z/
-              part = part.to_i
-            end
-            unless part.is_a?(Integer)
-              raise
-            end
-          end
-          raise("subscripting #{part} from element #{element.inspect}") unless element.is_a?(Array) || element.is_a?(Hash)
-          element[part]
-        end
+        pointer.evaluate(document)
       end
 
       def [](k)
@@ -84,12 +75,11 @@ module Scorpio
         Node.new_by_type(document, [])
       end
 
-      ESC = {'^' => '^^', '~' => '~0', '/' => '~1'} # '/' => '^/' ?
       def pointer_path
-        path.map { |part| "/" + part.to_s.gsub(/[\^~\/]/) { |m| ESC[m] } }.join('')
+        pointer.pointer
       end
       def fragment
-        "#" + pointer_path
+        pointer.fragment
       end
 
       def fingerprint
