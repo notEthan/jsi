@@ -215,6 +215,8 @@ module Scorpio
       end
 
       def deref_schema(schema)
+        schema = schema.object if schema.is_a?(Scorpio::SchemaObjectBase)
+        schema = schema.deref if schema.is_a?(Scorpio::JSON::Node)
         schema && schemas_by_id[schema['$ref']] || schema
       end
 
