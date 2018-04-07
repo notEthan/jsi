@@ -1,6 +1,7 @@
 require "scorpio/version"
 require "pathname"
 require "api_hammer/ycomb"
+require "scorpio/json-schema-fragments"
 
 module Scorpio
   def self.root

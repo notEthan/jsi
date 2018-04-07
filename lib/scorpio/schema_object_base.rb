@@ -1,6 +1,5 @@
 require 'hana'
 require 'json'
-require 'json-schema'
 
 module Scorpio
   # base class for representing an instance of an object described by a schema
