@@ -61,9 +61,8 @@ module Scorpio
 
         return self unless content.is_a?(Hash) && content['$ref'].is_a?(String)
 
-        match = content['$ref'].match(/\A#/)
-        if match
-          return self.class.new_by_type(document, Hana::Pointer.parse(match.post_match)).deref
+        if content['$ref'][/\A#/]
+          return self.class.new_by_type(document, ::JSON::Schema::Pointer.parse_fragment(content['$ref'])).deref
         end
 
         # HAX for how google does refs and ids

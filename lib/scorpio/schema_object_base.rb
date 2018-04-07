@@ -1,4 +1,3 @@
-require 'hana'
 require 'json'
 
 module Scorpio
