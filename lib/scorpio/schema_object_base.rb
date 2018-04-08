@@ -61,6 +61,7 @@ module Scorpio
       @object_mapped ||= Hash.new do |hash, property_name|
         hash[property_name] = begin
           property_schema = module_schema.subschema_for_property(property_name)
+          property_schema = property_schema && property_schema.match_to_object(object[property_name])
 
           if property_schema && object[property_name].is_a?(JSON::Node)
             Scorpio.class_for_schema(property_schema.schema_node).new(object[property_name])
@@ -117,6 +118,7 @@ module Scorpio
       @object_mapped ||= Hash.new do |hash, i|
         hash[i] = begin
           index_schema = module_schema.subschema_for_index(i)
+          index_schema = index_schema && index_schema.match_to_object(object[i])
 
           if index_schema && object[i].is_a?(JSON::Node)
             Scorpio.class_for_schema(index_schema.schema_node).new(object[i])
