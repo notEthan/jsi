@@ -26,6 +26,19 @@ module Scorpio
       end
     end
 
+    def match_to_object(object)
+      object = object.content if object.is_a?(Scorpio::JSON::Node)
+      if schema_node && schema_node['oneOf']
+        matched = schema_node['oneOf'].map(&:deref).map do |oneof|
+          oneof_matched = self.class.new(oneof).match_to_object(object)
+          if oneof_matched.validate(object)
+            oneof_matched
+          end
+        end.compact.first
+      end
+      matched || self
+    end
+
     def subschema_for_index(index)
       if schema_node['items'].is_a?(Scorpio::JSON::ArrayNode)
         if index < schema_node['items'].size
