@@ -41,6 +41,7 @@ module Scorpio
   end
 
   def self.class_for_schema(schema_node)
+    schema_node = schema_node.object if schema_node.is_a?(Scorpio::SchemaObjectBase)
     CLASS_FOR_SCHEMA[schema_node.deref]
   end
 
