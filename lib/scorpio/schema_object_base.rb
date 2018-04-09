@@ -134,7 +134,9 @@ module Scorpio
   def self.module_for_schema(schema_node_)
     Module.new.tap do |m|
       m.instance_exec(schema_node_) do |module_schema_node|
-        raise(ArgumentError, module_schema_node.inspect) unless module_schema_node.is_a?(Scorpio::JSON::Node)
+        unless module_schema_node.is_a?(Scorpio::JSON::Node)
+          raise(ArgumentError, "expected instance of Scorpio::JSON::Node; got: #{module_schema_node.pretty_inspect.chomp}")
+        end
 
         define_method(:module_schema_node) do
           module_schema_node
