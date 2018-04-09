@@ -27,8 +27,6 @@ module Scorpio
 
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
     h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
-      define_singleton_method(:schema_node) { schema_node }
-
       prepend(Scorpio.module_for_schema(schema_node))
     end
   end
@@ -146,10 +144,6 @@ module Scorpio
       m.instance_exec(schema_node_) do |module_schema_node|
         unless module_schema_node.is_a?(Scorpio::JSON::Node)
           raise(ArgumentError, "expected instance of Scorpio::JSON::Node; got: #{module_schema_node.pretty_inspect.chomp}")
-        end
-
-        define_method(:module_schema_node) do
-          module_schema_node
         end
 
         module_schema = Scorpio::Schema.new(module_schema_node)
