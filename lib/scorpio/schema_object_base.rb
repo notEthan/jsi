@@ -169,6 +169,13 @@ module Scorpio
         end
 
         module_schema = Scorpio::Schema.new(module_schema_node)
+
+        define_method(:module_schema) { module_schema }
+        define_singleton_method(:module_schema) { module_schema }
+        define_singleton_method(:included) do |includer|
+          includer.send(:define_singleton_method, :module_schema) { module_schema }
+        end
+
         if module_schema.describes_hash?
           include SchemaObjectBaseHash
 
