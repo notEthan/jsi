@@ -15,13 +15,13 @@ module Scorpio
     attr_reader :object
 
     def fully_validate
-      ::JSON::Validator.fully_validate(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
+      module_schema.fully_validate(object)
     end
     def validate
-      ::JSON::Validator.validate(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
+      module_schema.validate(object)
     end
     def validate!
-      ::JSON::Validator.validate!(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
+      module_schema.validate!(object)
     end
   end
 
