@@ -107,5 +107,22 @@ module Scorpio
         end
       end
     end
+
+    def fully_validate(object)
+      ::JSON::Validator.fully_validate(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
+    end
+    def validate(object)
+      ::JSON::Validator.validate(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
+    end
+    def validate!(object)
+      ::JSON::Validator.validate!(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
+    end
+
+    private
+    def object_to_content(object)
+      object = object.object if object.is_a?(Scorpio::SchemaObjectBase)
+      object = object.content if object.is_a?(Scorpio::JSON::Node)
+      object
+    end
   end
 end
