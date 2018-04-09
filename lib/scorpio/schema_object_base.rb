@@ -14,6 +14,10 @@ module Scorpio
 
     attr_reader :object
 
+    def fragment
+      object.fragment
+    end
+
     def fully_validate
       module_schema.fully_validate(object)
     end
