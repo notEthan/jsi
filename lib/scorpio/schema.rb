@@ -118,6 +118,11 @@ module Scorpio
       ::JSON::Validator.validate!(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
     end
 
+    def fingerprint
+      {class: self.class, schema_node: schema_node}
+    end
+    include FingerprintHash
+
     private
     def object_to_content(object)
       object = object.object if object.is_a?(Scorpio::SchemaObjectBase)

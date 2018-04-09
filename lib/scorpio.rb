@@ -79,4 +79,16 @@ module Scorpio
       hash.map { |k,v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
     end
   end
+
+  module FingerprintHash
+    def ==(other)
+      other.respond_to?(:fingerprint) && other.fingerprint == self.fingerprint
+    end
+
+    alias eql? ==
+
+    def hash
+      fingerprint.hash
+    end
+  end
 end

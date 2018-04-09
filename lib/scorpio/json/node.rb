@@ -107,16 +107,7 @@ module Scorpio
       def fingerprint
         {class: self.class, document: document, path: path}
       end
-
-      def ==(other)
-        other.fingerprint == self.fingerprint
-      end
-
-      alias eql? ==
-
-      def hash
-        fingerprint.hash
-      end
+      include FingerprintHash
     end
 
     class ArrayNode < Node

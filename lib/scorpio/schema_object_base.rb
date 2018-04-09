@@ -23,6 +23,11 @@ module Scorpio
     def validate!
       module_schema.validate!(object)
     end
+
+    def fingerprint
+      {class: self.class, object: object}
+    end
+    include FingerprintHash
   end
 
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|

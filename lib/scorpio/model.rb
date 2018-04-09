@@ -460,10 +460,6 @@ module Scorpio
       @attributes[key] = value
     end
 
-    def ==(other)
-      self.class == other.class && @attributes == other.instance_eval { @attributes }
-    end
-
     def call_api_method(method_name, call_params: nil)
       operation = self.class.method_names_by_operation.invert[method_name] || raise(ArgumentError)
       call_operation(operation, call_params: call_params)
@@ -500,10 +496,9 @@ module Scorpio
       @attributes
     end
 
-    alias eql? ==
-
-    def hash
-      [self.class, @attributes].hash
+    def fingerprint
+      {class: self.class, attributes: @attributes}
     end
+    include FingerprintHash
   end
 end
