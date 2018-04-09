@@ -27,16 +27,21 @@ module Scorpio
     end
 
     def match_to_object(object)
-      object = object.content if object.is_a?(Scorpio::JSON::Node)
-      if schema_node && schema_node['oneOf']
-        matched = schema_node['oneOf'].map(&:deref).map do |oneof|
-          oneof_matched = self.class.new(oneof).match_to_object(object)
-          if oneof_matched.validate(object)
-            oneof_matched
+      # matching oneOf is good here. one schema for one object.
+      # matching anyOf is okay. there could be more than one schema matched. it's often just one. if more
+      #   than one is a match, the problems of allOf occur.
+      # matching allOf is questionable. all of the schemas must be matched but we just return the first match.
+      #   there isn't really a better answer with the current implementation. merging the schemas together
+      #   is a thought but is not practical.
+      %w(oneOf allOf anyOf).select { |k| schema_node[k].respond_to?(:to_ary) }.each do |someof_key|
+        schema_node[someof_key].map(&:deref).map do |someof_node|
+          someof_schema = self.class.new(someof_node)
+          if someof_schema.validate(object)
+            return someof_schema.match_to_object(object)
           end
-        end.compact.first
+        end
       end
-      matched || self
+      return self
     end
 
     def subschema_for_index(index)
