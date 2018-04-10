@@ -57,6 +57,21 @@ module Scorpio
       define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
     end
 
+    def [](property_name_)
+      @object_mapped ||= Hash.new do |hash, property_name|
+        hash[property_name] = begin
+          property_schema = module_schema.subschema_for_property(property_name)
+
+          if property_schema && object[property_name].is_a?(JSON::Node)
+            Scorpio.class_for_schema(property_schema.schema_node).new(object[property_name])
+          else
+            object[property_name]
+          end
+        end
+      end
+      @object_mapped[property_name_]
+    end
+
     def merge(other)
       # we want to strip the containers from this before we merge
       # this is kind of annoying. wish I had a better way.
@@ -133,43 +148,6 @@ module Scorpio
         end
         define_method(:validate!) do
           ::JSON::Validator.validate!(module_schema_node.document, object.content, fragment: module_schema_node.fragment)
-        end
-
-        define_method(:[]) do |property_name|
-          @object_mapped ||= {}
-          @object_mapped[property_name] ||= begin
-
-            match_schema = proc do |schema_node, object|
-              object = object.content if object.is_a?(Scorpio::JSON::Node)
-              if schema_node && schema_node['oneOf']
-                matched = schema_node['oneOf'].map(&:deref).map do |oneof|
-                  oneof_matched = match_schema.call(oneof, object)
-                  if ::JSON::Validator.validate(oneof_matched.document, object, fragment: oneof_matched.fragment)
-                    oneof_matched
-                  end
-                end.compact.first
-                matched || schema_node
-              else
-                schema_node
-              end
-            end
-
-            property_schema_node = match_schema.call(subschema_for_property(property_name), object[property_name])
-            if property_schema_node && property_schema_node['type'] == 'object' && object.content[property_name].respond_to?(:to_hash)
-              Scorpio.class_for_schema(property_schema_node).new(object[property_name])
-            elsif property_schema_node && property_schema_node['type'] == 'array' && object.content[property_name].respond_to?(:to_ary)
-              object[property_name].map do |e|
-                item_schema_node = match_schema.call(property_schema_node['items'], e)
-                if item_schema_node && item_schema_node['type'] == 'object' && e.respond_to?(:to_hash)
-                  Scorpio.class_for_schema(item_schema_node).new(e)
-                else
-                  e
-                end
-              end
-            else
-              object[property_name]
-            end
-          end
         end
 
         module_schema = Scorpio::Schema.new(module_schema_node)
