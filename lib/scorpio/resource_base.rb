@@ -355,6 +355,15 @@ module Scorpio
           response_object = response.body
         end
 
+        if operation.responses
+          _, operation_response = operation.responses.detect { |k, v| k.to_s == response.status.to_s }
+          operation_response ||= operation.responses['default']
+          response_schema = operation_response.schema if operation_response
+        end
+        if response_schema
+          response_object = Scorpio.class_for_schema(response_schema).new(response_object)
+        end
+
         error_class = Scorpio.error_classes_by_status[response.status]
         error_class ||= if (400..499).include?(response.status)
           ClientError
@@ -371,11 +380,6 @@ module Scorpio
           end)
         end
 
-        if operation.responses
-          _, operation_response = operation.responses.detect { |k, v| k.to_s == response.status.to_s }
-          operation_response ||= operation.responses['default']
-          response_schema = operation_response.schema if operation_response
-        end
         initialize_options = {
           'persisted' => true,
           'source' => {'operationId' => operation.operationId, 'call_params' => call_params, 'url' => url.to_s},
