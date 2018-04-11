@@ -116,6 +116,49 @@ module Scorpio
         pointer.fragment
       end
 
+      # takes a block. the block is yielded the content of this node. the block MUST return a modified
+      # copy of that content (and NOT modify the object it is given).
+      def modified_copy
+        # we need to preserve the rest of the document, but modify the content at our path.
+        #
+        # this is actually a bit tricky. we can't modify the original document, obviously.
+        # we could do a deep copy, but that's expensive. instead, we make a copy of each array
+        # or hash in the path above this node. this node's content is modified by the caller, and
+        # that is recursively merged up to the document root. the recursion is done with a
+        # y combinator, for no other reason than that was a fun way to implement it.
+        modified_document = ycomb do |rec|
+          proc do |subdocument, subpath|
+            if subpath == []
+              yield(subdocument)
+            else
+              car = subpath[0]
+              cdr = subpath[1..-1]
+              if subdocument.respond_to?(:to_ary)
+                if car.is_a?(String) && car =~ /\A\d+\z/
+                  car = car.to_i
+                end
+                unless car.is_a?(Integer)
+                  raise(TypeError, "bad subscript #{car.pretty_inspect} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect}")
+                end
+              end
+              car_object = rec.call(subdocument[car], cdr)
+              if car_object == subdocument[car]
+                subdocument
+              elsif subdocument.respond_to?(:to_hash)
+                subdocument.merge({car => car_object})
+              elsif subdocument.respond_to?(:to_ary)
+                subdocument.dup.tap do |arr|
+                  arr[car] = car_object
+                end
+              else
+                raise(TypeError, "bad subscript: #{car.pretty_inspect} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect}")
+              end
+            end
+          end
+        end.call(document, path)
+        self.class.new(modified_document, path)
+      end
+
       def object_group_text
         "fragment=#{fragment.inspect}"
       end
@@ -206,44 +249,9 @@ module Scorpio
 
       # methods that return a modified copy
       def merge(other)
-        # we need to preserve the rest of the document, but modify the content at our path.
-        #
-        # this is actually a bit tricky. we can't modify the original document, obviously.
-        # we could do a deep copy, but that's expensive. instead, we make a copy of each array
-        # or hash in the path above this node. this node's content is merged with `other`, and
-        # that is recursively merged up to the document root. the recursion is done with a
-        # y combinator, for no other reason than that was a fun way to implement it.
-        merged_document = ycomb do |rec|
-          proc do |subdocument, subpath|
-            if subpath == []
-              subdocument.merge(other.is_a?(JSON::Node) ? other.content : other)
-            else
-              car = subpath[0]
-              cdr = subpath[1..-1]
-              if subdocument.is_a?(Array)
-                if car.is_a?(String) && car =~ /\A\d+\z/
-                  car = car.to_i
-                end
-                unless car.is_a?(Integer)
-                  raise(TypeError, "bad subscript #{car.pretty_inspect} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect}")
-                end
-              end
-              car_object = rec.call(subdocument[car], cdr)
-              if car_object == subdocument[car]
-                subdocument
-              elsif subdocument.is_a?(Hash)
-                subdocument.merge({car => car_object})
-              elsif subdocument.is_a?(Array)
-                subdocument.dup.tap do |arr|
-                  arr[car] = car_object
-                end
-              else
-                raise(TypeError, "bad subscript: #{car.pretty_inspect} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect}")
-              end
-            end
-          end
-        end.call(document, path)
-        self.class.new(merged_document, path)
+        modified_copy do |content_to_modify|
+          content_to_modify.merge(other.is_a?(JSON::Node) ? other.content : other)
+        end
       end
     end
   end
