@@ -76,10 +76,12 @@ module Scorpio
 
   class << self
     def stringify_symbol_keys(hash)
-      unless hash.is_a?(Hash)
+      unless hash.respond_to?(:to_hash)
         raise ArgumentError, "expected argument to be a Hash; got #{hash.class}: #{hash.pretty_inspect}"
       end
-      hash.map { |k,v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
+      Scorpio::Typelike.modified_copy(hash) do |hash_|
+        hash_.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
+      end
     end
   end
 
