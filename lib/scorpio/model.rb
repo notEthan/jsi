@@ -496,6 +496,23 @@ module Scorpio
       @attributes
     end
 
+    def inspect
+      "\#<#{self.class.name} #{attributes.inspect}>"
+    end
+    def pretty_print(q)
+      q.instance_exec(self) do |obj|
+        text "\#<#{obj.class.name}"
+        group_sub {
+          nest(2) {
+            breakable ' '
+            pp obj.attributes
+          }
+        }
+        breakable ''
+        text '>'
+      end
+    end
+
     def fingerprint
       {class: self.class, attributes: @attributes}
     end
