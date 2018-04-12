@@ -34,12 +34,12 @@ module Scorpio
         end
       end
     end
-    define_inheritable_accessor(:swagger_document_class)
-    define_inheritable_accessor(:swagger_document, on_set: proc { self.swagger_document_class = self })
+    define_inheritable_accessor(:openapi_document_class)
+    define_inheritable_accessor(:openapi_document, on_set: proc { self.openapi_document_class = self })
     define_inheritable_accessor(:resource_name, update_methods: true)
     define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
       definition_keys.each do |key|
-        swagger_document_class.models_by_schema = swagger_document_class.models_by_schema.merge(schemas_by_key[key] => self)
+        openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schemas_by_key[key] => self)
       end
     end)
     define_inheritable_accessor(:schemas_by_key, default_value: {})
@@ -52,11 +52,11 @@ module Scorpio
     define_inheritable_accessor(:faraday_adapter, default_getter: proc { Faraday.default_adapter })
     define_inheritable_accessor(:faraday_response_middleware, default_value: [])
     class << self
-      def set_swagger_document(swagger_document)
-        if swagger_document.is_a?(Hash)
-          swagger_document = OpenAPI::Document.new(swagger_document)
+      def set_openapi_document(openapi_document)
+        if openapi_document.is_a?(Hash)
+          openapi_document = OpenAPI::Document.new(openapi_document)
         end
-        swagger_document.paths.each do |path, path_item|
+        openapi_document.paths.each do |path, path_item|
           path_item.each do |http_method, operation|
             next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
             operation.path = path
@@ -64,12 +64,12 @@ module Scorpio
           end
         end
 
-        swagger_document.validate!
+        openapi_document.validate!
         self.schemas_by_path = {}
-        self.swagger_document = swagger_document
-        (swagger_document.definitions || {}).each do |schema_key, schema|
+        self.openapi_document = openapi_document
+        (openapi_document.definitions || {}).each do |schema_key, schema|
           if schema['id']
-            # this isn't actually allowed by swagger's definition. whatever.
+            # this isn't actually allowed by openapi's definition. whatever.
             schemas_by_id[schema['id']] = schema
           end
           schemas_by_path["#/definition/#{schema_key}"] = schema
@@ -167,7 +167,7 @@ module Scorpio
       end
 
       def update_class_and_instance_api_methods
-        swagger_document.paths.each do |path, path_item|
+        openapi_document.paths.each do |path, path_item|
           path_item.each do |http_method, operation|
             next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
             operation.path = path
