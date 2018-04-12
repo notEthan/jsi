@@ -27,6 +27,22 @@ module Scorpio
     def validate!
       module_schema.validate!(object)
     end
+    def inspect
+      "\#<#{self.class.name} #{object.inspect}>"
+    end
+    def pretty_print(q)
+      q.instance_exec(self) do |obj|
+        text "\#<#{obj.class.name}"
+        group_sub {
+          nest(2) {
+            breakable ' '
+            pp obj.object
+          }
+        }
+        breakable ''
+        text '>'
+      end
+    end
 
     def fingerprint
       {class: self.class, object: object}
@@ -45,7 +61,31 @@ module Scorpio
     CLASS_FOR_SCHEMA[schema_node.deref]
   end
 
+  # this invokes methods of type-like modules (Arraylike, Hashlike) but only if the #object
+  # is of the expected class. since the object may be anything - it will just not be a valid
+  # instance of its schema - we can't assume that the methods on the Xlike modules will work
+  # (e.g. trying to call #each_index on an #object that's not array-like)
+  module SchemaObjectMightBeLike
+    def inspect(*a, &b)
+      if object.is_a?(expected_object_class)
+        super
+      else
+        SchemaObjectBase.instance_method(:inspect).bind(self).call(*a, &b)
+      end
+    end
+    def pretty_print(*a, &b)
+      if object.is_a?(expected_object_class)
+        super
+      else
+        SchemaObjectBase.instance_method(:pretty_print).bind(self).call(*a, &b)
+      end
+    end
+  end
   module SchemaObjectBaseHash
+    def expected_object_class
+      Scorpio::JSON::HashNode
+    end
+
     # Hash methods
     def each
       return to_enum(__method__) { object.size } unless block_given?
@@ -59,6 +99,7 @@ module Scorpio
     end
 
     include Hashlike
+    include SchemaObjectMightBeLike
 
     # hash methods - define only those which do not modify the hash.
 
@@ -117,6 +158,10 @@ module Scorpio
   end
 
   module SchemaObjectBaseArray
+    def expected_object_class
+      Scorpio::JSON::ArrayNode
+    end
+
     def each
       return to_enum(__method__) { object.size } unless block_given?
       object.each_index { |i| yield(self[i]) }
@@ -129,6 +174,7 @@ module Scorpio
     end
 
     include Arraylike
+    include SchemaObjectMightBeLike
 
     def [](i_)
       # it would make more sense for this to be an array here, but but Array doesn't have a nice memoizing
