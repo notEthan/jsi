@@ -45,7 +45,7 @@ module Scorpio
 
     class RestDescription
       def to_openapi_document(options = {})
-        Scorpio::OpenAPI::Document.new(to_openapi_hash(options))
+        Scorpio::OpenAPI::V2::Document.new(to_openapi_hash(options))
       end
 
       def to_openapi_hash(options = {})

@@ -50,7 +50,7 @@ module Scorpio
     define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
       definition_keys.each do |key|
         schema_as_key = schemas_by_key[key]
-        schema_as_key = schema_as_key.object if schema_as_key.is_a?(Scorpio::OpenAPI::Schema)
+        schema_as_key = schema_as_key.object if schema_as_key.is_a?(Scorpio::SchemaObjectBase)
         schema_as_key = schema_as_key.content if schema_as_key.is_a?(Scorpio::JSON::Node)
 
         openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schema_as_key => self)
@@ -89,12 +89,12 @@ module Scorpio
     class << self
       def set_openapi_document(openapi_document)
         if openapi_document.is_a?(Hash)
-          openapi_document = OpenAPI::Document.new(openapi_document)
+          openapi_document = OpenAPI::V2::Document.new(openapi_document)
         end
         openapi_document.paths.each do |path, path_item|
           path_item.each do |http_method, operation|
             next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
-            unless operation.is_a?(Scorpio::OpenAPI::Operation)
+            unless operation.is_a?(Scorpio::OpenAPI::V2::Operation)
               raise("bad operation at #{operation.fragment}: #{operation.pretty_inspect}")
             end
             operation.path = path
@@ -194,7 +194,7 @@ module Scorpio
       def method_names_by_operation
         @method_names_by_operation ||= Hash.new do |h, operation|
           h[operation] = begin
-            raise(ArgumentError, operation.pretty_inspect) unless operation.is_a?(Scorpio::OpenAPI::Operation)
+            raise(ArgumentError, operation.pretty_inspect) unless operation.is_a?(Scorpio::OpenAPI::V2::Operation)
 
             if operation.tags.respond_to?(:to_ary) && operation.tags.include?(tag_name) && operation.operationId =~ /\A#{Regexp.escape(tag_name)}\.(\w+)\z/
               method_name = $1
@@ -472,7 +472,7 @@ module Scorpio
               {key => response_object_to_instances(value, schema_for_value, initialize_options)}
             end.inject(object.class.new, &:update)
             schema_as_key = schema
-            schema_as_key = schema_as_key.object if schema_as_key.is_a?(Scorpio::OpenAPI::Schema)
+            schema_as_key = schema_as_key.object if schema_as_key.is_a?(Scorpio::SchemaObjectBase)
             schema_as_key = schema_as_key.content if schema_as_key.is_a?(Scorpio::JSON::Node)
             model = models_by_schema[schema_as_key]
             if model
