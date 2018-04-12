@@ -1,0 +1,95 @@
+---
+swagger: '2.0'
+info:
+  title: Scorpio Blog
+  description: REST service for the Scorpio Blog
+  version: ''
+  contact: {}
+host: blog
+basePath: "/"
+schemes: []
+consumes:
+- application/json
+produces:
+- application/json
+paths:
+  "/v1/articles":
+    get:
+      operationId: articles.index
+      responses:
+        default:
+          description: default response
+          schema:
+            type: array
+            items:
+              "$ref": "#/definitions/articles"
+    post:
+      operationId: articles.post
+      parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/articles"
+      responses:
+        default:
+          description: default response
+          schema:
+            "$ref": "#/definitions/articles"
+  "/v1/articles_with_root":
+    get:
+      operationId: articles.index_with_root
+      responses:
+        default:
+          description: default response
+          schema:
+            type: object
+            properties:
+              articles:
+                type: array
+                items:
+                  "$ref": "#/definitions/articles"
+              best_article:
+                "$ref": "#/definitions/articles"
+              version:
+                type: string
+  "/v1/articles/{id}":
+    get:
+      operationId: articles.read
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      responses:
+        default:
+          description: default response
+          schema:
+            "$ref": "#/definitions/articles"
+    patch:
+      operationId: articles.patch
+      parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+      - name: body
+        in: body
+        required: true
+        schema:
+          "$ref": "#/definitions/articles"
+      responses:
+        default:
+          description: default response
+          schema:
+            "$ref": "#/definitions/articles"
+definitions:
+  articles:
+    type: object
+    properties:
+      id:
+        type: integer
+      title:
+        type: string
+      author_id:
+        type: integer
