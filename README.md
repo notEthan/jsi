@@ -5,6 +5,8 @@
 
 Scorpio is a library intended to make use of an OpenAPI document describing a service you are consuming or implementing, for various purposes.
 
+Note: The canonical location of this README is on [RubyDoc](http://rubydoc.info/gems/scorpio/). When viewed on [Github](https://github.com/notEthan/scorpio/), it may be inconsistent with the latest released gem, and Yardoc links will not work.
+
 ## Background
 
 To start with, you need an OpenAPI v2 (formerly known as Swagger) document describing a service. v3 support is planned. This document can be written by hand or sometimes generated from other existing sources. The creation of an OpenAPI document specifying your service is outside the scope of Scorpio. Here are several resources on OpenAPI:
