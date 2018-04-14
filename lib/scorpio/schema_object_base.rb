@@ -28,11 +28,11 @@ module Scorpio
       module_schema.validate!(object)
     end
     def inspect
-      "\#<#{self.class.name} #{object.inspect}>"
+      "\#<#{self.class.inspect} #{object.inspect}>"
     end
     def pretty_print(q)
       q.instance_exec(self) do |obj|
-        text "\#<#{obj.class.name}"
+        text "\#<#{obj.class.inspect}"
         group_sub {
           nest(2) {
             breakable ' '

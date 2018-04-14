@@ -497,11 +497,11 @@ module Scorpio
     end
 
     def inspect
-      "\#<#{self.class.name} #{attributes.inspect}>"
+      "\#<#{self.class.inspect} #{attributes.inspect}>"
     end
     def pretty_print(q)
       q.instance_exec(self) do |obj|
-        text "\#<#{obj.class.name}"
+        text "\#<#{obj.class.inspect}"
         group_sub {
           nest(2) {
             breakable ' '
