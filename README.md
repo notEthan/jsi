@@ -1,5 +1,8 @@
 # Scorpio
 
+[![Build Status](https://travis-ci.org/notEthan/scorpio.svg?branch=master)](https://travis-ci.org/notEthan/scorpio)
+[![Coverage Status](https://coveralls.io/repos/github/notEthan/scorpio/badge.svg)](https://coveralls.io/github/notEthan/scorpio)
+
 Scorpio is a library intended to make use of an OpenAPI document describing a service you are consuming or implementing, for various purposes.
 
 ## Background
