@@ -26,6 +26,59 @@ module Scorpio
       end
     end
 
+    def id
+      @id ||= begin
+        # start from schema_node and ascend parents looking for an 'id' property.
+        # append a fragment to that id (appending to an existing fragment if there
+        # is one) consisting of the path from that parent to our schema_node.
+        node_for_id = schema_node
+        path_from_id_node = []
+        done = false
+
+        while !done
+          # TODO: track what parents are schemas. somehow.
+          # look at 'id' if node_for_id is a schema, or the document root.
+          # decide whether to look at '$id' for all parent nodes or also just schemas.
+          if node_for_id.path.empty? || node_for_id.object_id == schema_node.object_id
+            # I'm only looking at 'id' for the document root and the schema node
+            # until I track what parents are schemas.
+            parent_id = node_for_id['$id'] || node_for_id['id']
+          else
+            # will look at '$id' everywhere since it is less likely to show up outside schemas than
+            # 'id', but it will be better to only look at parents that are schemas for this too.
+            parent_id = node_for_id['$id']
+          end
+
+          if parent_id || node_for_id.path.empty?
+            done = true
+          else
+            path_from_id_node.unshift(node_for_id.path.last)
+            node_for_id = node_for_id.parent_node
+          end
+        end
+        if parent_id
+          parent_auri = Addressable::URI.parse(parent_id)
+        else
+          node_for_id = schema_node.document_node
+          validator = ::JSON::Validator.new(node_for_id.content, nil)
+          # TODO not good instance_exec'ing into another library's ivars
+          parent_auri = validator.instance_exec { @base_schema }.uri
+        end
+        if parent_auri.fragment
+          # add onto the fragment
+          parent_id_path = ::JSON::Schema::Pointer.new(:fragment, '#' + parent_auri.fragment).reference_tokens
+          path_from_id_node = parent_id_path + path_from_id_node
+          parent_auri.fragment = nil
+        #else: no fragment so parent_id good as is
+        end
+
+        fragment = ::JSON::Schema::Pointer.new(:reference_tokens, path_from_id_node).fragment
+        id = parent_auri.to_s + fragment
+
+        id
+      end
+    end
+
     def match_to_object(object)
       # matching oneOf is good here. one schema for one object.
       # matching anyOf is okay. there could be more than one schema matched. it's often just one. if more
