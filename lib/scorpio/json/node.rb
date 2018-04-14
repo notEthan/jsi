@@ -32,7 +32,7 @@ module Scorpio
       # a Node represents the content of a document at a given path.
       def initialize(document, path)
         raise(ArgumentError, "path must be an array. got: #{path.pretty_inspect} (#{path.class})") unless path.is_a?(Array)
-        define_singleton_method(:document) { document }
+        @document = document
         @path = path.dup.freeze
         @pointer = ::JSON::Schema::Pointer.new(:reference_tokens, path)
       end
