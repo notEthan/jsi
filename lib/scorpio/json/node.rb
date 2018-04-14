@@ -2,7 +2,21 @@ require 'scorpio/typelike_modules'
 
 module Scorpio
   module JSON
+    # Scorpio::JSON::Node is an abstraction of a node within a JSON document.
+    # it aims to act like the underlying data type of the node's content
+    # (Hash or Array, generally) in most cases, defining methods of Hash
+    # and Array which delegate to the content. However, destructive methods
+    # are not defined, as modifying the content of a node would change it
+    # for any other nodes in the document that contain or refer to it.
+    #
+    # methods that return a modified copy such as #merge are defined, and
+    # return a copy of the document with the content of the node modified.
+    # the original node's document and content are untouched.
     class Node
+      # if the content of the document at the given path is a Hash, returns
+      # a HashNode; if an Array, returns ArrayNode. otherwise returns a
+      # regular Node, though, for the most part this will be called with Hash
+      # or Array content.
       def self.new_by_type(document, path)
         node = Node.new(document, path)
         content = node.content
@@ -15,6 +29,7 @@ module Scorpio
         end
       end
 
+      # a Node represents the content of a document at a given path.
       def initialize(document, path)
         raise(ArgumentError, "path must be an array. got: #{path.pretty_inspect} (#{path.class})") unless path.is_a?(Array)
         define_singleton_method(:document) { document }
@@ -22,10 +37,14 @@ module Scorpio
         @pointer = ::JSON::Schema::Pointer.new(:reference_tokens, path)
       end
 
+      # the path of this Node within its document
       attr_reader :path
+      # the document containing this Node at is path
       attr_reader :document
+      # ::JSON::Schema::Pointer representing the path to this node within its document
       attr_reader :pointer
 
+      # the raw content of this Node from the underlying document at this Node's path.
       def content
         pointer.evaluate(document)
       end
@@ -73,6 +92,7 @@ module Scorpio
         return self
       end
 
+      # a Node at the root of the document
       def document_node
         Node.new_by_type(document, [])
       end
@@ -87,9 +107,11 @@ module Scorpio
         end
       end
 
+      # the pointer path to this node within the document, per RFC 6901 https://tools.ietf.org/html/rfc6901
       def pointer_path
         pointer.pointer
       end
+      # the pointer fragment to this node within the document, per RFC 6901 https://tools.ietf.org/html/rfc6901
       def fragment
         pointer.fragment
       end
