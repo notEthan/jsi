@@ -77,6 +77,16 @@ module Scorpio
         Node.new_by_type(document, [])
       end
 
+      # the parent of this node. if this node is the document root (its path is empty), raises
+      # ::JSON::Schema::Pointer::ReferenceError.
+      def parent_node
+        if path.empty?
+          raise(::JSON::Schema::Pointer::ReferenceError, "cannot access parent of root node:\n#{pretty_inspect.chomp}")
+        else
+          Node.new_by_type(document, path[0...-1])
+        end
+      end
+
       def pointer_path
         pointer.pointer
       end
