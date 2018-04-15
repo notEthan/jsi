@@ -173,9 +173,13 @@ module Scorpio
     end
 
     class HashNode < Node
-      def each
+      def each(&block)
         return to_enum(__method__) { content.size } unless block_given?
-        content.each_key { |k| yield k, self[k] }
+        if block.arity > 1
+          content.each_key { |k| yield k, self[k] }
+        else
+          content.each_key { |k| yield [k, self[k]] }
+        end
         self
       end
       include Enumerable
