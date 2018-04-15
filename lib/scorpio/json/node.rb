@@ -137,7 +137,7 @@ module Scorpio
       end
 
       def fingerprint
-        {class: self.class, document: document, path: path}
+        {is_node: self.is_a?(Scorpio::JSON::Node), document: document, path: path}
       end
       include FingerprintHash
     end
