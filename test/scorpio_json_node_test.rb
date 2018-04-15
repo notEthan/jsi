@@ -1,6 +1,8 @@
 require_relative 'test_helper'
 
 describe Scorpio::JSON::Node do
+  let(:node) { Scorpio::JSON::Node.new(document, []) }
+
   describe 'initialization' do
     it 'initializes' do
       node = Scorpio::JSON::Node.new({'a' => 'b'}, [])
@@ -41,7 +43,7 @@ describe Scorpio::JSON::Node do
   end
   describe '#[]' do
     describe 'without dereferencing' do
-      let(:node) { Scorpio::JSON::Node.new([0, {'x' => [{'a' => ['b']}]}], []) }
+      let(:document) { [0, {'x' => [{'a' => ['b']}]}] }
       it 'subscripts arrays and hashes' do
         assert_equal('b', node[1]['x'][0]['a'][0])
       end
@@ -65,7 +67,6 @@ describe Scorpio::JSON::Node do
           'a' => {'$ref' => '#/foo', 'description' => 'hi'}, # not sure a description is actually allowed here, whatever
         }
       end
-      let(:node) { Scorpio::JSON::Node.new(document, []) }
       it 'subscripts a node consisting of a $ref WITHOUT following' do
         subscripted = node['a']
         assert_equal({'$ref' => '#/foo', 'description' => 'hi'}, subscripted.content)
