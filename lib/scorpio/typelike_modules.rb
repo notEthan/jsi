@@ -10,6 +10,10 @@ module Scorpio
     # methods which return a modified copy, which you'd expect to be of the same class as the receiver.
     # there are some ambiguous ones that are omitted, like #invert.
     SAFE_MODIFIED_COPY_METHODS = %w(compact merge reject select transform_values)
+    SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
+    SAFE_METHODS.each do |method_name|
+      define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+    end
 
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
@@ -48,6 +52,11 @@ module Scorpio
     DESTRUCTIVE_METHODS = %w(<< clear collect! compact! concat delete delete_at delete_if fill flatten! insert keep_if map! pop push reject! replace reverse! rotate! select! shift shuffle! slice! sort! sort_by! uniq! unshift)
     # methods which return a modified copy, which you'd expect to be of the same class as the receiver.
     SAFE_MODIFIED_COPY_METHODS = %w(compact reject select)
+
+    SAFE_METHODS = SAFE_INDEX_ONLY_METHODS | SAFE_INDEX_ELEMENT_METHODS
+    SAFE_METHODS.each do |method_name|
+      define_method(method_name) { |*a, &b| to_ary.public_send(method_name, *a, &b) }
+    end
 
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
