@@ -191,7 +191,6 @@ module Scorpio
         content.each_index { |i| yield self[i] }
         self
       end
-      include Enumerable
 
       def to_ary
         to_a
@@ -225,7 +224,6 @@ module Scorpio
         end
         self
       end
-      include Enumerable
 
       def to_hash
         inject({}) { |h, (k, v)| h[k] = v; h }
