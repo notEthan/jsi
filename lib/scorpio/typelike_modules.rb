@@ -22,6 +22,10 @@ module Scorpio
       "\#{<#{self.class.name}#{object_group_text}> #{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
     end
 
+    def to_s
+      inspect
+    end
+
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
@@ -65,6 +69,10 @@ module Scorpio
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
       "\#[<#{self.class.name}#{object_group_text}> #{self.map { |e| e.inspect }.join(', ')}]"
+    end
+
+    def to_s
+      inspect
     end
 
     def pretty_print(q)
