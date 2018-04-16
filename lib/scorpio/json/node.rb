@@ -199,19 +199,19 @@ module Scorpio
 
       include Arraylike
 
-      # array methods - define only those which do not modify the array.
-
-      # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a)
-      index_methods = %w(each_index empty? length size)
-      index_methods.each do |method_name|
+      # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
+      # we override these methods from Arraylike
+      SAFE_INDEX_ONLY_METHODS.each do |method_name|
         define_method(method_name) { |*a, &b| content.public_send(method_name, *a, &b) }
       end
 
-      # methods which use index and value.
-      # flatten is omitted. flatten should not exist.
-      array_methods = %w(& | * + - <=> abbrev assoc at bsearch bsearch_index combination compact count cycle dig fetch index first include? join last pack permutation rassoc repeated_combination reject reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip)
-      array_methods.each do |method_name|
-        define_method(method_name) { |*a, &b| to_a.public_send(method_name, *a, &b) }
+      # methods that return a modified copy
+      SAFE_MODIFIED_COPY_METHODS.each do |method_name|
+        define_method(method_name) do |*a, &b|
+          modified_copy do |content_to_modify|
+            content_to_modify.public_send(method_name, *a, &b)
+          end
+        end
       end
     end
 
@@ -233,24 +233,17 @@ module Scorpio
 
       include Hashlike
 
-      # hash methods - define only those which do not modify the hash.
-
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
-      key_methods = %w(each_key empty? include? has_key? key key? keys length member? size)
-      key_methods.each do |method_name|
+      SAFE_KEY_ONLY_METHODS.each do |method_name|
         define_method(method_name) { |*a, &b| content.public_send(method_name, *a, &b) }
       end
 
-      # methods which use key and value
-      hash_methods = %w(any? compact dig each_pair each_value fetch fetch_values has_value? invert rassoc reject select to_h transform_values value? values values_at)
-      hash_methods.each do |method_name|
-        define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
-      end
-
       # methods that return a modified copy
-      def merge(other)
-        modified_copy do |content_to_modify|
-          content_to_modify.merge(other.is_a?(JSON::Node) ? other.content : other)
+      SAFE_MODIFIED_COPY_METHODS.each do |method_name|
+        define_method(method_name) do |*a, &b|
+          modified_copy do |content_to_modify|
+            content_to_modify.public_send(method_name, *a, &b)
+          end
         end
       end
     end
