@@ -57,8 +57,52 @@ describe Scorpio::JSON::HashNode do
   # these methods just delegate to Hash so not going to test excessively
   describe 'key only methods' do
     it('#each_key') { assert_equal(['a', 'c'], node.each_key.to_a) }
+    it('#empty?')   { assert_equal(false, node.empty?) }
+    it('#has_key?') { assert_equal(true, node.has_key?('a')) }
+    it('#include?') { assert_equal(false, node.include?('q')) }
+    it('#key?')     { assert_equal(true, node.key?('c')) }
+    it('#keys')     { assert_equal(['a', 'c'], node.keys) }
+    it('#length')   { assert_equal(2, node.length) }
+    it('#member?')  { assert_equal(false, node.member?(0)) }
+    it('#size')     { assert_equal(2, node.size) }
   end
   describe 'key + value methods' do
-    it('#any?') { assert_equal(true, node.any? { |k, v| k == 'a' }) }
+    it('#<')            { assert_equal(true, node < {'a' => 'b', 'c' => node['c'], 'x' => 'y'}) } if {}.respond_to?(:<)
+    it('#<=')           { assert_equal(true, node <= node) } if {}.respond_to?(:<=)
+    it('#>')            { assert_equal(true, node > {}) } if {}.respond_to?(:>)
+    it('#>=')           { assert_equal(false, node >= {'foo' => 'bar'}) } if {}.respond_to?(:>=)
+    it('#any?')         { assert_equal(false, node.any? { |k, v| v == 3 }) }
+    it('#assoc')        { assert_equal(['a', 'b'], node.assoc('a')) }
+    it('#dig')          { assert_equal('e', node.dig('c', 'd')) } if {}.respond_to?(:dig)
+    it('#each_pair')    { assert_equal([['a', 'b'], ['c', node['c']]], node.each_pair.to_a) }
+    it('#each_value')   { assert_equal(['b', node['c']], node.each_value.to_a) }
+    it('#fetch')        { assert_equal('b', node.fetch('a')) }
+    it('#fetch_values') { assert_equal(['b'], node.fetch_values('a')) } if {}.respond_to?(:fetch_values)
+    it('#has_value?')   { assert_equal(true, node.has_value?('b')) }
+    it('#invert')       { assert_equal({'b' => 'a', node['c'] => 'c'}, node.invert) }
+    it('#key')          { assert_equal('a', node.key('b')) }
+    it('#rassoc')       { assert_equal(['a', 'b'], node.rassoc('b')) }
+    it('#to_h')         { assert_equal({'a' => 'b', 'c' => node['c']}, node.to_h) }
+    it('#to_proc')      { assert_equal('b', node.to_proc.call('a')) } if {}.respond_to?(:to_proc)
+    it('#value?')       { assert_equal(false, node.value?('0')) }
+    it('#values')       { assert_equal(['b', node['c']], node.values) }
+    it('#values_at')    { assert_equal(['b'], node.values_at('a')) }
+  end
+  describe 'modified copy methods' do
+    # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
+    # tests of all the modified copy methods here
+    it('#merge')            { assert_equal(node, node.merge({})) }
+    it('#transform_values') { assert_equal(Scorpio::JSON::Node.new_by_type({'a' => nil, 'c' => nil}, []), node.transform_values { |_| nil}) }
+    it('#reject')           { assert_equal(Scorpio::JSON::Node.new_by_type({}, []), node.reject { true }) }
+    it('#select')           { assert_equal(Scorpio::JSON::Node.new_by_type({}, []), node.select { false }) }
+    # Hash#compact only available as of ruby 2.5.0
+    if {}.respond_to?(:compact)
+      it('#compact')          { assert_equal(node, node.compact) }
+    end
+  end
+  Scorpio::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+    it("does not respond to destructive method #{destructive_method_name}") do
+      assert(!node.respond_to?(destructive_method_name))
+    end
   end
 end
