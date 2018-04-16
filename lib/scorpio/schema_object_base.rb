@@ -101,19 +101,9 @@ module Scorpio
     include Hashlike
     include SchemaObjectMightBeLike
 
-    # hash methods - define only those which do not modify the hash.
-
-    # methods that don't look at the value; can skip the overhead of #[]
-    key_methods = %w(each_key empty? include? has_key? key key? keys length member? size)
-    key_methods.each do |method_name|
+    # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
+    SAFE_KEY_ONLY_METHODS.each do |method_name|
       define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
-    end
-
-    # methods which use key and value
-    hash_methods = %w(compact each_pair each_value fetch fetch_values has_value? invert
-      rassoc reject select to_h transform_values value? values values_at)
-    hash_methods.each do |method_name|
-      define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
     end
 
     def [](property_name_)
@@ -175,6 +165,12 @@ module Scorpio
 
     include Arraylike
     include SchemaObjectMightBeLike
+
+    # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
+    # we override these methods from Arraylike
+    SAFE_INDEX_ONLY_METHODS.each do |method_name|
+      define_method(method_name) { |*a, &b| OBJECT.public_send(method_name, *a, &b) }
+    end
 
     def [](i_)
       # it would make more sense for this to be an array here, but but Array doesn't have a nice memoizing
