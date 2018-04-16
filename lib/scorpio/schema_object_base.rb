@@ -5,10 +5,15 @@ module Scorpio
   # base class for representing an instance of an object described by a schema
   class SchemaObjectBase
     def initialize(object)
-      if object.is_a?(Scorpio::JSON::Node)
-        @object = object
-      else
-        @object = Scorpio::JSON::Node.new_by_type(object, [])
+      unless object.is_a?(Scorpio::JSON::Node)
+        object = Scorpio::JSON::Node.new_by_type(object, [])
+      end
+      @object = object
+
+      if module_schema.describes_hash? && @object.is_a?(Scorpio::JSON::HashNode)
+        extend SchemaObjectBaseHash
+      elsif module_schema.describes_array? && @object.is_a?(Scorpio::JSON::ArrayNode)
+        extend SchemaObjectBaseArray
       end
     end
 
@@ -61,31 +66,7 @@ module Scorpio
     CLASS_FOR_SCHEMA[schema_node.deref]
   end
 
-  # this invokes methods of type-like modules (Arraylike, Hashlike) but only if the #object
-  # is of the expected class. since the object may be anything - it will just not be a valid
-  # instance of its schema - we can't assume that the methods on the Xlike modules will work
-  # (e.g. trying to call #each_index on an #object that's not array-like)
-  module SchemaObjectMightBeLike
-    def inspect(*a, &b)
-      if object.is_a?(expected_object_class)
-        super
-      else
-        SchemaObjectBase.instance_method(:inspect).bind(self).call(*a, &b)
-      end
-    end
-    def pretty_print(*a, &b)
-      if object.is_a?(expected_object_class)
-        super
-      else
-        SchemaObjectBase.instance_method(:pretty_print).bind(self).call(*a, &b)
-      end
-    end
-  end
   module SchemaObjectBaseHash
-    def expected_object_class
-      Scorpio::JSON::HashNode
-    end
-
     # Hash methods
     def each
       return to_enum(__method__) { object.size } unless block_given?
@@ -98,7 +79,6 @@ module Scorpio
     end
 
     include Hashlike
-    include SchemaObjectMightBeLike
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
     SAFE_KEY_ONLY_METHODS.each do |method_name|
@@ -147,10 +127,6 @@ module Scorpio
   end
 
   module SchemaObjectBaseArray
-    def expected_object_class
-      Scorpio::JSON::ArrayNode
-    end
-
     def each
       return to_enum(__method__) { object.size } unless block_given?
       object.each_index { |i| yield(self[i]) }
@@ -162,7 +138,6 @@ module Scorpio
     end
 
     include Arraylike
-    include SchemaObjectMightBeLike
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
     # we override these methods from Arraylike
@@ -205,15 +180,11 @@ module Scorpio
         end
 
         if module_schema.describes_hash?
-          include SchemaObjectBaseHash
-
           module_schema.described_hash_property_names.each do |property_name|
             define_method(property_name) do
               self[property_name]
             end
           end
-        elsif module_schema.describes_array?
-          include SchemaObjectBaseArray
         end
       end
     end
