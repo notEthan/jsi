@@ -4,6 +4,20 @@ require 'scorpio/typelike_modules'
 module Scorpio
   # base class for representing an instance of an object described by a schema
   class SchemaObjectBase
+    class << self
+      def id
+        module_schema.id
+      end
+
+      def inspect
+        if !name || name =~ /\AScorpio::SchemaClasses::/
+          %Q(#{SchemaClasses.inspect}[#{id.inspect}])
+        else
+          %Q(#{name} (#{id}))
+        end
+      end
+    end
+
     def initialize(object)
       if object.is_a?(Scorpio::JSON::Node)
         @object = object
