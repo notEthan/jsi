@@ -70,6 +70,14 @@ describe Scorpio::JSON::ArrayNode do
     it('#pack')                 { assert_equal(' ', Scorpio::JSON::Node.new_by_type([32], []).pack('c')) }
     it('#permutation')          { assert_equal([['a'], [node[1]], [node[2]]], node.permutation(1).to_a) }
     it('#product')              { assert_equal([], node.product([])) }
+    # due to differences in implementation between #assoc and #rassoc, the reason for which
+    # I cannot begin to fathom, assoc works but rassoc does not because rassoc has different
+    # type checking than assoc for the array(like) array elements.
+    # compare:
+    # assoc:  https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3780-L3813
+    # rassoc: https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3815-L3847
+    # for this reason, rassoc is NOT defined on Arraylike and #content must be called.
+    it('#rassoc')               { assert_equal(['b', 'q'], node.content.rassoc('q')) }
     it('#repeated_combination') { assert_equal([[]], node.repeated_combination(0).to_a) }
     it('#repeated_permutation') { assert_equal([[]], node.repeated_permutation(0).to_a) }
     it('#reverse')              { assert_equal([node[2], node[1], 'a'], node.reverse) }
