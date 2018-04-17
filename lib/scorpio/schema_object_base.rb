@@ -70,6 +70,10 @@ module Scorpio
 
   # this module is just a namespace for schema classes.
   module SchemaClasses
+    def self.[](id)
+      @classes_by_id[id]
+    end
+    @classes_by_id = {}
   end
 
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
@@ -80,6 +84,7 @@ module Scorpio
       name = 'X' + name unless name[/\A[a-zA-Z_]/]
       name = name[0].upcase + name[1..-1]
       SchemaClasses.const_set(name, self)
+      SchemaClasses.instance_exec(id, self) { |id_, klass| @classes_by_id[id_] = klass }
 
       self
     end
