@@ -28,6 +28,11 @@ class ScorpioSpec < Minitest::Spec
   around do |test|
     DatabaseCleaner.cleaning { test.call }
   end
+
+  def assert_equal exp, act, msg = nil
+    msg = message(msg, E) { diff exp, act }
+    assert exp == act, msg
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec
