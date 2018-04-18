@@ -47,7 +47,6 @@ module Scorpio
     # (except in the unlikely event it is overwritten by a subclass)
     define_inheritable_accessor(:openapi_document_class)
     # the openapi document
-    define_inheritable_accessor(:openapi_document, on_set: proc { self.openapi_document_class = self })
     define_inheritable_accessor(:tag_name, update_methods: true)
     define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
       definition_keys.each do |key|
@@ -89,10 +88,24 @@ module Scorpio
     define_inheritable_accessor(:faraday_adapter, default_getter: proc { Faraday.default_adapter })
     define_inheritable_accessor(:faraday_response_middleware, default_value: [])
     class << self
-      def set_openapi_document(openapi_document)
+      def openapi_document
+        nil
+      end
+
+      def openapi_document=(openapi_document)
+        self.openapi_document_class = self
+
         if openapi_document.is_a?(Hash)
           openapi_document = OpenAPI::V2::Document.new(openapi_document)
         end
+
+        begin
+          singleton_class.instance_exec { remove_method(:openapi_document) }
+        rescue NameError
+        end
+        define_singleton_method(:openapi_document) { openapi_document }
+        update_dynamic_methods
+
         openapi_document.paths.each do |path, path_item|
           path_item.each do |http_method, operation|
             next if http_method == 'parameters' # parameters is not an operation. TOOD maybe just select the keys that are http methods?
@@ -108,7 +121,6 @@ module Scorpio
         self.schemas_by_path = {}
         self.schemas_by_key = {}
         self.schemas_by_id = {}
-        self.openapi_document = openapi_document
         (openapi_document.definitions || {}).each do |schema_key, schema|
           if schema['id']
             # this isn't actually allowed by openapi's definition. whatever.
@@ -117,6 +129,7 @@ module Scorpio
           self.schemas_by_path = self.schemas_by_path.merge(schema.object.fragment => schema)
           self.schemas_by_key = self.schemas_by_key.merge(schema_key => schema)
         end
+
         update_dynamic_methods
       end
 

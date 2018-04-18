@@ -70,7 +70,7 @@ This format is still supported indirectly, by converting from a Google API docum
 class MyModel < Scorpio::ResourceBase
   rest_description_doc = YAML.load_file('path/to/doc.yml')
   rest_description = Scorpio::Google::RestDescription.new(rest_description_doc)
-  set_openapi_document(rest_description.to_openapi_document)
+  self.openapi_document = rest_description.to_openapi_document
 
   # ... the remainder of your setup and model code here
 end
