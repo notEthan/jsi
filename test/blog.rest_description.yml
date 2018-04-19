@@ -3,19 +3,19 @@ name: blog
 title: "Scorpio Blog"
 description: "REST service for the Scorpio Blog"
 documentationLink: https://github.com/notEthan/scorpio
-servicePath: /
+servicePath: /v1
 resources:
   articles:
     methods:
       index:
-        path: v1/articles
+        path: articles
         httpMethod: GET
         response:
           type: array
           items:
             $ref: https://blog.example.com/schemas/articles/v1.0.0
       index_with_root:
-        path: v1/articles_with_root
+        path: articles_with_root
         httpMethod: GET
         response:
           type: object
@@ -29,19 +29,19 @@ resources:
             version:
               type: string
       read:
-        path: v1/articles/{id}
+        path: articles/{id}
         httpMethod: GET
         response:
           $ref: https://blog.example.com/schemas/articles/v1.0.0
       post:
-        path: v1/articles
+        path: articles
         httpMethod: POST
         request:
           $ref: https://blog.example.com/schemas/articles/v1.0.0
         response:
           $ref: https://blog.example.com/schemas/articles/v1.0.0
       patch:
-        path: v1/articles/{id}
+        path: articles/{id}
         httpMethod: PATCH
         request:
           $ref: https://blog.example.com/schemas/articles/v1.0.0

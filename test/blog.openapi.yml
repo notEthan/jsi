@@ -6,14 +6,14 @@ info:
   version: ''
   contact: {}
 host: blog
-basePath: "/"
+basePath: "/v1"
 schemes: []
 consumes:
 - application/json
 produces:
 - application/json
 paths:
-  "/v1/articles":
+  "/articles":
     get:
       operationId: articles.index
       responses:
@@ -36,7 +36,7 @@ paths:
           description: default response
           schema:
             "$ref": "#/definitions/articles"
-  "/v1/articles_with_root":
+  "/articles_with_root":
     get:
       operationId: articles.index_with_root
       responses:
@@ -53,7 +53,7 @@ paths:
                 "$ref": "#/definitions/articles"
               version:
                 type: string
-  "/v1/articles/{id}":
+  "/articles/{id}":
     get:
       operationId: articles.read
       parameters:

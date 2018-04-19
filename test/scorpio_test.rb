@@ -49,7 +49,7 @@ describe 'blog' do
     e = assert_raises(ArgumentError) do
       Article.read({})
     end
-    assert_equal('path /v1/articles/{id} for operation articles.read requires attributes which were missing: ["id"]',
+    assert_equal('path /articles/{id} for operation articles.read requires attributes which were missing: ["id"]',
       e.message)
     e = assert_raises(ArgumentError) do
       Article.read({id: ''})
