@@ -232,17 +232,11 @@ module Scorpio
 
       def connection
         Faraday.new do |c|
-          unless faraday_request_middleware.any? { |m| [*m].first == :json }
-            c.request :json
-          end
           faraday_request_middleware.each do |m|
             c.request(*m)
           end
           faraday_response_middleware.each do |m|
             c.response(*m)
-          end
-          unless faraday_response_middleware.any? { |m| [*m].first == :json }
-            c.response :json, :content_type => /\bjson$/, :preserve_raw => true
           end
           c.adapter(*faraday_adapter)
         end
@@ -300,8 +294,46 @@ module Scorpio
           end
         end
 
-        response = connection.run_request(http_method, url, body, nil)
-        response_object = response.body
+        request_headers = {}
+
+        if METHODS_WITH_BODIES.any? { |m| m.to_s == http_method.downcase.to_s }
+          consumes = operation.consumes || openapi_document.consumes || []
+          if consumes.include?("application/json") || (!body.respond_to?(:to_str) && consumes.empty?)
+          # if we have a body that's not a string and no indication of how to serialize it, we guess json.
+            request_headers['Content-Type'] = "application/json"
+            unless body.respond_to?(:to_str)
+              body = ::JSON.pretty_generate(body)
+            end
+          elsif consumes.include?("application/x-www-form-urlencoded")
+            request_headers['Content-Type'] = "application/x-www-form-urlencoded"
+            unless body.respond_to?(:to_str)
+              body = URI.encode_www_form(body)
+            end
+          elsif body.is_a?(String)
+            if consumes.size == 1
+              request_headers['Content-Type'] = consumes.first
+            end
+          else
+            raise("do not know how to serialize for #{consumes.inspect}: #{body.pretty_inspect.chomp}")
+          end
+        end
+
+        response = connection.run_request(http_method, url, body, request_headers)
+
+        if response.media_type == 'application/json'
+          if response.body.empty?
+            response_object = nil
+          else
+            begin
+              response_object = ::JSON.parse(response.body)
+            rescue ::JSON::ParserError
+              # TODO warn
+              response_object = response.body
+            end
+          end
+        else
+          response_object = response.body
+        end
 
         error_class = Scorpio.error_classes_by_status[response.status]
         error_class ||= if (400..499).include?(response.status)
@@ -395,7 +427,7 @@ module Scorpio
               request_body_for_schema(el, subschema)
             end
           else
-            # TODO maybe raise on anything not jsonifiable 
+            # TODO maybe raise on anything not serializable 
             # TODO check conformance to schema, request_schema_fail if not
             object
           end
