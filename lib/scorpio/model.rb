@@ -266,7 +266,10 @@ module Scorpio
             "which were empty: #{empty_variables.inspect}")
         end
         path = path_template.expand(template_params)
-        url = Addressable::URI.parse(base_url) + path
+        # we do not use Addressable::URI#join as the paths should just be concatenated, not resolved.
+        # we use File.join just to deal with consecutive slashes.
+        url = File.join(base_url, path)
+        url = Addressable::URI.parse(url)
         # assume that call_params must be included somewhere. model_attributes are a source of required things
         # but not required to be here.
         other_params = call_params
