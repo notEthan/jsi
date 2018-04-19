@@ -61,7 +61,7 @@ describe 'blog' do
     err = assert_raises(Scorpio::NotFound404Error) do
       Article.read(id: 99)
     end
-    assert_equal({"article" => ["Unknown article! id: 99"]}, err.response.body['errors'])
+    assert_equal({"article" => ["Unknown article! id: 99"]}, err.response_object['errors'])
     assert_match(/Unknown article! id: 99/, err.message)
   end
   it 'updates an article on the class' do
@@ -81,7 +81,7 @@ describe 'blog' do
     err = assert_raises(Scorpio::UnprocessableEntity422Error) do
       Article.patch({id: blog_article.id, title: 'politics?'})
     end
-    assert_equal({"title" => ["with gusto!"]}, err.response.body['errors'])
+    assert_equal({"title" => ["with gusto!"]}, err.response_object['errors'])
     assert_match(/with gusto!/, err.message)
     assert_equal('sports!', Article.read(id: blog_article.id).title)
   end

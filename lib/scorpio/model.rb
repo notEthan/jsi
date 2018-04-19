@@ -301,6 +301,7 @@ module Scorpio
         end
 
         response = connection.run_request(http_method, url, body, nil)
+        response_object = response.body
 
         error_class = Scorpio.error_classes_by_status[response.status]
         error_class ||= if (400..499).include?(response.status)
@@ -312,7 +313,10 @@ module Scorpio
         end
         if error_class
           message = "Error calling operation #{operation.operationId} on #{self}:\n" + (response.env[:raw_body] || response.env.body)
-          raise error_class.new(message).tap { |e| e.response = response }
+          raise(error_class.new(message).tap do |e|
+            e.response = response
+            e.response_object = response_object
+          end)
         end
 
         if operation.responses
@@ -325,7 +329,7 @@ module Scorpio
           'source' => {'operationId' => operation.operationId, 'call_params' => call_params, 'url' => url.to_s},
           'response' => response,
         }
-        response_object_to_instances(response.body, response_schema, initialize_options)
+        response_object_to_instances(response_object, response_schema, initialize_options)
       end
 
       def request_body_for_schema(object, schema)
