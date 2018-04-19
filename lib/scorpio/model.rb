@@ -61,7 +61,28 @@ module Scorpio
     define_inheritable_accessor(:schemas_by_path)
     define_inheritable_accessor(:schemas_by_id, default_value: {})
     define_inheritable_accessor(:models_by_schema, default_value: {})
-    define_inheritable_accessor(:base_url)
+    # the base url to which paths are appended.
+    # by default this looks at the openapi document's schemes, picking https or http first.
+    # it looks at the openapi_document's host and basePath.
+    # a model overriding this MUST include the openapi document's basePath if defined, e.g.
+    # class MyModel
+    #   self.base_url = File.join('https://example.com/', openapi_document.basePath)
+    # end
+    define_inheritable_accessor(:base_url, default_getter: -> {
+      if openapi_document.schemes.nil?
+        scheme = 'https'
+      elsif openapi_document.schemes.respond_to?(:to_ary)
+        # prefer https, then http, then anything else since we probably don't support.
+        scheme = openapi_document.schemes.sort_by { |s| ['https', 'http'].index(s) || (1.0 / 0) }.first
+      end
+      if openapi_document.host && scheme
+        Addressable::URI.new(
+          scheme: scheme,
+          host: openapi_document.host,
+          path: openapi_document.basePath,
+        ).to_s
+      end
+    })
 
     define_inheritable_accessor(:faraday_request_middleware, default_value: [])
     define_inheritable_accessor(:faraday_adapter, default_getter: proc { Faraday.default_adapter })
