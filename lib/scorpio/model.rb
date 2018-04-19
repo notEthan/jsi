@@ -47,7 +47,7 @@ module Scorpio
     define_inheritable_accessor(:openapi_document_class)
     # the openapi document
     define_inheritable_accessor(:openapi_document, on_set: proc { self.openapi_document_class = self })
-    define_inheritable_accessor(:resource_name, update_methods: true)
+    define_inheritable_accessor(:tag_name, update_methods: true)
     define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
       definition_keys.each do |key|
         schema_as_key = schemas_by_key[key]
@@ -128,11 +128,9 @@ module Scorpio
       end
 
       def operation_for_resource_class?(operation)
-        return false unless resource_name
+        return false unless tag_name
 
-        return true if operation['x-resource'] == self.resource_name
-
-        return true if operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
+        return true if operation.tags.respond_to?(:to_ary) && operation.tags.include?(tag_name)
 
         request_schema = operation.body_parameter['schema'] if operation.body_parameter
         if request_schema && schemas_by_key.any? { |key, as| as == request_schema && definition_keys.include?(key) }
@@ -177,15 +175,12 @@ module Scorpio
         @method_names_by_operation ||= Hash.new do |h, operation|
           h[operation] = begin
             raise(ArgumentError, operation.pretty_inspect) unless operation.is_a?(Scorpio::OpenAPI::Operation)
-            if operation['x-resource-method']
-              method_name = operation['x-resource-method']
-            elsif resource_name && operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
+
+            if operation.tags.respond_to?(:to_ary) && operation.tags.include?(tag_name) && operation.operationId =~ /\A#{Regexp.escape(tag_name)}\.(\w+)\z/
               method_name = $1
             else
-              method_name = operation.operationId || raise("no operationId on operation: #{operation.pretty_inspect}")
+              method_name = operation.operationId
             end
-            method_name = '_' + method_name unless method_name[/\A[a-zA-Z_]/]
-            method_name.gsub(/[^\w]/, '_')
           end
         end
       end
