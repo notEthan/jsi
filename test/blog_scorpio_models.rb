@@ -13,6 +13,6 @@ end
 # to the key of the 'resources' section of the API (described by the api document
 # specified to BlogModel) 
 class Article < BlogModel
-  self.resource_name = 'articles'
+  self.tag_name = 'articles'
   self.definition_keys = ['articles']
 end

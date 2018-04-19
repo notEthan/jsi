@@ -15,6 +15,8 @@ produces:
 paths:
   "/v1/articles":
     get:
+      tags:
+      - articles
       operationId: articles.index
       responses:
         default:
@@ -24,6 +26,8 @@ paths:
             items:
               "$ref": "#/definitions/articles"
     post:
+      tags:
+      - articles
       operationId: articles.post
       parameters:
       - name: body
@@ -38,6 +42,8 @@ paths:
             "$ref": "#/definitions/articles"
   "/v1/articles_with_root":
     get:
+      tags:
+      - articles
       operationId: articles.index_with_root
       responses:
         default:
@@ -55,6 +61,8 @@ paths:
                 type: string
   "/v1/articles/{id}":
     get:
+      tags:
+      - articles
       operationId: articles.read
       parameters:
       - name: id
@@ -67,6 +75,8 @@ paths:
           schema:
             "$ref": "#/definitions/articles"
     patch:
+      tags:
+      - articles
       operationId: articles.patch
       parameters:
       - name: id
