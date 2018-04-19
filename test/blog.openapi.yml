@@ -7,7 +7,7 @@ info:
   contact: {}
 host: blog
 basePath: "/v1"
-schemes: []
+schemes: ['https']
 consumes:
 - application/json
 produces:
