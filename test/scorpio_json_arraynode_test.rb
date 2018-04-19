@@ -53,11 +53,11 @@ describe Scorpio::JSON::ArrayNode do
     it('#assoc')                { assert_equal(['b', 'q'], node.assoc('b')) }
     it('#at')                   { assert_equal('a', node.at(0)) }
     it('#bsearch')              { assert_equal(nil, node.bsearch { false }) }
-    it('#bsearch_index')        { assert_equal(nil, node.bsearch_index { false }) }
+    it('#bsearch_index')        { assert_equal(nil, node.bsearch_index { false }) } if [].respond_to?(:bsearch_index)
     it('#combination')          { assert_equal([['a'], [node[1]], [node[2]]], node.combination(1).to_a) }
     it('#count')                { assert_equal(1, node.count('a')) }
     it('#cycle')                { assert_equal(node.to_a, node.cycle(1).to_a) }
-    it('#dig')                  { assert_equal('e', node.dig(2, 'c', 'd')) }
+    it('#dig')                  { assert_equal('e', node.dig(2, 'c', 'd')) } if [].respond_to?(:dig)
     it('#drop')                 { assert_equal([node[2]], node.drop(2)) }
     it('#drop_while')           { assert_equal([node[1], node[2]], node.drop_while { |e| e == 'a' }) }
     it('#fetch')                { assert_equal('a', node.fetch(0)) }
@@ -85,7 +85,7 @@ describe Scorpio::JSON::ArrayNode do
     it('#rindex')               { assert_equal(0, node.rindex('a')) }
     it('#rotate')               { assert_equal([node[1], node[2], 'a'], node.rotate) }
     it('#sample')               { assert_equal('a', Scorpio::JSON::Node.new_by_type(['a'], []).sample) }
-    it('#shelljoin')            { assert_equal('a', Scorpio::JSON::Node.new_by_type(['a'], []).shelljoin) }
+    it('#shelljoin')            { assert_equal('a', Scorpio::JSON::Node.new_by_type(['a'], []).shelljoin) } if [].respond_to?(:shelljoin)
     it('#shuffle')              { assert_equal(3, node.shuffle.size) }
     it('#slice')                { assert_equal(['a'], node.slice(0, 1)) }
     it('#sort')                 { assert_equal(['a'], Scorpio::JSON::Node.new_by_type(['a'], []).sort) }
