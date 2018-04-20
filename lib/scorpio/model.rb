@@ -496,6 +496,10 @@ module Scorpio
       @attributes
     end
 
+    def as_json
+      @attributes.as_json
+    end
+
     def inspect
       "\#<#{self.class.name} #{attributes.inspect}>"
     end

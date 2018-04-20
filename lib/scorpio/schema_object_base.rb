@@ -15,6 +15,8 @@ module Scorpio
       elsif module_schema.describes_array? && @object.is_a?(Scorpio::JSON::ArrayNode)
         extend SchemaObjectBaseArray
       end
+      # as_json needs to be defined after we are extended by Enumerable
+      define_singleton_method(:as_json) { object.as_json }
     end
 
     attr_reader :object

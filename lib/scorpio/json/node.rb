@@ -116,6 +116,10 @@ module Scorpio
         pointer.fragment
       end
 
+      def as_json
+        content.as_json
+      end
+
       # takes a block. the block is yielded the content of this node. the block MUST return a modified
       # copy of that content (and NOT modify the object it is given).
       def modified_copy
@@ -198,6 +202,10 @@ module Scorpio
 
       include Arraylike
 
+      def as_json # needs redefined after including Enumerable
+        content.as_json
+      end
+
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
       # we override these methods from Arraylike
       SAFE_INDEX_ONLY_METHODS.each do |method_name|
@@ -230,6 +238,10 @@ module Scorpio
       end
 
       include Hashlike
+
+      def as_json # needs redefined after including Enumerable
+        content.as_json
+      end
 
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
       SAFE_KEY_ONLY_METHODS.each do |method_name|
