@@ -54,6 +54,12 @@ describe Scorpio::JSON::HashNode do
       assert_equal(node.document['a'].object_id, merged.document['a'].object_id)
     end
   end
+  describe '#as_json' do
+    let(:document) { {'a' => 'b'} }
+    it '#as_json' do
+      assert_equal({'a' => 'b'}, node.as_json)
+    end
+  end
   # these methods just delegate to Hash so not going to test excessively
   describe 'key only methods' do
     it('#each_key') { assert_equal(['a', 'c'], node.each_key.to_a) }

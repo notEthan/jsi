@@ -167,4 +167,10 @@ describe Scorpio::JSON::Node do
       refute_equal(Scorpio::JSON::Node.new_by_type({}, []), {})
     end
   end
+  describe '#as_json' do
+    let(:document) { {'a' => 'b'} }
+    it '#as_json' do
+      assert_equal({'a' => 'b'}, node.as_json)
+    end
+  end
 end

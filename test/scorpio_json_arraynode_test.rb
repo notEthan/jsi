@@ -33,6 +33,12 @@ describe Scorpio::JSON::ArrayNode do
       assert_equal(['a', node[1], node[2]], node.to_ary)
     end
   end
+  describe '#as_json' do
+    let(:document) { ['a', 'b'] }
+    it '#as_json' do
+      assert_equal(['a', 'b'], node.as_json)
+    end
+  end
   # these methods just delegate to Array so not going to test excessively
   describe 'index only methods' do
     it('#each_index') { assert_equal([0, 1, 2], node.each_index.to_a) }
