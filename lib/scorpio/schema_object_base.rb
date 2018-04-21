@@ -178,7 +178,7 @@ module Scorpio
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
     # we override these methods from Arraylike
     SAFE_INDEX_ONLY_METHODS.each do |method_name|
-      define_method(method_name) { |*a, &b| OBJECT.public_send(method_name, *a, &b) }
+      define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
     end
 
     def [](i_)
