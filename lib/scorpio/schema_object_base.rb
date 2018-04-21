@@ -209,6 +209,13 @@ module Scorpio
       end
       @object_mapped[i_]
     end
+    def []=(i, value)
+      @object = object.modified_copy do |ary|
+        ary.each_with_index.map do |el, ary_i|
+          ary_i == i ? value : el
+        end
+      end
+    end
   end
 
   def self.module_for_schema(schema_node_)
