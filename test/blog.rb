@@ -14,6 +14,13 @@ class Blog < Sinatra::Base
   logger.level = ::Logger::WARN
   define_method(:logger) { self.class.logger }
   use_with_lint ApiHammer::RequestLogger, logger
+
+  # prevent sinatra from using Sinatra::ShowExceptions so we can use ShowTextExceptions instead
+  set :show_exceptions, false
+  # allow errors to bubble past sinatra up to ShowTextExceptions
+  set :raise_errors, true
+  # ShowTextExceptions rescues ruby exceptions and gives a response of 500 with text/plain
+  use_with_lint ApiHammer::ShowTextExceptions, :full_error => true, :logger => logger
 end
 
 # models
