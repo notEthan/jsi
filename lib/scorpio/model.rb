@@ -314,7 +314,7 @@ module Scorpio
         if error_class
           message = "Error calling operation #{operation.operationId} on #{self}:\n" + (response.env[:raw_body] || response.env.body)
           raise(error_class.new(message).tap do |e|
-            e.response = response
+            e.faraday_response = response
             e.response_object = response_object
           end)
         end
