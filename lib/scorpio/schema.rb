@@ -118,6 +118,26 @@ module Scorpio
       ::JSON::Validator.validate!(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
     end
 
+    def object_group_text
+      "id=#{id}"
+    end
+    def inspect
+      "\#<#{self.class.inspect} #{object_group_text} #{schema_node.inspect}>"
+    end
+    alias_method :to_s, :inspect
+    def pretty_print(q)
+      q.instance_exec(self) do |obj|
+        text "\#<#{obj.class.inspect} #{obj.object_group_text}"
+        group_sub {
+          nest(2) {
+            breakable ' '
+            pp obj.schema_node
+          }
+        }
+        breakable ''
+        text '>'
+      end
+    end
     def fingerprint
       {class: self.class, schema_node: schema_node}
     end
