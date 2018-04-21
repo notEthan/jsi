@@ -97,4 +97,14 @@ module Scorpio
       fingerprint.hash
     end
   end
+
+  module Memoize
+    def memoize(key, *args_)
+      @memos ||= {}
+      @memos[key] ||= Hash.new do |h, args|
+        h[args] = yield(*args)
+      end
+      @memos[key][args_]
+    end
+  end
 end
