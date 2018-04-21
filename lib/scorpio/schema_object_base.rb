@@ -142,6 +142,12 @@ module Scorpio
       @object_mapped[property_name_]
     end
 
+    def []=(property_name, value)
+      @object = object.modified_copy do |hash|
+        hash.merge(property_name => value)
+      end
+    end
+
     def merge(other)
       # we want to strip the containers from this before we merge
       # this is kind of annoying. wish I had a better way.
