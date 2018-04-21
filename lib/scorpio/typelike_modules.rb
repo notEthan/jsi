@@ -1,5 +1,13 @@
 module Scorpio
   module Typelike
+    def self.modified_copy(other, &block)
+      if other.respond_to?(:modified_copy)
+        other.modified_copy(&block)
+      else
+        return yield(other)
+      end
+    end
+
     # I could require 'json/add/core' and use #as_json but I like this better.
     def self.as_json(object)
       if object.respond_to?(:to_hash)
