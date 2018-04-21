@@ -2,7 +2,7 @@ require 'scorpio'
 require 'pickle'
 
 module Scorpio
-  class Model
+  class ResourceBase
     module PickleAdapter
       include ::Pickle::Adapter::Base
 
@@ -10,7 +10,7 @@ module Scorpio
       #
       # all of the Scorpio models MUST be loaded before this gets called.
       def self.model_classes
-        ObjectSpace.each_object(Class).select { |klass| klass < ::Scorpio::Model }
+        ObjectSpace.each_object(Class).select { |klass| klass < ::Scorpio::ResourceBase }
       end
 
       # get a list of column names for a given class
