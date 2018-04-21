@@ -171,7 +171,7 @@ module Scorpio
       end
       def pretty_print(q)
         q.instance_exec(self) do |obj|
-          text "\#<#{obj.class.inspect} #{object_group_text}"
+          text "\#<#{obj.class.inspect} #{obj.object_group_text}"
           group_sub {
             nest(2) {
               breakable ' '
