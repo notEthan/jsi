@@ -1,5 +1,4 @@
 require 'addressable/template'
-require 'faraday_middleware'
 
 module Scorpio
   # see also Faraday::Env::MethodsWithBodies

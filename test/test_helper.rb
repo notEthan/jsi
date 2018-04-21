@@ -17,7 +17,6 @@ require 'minitest/reporters'
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 require 'faraday'
-require 'faraday_middleware'
 require 'scorpio/util/faraday/response_media_type'
 
 require_relative 'blog'
