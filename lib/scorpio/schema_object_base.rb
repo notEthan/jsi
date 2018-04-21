@@ -35,6 +35,11 @@ module Scorpio
 
     attr_reader :object
 
+    def modified_copy(&block)
+      modified_object = object.modified_copy(&block)
+      self.class.new(modified_object)
+    end
+
     def fragment
       object.fragment
     end
