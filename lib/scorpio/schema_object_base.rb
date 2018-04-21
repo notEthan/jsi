@@ -238,6 +238,13 @@ module Scorpio
             define_method(property_name) do
               self[property_name]
             end
+            define_method("#{property_name}=") do |value|
+              if respond_to?(:[]=)
+                self[property_name] = value
+              else
+                raise(NoMethodError, "object does not respond to []=; cannot call accessor `#{property_name}=' for #{inspect}")
+              end
+            end
           end
         end
       end
