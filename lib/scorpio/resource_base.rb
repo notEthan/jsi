@@ -322,7 +322,7 @@ module Scorpio
           # if we have a body that's not a string and no indication of how to serialize it, we guess json.
             request_headers['Content-Type'] = "application/json"
             unless body.respond_to?(:to_str)
-              body = ::JSON.pretty_generate(body)
+              body = ::JSON.pretty_generate(Typelike.as_json(body))
             end
           elsif consumes.include?("application/x-www-form-urlencoded")
             request_headers['Content-Type'] = "application/x-www-form-urlencoded"
