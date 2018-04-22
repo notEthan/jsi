@@ -1,5 +1,3 @@
-require 'scorpio/typelike_modules'
-
 module Scorpio
   module JSON
     # Scorpio::JSON::Node is an abstraction of a node within a JSON document.

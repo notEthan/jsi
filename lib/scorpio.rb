@@ -70,6 +70,9 @@ module Scorpio
   autoload :Google, 'scorpio/google_api_document'
   autoload :JSON, 'scorpio/json'
   autoload :Schema, 'scorpio/schema'
+  autoload :Typelike, 'scorpio/typelike_modules'
+  autoload :Hashlike, 'scorpio/typelike_modules'
+  autoload :Arraylike, 'scorpio/typelike_modules'
 
   class << self
     def stringify_symbol_keys(hash)
