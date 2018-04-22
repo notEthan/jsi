@@ -16,9 +16,9 @@ To start with, you need an OpenAPI v2 (formerly known as Swagger) document descr
 
 OpenAPI relies on the definition of schemas using the JSON schema specification, which can be learned about at http://json-schema.org/
 
-## Scorpio::Model
+## Scorpio::ResourceBase
 
-Scorpio::Model aims to represent RESTful resources in ruby classes with as little code as possible, given a service with a properly constructed API specification.
+Scorpio::ResourceBase aims to represent RESTful resources in ruby classes with as little code as possible, given a service with a properly constructed API specification.
 
 A model representing a resource needs to be configured, minimally, with:
 
@@ -30,14 +30,14 @@ If the resource has HTTP methods associated with it (most, but not all resources
 
 - the name of the resource corresponding to the model
 
-When these are set, Scorpio::Model looks through the API description and dynamically sets up methods for the model:
+When these are set, Scorpio::ResourceBase looks through the API description and dynamically sets up methods for the model:
 
 - accessors for properties of the model defined as properties of schemas representing the resource in the specification
 - API method calls on the model class and, where appropriate, on the model instance
 
 ### Example: Blog
 
-Scorpio's tests are a good place to read example code of an API that a client interacts with using Scorpio::Model.
+Scorpio's tests are a good place to read example code of an API that a client interacts with using Scorpio::ResourceBase.
 
 The Blog service is defined in test/blog.rb. It uses ActiveRecord models and Sinatra to make a simple RESTful service.
 
@@ -51,13 +51,13 @@ Based on those, Article gets the methods of the API description which are tested
 
 [This section will be fleshed out with more description and less just telling you, dear reader, to read the test code, as development progresses.]
 
-### Scorpio Model pickle adapter
+### Scorpio ResourceBase pickle adapter
 
 Scorpio provides a pickle adapter to use models with [Pickle](https://rubygems.org/gems/pickle). `require 'scorpio/pickle_adapter'`, ensure that the pickle ORM adapter is enabled, and you should be able to create models as normal with pickle.
 
 ### Google API discovery service
 
-An initial implementation of Scorpio::Model was based on the format defined for Google's API discovery service.
+An initial implementation of Scorpio::ResourceBase was based on the format defined for Google's API discovery service.
 
 For background on the Google discovery service and the API description format it defines, see:
 
@@ -67,7 +67,7 @@ For background on the Google discovery service and the API description format it
 This format is still supported indirectly, by converting from a Google API document to OpenAPI using `Scorpio::Google::RestDescription#to_openapi_document`. Example conversion looks like:
 
 ```ruby
-class MyModel < Scorpio::Model
+class MyModel < Scorpio::ResourceBase
   rest_description_doc = YAML.load_file('path/to/doc.yml')
   rest_description = Scorpio::Google::RestDescription.new(rest_description_doc)
   set_openapi_document(rest_description.to_openapi_document)

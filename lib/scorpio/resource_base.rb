@@ -6,7 +6,7 @@ module Scorpio
   class RequestSchemaFailure < Error
   end
 
-  class Model
+  class ResourceBase
     class << self
       def define_inheritable_accessor(accessor, options = {})
         if options[:default_getter]
@@ -126,7 +126,7 @@ module Scorpio
       def all_schema_properties
         schemas_by_key.select { |k, _| definition_keys.include?(k) }.map do |schema_key, schema|
           unless schema['type'] == 'object'
-            raise "definition key #{schema_key} for #{self} is not of type object - type must be object for Scorpio Model to represent this schema" # TODO class
+            raise "definition key #{schema_key} for #{self} is not of type object - type must be object for Scorpio ResourceBase to represent this schema" # TODO class
           end
           schema['properties'].keys
         end.inject([], &:|)
@@ -384,7 +384,7 @@ module Scorpio
 
       def request_body_for_schema(object, schema)
         schema = deref_schema(schema)
-        if object.is_a?(Scorpio::Model)
+        if object.is_a?(Scorpio::ResourceBase)
           # TODO request_schema_fail unless schema is for given model type 
           request_body_for_schema(object.represent_for_schema(schema), schema)
         else

@@ -65,7 +65,7 @@ module Scorpio
   class NetworkAuthenticationRequired511Error < ServerError; status(511); end
   error_classes_by_status.freeze
 
-  autoload :Model, 'scorpio/model'
+  autoload :ResourceBase, 'scorpio/resource_base'
   autoload :OpenAPI, 'scorpio/openapi'
   autoload :Google, 'scorpio/google_api_document'
   autoload :JSON, 'scorpio/json'
