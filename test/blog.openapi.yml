@@ -6,15 +6,17 @@ info:
   version: ''
   contact: {}
 host: blog
-basePath: "/"
-schemes: []
+basePath: "/v1"
+schemes: ['https']
 consumes:
 - application/json
 produces:
 - application/json
 paths:
-  "/v1/articles":
+  "/articles":
     get:
+      tags:
+      - articles
       operationId: articles.index
       responses:
         default:
@@ -24,6 +26,8 @@ paths:
             items:
               "$ref": "#/definitions/articles"
     post:
+      tags:
+      - articles
       operationId: articles.post
       parameters:
       - name: body
@@ -36,8 +40,10 @@ paths:
           description: default response
           schema:
             "$ref": "#/definitions/articles"
-  "/v1/articles_with_root":
+  "/articles_with_root":
     get:
+      tags:
+      - articles
       operationId: articles.index_with_root
       responses:
         default:
@@ -53,8 +59,10 @@ paths:
                 "$ref": "#/definitions/articles"
               version:
                 type: string
-  "/v1/articles/{id}":
+  "/articles/{id}":
     get:
+      tags:
+      - articles
       operationId: articles.read
       parameters:
       - name: id
@@ -67,6 +75,8 @@ paths:
           schema:
             "$ref": "#/definitions/articles"
     patch:
+      tags:
+      - articles
       operationId: articles.patch
       parameters:
       - name: id

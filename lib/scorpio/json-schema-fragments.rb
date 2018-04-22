@@ -116,7 +116,7 @@ module JSON
       end
 
       def to_s
-        "#<#{self.class.name} #{@type} = #{representation_s}>"
+        "#<#{self.class.inspect} #{@type} = #{representation_s}>"
       end
 
       private

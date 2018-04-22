@@ -80,13 +80,9 @@ module Scorpio
             method = http_method_methods.first
             unused_path_params = Addressable::Template.new(path).variables
             {http_method.downcase => {}.tap do |operation|
-              #operation['tags'] = []
+              operation['tags'] = method.resource_name ? [method.resource_name] : []
               #operation['summary'] = 
               operation['description'] = method['description'] if method['description']
-              if method.resource_name && options[:x]
-                operation['x-resource'] = method.resource_name
-                operation['x-resource-method'] = method.method_name
-              end
               #operation['externalDocs'] = 
               operation['operationId'] = method['id'] || (method.resource_name ? "#{method.resource_name}.#{method.method_name}" : method.method_name)
               #operation['produces'] = 

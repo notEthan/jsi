@@ -4,6 +4,20 @@ require 'scorpio/typelike_modules'
 module Scorpio
   # base class for representing an instance of an object described by a schema
   class SchemaObjectBase
+    class << self
+      def id
+        module_schema.id
+      end
+
+      def inspect
+        if !name || name =~ /\AScorpio::SchemaClasses::/
+          %Q(#{SchemaClasses.inspect}[#{id.inspect}])
+        else
+          %Q(#{name} (#{id}))
+        end
+      end
+    end
+
     def initialize(object)
       unless object.is_a?(Scorpio::JSON::Node)
         object = Scorpio::JSON::Node.new_by_type(object, [])
@@ -35,11 +49,11 @@ module Scorpio
       module_schema.validate!(object)
     end
     def inspect
-      "\#<#{self.class.name} #{object.inspect}>"
+      "\#<#{self.class.inspect} #{object.inspect}>"
     end
     def pretty_print(q)
       q.instance_exec(self) do |obj|
-        text "\#<#{obj.class.name}"
+        text "\#<#{obj.class.inspect}"
         group_sub {
           nest(2) {
             breakable ' '
@@ -51,15 +65,35 @@ module Scorpio
       end
     end
 
+    def object_group_text
+      object.class.inspect + ' ' + object.object_group_text
+    end
+
     def fingerprint
       {class: self.class, object: object}
     end
     include FingerprintHash
   end
 
+  # this module is just a namespace for schema classes.
+  module SchemaClasses
+    def self.[](id)
+      @classes_by_id[id]
+    end
+    @classes_by_id = {}
+  end
+
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
     h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
-      prepend(Scorpio.module_for_schema(schema_node))
+      include(Scorpio.module_for_schema(schema_node))
+
+      name = self.module_schema.id.gsub(/[^\w]/, '_')
+      name = 'X' + name unless name[/\A[a-zA-Z_]/]
+      name = name[0].upcase + name[1..-1]
+      SchemaClasses.const_set(name, self)
+      SchemaClasses.instance_exec(id, self) { |id_, klass| @classes_by_id[id_] = klass }
+
+      self
     end
   end
 

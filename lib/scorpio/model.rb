@@ -1,5 +1,4 @@
 require 'addressable/template'
-require 'faraday_middleware'
 
 module Scorpio
   # see also Faraday::Env::MethodsWithBodies
@@ -47,7 +46,7 @@ module Scorpio
     define_inheritable_accessor(:openapi_document_class)
     # the openapi document
     define_inheritable_accessor(:openapi_document, on_set: proc { self.openapi_document_class = self })
-    define_inheritable_accessor(:resource_name, update_methods: true)
+    define_inheritable_accessor(:tag_name, update_methods: true)
     define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
       definition_keys.each do |key|
         schema_as_key = schemas_by_key[key]
@@ -61,7 +60,28 @@ module Scorpio
     define_inheritable_accessor(:schemas_by_path)
     define_inheritable_accessor(:schemas_by_id, default_value: {})
     define_inheritable_accessor(:models_by_schema, default_value: {})
-    define_inheritable_accessor(:base_url)
+    # the base url to which paths are appended.
+    # by default this looks at the openapi document's schemes, picking https or http first.
+    # it looks at the openapi_document's host and basePath.
+    # a model overriding this MUST include the openapi document's basePath if defined, e.g.
+    # class MyModel
+    #   self.base_url = File.join('https://example.com/', openapi_document.basePath)
+    # end
+    define_inheritable_accessor(:base_url, default_getter: -> {
+      if openapi_document.schemes.nil?
+        scheme = 'https'
+      elsif openapi_document.schemes.respond_to?(:to_ary)
+        # prefer https, then http, then anything else since we probably don't support.
+        scheme = openapi_document.schemes.sort_by { |s| ['https', 'http'].index(s) || (1.0 / 0) }.first
+      end
+      if openapi_document.host && scheme
+        Addressable::URI.new(
+          scheme: scheme,
+          host: openapi_document.host,
+          path: openapi_document.basePath,
+        ).to_s
+      end
+    })
 
     define_inheritable_accessor(:faraday_request_middleware, default_value: [])
     define_inheritable_accessor(:faraday_adapter, default_getter: proc { Faraday.default_adapter })
@@ -128,11 +148,9 @@ module Scorpio
       end
 
       def operation_for_resource_class?(operation)
-        return false unless resource_name
+        return false unless tag_name
 
-        return true if operation['x-resource'] == self.resource_name
-
-        return true if operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
+        return true if operation.tags.respond_to?(:to_ary) && operation.tags.include?(tag_name)
 
         request_schema = operation.body_parameter['schema'] if operation.body_parameter
         if request_schema && schemas_by_key.any? { |key, as| as == request_schema && definition_keys.include?(key) }
@@ -177,15 +195,12 @@ module Scorpio
         @method_names_by_operation ||= Hash.new do |h, operation|
           h[operation] = begin
             raise(ArgumentError, operation.pretty_inspect) unless operation.is_a?(Scorpio::OpenAPI::Operation)
-            if operation['x-resource-method']
-              method_name = operation['x-resource-method']
-            elsif resource_name && operation.operationId =~ /\A#{Regexp.escape(resource_name)}\.(\w+)\z/
+
+            if operation.tags.respond_to?(:to_ary) && operation.tags.include?(tag_name) && operation.operationId =~ /\A#{Regexp.escape(tag_name)}\.(\w+)\z/
               method_name = $1
             else
-              method_name = operation.operationId || raise("no operationId on operation: #{operation.pretty_inspect}")
+              method_name = operation.operationId
             end
-            method_name = '_' + method_name unless method_name[/\A[a-zA-Z_]/]
-            method_name.gsub(/[^\w]/, '_')
           end
         end
       end
@@ -232,17 +247,11 @@ module Scorpio
 
       def connection
         Faraday.new do |c|
-          unless faraday_request_middleware.any? { |m| [*m].first == :json }
-            c.request :json
-          end
           faraday_request_middleware.each do |m|
             c.request(*m)
           end
           faraday_response_middleware.each do |m|
             c.response(*m)
-          end
-          unless faraday_response_middleware.any? { |m| [*m].first == :json }
-            c.response :json, :content_type => /\bjson$/, :preserve_raw => true
           end
           c.adapter(*faraday_adapter)
         end
@@ -266,7 +275,10 @@ module Scorpio
             "which were empty: #{empty_variables.inspect}")
         end
         path = path_template.expand(template_params)
-        url = Addressable::URI.parse(base_url) + path
+        # we do not use Addressable::URI#join as the paths should just be concatenated, not resolved.
+        # we use File.join just to deal with consecutive slashes.
+        url = File.join(base_url, path)
+        url = Addressable::URI.parse(url)
         # assume that call_params must be included somewhere. model_attributes are a source of required things
         # but not required to be here.
         other_params = call_params
@@ -300,7 +312,46 @@ module Scorpio
           end
         end
 
-        response = connection.run_request(http_method, url, body, nil)
+        request_headers = {}
+
+        if METHODS_WITH_BODIES.any? { |m| m.to_s == http_method.downcase.to_s }
+          consumes = operation.consumes || openapi_document.consumes || []
+          if consumes.include?("application/json") || (!body.respond_to?(:to_str) && consumes.empty?)
+          # if we have a body that's not a string and no indication of how to serialize it, we guess json.
+            request_headers['Content-Type'] = "application/json"
+            unless body.respond_to?(:to_str)
+              body = ::JSON.pretty_generate(body)
+            end
+          elsif consumes.include?("application/x-www-form-urlencoded")
+            request_headers['Content-Type'] = "application/x-www-form-urlencoded"
+            unless body.respond_to?(:to_str)
+              body = URI.encode_www_form(body)
+            end
+          elsif body.is_a?(String)
+            if consumes.size == 1
+              request_headers['Content-Type'] = consumes.first
+            end
+          else
+            raise("do not know how to serialize for #{consumes.inspect}: #{body.pretty_inspect.chomp}")
+          end
+        end
+
+        response = connection.run_request(http_method, url, body, request_headers)
+
+        if response.media_type == 'application/json'
+          if response.body.empty?
+            response_object = nil
+          else
+            begin
+              response_object = ::JSON.parse(response.body)
+            rescue ::JSON::ParserError
+              # TODO warn
+              response_object = response.body
+            end
+          end
+        else
+          response_object = response.body
+        end
 
         error_class = Scorpio.error_classes_by_status[response.status]
         error_class ||= if (400..499).include?(response.status)
@@ -312,7 +363,10 @@ module Scorpio
         end
         if error_class
           message = "Error calling operation #{operation.operationId} on #{self}:\n" + (response.env[:raw_body] || response.env.body)
-          raise error_class.new(message).tap { |e| e.response = response }
+          raise(error_class.new(message).tap do |e|
+            e.faraday_response = response
+            e.response_object = response_object
+          end)
         end
 
         if operation.responses
@@ -325,7 +379,7 @@ module Scorpio
           'source' => {'operationId' => operation.operationId, 'call_params' => call_params, 'url' => url.to_s},
           'response' => response,
         }
-        response_object_to_instances(response.body, response_schema, initialize_options)
+        response_object_to_instances(response_object, response_schema, initialize_options)
       end
 
       def request_body_for_schema(object, schema)
@@ -391,7 +445,7 @@ module Scorpio
               request_body_for_schema(el, subschema)
             end
           else
-            # TODO maybe raise on anything not jsonifiable 
+            # TODO maybe raise on anything not serializable 
             # TODO check conformance to schema, request_schema_fail if not
             object
           end
@@ -501,11 +555,11 @@ module Scorpio
     end
 
     def inspect
-      "\#<#{self.class.name} #{attributes.inspect}>"
+      "\#<#{self.class.inspect} #{attributes.inspect}>"
     end
     def pretty_print(q)
       q.instance_exec(self) do |obj|
-        text "\#<#{obj.class.name}"
+        text "\#<#{obj.class.inspect}"
         group_sub {
           nest(2) {
             breakable ' '
