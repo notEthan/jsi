@@ -570,7 +570,7 @@ module Scorpio
     end
 
     def fingerprint
-      {class: self.class, attributes: @attributes}
+      {class: self.class, attributes: Typelike.as_json(@attributes)}
     end
     include FingerprintHash
   end
