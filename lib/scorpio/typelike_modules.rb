@@ -1,4 +1,29 @@
 module Scorpio
+  module Typelike
+    # I could require 'json/add/core' and use #as_json but I like this better.
+    def self.as_json(object)
+      if object.respond_to?(:to_hash)
+        object.map do |k, v|
+          unless k.is_a?(Symbol) || k.respond_to?(:to_str)
+            raise(TypeError, "json object (hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
+          end
+          {k.to_s => as_json(v)}
+        end.inject({}, &:update)
+      elsif object.respond_to?(:to_ary)
+        object.map { |e| as_json(e) }
+      elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| object.is_a?(c) }
+        object
+      elsif object.is_a?(Symbol)
+        object.to_s
+      elsif object.is_a?(Set)
+        as_json(object.to_a)
+      elsif object.respond_to?(:as_json)
+        as_json(object.as_json)
+      else
+        raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}")
+      end
+    end
+  end
   module Hashlike
     include Enumerable
 

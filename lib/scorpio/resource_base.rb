@@ -551,7 +551,7 @@ module Scorpio
     end
 
     def as_json
-      @attributes.as_json
+      Typelike.as_json(@attributes)
     end
 
     def inspect
