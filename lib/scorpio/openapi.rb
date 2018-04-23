@@ -147,6 +147,12 @@ module Scorpio
             parameter['in'] == 'body'
           end
         end
+
+        def request_schema
+          if body_parameter && body_parameter['schema']
+            Scorpio::Schema.new(body_parameter['schema'])
+          end
+        end
       end
     end
   end
