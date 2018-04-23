@@ -54,7 +54,15 @@ module Scorpio
           openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schema => self)
         end
       else
-        self.represented_schemas = self.represented_schemas.map { |s| Scorpio::Schema.new(s) }
+        self.represented_schemas = self.represented_schemas.map do |schema|
+          unless schema.is_a?(Scorpio::Schema)
+            schema = Scorpio::Schema.new(schema)
+          end
+          unless schema['type'].nil? || schema.describes_hash?
+            raise(TypeError, "given schema for #{self.inspect} not of type object - type must be object for Scorpio ResourceBase to represent this schema. schema is: #{schema.pretty_inspect.chomp}")
+          end
+          schema
+        end
       end
     end)
     define_inheritable_accessor(:models_by_schema, default_value: {})
