@@ -48,18 +48,15 @@ module Scorpio
     define_inheritable_accessor(:openapi_document_class)
     # the openapi document
     define_inheritable_accessor(:tag_name, update_methods: true)
-    define_inheritable_accessor(:definition_keys, default_value: [], update_methods: true, on_set: proc do
-      definition_keys.each do |key|
-        schema_as_key = schemas_by_key[key]
-        schema_as_key = schema_as_key.object if schema_as_key.is_a?(Scorpio::SchemaObjectBase)
-        schema_as_key = schema_as_key.content if schema_as_key.is_a?(Scorpio::JSON::Node)
-
-        openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schema_as_key => self)
+    define_inheritable_accessor(:represented_schemas, default_value: [], update_methods: true, on_set: proc do
+      if represented_schemas.all? { |s| s.is_a?(Scorpio::Schema) }
+        represented_schemas.each do |schema|
+          openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schema => self)
+        end
+      else
+        self.represented_schemas = self.represented_schemas.map { |s| Scorpio::Schema.new(s) }
       end
     end)
-    define_inheritable_accessor(:schemas_by_key, default_value: {})
-    define_inheritable_accessor(:schemas_by_path)
-    define_inheritable_accessor(:schemas_by_id, default_value: {})
     define_inheritable_accessor(:models_by_schema, default_value: {})
     # the base url to which paths are appended.
     # by default this looks at the openapi document's schemes, picking https or http first.
@@ -118,17 +115,6 @@ module Scorpio
         end
 
         openapi_document.validate!
-        self.schemas_by_path = {}
-        self.schemas_by_key = {}
-        self.schemas_by_id = {}
-        (openapi_document.definitions || {}).each do |schema_key, schema|
-          if schema['id']
-            # this isn't actually allowed by openapi's definition. whatever.
-            self.schemas_by_id = self.schemas_by_id.merge(schema['id'] => schema)
-          end
-          self.schemas_by_path = self.schemas_by_path.merge(schema.object.fragment => schema)
-          self.schemas_by_key = self.schemas_by_key.merge(schema_key => schema)
-        end
 
         update_dynamic_methods
       end
@@ -139,12 +125,7 @@ module Scorpio
       end
 
       def all_schema_properties
-        schemas_by_key.select { |k, _| definition_keys.include?(k) }.map do |schema_key, schema|
-          unless schema['type'] == 'object'
-            raise "definition key #{schema_key} for #{self} is not of type object - type must be object for Scorpio ResourceBase to represent this schema" # TODO class
-          end
-          schema['properties'].keys
-        end.inject([], &:|)
+        represented_schemas.map(&:described_hash_property_names).inject(Set.new, &:|)
       end
 
       def update_instance_accessors
@@ -167,8 +148,7 @@ module Scorpio
 
         return true if operation.tags.respond_to?(:to_ary) && operation.tags.include?(tag_name)
 
-        request_schema = operation.body_parameter['schema'] if operation.body_parameter
-        if request_schema && schemas_by_key.any? { |key, as| as == request_schema && definition_keys.include?(key) }
+        if operation.request_schema && represented_schemas.include?(operation.request_schema)
           return true
         end
 
@@ -178,11 +158,8 @@ module Scorpio
       def operation_for_resource_instance?(operation)
         return false unless operation_for_resource_class?(operation)
 
-        request_schema = operation.body_parameter['schema'] if operation.body_parameter
-
         # define an instance method if the request schema is for this model 
-        request_resource_is_self = request_schema &&
-          schemas_by_key.any? { |key, as| as == request_schema && definition_keys.include?(key) }
+        request_resource_is_self = operation.request_schema && represented_schemas.include?(operation.request_schema)
 
         # also define an instance method depending on certain attributes the request description 
         # might have in common with the model's schema attributes
@@ -198,12 +175,9 @@ module Scorpio
         # should we define an instance method?
         #request_attributes |= method_desc['parameters'] ? method_desc['parameters'].keys : []
 
-        schema_attributes = definition_keys.map do |schema_key|
-          schema = schemas_by_key[schema_key]
-          schema['type'] == 'object' && schema['properties'] ? schema['properties'].keys : []
-        end.inject([], &:|)
+        schema_attributes = represented_schemas.map(&:described_hash_property_names).inject(Set.new, &:|)
 
-        return request_resource_is_self || (request_attributes & schema_attributes).any?
+        return request_resource_is_self || (request_attributes & schema_attributes.to_a).any?
       end
 
       def method_names_by_operation
@@ -242,12 +216,6 @@ module Scorpio
             end
           end
         end
-      end
-
-      def deref_schema(schema)
-        schema = schema.object if schema.is_a?(Scorpio::SchemaObjectBase)
-        schema = schema.deref if schema.is_a?(Scorpio::JSON::Node)
-        schema && schemas_by_id[schema['$ref']] || schema
       end
 
       MODULES_FOR_JSON_SCHEMA_TYPES = {
@@ -301,13 +269,12 @@ module Scorpio
           other_params.reject! { |k, _| path_template.variables.include?(k) }
         end
 
-        request_schema = operation.body_parameter && deref_schema(operation.body_parameter['schema'])
-        if request_schema
+        if operation.request_schema
           # TODO deal with model_attributes / call_params better in nested whatever
           if call_params.nil?
-            body = request_body_for_schema(model_attributes, request_schema)
+            body = request_body_for_schema(model_attributes, operation.request_schema)
           elsif call_params.is_a?(Hash)
-            body = request_body_for_schema(model_attributes.merge(call_params), request_schema)
+            body = request_body_for_schema(model_attributes.merge(call_params), operation.request_schema)
             body.update(call_params)
           else
             body = call_params
@@ -402,7 +369,6 @@ module Scorpio
       end
 
       def request_body_for_schema(object, schema)
-        schema = deref_schema(schema)
         if object.is_a?(Scorpio::ResourceBase)
           # TODO request_schema_fail unless schema is for given model type 
           request_body_for_schema(object.represent_for_schema(schema), schema)
@@ -477,8 +443,7 @@ module Scorpio
 
       def response_object_to_instances(object, initialize_options = {})
         if object.is_a?(SchemaObjectBase)
-          schema_as_key = object.__schema__.schema_node.content
-          model = models_by_schema[schema_as_key]
+          model = models_by_schema[object.__schema__]
         end
 
         if object.respond_to?(:to_hash)
@@ -535,17 +500,14 @@ module Scorpio
 
       # if we're making a POST or PUT and the request schema is this resource, we'll assume that
       # the request is persisting this resource
-      request_schema = operation.body_parameter && self.class.deref_schema(operation.body_parameter['schema'])
-      request_resource_is_self = request_schema &&
-        request_schema['id'] &&
-        self.class.schemas_by_key.any? { |key, as| (as['id'] ? as['id'] == request_schema['id'] : as == request_schema) && self.class.definition_keys.include?(key) }
+      operation.request_schema
+      request_resource_is_self = operation.request_schema && self.class.represented_schemas.include?(operation.request_schema)
       if @options['response'] && @options['response'].status && operation.responses
-        _, response_schema = operation.responses.detect { |k, v| k.to_s == @options['response'].status.to_s }
+        _, response_schema_node = operation.responses.detect { |k, v| k.to_s == @options['response'].status.to_s }
       end
-      response_schema = self.class.deref_schema(response_schema)
-      response_resource_is_self = response_schema &&
-        self.class.schemas_by_key.any? { |key, as| (as['id'] ? as['id'] == response_schema['id'] : as == response_schema) && self.class.definition_keys.include?(key) }
-      if request_resource_is_self && %w(PUT POST).include?(api_method['httpMethod'])
+      response_schema = Scorpio::Schema.new(response_schema_node) if response_schema_node
+      response_resource_is_self = response_schema && self.class.represented_schemas.include?(response_schema)
+      if request_resource_is_self && %w(PUT POST).include?(operation.http_method)
         @persisted = true
 
         if response_resource_is_self

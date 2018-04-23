@@ -14,5 +14,5 @@ end
 # specified to BlogModel) 
 class Article < BlogModel
   self.tag_name = 'articles'
-  self.definition_keys = ['articles']
+  self.represented_schemas = [openapi_document.definitions['articles']]
 end
