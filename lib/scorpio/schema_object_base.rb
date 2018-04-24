@@ -10,7 +10,9 @@ module Scorpio
       end
 
       def inspect
-        if !name || name =~ /\AScorpio::SchemaClasses::/
+        if !respond_to?(:__schema__)
+          super
+        elsif !name || name =~ /\AScorpio::SchemaClasses::/
           %Q(#{SchemaClasses.inspect}[#{id.inspect}])
         else
           %Q(#{name} (#{id}))
