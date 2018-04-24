@@ -224,7 +224,7 @@ module Scorpio
           property_schema = property_schema && property_schema.match_to_object(object[property_name])
 
           if property_schema && object[property_name].is_a?(JSON::Node)
-            Scorpio.class_for_schema(property_schema.schema_node).new(object[property_name])
+            Scorpio.class_for_schema(property_schema).new(object[property_name])
           else
             object[property_name]
           end
@@ -276,7 +276,7 @@ module Scorpio
           index_schema = index_schema && index_schema.match_to_object(object[i])
 
           if index_schema && object[i].is_a?(JSON::Node)
-            Scorpio.class_for_schema(index_schema.schema_node).new(object[i])
+            Scorpio.class_for_schema(index_schema).new(object[i])
           else
             object[i]
           end

@@ -4,7 +4,8 @@ module Scorpio
       if schema_object.is_a?(Scorpio::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
       elsif schema_object.is_a?(Scorpio::SchemaObjectBase)
-        @schema_node = schema_object.object.deref
+        @schema_object = schema_object.deref
+        @schema_node = @schema_object.object
       elsif schema_object.is_a?(Scorpio::JSON::HashNode)
         @schema_node = schema_object.deref
       elsif schema_object.respond_to?(:to_hash)
@@ -14,6 +15,9 @@ module Scorpio
       end
     end
     attr_reader :schema_node
+    def schema_object
+      @schema_object || @schema_node
+    end
 
     def schema_id
       @schema_id ||= begin
@@ -89,19 +93,19 @@ module Scorpio
     end
 
     def subschema_for_property(property_name)
-      if schema_node['properties'].respond_to?(:to_hash) && schema_node['properties'][property_name].respond_to?(:to_hash)
-        self.class.new(schema_node['properties'][property_name].deref)
+      if schema_object['properties'].respond_to?(:to_hash) && schema_object['properties'][property_name].respond_to?(:to_hash)
+        self.class.new(schema_object['properties'][property_name])
       else
-        if schema_node['patternProperties'].respond_to?(:to_hash)
-          _, pattern_schema_node = schema_node['patternProperties'].detect do |pattern, _|
+        if schema_object['patternProperties'].respond_to?(:to_hash)
+          _, pattern_schema_object = schema_object['patternProperties'].detect do |pattern, _|
             property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
           end
         end
-        if pattern_schema_node
-          self.class.new(pattern_schema_node.deref)
+        if pattern_schema_object
+          self.class.new(pattern_schema_object)
         else
-          if schema_node['additionalProperties'].is_a?(Scorpio::JSON::Node)
-            self.class.new(schema_node['additionalProperties'].deref)
+          if schema_object['additionalProperties'].respond_to?(:to_hash)
+            self.class.new(schema_object['additionalProperties'])
           else
             nil
           end
@@ -110,14 +114,14 @@ module Scorpio
     end
 
     def subschema_for_index(index)
-      if schema_node['items'].is_a?(Scorpio::JSON::ArrayNode)
-        if index < schema_node['items'].size
-          self.class.new(schema_node['items'][index].deref)
-        elsif schema_node['additionalItems'].is_a?(Node)
-          self.class.new(schema_node['additionalItems'].deref)
+      if schema_object['items'].respond_to?(:to_ary)
+        if index < schema_object['items'].size
+          self.class.new(schema_object['items'][index])
+        elsif schema_object['additionalItems'].respond_to?(:to_hash)
+          self.class.new(schema_object['additionalItems'])
         end
-      elsif schema_node['items'].is_a?(Scorpio::JSON::Node)
-        self.class.new(schema_node['items'].deref)
+      elsif schema_object['items'].respond_to?(:to_hash)
+        self.class.new(schema_object['items'])
       else
         nil
       end
@@ -191,7 +195,7 @@ module Scorpio
       "schema_id=#{schema_id}"
     end
     def inspect
-      "\#<#{self.class.inspect} #{object_group_text} #{schema_node.inspect}>"
+      "\#<#{self.class.inspect} #{object_group_text} #{schema_object.inspect}>"
     end
     alias_method :to_s, :inspect
     def pretty_print(q)
@@ -200,7 +204,7 @@ module Scorpio
         group_sub {
           nest(2) {
             breakable ' '
-            pp obj.schema_node
+            pp obj.schema_object
           }
         }
         breakable ''
