@@ -134,6 +134,13 @@ module Scorpio
             includer.send(:define_singleton_method, :schema) { module_schema }
           end
 
+          define_singleton_method(:id) do
+            schema.id
+          end
+          define_singleton_method(:inspect) do
+            %Q(#<Module for Schema: #{id}>)
+          end
+
           if module_schema.describes_hash?
             module_schema.described_hash_property_names.each do |property_name|
               define_method(property_name) do
