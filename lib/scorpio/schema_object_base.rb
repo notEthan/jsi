@@ -21,10 +21,7 @@ module Scorpio
     end
 
     def initialize(object)
-      unless object.is_a?(Scorpio::JSON::Node)
-        object = Scorpio::JSON::Node.new_by_type(object, [])
-      end
-      @object = object
+      self.object = object
 
       if module_schema.describes_hash? && @object.is_a?(Scorpio::JSON::HashNode)
         extend SchemaObjectBaseHash
@@ -84,6 +81,19 @@ module Scorpio
       {class: self.class, object: object}
     end
     include FingerprintHash
+
+    private
+    def object=(thing)
+      @object_mapped.clear if @object_mapped
+      if thing.is_a?(SchemaObjectBase)
+        warn "assigning object to a SchemaObjectBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
+        @object = thing.object
+      elsif thing.is_a?(Scorpio::JSON::Node)
+        @object = thing
+      else
+        @object = Scorpio::JSON::Node.new_by_type(thing, [])
+      end
+    end
   end
 
   # this module is just a namespace for schema classes.
@@ -157,7 +167,7 @@ module Scorpio
     end
 
     def []=(property_name, value)
-      @object = object.modified_copy do |hash|
+      self.object = object.modified_copy do |hash|
         hash.merge(property_name => value)
       end
     end
@@ -208,7 +218,7 @@ module Scorpio
       @object_mapped[i_]
     end
     def []=(i, value)
-      @object = object.modified_copy do |ary|
+      self.object = object.modified_copy do |ary|
         ary.each_with_index.map do |el, ary_i|
           ary_i == i ? value : el
         end
