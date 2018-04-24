@@ -94,17 +94,21 @@ module Scorpio
     @classes_by_id = {}
   end
 
-  def self.class_for_schema(schema_node_)
-    schema_node_ = schema_node_.object if schema_node_.is_a?(Scorpio::SchemaObjectBase)
-    schema_node_ = schema_node_.deref
-    memoize(:class_for_schema, schema_node_) do |schema_node_m|
+  def self.class_for_schema(schema_object)
+    if schema_object.is_a?(Scorpio::Schema)
+      schema__ = schema_object
+    else
+      schema__ = Scorpio::Schema.new(schema_object)
+    end
+
+    memoize(:class_for_schema, schema__) do |schema_|
       begin
         begin
-          Class.new(SchemaObjectBase).instance_exec(schema_node_m) do |schema_node|
+          Class.new(SchemaObjectBase).instance_exec(schema_) do |schema|
             begin
-              include(Scorpio.module_for_schema(schema_node))
+              include(Scorpio.module_for_schema(schema))
 
-              name = self.schema.id.gsub(/[^\w]/, '_')
+              name = schema.id.gsub(/[^\w]/, '_')
               name = 'X' + name unless name[/\A[a-zA-Z_]/]
               name = name[0].upcase + name[1..-1]
               SchemaClasses.const_set(name, self)
@@ -118,20 +122,20 @@ module Scorpio
     end
   end
 
-  def self.module_for_schema(schema_node_)
-    memoize(:module_for_schema, schema_node_) do |schema_node|
+  def self.module_for_schema(schema_object)
+    if schema_object.is_a?(Scorpio::Schema)
+      schema__ = schema_object
+    else
+      schema__ = Scorpio::Schema.new(schema_object)
+    end
+
+    memoize(:module_for_schema, schema__) do |schema_|
       Module.new.tap do |m|
-        m.instance_exec(schema_node) do |module_schema_node|
-          unless module_schema_node.is_a?(Scorpio::JSON::Node)
-            raise(ArgumentError, "expected instance of Scorpio::JSON::Node; got: #{module_schema_node.pretty_inspect.chomp}")
-          end
-
-          module_schema = Scorpio::Schema.new(module_schema_node)
-
-          define_method(:__schema__) { module_schema }
-          define_singleton_method(:schema) { module_schema }
+        m.instance_exec(schema_) do |schema|
+          define_method(:__schema__) { schema }
+          define_singleton_method(:schema) { schema }
           define_singleton_method(:included) do |includer|
-            includer.send(:define_singleton_method, :schema) { module_schema }
+            includer.send(:define_singleton_method, :schema) { schema }
           end
 
           define_singleton_method(:id) do
@@ -141,8 +145,8 @@ module Scorpio
             %Q(#<Module for Schema: #{id}>)
           end
 
-          if module_schema.describes_hash?
-            module_schema.described_hash_property_names.each do |property_name|
+          if schema.describes_hash?
+            schema.described_hash_property_names.each do |property_name|
               define_method(property_name) do
                 self[property_name]
               end
