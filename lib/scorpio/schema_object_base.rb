@@ -95,16 +95,24 @@ module Scorpio
   end
 
   CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
-    h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
-      include(Scorpio.module_for_schema(schema_node))
+    h[schema_node_] = begin
+      begin
+        begin
+          Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
+            begin
+              include(Scorpio.module_for_schema(schema_node))
 
-      name = self.schema.id.gsub(/[^\w]/, '_')
-      name = 'X' + name unless name[/\A[a-zA-Z_]/]
-      name = name[0].upcase + name[1..-1]
-      SchemaClasses.const_set(name, self)
-      SchemaClasses.instance_exec(id, self) { |id_, klass| @classes_by_id[id_] = klass }
+              name = self.schema.id.gsub(/[^\w]/, '_')
+              name = 'X' + name unless name[/\A[a-zA-Z_]/]
+              name = name[0].upcase + name[1..-1]
+              SchemaClasses.const_set(name, self)
+              SchemaClasses.instance_exec(id, self) { |id_, klass| @classes_by_id[id_] = klass }
 
-      self
+              self
+            end
+          end
+        end
+      end
     end
   end
 
@@ -114,30 +122,32 @@ module Scorpio
   end
 
   def self.module_for_schema(schema_node_)
-    Module.new.tap do |m|
-      m.instance_exec(schema_node_) do |module_schema_node|
-        unless module_schema_node.is_a?(Scorpio::JSON::Node)
-          raise(ArgumentError, "expected instance of Scorpio::JSON::Node; got: #{module_schema_node.pretty_inspect.chomp}")
-        end
+    begin
+      Module.new.tap do |m|
+        m.instance_exec(schema_node_) do |module_schema_node|
+          unless module_schema_node.is_a?(Scorpio::JSON::Node)
+            raise(ArgumentError, "expected instance of Scorpio::JSON::Node; got: #{module_schema_node.pretty_inspect.chomp}")
+          end
 
-        module_schema = Scorpio::Schema.new(module_schema_node)
+          module_schema = Scorpio::Schema.new(module_schema_node)
 
-        define_method(:__schema__) { module_schema }
-        define_singleton_method(:schema) { module_schema }
-        define_singleton_method(:included) do |includer|
-          includer.send(:define_singleton_method, :schema) { module_schema }
-        end
+          define_method(:__schema__) { module_schema }
+          define_singleton_method(:schema) { module_schema }
+          define_singleton_method(:included) do |includer|
+            includer.send(:define_singleton_method, :schema) { module_schema }
+          end
 
-        if module_schema.describes_hash?
-          module_schema.described_hash_property_names.each do |property_name|
-            define_method(property_name) do
-              self[property_name]
-            end
-            define_method("#{property_name}=") do |value|
-              if respond_to?(:[]=)
-                self[property_name] = value
-              else
-                raise(NoMethodError, "object does not respond to []=; cannot call accessor `#{property_name}=' for #{inspect}")
+          if module_schema.describes_hash?
+            module_schema.described_hash_property_names.each do |property_name|
+              define_method(property_name) do
+                self[property_name]
+              end
+              define_method("#{property_name}=") do |value|
+                if respond_to?(:[]=)
+                  self[property_name] = value
+                else
+                  raise(NoMethodError, "object does not respond to []=; cannot call accessor `#{property_name}=' for #{inspect}")
+                end
               end
             end
           end
