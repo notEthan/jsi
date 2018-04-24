@@ -38,7 +38,12 @@ module Scorpio
     attr_reader :object
 
     def deref
-      self.class.new(object.deref)
+      derefed = object.deref
+      if derefed.object_id == object.object_id
+        self
+      else
+        self.class.new(derefed)
+      end
     end
 
     def modified_copy(&block)
