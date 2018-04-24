@@ -19,7 +19,7 @@ describe Scorpio::JSON::HashNode do
     end
     it 'iterates, two arguments' do
       out = []
-      retval = node.each do |k, v|
+      node.each do |k, v|
         out << [k, v]
       end
       assert_instance_of(Scorpio::JSON::HashNode, node['c'])
