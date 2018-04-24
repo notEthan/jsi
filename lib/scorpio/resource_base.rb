@@ -1,4 +1,6 @@
 require 'addressable/template'
+require 'faraday'
+require 'scorpio/util/faraday/response_media_type'
 
 module Scorpio
   # see also Faraday::Env::MethodsWithBodies
