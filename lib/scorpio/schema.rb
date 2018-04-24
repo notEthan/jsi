@@ -18,14 +18,16 @@ module Scorpio
           # TODO: track what parents are schemas. somehow.
           # look at 'id' if node_for_id is a schema, or the document root.
           # decide whether to look at '$id' for all parent nodes or also just schemas.
-          if node_for_id.path.empty? || node_for_id.object_id == schema_node.object_id
-            # I'm only looking at 'id' for the document root and the schema node
-            # until I track what parents are schemas.
-            parent_id = node_for_id['$id'] || node_for_id['id']
-          else
-            # will look at '$id' everywhere since it is less likely to show up outside schemas than
-            # 'id', but it will be better to only look at parents that are schemas for this too.
-            parent_id = node_for_id['$id']
+          if node_for_id.respond_to?(:to_hash)
+            if node_for_id.path.empty? || node_for_id.object_id == schema_node.object_id
+              # I'm only looking at 'id' for the document root and the schema node
+              # until I track what parents are schemas.
+              parent_id = node_for_id['$id'] || node_for_id['id']
+            else
+              # will look at '$id' everywhere since it is less likely to show up outside schemas than
+              # 'id', but it will be better to only look at parents that are schemas for this too.
+              parent_id = node_for_id['$id']
+            end
           end
 
           if parent_id || node_for_id.path.empty?
