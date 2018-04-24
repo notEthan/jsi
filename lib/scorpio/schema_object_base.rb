@@ -6,11 +6,11 @@ module Scorpio
   class SchemaObjectBase
     class << self
       def id
-        module_schema.id
+        schema.id
       end
 
       def inspect
-        if !respond_to?(:__schema__)
+        if !respond_to?(:schema)
           super
         elsif !name || name =~ /\AScorpio::SchemaClasses::/
           %Q(#{SchemaClasses.inspect}[#{id.inspect}])
@@ -26,9 +26,9 @@ module Scorpio
       end
       @object = object
 
-      if module_schema.describes_hash? && @object.is_a?(Scorpio::JSON::HashNode)
+      if __schema__.describes_hash? && @object.is_a?(Scorpio::JSON::HashNode)
         extend SchemaObjectBaseHash
-      elsif module_schema.describes_array? && @object.is_a?(Scorpio::JSON::ArrayNode)
+      elsif __schema__.describes_array? && @object.is_a?(Scorpio::JSON::ArrayNode)
         extend SchemaObjectBaseArray
       end
       # as_json needs to be defined after we are extended by Enumerable
@@ -51,13 +51,13 @@ module Scorpio
     end
 
     def fully_validate
-      module_schema.fully_validate(object)
+      __schema__.fully_validate(object)
     end
     def validate
-      module_schema.validate(object)
+      __schema__.validate(object)
     end
     def validate!
-      module_schema.validate!(object)
+      __schema__.validate!(object)
     end
     def inspect
       "\#<#{self.class.inspect} #{object.inspect}>"
@@ -98,7 +98,7 @@ module Scorpio
     h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
       include(Scorpio.module_for_schema(schema_node))
 
-      name = self.module_schema.id.gsub(/[^\w]/, '_')
+      name = self.schema.id.gsub(/[^\w]/, '_')
       name = 'X' + name unless name[/\A[a-zA-Z_]/]
       name = name[0].upcase + name[1..-1]
       SchemaClasses.const_set(name, self)
@@ -122,10 +122,10 @@ module Scorpio
 
         module_schema = Scorpio::Schema.new(module_schema_node)
 
-        define_method(:module_schema) { module_schema }
-        define_singleton_method(:module_schema) { module_schema }
+        define_method(:__schema__) { module_schema }
+        define_singleton_method(:schema) { module_schema }
         define_singleton_method(:included) do |includer|
-          includer.send(:define_singleton_method, :module_schema) { module_schema }
+          includer.send(:define_singleton_method, :schema) { module_schema }
         end
 
         if module_schema.describes_hash?
@@ -176,7 +176,7 @@ module Scorpio
     def [](property_name_)
       @object_mapped ||= Hash.new do |hash, property_name|
         hash[property_name] = begin
-          property_schema = module_schema.subschema_for_property(property_name)
+          property_schema = __schema__.subschema_for_property(property_name)
           property_schema = property_schema && property_schema.match_to_object(object[property_name])
 
           if property_schema && object[property_name].is_a?(JSON::Node)
@@ -228,7 +228,7 @@ module Scorpio
       # constructor, so it's a hash with integer keys
       @object_mapped ||= Hash.new do |hash, i|
         hash[i] = begin
-          index_schema = module_schema.subschema_for_index(i)
+          index_schema = __schema__.subschema_for_index(i)
           index_schema = index_schema && index_schema.match_to_object(object[i])
 
           if index_schema && object[i].is_a?(JSON::Node)
