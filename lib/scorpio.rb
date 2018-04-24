@@ -107,4 +107,5 @@ module Scorpio
       @memos[key][args_]
     end
   end
+  extend Memoize
 end

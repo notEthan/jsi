@@ -94,11 +94,13 @@ module Scorpio
     @classes_by_id = {}
   end
 
-  CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
-    h[schema_node_] = begin
+  def self.class_for_schema(schema_node_)
+    schema_node_ = schema_node_.object if schema_node_.is_a?(Scorpio::SchemaObjectBase)
+    schema_node_ = schema_node_.deref
+    memoize(:class_for_schema, schema_node_) do |schema_node_m|
       begin
         begin
-          Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
+          Class.new(SchemaObjectBase).instance_exec(schema_node_m) do |schema_node|
             begin
               include(Scorpio.module_for_schema(schema_node))
 
@@ -116,15 +118,10 @@ module Scorpio
     end
   end
 
-  def self.class_for_schema(schema_node)
-    schema_node = schema_node.object if schema_node.is_a?(Scorpio::SchemaObjectBase)
-    CLASS_FOR_SCHEMA[schema_node.deref]
-  end
-
   def self.module_for_schema(schema_node_)
-    begin
+    memoize(:module_for_schema, schema_node_) do |schema_node|
       Module.new.tap do |m|
-        m.instance_exec(schema_node_) do |module_schema_node|
+        m.instance_exec(schema_node) do |module_schema_node|
           unless module_schema_node.is_a?(Scorpio::JSON::Node)
             raise(ArgumentError, "expected instance of Scorpio::JSON::Node; got: #{module_schema_node.pretty_inspect.chomp}")
           end
