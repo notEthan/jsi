@@ -37,6 +37,11 @@ module Scorpio
 
     attr_reader :object
 
+    def modified_copy(&block)
+      modified_object = object.modified_copy(&block)
+      self.class.new(modified_object)
+    end
+
     def fragment
       object.fragment
     end
@@ -123,6 +128,14 @@ module Scorpio
       define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
     end
 
+    SAFE_MODIFIED_COPY_METHODS.each do |method_name|
+      define_method(method_name) do |*a, &b|
+        modified_copy do |object_to_modify|
+          object_to_modify.public_send(method_name, *a, &b)
+        end
+      end
+    end
+
     def [](property_name_)
       @object_mapped ||= Hash.new do |hash, property_name|
         hash[property_name] = begin
@@ -139,28 +152,10 @@ module Scorpio
       @object_mapped[property_name_]
     end
 
-    def merge(other)
-      # we want to strip the containers from this before we merge
-      # this is kind of annoying. wish I had a better way.
-      other_stripped = ycomb do |striprec|
-        proc do |stripobject|
-          stripobject = stripobject.object if stripobject.is_a?(Scorpio::SchemaObjectBase)
-          stripobject = stripobject.content if stripobject.is_a?(Scorpio::JSON::Node)
-          if stripobject.is_a?(Hash)
-            stripobject.map { |k, v| {striprec.call(k) => striprec.call(v)} }.inject({}, &:update)
-          elsif stripobject.is_a?(Array)
-            stripobject.map(&striprec)
-          elsif stripobject.is_a?(Symbol)
-            stripobject.to_s
-          elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| stripobject.is_a?(c) }
-            stripobject
-          else
-            raise(TypeError, "bad (not jsonifiable) object: #{stripobject.pretty_inspect}")
-          end
-        end
-      end.call(other)
-
-      self.class.new(object.merge(other_stripped))
+    def []=(property_name, value)
+      @object = object.modified_copy do |hash|
+        hash.merge(property_name => value)
+      end
     end
   end
 
@@ -183,6 +178,14 @@ module Scorpio
       define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
     end
 
+    SAFE_MODIFIED_COPY_METHODS.each do |method_name|
+      define_method(method_name) do |*a, &b|
+        modified_copy do |object_to_modify|
+          object_to_modify.public_send(method_name, *a, &b)
+        end
+      end
+    end
+
     def [](i_)
       # it would make more sense for this to be an array here, but but Array doesn't have a nice memoizing
       # constructor, so it's a hash with integer keys
@@ -199,6 +202,13 @@ module Scorpio
         end
       end
       @object_mapped[i_]
+    end
+    def []=(i, value)
+      @object = object.modified_copy do |ary|
+        ary.each_with_index.map do |el, ary_i|
+          ary_i == i ? value : el
+        end
+      end
     end
   end
 
@@ -221,6 +231,13 @@ module Scorpio
           module_schema.described_hash_property_names.each do |property_name|
             define_method(property_name) do
               self[property_name]
+            end
+            define_method("#{property_name}=") do |value|
+              if respond_to?(:[]=)
+                self[property_name] = value
+              else
+                raise(NoMethodError, "object does not respond to []=; cannot call accessor `#{property_name}=' for #{inspect}")
+              end
             end
           end
         end
