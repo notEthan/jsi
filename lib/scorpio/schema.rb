@@ -1,3 +1,5 @@
+require 'scorpio/json/node'
+
 module Scorpio
   class Schema
     def initialize(schema_object)
