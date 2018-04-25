@@ -3,9 +3,9 @@ require 'scorpio/schema_object_base'
 module Scorpio
   module OpenAPI
     module V3
-      openapi_schema_doc = ::JSON.parse(Scorpio.root.join('documents/openapis.org/v3/schema.json').read)
+      openapi_schema = Scorpio::Schema.new(::JSON.parse(Scorpio.root.join('documents/openapis.org/v3/schema.json').read))
       openapi_class = proc do |*key|
-        Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type(openapi_schema_doc, key))
+        Scorpio.class_for_schema(key.inject(openapi_schema, &:[]))
       end
 
       Document = openapi_class.call()
@@ -73,9 +73,9 @@ module Scorpio
       DefaultType                 = openapi_class.call('definitions', 'defaultType')
     end
     module V2
-      openapi_schema_doc = ::JSON.parse(Scorpio.root.join('documents/swagger.io/v2/schema.json').read)
+      openapi_schema = Scorpio::Schema.new(::JSON.parse(Scorpio.root.join('documents/swagger.io/v2/schema.json').read))
       openapi_class = proc do |*key|
-        Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type(openapi_schema_doc, key))
+        Scorpio.class_for_schema(key.inject(openapi_schema, &:[]))
       end
 
       Document = openapi_class.call()
