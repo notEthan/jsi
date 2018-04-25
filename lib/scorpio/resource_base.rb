@@ -477,7 +477,7 @@ module Scorpio
 
       def response_object_to_instances(object, initialize_options = {})
         if object.is_a?(SchemaObjectBase)
-          schema_as_key = object.module_schema.schema_node.content
+          schema_as_key = object.__schema__.schema_node.content
           model = models_by_schema[schema_as_key]
         end
 

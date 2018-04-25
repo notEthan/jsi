@@ -15,8 +15,8 @@ module Scorpio
     end
     attr_reader :schema_node
 
-    def id
-      @id ||= begin
+    def schema_id
+      @schema_id ||= begin
         # start from schema_node and ascend parents looking for an 'id' property.
         # append a fragment to that id (appending to an existing fragment if there
         # is one) consisting of the path from that parent to our schema_node.
@@ -64,9 +64,9 @@ module Scorpio
         end
 
         fragment = ::JSON::Schema::Pointer.new(:reference_tokens, path_from_id_node).fragment
-        id = parent_auri.to_s + fragment
+        schema_id = parent_auri.to_s + fragment
 
-        id
+        schema_id
       end
     end
 
@@ -184,7 +184,7 @@ module Scorpio
     end
 
     def object_group_text
-      "id=#{id}"
+      "schema_id=#{schema_id}"
     end
     def inspect
       "\#<#{self.class.inspect} #{object_group_text} #{schema_node.inspect}>"

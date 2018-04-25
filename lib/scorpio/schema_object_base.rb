@@ -5,17 +5,17 @@ module Scorpio
   # base class for representing an instance of an object described by a schema
   class SchemaObjectBase
     class << self
-      def id
-        schema.id
+      def schema_id
+        schema.schema_id
       end
 
       def inspect
         if !respond_to?(:schema)
           super
         elsif !name || name =~ /\AScorpio::SchemaClasses::/
-          %Q(#{SchemaClasses.inspect}[#{id.inspect}])
+          %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
         else
-          %Q(#{name} (#{id}))
+          %Q(#{name} (#{schema_id}))
         end
       end
     end
@@ -88,8 +88,8 @@ module Scorpio
 
   # this module is just a namespace for schema classes.
   module SchemaClasses
-    def self.[](id)
-      @classes_by_id[id]
+    def self.[](schema_id)
+      @classes_by_id[schema_id]
     end
     @classes_by_id = {}
   end
@@ -108,11 +108,11 @@ module Scorpio
             begin
               include(Scorpio.module_for_schema(schema))
 
-              name = schema.id.gsub(/[^\w]/, '_')
+              name = schema.schema_id.gsub(/[^\w]/, '_')
               name = 'X' + name unless name[/\A[a-zA-Z_]/]
               name = name[0].upcase + name[1..-1]
               SchemaClasses.const_set(name, self)
-              SchemaClasses.instance_exec(id, self) { |id_, klass| @classes_by_id[id_] = klass }
+              SchemaClasses.instance_exec(self) { |klass| @classes_by_id[klass.schema_id] = klass }
 
               self
             end
@@ -138,11 +138,11 @@ module Scorpio
             includer.send(:define_singleton_method, :schema) { schema }
           end
 
-          define_singleton_method(:id) do
-            schema.id
+          define_singleton_method(:schema_id) do
+            schema.schema_id
           end
           define_singleton_method(:inspect) do
-            %Q(#<Module for Schema: #{id}>)
+            %Q(#<Module for Schema: #{schema_id}>)
           end
 
           if schema.describes_hash?
