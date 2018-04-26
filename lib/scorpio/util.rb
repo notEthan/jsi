@@ -13,7 +13,7 @@ module Scorpio
 
   module FingerprintHash
     def ==(other)
-      other.respond_to?(:fingerprint) && other.fingerprint == self.fingerprint
+      object_id == other.object_id || (other.respond_to?(:fingerprint) && other.fingerprint == self.fingerprint)
     end
 
     alias_method :eql?, :==
