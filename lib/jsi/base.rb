@@ -15,6 +15,8 @@ module JSI
     include Enumerable
 
     class << self
+      attr_accessor :in_schema_classes
+
       # @return [String] absolute schema_id of the schema this class represents.
       #   see {Schema#schema_id}.
       def schema_id
@@ -23,10 +25,13 @@ module JSI
 
       # @return [String] a string representing the class, with schema_id
       def inspect
+        name # see #name for side effects
         if !respond_to?(:schema)
           super
-        elsif !name || name =~ /\AJSI::SchemaClasses::/
+        elsif in_schema_classes
           %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
+        elsif !name
+          %Q(#<Class for Schema: #{schema_id}>)
         else
           %Q(#{name} (#{schema_id}))
         end
@@ -57,6 +62,7 @@ module JSI
       def name
         unless super || SchemaClasses.const_defined?(schema_classes_const_name)
           SchemaClasses.const_set(schema_classes_const_name, self)
+          self.in_schema_classes = true
         end
         super
       end
