@@ -82,7 +82,7 @@ module Scorpio
       else
         if schema_node['patternProperties'].respond_to?(:to_hash)
           _, pattern_schema_node = schema_node['patternProperties'].detect do |pattern, _|
-            property_name =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+            property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
           end
         end
         if pattern_schema_node
