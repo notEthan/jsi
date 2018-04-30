@@ -79,6 +79,18 @@ describe Scorpio::JSON::Node do
         assert_equal('bar', subscripted)
       end
     end
+    describe "dealing with whatever this is" do
+      # I think google uses this style in some cases maybe. I don't remember.
+      let(:document) do
+        {
+          'schemas' => {'bar' => {'id' => 'BarID', 'description' => 'baz'}},
+          'a' => {'$ref' => 'BarID'},
+        }
+      end
+      it 'looks for a node in #/schemas with the name of the $ref' do
+        assert_equal({'id' => 'BarID', 'description' => 'baz'}, node['a'].deref.content)
+      end
+    end
   end
   describe '#[]' do
     describe 'without dereferencing' do
