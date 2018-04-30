@@ -158,7 +158,7 @@ module Scorpio
             end
           end
         end.call(document, path)
-        self.class.new(modified_document, path)
+        Node.new_by_type(modified_document, path)
       end
 
       def object_group_text
