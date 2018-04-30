@@ -202,6 +202,19 @@ describe JSI::Base do
     end
   end
   describe '#modified_copy' do
+    describe 'with an instance that does not have #modified_copy' do
+      let(:instance) { Object.new }
+      it 'yields the instance to modify' do
+        new_instance = Object.new
+        modified = subject.modified_copy do |o|
+          assert_equal(instance, o)
+          new_instance
+        end
+        assert_equal(new_instance, modified.instance)
+        assert_equal(instance, subject.instance)
+        refute_equal(instance, modified)
+      end
+    end
     describe 'with an instance that does have #modified_copy' do
       it 'yields the instance to modify' do
         modified = subject.modified_copy do |o|
