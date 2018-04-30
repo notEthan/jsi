@@ -222,6 +222,52 @@ describe Scorpio::SchemaObjectBase do
           assert_match(%r(\Aobject does not respond to \[\]; cannot call reader `foo' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
         end
       end
+      describe 'properties with the same names as instance methods' do
+        let(:schema_content) do
+          {
+            'type' => 'object',
+            'properties' => {
+              'foo' => {},            # not an instance method
+              'initialize' => {},     # SchemaObjectBase
+              'inspect' => {},        # SchemaObjectBase
+              'pretty_inspect' => {}, # Kernel
+              'as_json' => {},        # SchemaObjectBase::OverrideFromExtensions, extended on initialization
+              'each' => {},           # SchemaObjectBaseHash / SchemaObjectBaseArray
+              'instance_exec' => {},  # BasicObject
+              'object' => {},         # SchemaObjectBase
+              '__schema__' => {},     # module_for_schema singleton definition
+            },
+          }
+        end
+        let(:document) do
+          {
+            'foo' => 'bar',
+            'initialize' => 'hi',
+            'inspect' => 'hi',
+            'pretty_inspect' => 'hi',
+            'as_json' => 'hi',
+            'each' => 'hi',
+            'instance_exec' => 'hi',
+            'object' => 'hi',
+            '__schema__' => 'hi',
+          }
+        end
+        it 'does not define readers' do
+          assert_equal('bar', subject.foo)
+          assert_equal(Scorpio.module_for_schema(subject.__schema__), subject.method(:foo).owner)
+
+          assert_equal(Scorpio::SchemaObjectBase, subject.method(:initialize).owner)
+          assert_equal('hi', subject['initialize'])
+          assert_match(%r(\A#\{<Scorpio::SchemaClasses\[".*#"\].*}\z)m, subject.inspect)
+          assert_equal('hi', subject['inspect'])
+          assert_match(%r(\A#\{<Scorpio::SchemaClasses\[".*#"\].*}\Z)m, subject.pretty_inspect)
+          assert_equal(document, subject.as_json)
+          assert_equal(subject, subject.each { })
+          assert_equal(2, subject.instance_exec { 2 })
+          assert_equal(object, subject.object)
+          assert_equal(schema, subject.__schema__)
+        end
+      end
     end
     describe 'writers' do
       it 'writes attributes describes as properties' do
