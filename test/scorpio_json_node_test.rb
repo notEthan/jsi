@@ -57,12 +57,26 @@ describe Scorpio::JSON::Node do
     describe "dealing with google's invalid $refs" do
       let(:document) do
         {
-          'schemas' => {'bar' => ['baz']},
-          'a' => {'$ref' => 'bar'},
+          'schemas' => {'bar' => {'description' => ['baz']}},
+          'a' => {'$ref' => 'bar', 'foo' => 'bar'},
         }
       end
+      it 'subscripts a node consisting of a $ref WITHOUT following' do
+        subscripted = node['a']
+        assert_equal({'$ref' => 'bar', 'foo' => 'bar'}, subscripted.content)
+        assert_equal(['a'], subscripted.path)
+      end
       it 'looks for a node in #/schemas with the name of the $ref' do
-        assert_equal(['baz'], node['a'].deref.content)
+        assert_equal({'description' => ['baz']}, node['a'].deref.content)
+      end
+      it 'follows a $ref when subscripting past it' do
+        subscripted = node['a']['description']
+        assert_equal(['baz'], subscripted.content)
+        assert_equal(['schemas', 'bar', 'description'], subscripted.path)
+      end
+      it 'does not follow a $ref when subscripting a key that is present' do
+        subscripted = node['a']['foo']
+        assert_equal('bar', subscripted)
       end
     end
   end
