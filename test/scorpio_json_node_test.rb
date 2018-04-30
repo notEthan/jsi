@@ -1,7 +1,8 @@
 require_relative 'test_helper'
 
 describe Scorpio::JSON::Node do
-  let(:node) { Scorpio::JSON::Node.new(document, []) }
+  let(:path) { [] }
+  let(:node) { Scorpio::JSON::Node.new(document, path) }
 
   describe 'initialization' do
     it 'initializes' do
@@ -187,6 +188,42 @@ describe Scorpio::JSON::Node do
       it 'matches' do
         assert_equal('#//a~1b~0c!d#e%5Bf%5D', node['']['a/b~c!d#e[f]'].fragment)
       end
+    end
+  end
+  describe '#modified_copy' do
+    let(:document) { [['b', 'q'], {'c' => ['d', 'e']}] }
+    let(:path) { ['1', 'c'] }
+    it 'returns a different object' do
+      # simplest thing
+      modified_dup = node.modified_copy(&:dup)
+      # it is equal - being a dup
+      assert_equal(modified_dup, node)
+      # but different object
+      refute_equal(node.object_id, modified_dup.object_id)
+      # the parents, obviously, are different
+      refute_equal(node.parent_node.content.object_id, modified_dup.parent_node.content.object_id)
+      refute_equal(node.parent_node.parent_node.content.object_id, modified_dup.parent_node.parent_node.content.object_id)
+      # but any untouched part(s) - in this case the ['b', 'q'] at document[0] - are untouched
+      assert_equal(node.document_node[0].content.object_id, modified_dup.document_node[0].content.object_id)
+    end
+    it 'returns the same object' do
+      unmodified_dup = node.modified_copy { |o| o }
+      assert_equal(unmodified_dup, node)
+      # same object, since the block just returned it
+      refute_equal(node.object_id, unmodified_dup.object_id)
+      # the parents are unchanged since the object is the same
+      assert_equal(node.parent_node.content.object_id, unmodified_dup.parent_node.content.object_id)
+      assert_equal(node.parent_node.parent_node.content.object_id, unmodified_dup.parent_node.parent_node.content.object_id)
+      # same as the other: any untouched part(s) - in this case the ['b', 'q'] at document[0] - are untouched
+      assert_equal(node.document_node[0].content.object_id, unmodified_dup.document_node[0].content.object_id)
+    end
+    it 'raises subscripting string from array' do
+      err = assert_raises(TypeError) { Scorpio::JSON::Node.new(document, ['x']).modified_copy(&:dup) }
+      assert_match(%r(\Abad subscript "x" with remaining subpath: \[\] for array: \[.*\]\z)m, err.message)
+    end
+    it 'raises subscripting from invalid subpath' do
+      err = assert_raises(TypeError) { Scorpio::JSON::Node.new(document, [0, 0, 'what']).modified_copy(&:dup) }
+      assert_match(%r(bad subscript: "what" with remaining subpath: \[\] for content: "b"\z)m, err.message)
     end
   end
   describe '#fingerprint' do
