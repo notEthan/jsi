@@ -122,6 +122,27 @@ describe Scorpio::SchemaObjectBase do
         refute_respond_to(subject, :qux)
       end
     end
+    describe 'writers' do
+      it 'writes attributes describes as properties' do
+        orig_foo = subject.foo
+
+        subject.foo = {'y' => 'z'}
+
+        assert_equal({'y' => 'z'}, subject.foo.as_json)
+        assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
+        assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject.foo)
+      end
+      it 'updates to a modified copy of the object without altering the original' do
+        orig_object = subject.object
+
+        subject.foo = {'y' => 'z'}
+
+        refute_equal(orig_object, subject.object)
+        assert_equal({'x' => 'y'}, orig_object['foo'].as_json)
+        assert_equal({'y' => 'z'}, subject.object['foo'].as_json)
+        assert_equal(orig_object.class, subject.object.class)
+      end
+    end
   end
   describe '#as_json' do
     it '#as_json' do
