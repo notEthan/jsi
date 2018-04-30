@@ -97,8 +97,8 @@ describe Scorpio::SchemaObjectBase do
       {
         'type' => 'object',
         'properties' => {
-          'foo' => {},
-          'bar' => {},
+          'foo' => {'type' => 'object'},
+          'bar' => {'type' => 'array'},
           'baz' => {},
         },
       }
@@ -110,9 +110,15 @@ describe Scorpio::SchemaObjectBase do
       it 'reads attributes described as properties' do
         assert_equal({'x' => 'y'}, subject.foo.as_json)
         assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject.foo)
+        assert_respond_to(subject.foo, :to_hash)
+        refute_respond_to(subject.foo, :to_ary)
         assert_equal([3.14159], subject.bar.as_json)
         assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['bar']), subject.bar)
+        refute_respond_to(subject.bar, :to_hash)
+        assert_respond_to(subject.bar, :to_ary)
         assert_equal(true, subject.baz)
+        refute_respond_to(subject.baz, :to_hash)
+        refute_respond_to(subject.baz, :to_ary)
         refute_respond_to(subject, :qux)
       end
     end
