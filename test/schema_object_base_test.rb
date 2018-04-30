@@ -92,6 +92,31 @@ describe Scorpio::SchemaObjectBase do
     end
   end
   it('#fragment') { assert_equal('#', subject.fragment) }
+  describe 'property accessors' do
+    let(:schema_content) do
+      {
+        'type' => 'object',
+        'properties' => {
+          'foo' => {},
+          'bar' => {},
+          'baz' => {},
+        },
+      }
+    end
+    let(:document) do
+      {'foo' => {'x' => 'y'}, 'bar' => [3.14159], 'baz' => true, 'qux' => []}
+    end
+    describe 'readers' do
+      it 'reads attributes described as properties' do
+        assert_equal({'x' => 'y'}, subject.foo.as_json)
+        assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject.foo)
+        assert_equal([3.14159], subject.bar.as_json)
+        assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['bar']), subject.bar)
+        assert_equal(true, subject.baz)
+        refute_respond_to(subject, :qux)
+      end
+    end
+  end
   describe '#as_json' do
     it '#as_json' do
       assert_equal({'a' => 'b'}, Scorpio.class_for_schema({}).new(Scorpio::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
