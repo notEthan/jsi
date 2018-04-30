@@ -223,7 +223,7 @@ describe Scorpio::SchemaObjectBase do
       end
     end
     describe 'writers' do
-      it 'writes attributes describes as properties' do
+      it 'writes attributes described as properties' do
         orig_foo = subject.foo
 
         subject.foo = {'y' => 'z'}
