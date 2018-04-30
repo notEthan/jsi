@@ -61,6 +61,36 @@ describe Scorpio::SchemaObjectBase do
       end
     end
   end
+  describe '#modified_copy' do
+    describe 'with an object that does have #modified_copy' do
+      it 'yields the object to modify' do
+        modified = subject.modified_copy do |o|
+          assert_equal({}, o)
+          {'a' => 'b'}
+        end
+        assert_equal({'a' => 'b'}, modified.object.content)
+        assert_equal({}, subject.object.content)
+        refute_equal(object, modified)
+      end
+    end
+    describe 'resulting in a different type' do
+      let(:schema_content) { {'type' => 'object'} }
+      it 'works' do
+        # I'm not really sure the best thing to do here, but this is how it is for now. this is subject to change.
+        modified = subject.modified_copy do |o|
+          o.to_s
+        end
+        assert_equal('{}', modified.object.content)
+        assert_equal({}, subject.object.content)
+        refute_equal(object, modified)
+        # interesting side effect
+        assert(subject.respond_to?(:to_hash))
+        assert(!modified.respond_to?(:to_hash))
+        assert_equal(Scorpio::JSON::HashNode, subject.object.class)
+        assert_equal(Scorpio::JSON::Node, modified.object.class)
+      end
+    end
+  end
   describe '#as_json' do
     it '#as_json' do
       assert_equal({'a' => 'b'}, Scorpio.class_for_schema({}).new(Scorpio::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
