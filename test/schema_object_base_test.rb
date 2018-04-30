@@ -63,9 +63,9 @@ describe Scorpio::SchemaObjectBase do
   end
   describe '#as_json' do
     it '#as_json' do
-      assert_equal({'a' => 'b'}, Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type({}, [])).new({'a' => 'b'}).as_json)
-      assert_equal({'a' => 'b'}, Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type({'type' => 'object'}, [])).new({'a' => 'b'}).as_json)
-      assert_equal(['a', 'b'], Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type({'type' => 'array'}, [])).new(['a', 'b']).as_json)
+      assert_equal({'a' => 'b'}, Scorpio.class_for_schema({}).new(Scorpio::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
+      assert_equal({'a' => 'b'}, Scorpio.class_for_schema({'type' => 'object'}).new(Scorpio::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
+      assert_equal(['a', 'b'], Scorpio.class_for_schema({'type' => 'array'}).new(Scorpio::JSON::Node.new_by_type(['a', 'b'], [])).as_json)
     end
   end
 end
