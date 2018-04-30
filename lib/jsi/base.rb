@@ -77,9 +77,9 @@ module JSI
       @ancestor = ancestor || self
       self.instance = instance
 
-      if @instance.is_a?(JSI::JSON::HashNode)
+      if @instance.respond_to?(:to_hash)
         extend BaseHash
-      elsif @instance.is_a?(JSI::JSON::ArrayNode)
+      elsif @instance.respond_to?(:to_ary)
         extend BaseArray
       end
     end
@@ -138,7 +138,7 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def modified_copy(&block)
-      modified_instance = instance.modified_copy(&block)
+      modified_instance = Typelike.modified_copy(instance, &block)
       self.class.new(modified_instance, ancestor: @ancestor)
     end
 
@@ -188,7 +188,7 @@ module JSI
 
     # @return [String] the instance's object_group_text
     def object_group_text
-      instance.object_group_text
+      instance.respond_to?(:object_group_text) ? instance.object_group_text : instance.class.inspect
     end
 
     # @return [Object] a jsonifiable representation of the instance
@@ -210,13 +210,12 @@ module JSI
       if instance_variable_defined?(:@instance)
         raise(JSI::Bug, "overwriting instance is not supported")
       end
-      if thing.is_a?(Base)
-        warn "assigning instance to a Base instance is incorrect. received: #{thing.pretty_inspect.chomp}"
-        @instance = thing.instance
-      elsif thing.is_a?(JSI::JSON::Node)
-        @instance = thing
+      if thing.is_a?(JSI::Base)
+        raise(TypeError, "assigning another JSI::Base instance to #{self.class.inspect} instance is incorrect. received: #{thing.pretty_inspect.chomp}")
+      elsif thing.is_a?(Schema)
+        raise(TypeError, "assigning a schema to #{self.class.inspect} instance is incorrect. received: #{thing.pretty_inspect.chomp}")
       else
-        @instance = JSI::JSON::Node.new_doc(thing)
+        @instance = thing
       end
     end
 
