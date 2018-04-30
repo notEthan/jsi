@@ -140,6 +140,25 @@ describe Scorpio::JSON::Node do
       assert_equal({'a' => {'b' => 3}}, node['a'].document_node.content)
     end
   end
+  describe '#parent_node' do
+    let(:document) { {'a' => {'b' => []}} }
+    it 'finds a parent' do
+      sub = node['a']['b']
+      assert_equal(['a', 'b'], sub.path)
+      parent = sub.parent_node
+      assert_equal(['a'], parent.path)
+      assert_equal({'b' => []}, parent.content)
+      assert_equal(node['a'], parent)
+      root_from_sub = sub.parent_node.parent_node
+      assert_equal([], root_from_sub.path)
+      assert_equal({'a' => {'b' => []}}, root_from_sub.content)
+      assert_equal(node, root_from_sub)
+      err = assert_raises(::JSON::Schema::Pointer::ReferenceError) do
+        root_from_sub.parent_node
+      end
+      assert_match(/\Acannot access parent of root node: #\{<Scorpio::JSON::HashNode/, err.message)
+    end
+  end
   describe '#pointer_path' do
     let(:document) { {'a' => {'b' => 3}} }
     it 'is empty' do
