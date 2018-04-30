@@ -114,6 +114,15 @@ describe Scorpio::JSON::ArrayNode do
     it('#reject')  { assert_equal(Scorpio::JSON::Node.new_by_type(['a'], []), node.reject { |e| e != 'a' }) }
     it('#select')  { assert_equal(Scorpio::JSON::Node.new_by_type(['a'], []), node.select { |e| e == 'a' }) }
     it('#compact') { assert_equal(node, node.compact) }
+    describe 'at a depth' do
+      let(:document) { [['b', 'q'], {'c' => ['d', 'e']}] }
+      let(:path) { ['1', 'c'] }
+      it('#select') do
+        selected = node.select { |e| e == 'd' }
+        equivalent = Scorpio::JSON::Node.new_by_type([['b', 'q'], {'c' => ['d']}], ['1', 'c'])
+        assert_equal(equivalent, selected)
+      end
+    end
   end
   Scorpio::Arraylike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
