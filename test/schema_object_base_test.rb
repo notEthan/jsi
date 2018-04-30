@@ -91,6 +91,7 @@ describe Scorpio::SchemaObjectBase do
       end
     end
   end
+  it('#fragment') { assert_equal('#', subject.fragment) }
   describe '#as_json' do
     it '#as_json' do
       assert_equal({'a' => 'b'}, Scorpio.class_for_schema({}).new(Scorpio::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
