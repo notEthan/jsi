@@ -8,6 +8,14 @@ describe Scorpio::JSON::ArrayNode do
   # the node being tested
   let(:node) { Scorpio::JSON::Node.new_by_type(document, path) }
 
+  describe '#[] bad index' do
+    it 'improves TypeError for Array subsript' do
+      err = assert_raises(TypeError) do
+        node[:x]
+      end
+      assert_match(/^subscripting with :x \(Symbol\) from Array. self is: #\[<Scorpio::JSON::ArrayNode fragment="#">/, err.message)
+    end
+  end
   describe '#each' do
     it 'iterates, one argument' do
       out = []
