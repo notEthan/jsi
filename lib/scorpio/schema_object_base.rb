@@ -85,6 +85,11 @@ module Scorpio
     private
     def object=(thing)
       @object_mapped.clear if @object_mapped
+      if instance_variable_defined?(:@object)
+        if @object.class != thing.class
+          raise(Scorpio::Bug, "will not accept object of different class #{thing.class} to current object class #{@object.class} on #{self.class.inspect}")
+        end
+      end
       if thing.is_a?(SchemaObjectBase)
         warn "assigning object to a SchemaObjectBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
         @object = thing.object
