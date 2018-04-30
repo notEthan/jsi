@@ -45,7 +45,7 @@ describe Scorpio::JSON::Node do
     let(:document) do
       {
         'foo' => {'bar' => ['baz']},
-        'a' => {'$ref' => '#/foo'}, # not sure a description is actually allowed here, whatever
+        'a' => {'$ref' => '#/foo'},
       }
     end
     it 'follows a $ref' do
