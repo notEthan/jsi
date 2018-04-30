@@ -226,6 +226,20 @@ describe Scorpio::JSON::Node do
       assert_match(%r(bad subscript: "what" with remaining subpath: \[\] for content: "b"\z)m, err.message)
     end
   end
+  describe '#inspect' do
+    let(:document) { {'a' => {'c' => ['d', 'e']}} }
+    let(:path) { ['a'] }
+    it 'inspects' do
+      assert_equal(%Q(#<Scorpio::JSON::Node fragment="#/a" {"c"=>["d", "e"]}>), node.inspect)
+    end
+  end
+  describe '#pretty_print' do
+    let(:document) { {'a' => {'c' => ['d', 'e']}} }
+    let(:path) { ['a'] }
+    it 'pretty prints' do
+      assert_equal(%Q(#<Scorpio::JSON::Node fragment="#/a" {"c"=>["d", "e"]}>), node.pretty_inspect.chomp)
+    end
+  end
   describe '#fingerprint' do
     it 'hashes consistently' do
       assert_equal('x', {Scorpio::JSON::Node.new([0], []) => 'x'}[Scorpio::JSON::Node.new([0], [])])
