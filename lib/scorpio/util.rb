@@ -8,6 +8,20 @@ module Scorpio
         hash_.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
       end
     end
+
+    def deep_stringify_symbol_keys(object)
+      if object.respond_to?(:to_hash)
+        Scorpio::Typelike.modified_copy(object) do |hash|
+          hash.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => deep_stringify_symbol_keys(v)} }.inject({}, &:update)
+        end
+      elsif object.respond_to?(:to_ary)
+        Scorpio::Typelike.modified_copy(object) do |ary|
+          ary.map { |e| deep_stringify_symbol_keys(e) }
+        end
+      else
+        object
+      end
+    end
   end
   extend Util
 

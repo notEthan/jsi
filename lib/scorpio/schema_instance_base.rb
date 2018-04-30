@@ -121,11 +121,11 @@ module Scorpio
       end
       if thing.is_a?(SchemaInstanceBase)
         warn "assigning instance to a SchemaInstanceBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
-        @instance = thing.instance
+        @instance = Scorpio.deep_stringify_symbol_keys(thing.instance)
       elsif thing.is_a?(Scorpio::JSON::Node)
-        @instance = thing
+        @instance = Scorpio.deep_stringify_symbol_keys(thing)
       else
-        @instance = Scorpio::JSON::Node.new_by_type(thing, [])
+        @instance = Scorpio::JSON::Node.new_by_type(Scorpio.deep_stringify_symbol_keys(thing), [])
       end
     end
   end
