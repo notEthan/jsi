@@ -29,7 +29,7 @@ module Scorpio
 
       # a Node represents the content of a document at a given path.
       def initialize(document, path)
-        raise(ArgumentError, "path must be an array. got: #{path.pretty_inspect} (#{path.class})") unless path.is_a?(Array)
+        raise(ArgumentError, "path must be an array. got: #{path.pretty_inspect.chomp} (#{path.class})") unless path.is_a?(Array)
         @document = document
         @path = path.dup.freeze
         @pointer = ::JSON::Schema::Pointer.new(:reference_tokens, path)
@@ -57,7 +57,7 @@ module Scorpio
         begin
           el = content[k]
         rescue TypeError => e
-          raise(e.class, e.message + "\nsubscripting from #{content.pretty_inspect} (#{content.class}): #{k.pretty_inspect} (#{k.class})", e.backtrace)
+          raise(e.class, e.message + "\nsubscripting with #{k.pretty_inspect.chomp} (#{k.class}) from #{content.class.inspect}. self is: #{pretty_inspect.chomp}", e.backtrace)
         end
         if el.is_a?(Hash) || el.is_a?(Array)
           self.class.new_by_type(node.document, node.path + [k])
@@ -99,7 +99,7 @@ module Scorpio
       # ::JSON::Schema::Pointer::ReferenceError.
       def parent_node
         if path.empty?
-          raise(::JSON::Schema::Pointer::ReferenceError, "cannot access parent of root node:\n#{pretty_inspect.chomp}")
+          raise(::JSON::Schema::Pointer::ReferenceError, "cannot access parent of root node: #{pretty_inspect.chomp}")
         else
           Node.new_by_type(document, path[0...-1])
         end
@@ -140,7 +140,7 @@ module Scorpio
                   car = car.to_i
                 end
                 unless car.is_a?(Integer)
-                  raise(TypeError, "bad subscript #{car.pretty_inspect} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect}")
+                  raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect.chomp}")
                 end
               end
               car_object = rec.call(subdocument[car], cdr)
@@ -153,7 +153,7 @@ module Scorpio
                   arr[car] = car_object
                 end
               else
-                raise(TypeError, "bad subscript: #{car.pretty_inspect} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect}")
+                raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect.chomp}")
               end
             end
           end
