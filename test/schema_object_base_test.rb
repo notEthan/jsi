@@ -20,6 +20,9 @@ describe Scorpio::SchemaObjectBase do
         assert_equal(%q(Scorpio::SchemaClasses["https://scorpio/foo#"]), subject.class.inspect)
       end
     end
+    it 'is the constant name plus the id for a class assigned to a constant' do
+      assert_equal(%q(Scorpio::OpenAPI::V2::Operation (http://swagger.io/v2/schema.json#/definitions/operation)), Scorpio::OpenAPI::V2::Operation.inspect)
+    end
   end
   describe 'class name' do
     let(:schema_content) { {'id' => 'https://scorpio/SchemaObjectBaseTest'} }
