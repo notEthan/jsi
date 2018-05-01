@@ -80,6 +80,12 @@ describe Scorpio::SchemaObjectBase do
     end
   end
   describe 'initialization' do
+    describe 'on Base' do
+      it 'errors' do
+        err = assert_raises(TypeError) { Scorpio::SchemaObjectBase.new({}) }
+        assert_equal('cannot instantiate Scorpio::SchemaObjectBase which has no method #__schema__. please use Scorpio.class_for_schema', err.message)
+      end
+    end
     describe 'nil' do
       let(:object) { nil }
       it 'initializes with nil object' do
