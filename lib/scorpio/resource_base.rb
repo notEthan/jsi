@@ -335,7 +335,7 @@ module Scorpio
           # if we have a body that's not a string and no indication of how to serialize it, we guess json.
             request_headers['Content-Type'] = "application/json"
             unless body.respond_to?(:to_str)
-              body = ::JSON.pretty_generate(body)
+              body = ::JSON.pretty_generate(Typelike.as_json(body))
             end
           elsif consumes.include?("application/x-www-form-urlencoded")
             request_headers['Content-Type'] = "application/x-www-form-urlencoded"
@@ -368,6 +368,15 @@ module Scorpio
           response_object = response.body
         end
 
+        if operation.responses
+          _, operation_response = operation.responses.detect { |k, v| k.to_s == response.status.to_s }
+          operation_response ||= operation.responses['default']
+          response_schema = operation_response.schema if operation_response
+        end
+        if response_schema
+          response_object = Scorpio.class_for_schema(response_schema).new(response_object)
+        end
+
         error_class = Scorpio.error_classes_by_status[response.status]
         error_class ||= if (400..499).include?(response.status)
           ClientError
@@ -384,17 +393,12 @@ module Scorpio
           end)
         end
 
-        if operation.responses
-          _, operation_response = operation.responses.detect { |k, v| k.to_s == response.status.to_s }
-          operation_response ||= operation.responses['default']
-          response_schema = operation_response.schema if operation_response
-        end
         initialize_options = {
           'persisted' => true,
           'source' => {'operationId' => operation.operationId, 'call_params' => call_params, 'url' => url.to_s},
           'response' => response,
         }
-        response_object_to_instances(response_object, response_schema, initialize_options)
+        response_object_to_instances(response_object, initialize_options)
       end
 
       def request_body_for_schema(object, schema)
@@ -471,36 +475,28 @@ module Scorpio
         raise(RequestSchemaFailure, "object does not conform to schema.\nobject = #{object.pretty_inspect}\nschema = #{::JSON.pretty_generate(schema, quirks_mode: true)}")
       end
 
-      def response_object_to_instances(object, schema, initialize_options = {})
-        schema = deref_schema(schema)
-        if schema
-          if schema['type'] == 'object' && MODULES_FOR_JSON_SCHEMA_TYPES['object'].any? { |m| object.is_a?(m) }
-            out = object.map do |key, value|
-              schema_for_value = schema['properties'] && schema['properties'][key] ||
-                if schema['patternProperties']
-                  _, pattern_schema = schema['patternProperties'].detect do |pattern, _|
-                    key =~ Regexp.new(pattern)
-                  end
-                  pattern_schema
-                end ||
-                schema['additionalProperties']
-              {key => response_object_to_instances(value, schema_for_value, initialize_options)}
-            end.inject(object.class.new, &:update)
-            schema_as_key = schema
-            schema_as_key = schema_as_key.object if schema_as_key.is_a?(Scorpio::SchemaObjectBase)
-            schema_as_key = schema_as_key.content if schema_as_key.is_a?(Scorpio::JSON::Node)
-            model = models_by_schema[schema_as_key]
-            if model
-              model.new(out, initialize_options)
-            else
-              out
-            end
-          elsif schema['type'] == 'array' && MODULES_FOR_JSON_SCHEMA_TYPES['array'].any? { |m| object.is_a?(m) }
-            object.map do |element|
-              response_object_to_instances(element, schema['items'], initialize_options)
-            end
+      def response_object_to_instances(object, initialize_options = {})
+        if object.is_a?(SchemaObjectBase)
+          schema_as_key = object.module_schema.schema_node.content
+          model = models_by_schema[schema_as_key]
+        end
+
+        if object.respond_to?(:to_hash)
+          out = Typelike.modified_copy(object) do
+            object.map do |key, value|
+              {key => response_object_to_instances(value, initialize_options)}
+            end.inject({}, &:update)
+          end
+          if model
+            model.new(out, initialize_options)
           else
-            object
+            out
+          end
+        elsif object.respond_to?(:to_ary)
+          Typelike.modified_copy(object) do
+            object.map do |element|
+              response_object_to_instances(element, initialize_options)
+            end
           end
         else
           object
@@ -587,7 +583,7 @@ module Scorpio
     end
 
     def fingerprint
-      {class: self.class, attributes: @attributes}
+      {class: self.class, attributes: Typelike.as_json(@attributes)}
     end
     include FingerprintHash
   end
