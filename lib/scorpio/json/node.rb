@@ -135,22 +135,27 @@ module Scorpio
             else
               car = subpath[0]
               cdr = subpath[1..-1]
-              if subdocument.respond_to?(:to_ary)
+              if subdocument.respond_to?(:to_hash)
+                car_object = rec.call(subdocument[car], cdr)
+                if car_object.object_id == subdocument[car].object_id
+                  subdocument
+                else
+                  subdocument.merge({car => car_object})
+                end
+              elsif subdocument.respond_to?(:to_ary)
                 if car.is_a?(String) && car =~ /\A\d+\z/
                   car = car.to_i
                 end
                 unless car.is_a?(Integer)
                   raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect.chomp}")
                 end
-              end
-              car_object = rec.call(subdocument[car], cdr)
-              if car_object == subdocument[car]
-                subdocument
-              elsif subdocument.respond_to?(:to_hash)
-                subdocument.merge({car => car_object})
-              elsif subdocument.respond_to?(:to_ary)
-                subdocument.dup.tap do |arr|
-                  arr[car] = car_object
+                car_object = rec.call(subdocument[car], cdr)
+                if car_object.object_id == subdocument[car].object_id
+                  subdocument
+                else
+                  subdocument.dup.tap do |arr|
+                    arr[car] = car_object
+                  end
                 end
               else
                 raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect.chomp}")

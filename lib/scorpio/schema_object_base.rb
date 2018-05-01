@@ -5,30 +5,27 @@ module Scorpio
   # base class for representing an instance of an object described by a schema
   class SchemaObjectBase
     class << self
-      def id
-        module_schema.id
+      def schema_id
+        schema.schema_id
       end
 
       def inspect
-        if !respond_to?(:__schema__)
+        if !respond_to?(:schema)
           super
         elsif !name || name =~ /\AScorpio::SchemaClasses::/
-          %Q(#{SchemaClasses.inspect}[#{id.inspect}])
+          %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
         else
-          %Q(#{name} (#{id}))
+          %Q(#{name} (#{schema_id}))
         end
       end
     end
 
     def initialize(object)
-      unless object.is_a?(Scorpio::JSON::Node)
-        object = Scorpio::JSON::Node.new_by_type(object, [])
-      end
-      @object = object
+      self.object = object
 
-      if module_schema.describes_hash? && @object.is_a?(Scorpio::JSON::HashNode)
+      if __schema__.describes_hash? && @object.is_a?(Scorpio::JSON::HashNode)
         extend SchemaObjectBaseHash
-      elsif module_schema.describes_array? && @object.is_a?(Scorpio::JSON::ArrayNode)
+      elsif __schema__.describes_array? && @object.is_a?(Scorpio::JSON::ArrayNode)
         extend SchemaObjectBaseArray
       end
       # certain methods need to be redefined after we are extended by Enumerable
@@ -62,13 +59,13 @@ module Scorpio
     end
 
     def fully_validate
-      module_schema.fully_validate(object)
+      __schema__.fully_validate(object)
     end
     def validate
-      module_schema.validate(object)
+      __schema__.validate(object)
     end
     def validate!
-      module_schema.validate!(object)
+      __schema__.validate!(object)
     end
     def inspect
       "\#<#{self.class.inspect} #{object.inspect}>"
@@ -95,33 +92,102 @@ module Scorpio
       {class: self.class, object: object}
     end
     include FingerprintHash
+
+    private
+    def object=(thing)
+      @object_mapped.clear if @object_mapped
+      if instance_variable_defined?(:@object)
+        if @object.class != thing.class
+          raise(Scorpio::Bug, "will not accept object of different class #{thing.class} to current object class #{@object.class} on #{self.class.inspect}")
+        end
+      end
+      if thing.is_a?(SchemaObjectBase)
+        warn "assigning object to a SchemaObjectBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
+        @object = thing.object
+      elsif thing.is_a?(Scorpio::JSON::Node)
+        @object = thing
+      else
+        @object = Scorpio::JSON::Node.new_by_type(thing, [])
+      end
+    end
   end
 
   # this module is just a namespace for schema classes.
   module SchemaClasses
-    def self.[](id)
-      @classes_by_id[id]
+    def self.[](schema_id)
+      @classes_by_id[schema_id]
     end
     @classes_by_id = {}
   end
 
-  CLASS_FOR_SCHEMA = Hash.new do |h, schema_node_|
-    h[schema_node_] = Class.new(SchemaObjectBase).instance_exec(schema_node_) do |schema_node|
-      include(Scorpio.module_for_schema(schema_node))
+  def self.class_for_schema(schema_object)
+    if schema_object.is_a?(Scorpio::Schema)
+      schema__ = schema_object
+    else
+      schema__ = Scorpio::Schema.new(schema_object)
+    end
 
-      name = self.module_schema.id.gsub(/[^\w]/, '_')
-      name = 'X' + name unless name[/\A[a-zA-Z_]/]
-      name = name[0].upcase + name[1..-1]
-      SchemaClasses.const_set(name, self)
-      SchemaClasses.instance_exec(id, self) { |id_, klass| @classes_by_id[id_] = klass }
+    memoize(:class_for_schema, schema__) do |schema_|
+      begin
+        begin
+          Class.new(SchemaObjectBase).instance_exec(schema_) do |schema|
+            begin
+              include(Scorpio.module_for_schema(schema))
 
-      self
+              name = schema.schema_id.gsub(/[^\w]/, '_')
+              name = 'X' + name unless name[/\A[a-zA-Z_]/]
+              name = name[0].upcase + name[1..-1]
+              SchemaClasses.const_set(name, self)
+              SchemaClasses.instance_exec(self) { |klass| @classes_by_id[klass.schema_id] = klass }
+
+              self
+            end
+          end
+        end
+      end
     end
   end
 
-  def self.class_for_schema(schema_node)
-    schema_node = schema_node.object if schema_node.is_a?(Scorpio::SchemaObjectBase)
-    CLASS_FOR_SCHEMA[schema_node.deref]
+  def self.module_for_schema(schema_object)
+    if schema_object.is_a?(Scorpio::Schema)
+      schema__ = schema_object
+    else
+      schema__ = Scorpio::Schema.new(schema_object)
+    end
+
+    memoize(:module_for_schema, schema__) do |schema_|
+      Module.new.tap do |m|
+        m.instance_exec(schema_) do |schema|
+          define_method(:__schema__) { schema }
+          define_singleton_method(:schema) { schema }
+          define_singleton_method(:included) do |includer|
+            includer.send(:define_singleton_method, :schema) { schema }
+          end
+
+          define_singleton_method(:schema_id) do
+            schema.schema_id
+          end
+          define_singleton_method(:inspect) do
+            %Q(#<Module for Schema: #{schema_id}>)
+          end
+
+          if schema.describes_hash?
+            schema.described_hash_property_names.each do |property_name|
+              define_method(property_name) do
+                self[property_name]
+              end
+              define_method("#{property_name}=") do |value|
+                if respond_to?(:[]=)
+                  self[property_name] = value
+                else
+                  raise(NoMethodError, "object does not respond to []=; cannot call accessor `#{property_name}=' for #{inspect}")
+                end
+              end
+            end
+          end
+        end
+      end
+    end
   end
 
   module SchemaObjectBaseHash
@@ -154,7 +220,7 @@ module Scorpio
     def [](property_name_)
       @object_mapped ||= Hash.new do |hash, property_name|
         hash[property_name] = begin
-          property_schema = module_schema.subschema_for_property(property_name)
+          property_schema = __schema__.subschema_for_property(property_name)
           property_schema = property_schema && property_schema.match_to_object(object[property_name])
 
           if property_schema && object[property_name].is_a?(JSON::Node)
@@ -168,7 +234,7 @@ module Scorpio
     end
 
     def []=(property_name, value)
-      @object = object.modified_copy do |hash|
+      self.object = object.modified_copy do |hash|
         hash.merge(property_name => value)
       end
     end
@@ -206,7 +272,7 @@ module Scorpio
       # constructor, so it's a hash with integer keys
       @object_mapped ||= Hash.new do |hash, i|
         hash[i] = begin
-          index_schema = module_schema.subschema_for_index(i)
+          index_schema = __schema__.subschema_for_index(i)
           index_schema = index_schema && index_schema.match_to_object(object[i])
 
           if index_schema && object[i].is_a?(JSON::Node)
@@ -219,42 +285,9 @@ module Scorpio
       @object_mapped[i_]
     end
     def []=(i, value)
-      @object = object.modified_copy do |ary|
+      self.object = object.modified_copy do |ary|
         ary.each_with_index.map do |el, ary_i|
           ary_i == i ? value : el
-        end
-      end
-    end
-  end
-
-  def self.module_for_schema(schema_node_)
-    Module.new.tap do |m|
-      m.instance_exec(schema_node_) do |module_schema_node|
-        unless module_schema_node.is_a?(Scorpio::JSON::Node)
-          raise(ArgumentError, "expected instance of Scorpio::JSON::Node; got: #{module_schema_node.pretty_inspect.chomp}")
-        end
-
-        module_schema = Scorpio::Schema.new(module_schema_node)
-
-        define_method(:module_schema) { module_schema }
-        define_singleton_method(:module_schema) { module_schema }
-        define_singleton_method(:included) do |includer|
-          includer.send(:define_singleton_method, :module_schema) { module_schema }
-        end
-
-        if module_schema.describes_hash?
-          module_schema.described_hash_property_names.each do |property_name|
-            define_method(property_name) do
-              self[property_name]
-            end
-            define_method("#{property_name}=") do |value|
-              if respond_to?(:[]=)
-                self[property_name] = value
-              else
-                raise(NoMethodError, "object does not respond to []=; cannot call accessor `#{property_name}=' for #{inspect}")
-              end
-            end
-          end
         end
       end
     end

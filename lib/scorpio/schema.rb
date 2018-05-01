@@ -1,12 +1,22 @@
 module Scorpio
   class Schema
-    def initialize(schema_node)
-      @schema_node = schema_node
+    def initialize(schema_object)
+      if schema_object.is_a?(Scorpio::Schema)
+        raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
+      elsif schema_object.is_a?(Scorpio::SchemaObjectBase)
+        @schema_node = schema_object.object.deref
+      elsif schema_object.is_a?(Scorpio::JSON::HashNode)
+        @schema_node = schema_object.deref
+      elsif schema_object.respond_to?(:to_hash)
+        @schema_node = Scorpio::JSON::Node.new_by_type(schema_object, [])
+      else
+        raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
+      end
     end
     attr_reader :schema_node
 
-    def id
-      @id ||= begin
+    def schema_id
+      @schema_id ||= begin
         # start from schema_node and ascend parents looking for an 'id' property.
         # append a fragment to that id (appending to an existing fragment if there
         # is one) consisting of the path from that parent to our schema_node.
@@ -54,9 +64,9 @@ module Scorpio
         end
 
         fragment = ::JSON::Schema::Pointer.new(:reference_tokens, path_from_id_node).fragment
-        id = parent_auri.to_s + fragment
+        schema_id = parent_auri.to_s + fragment
 
-        id
+        schema_id
       end
     end
 
@@ -174,7 +184,7 @@ module Scorpio
     end
 
     def object_group_text
-      "id=#{id}"
+      "schema_id=#{schema_id}"
     end
     def inspect
       "\#<#{self.class.inspect} #{object_group_text} #{schema_node.inspect}>"
