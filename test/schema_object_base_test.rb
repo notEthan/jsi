@@ -21,6 +21,15 @@ describe Scorpio::SchemaObjectBase do
       end
     end
   end
+  describe 'class name' do
+    let(:schema_content) { {'id' => 'https://scorpio/SchemaObjectBaseTest'} }
+    it 'generates a class name from schema_id' do
+      assert_equal('Scorpio::SchemaClasses::Https___scorpio_SchemaObjectBaseTest_', subject.class.name)
+    end
+    it 'uses an existing name' do
+      assert_equal('Scorpio::OpenAPI::V2::Operation', Scorpio::OpenAPI::V2::Operation.name)
+    end
+  end
   describe 'class for schema .schema' do
     it '.schema' do
       assert_equal(schema, Scorpio.class_for_schema(schema).schema)
