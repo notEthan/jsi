@@ -21,6 +21,26 @@ describe Scorpio::SchemaObjectBase do
       end
     end
   end
+  describe 'class for schema .schema' do
+    it '.schema' do
+      assert_equal(schema, Scorpio.class_for_schema(schema).schema)
+    end
+  end
+  describe 'class for schema .schema_id' do
+    it '.schema_id' do
+      assert_equal(schema.schema_id, Scorpio.class_for_schema(schema).schema_id)
+    end
+  end
+  describe 'module for schema .inspect' do
+    it '.inspect' do
+      assert_match(%r(\A#<Module for Schema: .+#>\z), Scorpio.module_for_schema(schema).inspect)
+    end
+  end
+  describe 'module for schema .schema' do
+    it '.schema' do
+      assert_equal(schema, Scorpio.module_for_schema(schema).schema)
+    end
+  end
   describe 'initialization' do
     describe 'nil' do
       let(:object) { nil }
