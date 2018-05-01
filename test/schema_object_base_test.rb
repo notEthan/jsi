@@ -41,6 +41,28 @@ describe Scorpio::SchemaObjectBase do
       assert_equal(schema, Scorpio.module_for_schema(schema).schema)
     end
   end
+  describe 'SchemaClasses[]' do
+    it 'stores the class for the schema' do
+      assert_equal(Scorpio.class_for_schema(schema), Scorpio::SchemaClasses[schema.schema_id])
+    end
+  end
+  describe '.class_for_schema' do
+    it 'returns a class from a schema' do
+      class_for_schema = Scorpio.class_for_schema(schema)
+      # same class every time
+      assert_equal(Scorpio.class_for_schema(schema), class_for_schema)
+      assert_operator(class_for_schema, :<, Scorpio::SchemaObjectBase)
+    end
+    it 'returns a class from a hash' do
+      assert_equal(Scorpio.class_for_schema(schema), Scorpio.class_for_schema(schema.schema_node.content))
+    end
+    it 'returns a class from a schema node' do
+      assert_equal(Scorpio.class_for_schema(schema), Scorpio.class_for_schema(schema.schema_node))
+    end
+    it 'returns a class from a SchemaObjectBase' do
+      assert_equal(Scorpio.class_for_schema(schema), Scorpio.class_for_schema(Scorpio.class_for_schema({}).new(schema.schema_node)))
+    end
+  end
   describe 'initialization' do
     describe 'nil' do
       let(:object) { nil }
