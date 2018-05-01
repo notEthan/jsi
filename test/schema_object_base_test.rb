@@ -115,6 +115,19 @@ describe Scorpio::SchemaObjectBase do
     end
   end
   it('#fragment') { assert_equal('#', subject.fragment) }
+  describe 'validation' do
+    describe 'without errors' do
+      it '#fully_validate' do
+        assert_equal([], subject.fully_validate)
+      end
+      it '#validate' do
+        assert_equal(true, subject.validate)
+      end
+      it '#validate!' do
+        assert_equal(true, subject.validate!)
+      end
+    end
+  end
   describe 'property accessors' do
     let(:schema_content) do
       {
