@@ -7,6 +7,20 @@ describe Scorpio::SchemaObjectBase do
   let(:schema_content) { {} }
   let(:schema) { Scorpio::Schema.new(schema_content) }
   let(:subject) { Scorpio.class_for_schema(schema).new(object) }
+  describe 'class .inspect' do
+    it 'is the same as Class#inspect on the base' do
+      assert_equal('Scorpio::SchemaObjectBase', Scorpio::SchemaObjectBase.inspect)
+    end
+    it 'is SchemaClasses[] for generated subclass without id' do
+      assert_match(%r(\AScorpio::SchemaClasses\["[a-f0-9\-]+#"\]\z), subject.class.inspect)
+    end
+    describe 'with schema id' do
+      let(:schema_content) { {'id' => 'https://scorpio/foo'} }
+      it 'is SchemaClasses[] for generated subclass with id' do
+        assert_equal(%q(Scorpio::SchemaClasses["https://scorpio/foo#"]), subject.class.inspect)
+      end
+    end
+  end
   describe 'initialization' do
     describe 'nil' do
       let(:object) { nil }
