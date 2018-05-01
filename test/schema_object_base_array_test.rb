@@ -2,18 +2,23 @@ require_relative 'test_helper'
 
 describe Scorpio::SchemaObjectBaseArray do
   let(:document) do
-    ['foo', true, ['q']]
+    ['foo', {'lamp' => [3]}, ['q', 'r']]
   end
   let(:path) { [] }
   let(:object) { Scorpio::JSON::Node.new_by_type(document, path) }
   let(:schema_content) do
     {
       'type' => 'array',
-      'items' => {},
+      'items' => [
+        {'type' => 'string'},
+        {'type' => 'object', 'items' => {}},
+        {'type' => 'array'},
+      ],
     }
   end
   let(:schema) { Scorpio::Schema.new(schema_content) }
-  let(:subject) { Scorpio.class_for_schema(schema).new(object) }
+  let(:class_for_schema) { Scorpio.class_for_schema(schema) }
+  let(:subject) { class_for_schema.new(object) }
 
   describe 'arraylike []=' do
     it 'sets an index' do
@@ -22,8 +27,8 @@ describe Scorpio::SchemaObjectBaseArray do
       subject[2] = {'y' => 'z'}
 
       assert_equal({'y' => 'z'}, subject[2].as_json)
-      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items']), orig_2)
-      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items']), subject[2])
+      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items'][2]), orig_2)
+      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items'][2]), subject[2])
     end
     it 'updates to a modified copy of the object without altering the original' do
       orig_object = subject.object
@@ -31,7 +36,7 @@ describe Scorpio::SchemaObjectBaseArray do
       subject[2] = {'y' => 'z'}
 
       refute_equal(orig_object, subject.object)
-      assert_equal(['q'], orig_object[2].as_json)
+      assert_equal(['q', 'r'], orig_object[2].as_json)
       assert_equal({'y' => 'z'}, subject.object[2].as_json)
       assert_equal(orig_object.class, subject.object.class)
     end
@@ -41,6 +46,89 @@ describe Scorpio::SchemaObjectBaseArray do
         err = assert_raises(NoMethodError) { subject[2] = 0 }
         assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::X.*>\z), err.message)
       end
+    end
+  end
+  # these methods just delegate to Array so not going to test excessively
+  describe 'index only methods' do
+    it('#each_index') { assert_equal([0, 1, 2], subject.each_index.to_a) }
+    it('#empty?')     { assert_equal(false, subject.empty?) }
+    it('#length')     { assert_equal(3, subject.length) }
+    it('#size')       { assert_equal(3, subject.size) }
+  end
+  describe 'index + element methods' do
+    it('#|')                    { assert_equal(['foo', subject[1], subject[2], 0], subject | [0]) }
+    it('#&')                    { assert_equal(['foo'], subject & ['foo']) }
+    it('#*')                    { assert_equal(subject.to_a, subject * 1) }
+    it('#+')                    { assert_equal(subject.to_a, subject + []) }
+    it('#-')                    { assert_equal([subject[1], subject[2]], subject - ['foo']) }
+    it('#<=>')                  { assert_equal(1, subject <=> []) }
+    it('#<=>')                  { assert_equal(-1, [] <=> subject) }
+    require 'abbrev'
+    it('#abbrev')               { assert_equal({'a' => 'a'}, class_for_schema.new(['a']).abbrev) }
+    it('#assoc')                { assert_equal(['q', 'r'], subject.object.assoc('q')) }
+    it('#at')                   { assert_equal('foo', subject.at(0)) }
+    it('#bsearch')              { assert_equal(nil, subject.bsearch { false }) }
+    it('#bsearch_index')        { assert_equal(nil, subject.bsearch_index { false }) } if [].respond_to?(:bsearch_index)
+    it('#combination')          { assert_equal([['foo'], [subject[1]], [subject[2]]], subject.combination(1).to_a) }
+    it('#count')                { assert_equal(1, subject.count('foo')) }
+    it('#cycle')                { assert_equal(subject.to_a, subject.cycle(1).to_a) }
+    it('#dig')                  { assert_equal(3, subject.dig(1, 'lamp', 0)) } if [].respond_to?(:dig)
+    it('#drop')                 { assert_equal([subject[2]], subject.drop(2)) }
+    it('#drop_while')           { assert_equal([subject[1], subject[2]], subject.drop_while { |e| e == 'foo' }) }
+    it('#fetch')                { assert_equal('foo', subject.fetch(0)) }
+    it('#find_index')           { assert_equal(0, subject.find_index { true }) }
+    it('#first')                { assert_equal('foo', subject.first) }
+    it('#include?')             { assert_equal(true, subject.include?('foo')) }
+    it('#index')                { assert_equal(0, subject.index('foo')) }
+    it('#join')                 { assert_equal('a b', class_for_schema.new(['a', 'b']).join(' ')) }
+    it('#last')                 { assert_equal(subject[2], subject.last) }
+    it('#pack')                 { assert_equal(' ', class_for_schema.new([32]).pack('c')) }
+    it('#permutation')          { assert_equal([['foo'], [subject[1]], [subject[2]]], subject.permutation(1).to_a) }
+    it('#product')              { assert_equal([], subject.product([])) }
+    # due to differences in implementation between #assoc and #rassoc, the reason for which
+    # I cannot begin to fathom, assoc works but rassoc does not because rassoc has different
+    # type checking than assoc for the array(like) array elements.
+    # compare:
+    # assoc:  https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3780-L3813
+    # rassoc: https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3815-L3847
+    # for this reason, rassoc is NOT defined on Arraylike and #content must be called.
+    it('#rassoc')               { assert_equal(['q', 'r'], subject.object.content.rassoc('r')) }
+    it('#repeated_combination') { assert_equal([[]], subject.repeated_combination(0).to_a) }
+    it('#repeated_permutation') { assert_equal([[]], subject.repeated_permutation(0).to_a) }
+    it('#reverse')              { assert_equal([subject[2], subject[1], 'foo'], subject.reverse) }
+    it('#reverse_each')         { assert_equal([subject[2], subject[1], 'foo'], subject.reverse_each.to_a) }
+    it('#rindex')               { assert_equal(0, subject.rindex('foo')) }
+    it('#rotate')               { assert_equal([subject[1], subject[2], 'foo'], subject.rotate) }
+    it('#sample')               { assert_equal('a', class_for_schema.new(['a']).sample) }
+    it('#shelljoin')            { assert_equal('a', class_for_schema.new(['a']).shelljoin) } if [].respond_to?(:shelljoin)
+    it('#shuffle')              { assert_equal(3, subject.shuffle.size) }
+    it('#slice')                { assert_equal(['foo'], subject.slice(0, 1)) }
+    it('#sort')                 { assert_equal(['a'], class_for_schema.new(['a']).sort) }
+    it('#take')                 { assert_equal(['foo'], subject.take(1)) }
+    it('#take_while')           { assert_equal([], subject.take_while { false }) }
+    it('#transpose')            { assert_equal([], class_for_schema.new([]).transpose) }
+    it('#uniq')                 { assert_equal(subject.to_a, subject.uniq) }
+    it('#values_at')            { assert_equal(['foo'], subject.values_at(0)) }
+    it('#zip')                  { assert_equal([['foo', 'foo'], [subject[1], subject[1]], [subject[2], subject[2]]], subject.zip(subject)) }
+  end
+  describe 'modified copy methods' do
+    it('#reject')  { assert_equal(class_for_schema.new(Scorpio::JSON::ArrayNode.new(['foo'], [])), subject.reject { |e| e != 'foo' }) }
+    it('#select')  { assert_equal(class_for_schema.new(Scorpio::JSON::ArrayNode.new(['foo'], [])), subject.select { |e| e == 'foo' }) }
+    it('#compact') { assert_equal(subject, subject.compact) }
+    describe 'at a depth' do
+      let(:document) { [['b', 'q'], {'c' => ['d', 'e']}] }
+      let(:path) { ['1', 'c'] }
+      it('#select') do
+        selected = subject.select { |e| e == 'd' }
+        equivalent_node = Scorpio::JSON::ArrayNode.new([['b', 'q'], {'c' => ['d']}], path)
+        equivalent = class_for_schema.new(equivalent_node)
+        assert_equal(equivalent, selected)
+      end
+    end
+  end
+  Scorpio::Arraylike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+    it("does not respond to destructive method #{destructive_method_name}") do
+      assert(!subject.respond_to?(destructive_method_name))
     end
   end
 end
