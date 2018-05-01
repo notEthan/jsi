@@ -63,6 +63,22 @@ describe Scorpio::SchemaObjectBase do
       assert_equal(Scorpio.class_for_schema(schema), Scorpio.class_for_schema(Scorpio.class_for_schema({}).new(schema.schema_node)))
     end
   end
+  describe '.module_for_schema' do
+    it 'returns a module from a schema' do
+      module_for_schema = Scorpio.module_for_schema(schema)
+      # same module every time
+      assert_equal(Scorpio.module_for_schema(schema), module_for_schema)
+    end
+    it 'returns a module from a hash' do
+      assert_equal(Scorpio.module_for_schema(schema), Scorpio.module_for_schema(schema.schema_node.content))
+    end
+    it 'returns a module from a schema node' do
+      assert_equal(Scorpio.module_for_schema(schema), Scorpio.module_for_schema(schema.schema_node))
+    end
+    it 'returns a module from a SchemaObjectBase' do
+      assert_equal(Scorpio.module_for_schema(schema), Scorpio.module_for_schema(Scorpio.class_for_schema({}).new(schema.schema_node)))
+    end
+  end
   describe 'initialization' do
     describe 'nil' do
       let(:object) { nil }
