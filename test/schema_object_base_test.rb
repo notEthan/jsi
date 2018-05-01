@@ -87,6 +87,15 @@ describe Scorpio::SchemaObjectBase do
         refute_equal(object, modified)
       end
     end
+    describe 'no modification' do
+      it 'yields the object to modify' do
+        modified = subject.modified_copy { |o| o }
+        # this doesn't really need to be tested but ... whatever
+        assert_equal(subject.object.content.object_id, modified.object.content.object_id)
+        assert_equal(subject, modified)
+        refute_equal(subject.object_id, modified.object_id)
+      end
+    end
     describe 'resulting in a different type' do
       let(:schema_content) { {'type' => 'object'} }
       it 'works' do
