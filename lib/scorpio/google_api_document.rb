@@ -3,22 +3,20 @@ require 'scorpio/schema_object_base'
 
 module Scorpio
   module Google
-    apidoc_schema_doc = ::JSON.parse(Scorpio.root.join('documents/www.googleapis.com/discovery/v1/apis/discovery/v1/rest').read)
-    api_document_class = proc do |*key|
-      Scorpio.class_for_schema(Scorpio::JSON::Node.new_by_type(apidoc_schema_doc, ['schemas', *key]))
-    end
+    discovery_rest_description_doc = Scorpio::JSON::Node.new_by_type(::JSON.parse(Scorpio.root.join('documents/www.googleapis.com/discovery/v1/apis/discovery/v1/rest').read), [])
+
+    discovery_metaschema = discovery_rest_description_doc['schemas']['JsonSchema']
+    rest_description_schema = Scorpio.class_for_schema(discovery_metaschema).new(discovery_rest_description_doc['schemas']['RestDescription'])
+    discovery_rest_description = Scorpio.class_for_schema(rest_description_schema).new(discovery_rest_description_doc)
 
     # naming these is not strictly necessary, but is nice to have.
-    # generated: puts Scorpio::Google::ApiDocument.document['schemas'].select { |k,v| v['type'] == 'object' }.keys.map { |k| "#{k[0].upcase}#{k[1..-1]} = api_document_class.call('#{k}')" }
-    DirectoryList   = api_document_class.call('DirectoryList')
-    JsonSchema      = api_document_class.call('JsonSchema')
-    RestDescription = api_document_class.call('RestDescription')
-    RestMethod      = api_document_class.call('RestMethod')
-    RestResource    = api_document_class.call('RestResource')
-
-    # not generated
-    RestMethodRequest = api_document_class.call('RestMethod', 'properties', 'request')
-    RestMethodResponse = api_document_class.call('RestMethod', 'properties', 'response')
+    DirectoryList      = Scorpio.class_for_schema(discovery_rest_description['schemas']['DirectoryList'])
+    JsonSchema         = Scorpio.class_for_schema(discovery_rest_description['schemas']['JsonSchema'])
+    RestDescription    = Scorpio.class_for_schema(discovery_rest_description['schemas']['RestDescription'])
+    RestMethod         = Scorpio.class_for_schema(discovery_rest_description['schemas']['RestMethod'])
+    RestResource       = Scorpio.class_for_schema(discovery_rest_description['schemas']['RestResource'])
+    RestMethodRequest  = Scorpio.class_for_schema(discovery_rest_description['schemas']['RestMethod']['properties']['request'])
+    RestMethodResponse = Scorpio.class_for_schema(discovery_rest_description['schemas']['RestMethod']['properties']['response'])
 
     # google does a weird thing where it defines a schema with a $ref property where a json-schema is to be used in the document (method request and response fields), instead of just setting the schema to be the json-schema schema. we'll share a module across those schema classes that really represent schemas. is this confusingly meta enough?
     module SchemaLike
