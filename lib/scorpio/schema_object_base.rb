@@ -174,13 +174,17 @@ module Scorpio
           if schema.describes_hash?
             schema.described_hash_property_names.each do |property_name|
               define_method(property_name) do
-                self[property_name]
+                if respond_to?(:[])
+                  self[property_name]
+                else
+                  raise(NoMethodError, "object does not respond to []; cannot call reader `#{property_name}' for: #{pretty_inspect.chomp}")
+                end
               end
               define_method("#{property_name}=") do |value|
                 if respond_to?(:[]=)
                   self[property_name] = value
                 else
-                  raise(NoMethodError, "object does not respond to []=; cannot call accessor `#{property_name}=' for #{inspect}")
+                  raise(NoMethodError, "object does not respond to []=; cannot call writer `#{property_name}=' for: #{pretty_inspect.chomp}")
                 end
               end
             end
