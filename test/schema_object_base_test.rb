@@ -261,4 +261,22 @@ describe Scorpio::SchemaObjectBase do
       assert_equal(['a', 'b'], Scorpio.class_for_schema({'type' => 'array'}).new(Scorpio::JSON::Node.new_by_type(['a', 'b'], [])).as_json)
     end
   end
+  describe 'ridiculous way to test object= getting the wrong type' do
+    # this error message indicates an internal bug (hence Bug class), so there isn't an intended way to
+    # trigger it using SchemaObjectBase properly. we use it improperly just to test that code path. this
+    # is definitely not defined behavior.
+    #
+    # make thing whose #modified_copy behaves incorrectly, to abuse the internals of []=
+    let(:object) do
+      Scorpio::JSON::HashNode.new({}, []).tap do |object|
+        object.define_singleton_method(:modified_copy) { |*_a| [] }
+      end
+    end
+    let(:schema_content) { {'type' => 'object'} }
+
+    it 'errors' do
+      err = assert_raises(Scorpio::Bug) { subject['foo'] = 'bar' }
+      assert_match(%r(\Awill not accept object of different class Array to current object class Scorpio::JSON::HashNode on Scorpio::SchemaClasses\["[a-z0-9\-]+#"\]\z), err.message)
+    end
+  end
 end
