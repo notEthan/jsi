@@ -21,6 +21,10 @@ module Scorpio
     end
 
     def initialize(object)
+      unless respond_to?(:__schema__)
+        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #__schema__. please use Scorpio.class_for_schema")
+      end
+
       self.object = object
 
       if __schema__.describes_hash? && @object.is_a?(Scorpio::JSON::HashNode)
