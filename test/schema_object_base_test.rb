@@ -180,6 +180,16 @@ describe Scorpio::SchemaObjectBase do
       end
     end
   end
+  describe '#inspect' do
+    it 'inspects' do
+      assert_match(%r(\A#<Scorpio::SchemaClasses\["[^"]+#"\] #\{<Scorpio::JSON::HashNode fragment="#">\}>\z), subject.inspect)
+    end
+  end
+  describe '#pretty_print' do
+    it 'pretty_prints' do
+      assert_match(%r(\A#<Scorpio::SchemaClasses\["[^"]+#"\]\n  #\{<Scorpio::JSON::HashNode fragment="#">\}\n>\z), subject.pretty_inspect.chomp)
+    end
+  end
   describe '#as_json' do
     it '#as_json' do
       assert_equal({'a' => 'b'}, Scorpio.class_for_schema({}).new(Scorpio::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
