@@ -183,6 +183,10 @@ module Scorpio
       ::JSON::Validator.validate!(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
     end
 
+    def [](k)
+      schema_node[k]
+    end
+
     def object_group_text
       "schema_id=#{schema_id}"
     end
