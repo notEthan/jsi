@@ -215,6 +215,13 @@ describe Scorpio::SchemaObjectBase do
         refute_respond_to(subject.baz, :to_ary)
         refute_respond_to(subject, :qux)
       end
+      describe 'when the object is not hashlike' do
+        let(:object) { nil }
+        it 'errors' do
+          err = assert_raises(NoMethodError) { subject.foo }
+          assert_match(%r(\Aobject does not respond to \[\]; cannot call reader `foo' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
+        end
+      end
     end
     describe 'writers' do
       it 'writes attributes describes as properties' do
@@ -235,6 +242,13 @@ describe Scorpio::SchemaObjectBase do
         assert_equal({'x' => 'y'}, orig_object['foo'].as_json)
         assert_equal({'y' => 'z'}, subject.object['foo'].as_json)
         assert_equal(orig_object.class, subject.object.class)
+      end
+      describe 'when the object is not hashlike' do
+        let(:object) { nil }
+        it 'errors' do
+          err = assert_raises(NoMethodError) { subject.foo = 0 }
+          assert_match(%r(\Aobject does not respond to \[\]=; cannot call writer `foo=' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
+        end
       end
     end
   end
