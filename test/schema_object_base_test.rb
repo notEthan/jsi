@@ -11,7 +11,7 @@ describe Scorpio::SchemaObjectBase do
     describe 'nil' do
       let(:object) { nil }
       it 'initializes with nil object' do
-        assert_equal(nil, subject.object)
+        assert_equal(Scorpio::JSON::Node.new_by_type(nil, []), subject.object)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -19,7 +19,7 @@ describe Scorpio::SchemaObjectBase do
     describe 'arbitrary object' do
       let(:object) { Object.new }
       it 'initializes' do
-        assert_equal(object, subject.object)
+        assert_equal(Scorpio::JSON::Node.new_by_type(object, []), subject.object)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -28,7 +28,7 @@ describe Scorpio::SchemaObjectBase do
       let(:object) { {'foo' => 'bar'} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal({'foo' => 'bar'}, subject.object)
+        assert_equal(Scorpio::JSON::Node.new_by_type({'foo' => 'bar'}, []), subject.object)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -46,7 +46,7 @@ describe Scorpio::SchemaObjectBase do
       let(:object) { ['foo'] }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(['foo'], subject.object)
+        assert_equal(Scorpio::JSON::Node.new_by_type(['foo'], []), subject.object)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -58,20 +58,6 @@ describe Scorpio::SchemaObjectBase do
         assert_equal(Scorpio::JSON::ArrayNode.new(['foo'], []), subject.object)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
-      end
-    end
-    describe 'SchemaObjectBase invalid' do
-      let(:object) { Scorpio.class_for_schema(schema).new({}) }
-      it 'initializes' do
-        err = assert_raises(TypeError) { subject }
-        assert_match(%r(\Aassigning another SchemaObjectBase instance to Scorpio::SchemaClasses\[\".*#\"\] object is incorrect. received: #<Scorpio::SchemaClasses\[.*\] {}>\z)m, err.message)
-      end
-    end
-    describe 'Schema invalid' do
-      let(:object) { Scorpio::Schema.new({}) }
-      it 'initializes' do
-        err = assert_raises(TypeError) { subject }
-        assert_match(%r(\Aassigning a schema to Scorpio::SchemaClasses\[\".*#\"\] object is incorrect. received: #<Scorpio::Schema schema_id=.*>\z)m, err.message)
       end
     end
   end
