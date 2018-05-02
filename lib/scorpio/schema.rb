@@ -13,6 +13,13 @@ module Scorpio
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end
+      if @schema_object
+        define_singleton_method(:object) { schema_node } # aka schema_object.object
+        define_singleton_method(:__schema__) { schema_object.__schema__ }
+        extend SchemaObjectBaseHash
+      else
+        define_singleton_method(:[]) { |*a, &b| schema_node.public_send(:[], *a, &b) }
+      end
     end
     attr_reader :schema_node
     def schema_object
@@ -185,10 +192,6 @@ module Scorpio
     end
     def validate!(object)
       ::JSON::Validator.validate!(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
-    end
-
-    def [](k)
-      schema_node[k]
     end
 
     def object_group_text
