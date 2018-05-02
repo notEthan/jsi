@@ -49,6 +49,9 @@ module Scorpio
     # the openapi document
     define_inheritable_accessor(:tag_name, update_methods: true)
     define_inheritable_accessor(:represented_schemas, default_value: [], update_methods: true, on_set: proc do
+      unless represented_schemas.respond_to?(:to_ary)
+        raise(TypeError, "represented_schemas must be an array. received: #{represented_schemas.pretty_inspect.chomp}")
+      end
       if represented_schemas.all? { |s| s.is_a?(Scorpio::Schema) }
         represented_schemas.each do |schema|
           openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schema => self)
