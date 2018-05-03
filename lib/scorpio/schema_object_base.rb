@@ -18,6 +18,20 @@ module Scorpio
           %Q(#{name} (#{schema_id}))
         end
       end
+
+      def schema_classes_const_name
+        name = schema.schema_id.gsub(/[^\w]/, '_')
+        name = 'X' + name unless name[/\A[a-zA-Z_]/]
+        name = name[0].upcase + name[1..-1]
+        name
+      end
+
+      def name
+        unless super
+          SchemaClasses.const_set(schema_classes_const_name, self)
+        end
+        super
+      end
     end
 
     def initialize(object)
@@ -138,10 +152,6 @@ module Scorpio
             begin
               include(Scorpio.module_for_schema(schema))
 
-              name = schema.schema_id.gsub(/[^\w]/, '_')
-              name = 'X' + name unless name[/\A[a-zA-Z_]/]
-              name = name[0].upcase + name[1..-1]
-              SchemaClasses.const_set(name, self)
               SchemaClasses.instance_exec(self) { |klass| @classes_by_id[klass.schema_id] = klass }
 
               self
@@ -176,15 +186,24 @@ module Scorpio
           end
 
           if schema.describes_hash?
-            schema.described_hash_property_names.each do |property_name|
+            instance_method_modules = [m, SchemaObjectBase, SchemaObjectBaseArray, SchemaObjectBaseHash, SchemaObjectBase::OverrideFromExtensions]
+            instance_methods = instance_method_modules.map do |mod|
+              mod.instance_methods + mod.private_instance_methods
+            end.inject(Set.new, &:|)
+            accessors_to_define = schema.described_hash_property_names.map(&:to_s) - instance_methods.map(&:to_s)
+            accessors_to_define.each do |property_name|
               define_method(property_name) do
-                self[property_name]
+                if respond_to?(:[])
+                  self[property_name]
+                else
+                  raise(NoMethodError, "object does not respond to []; cannot call reader `#{property_name}' for: #{pretty_inspect.chomp}")
+                end
               end
               define_method("#{property_name}=") do |value|
                 if respond_to?(:[]=)
                   self[property_name] = value
                 else
-                  raise(NoMethodError, "object does not respond to []=; cannot call accessor `#{property_name}=' for #{inspect}")
+                  raise(NoMethodError, "object does not respond to []=; cannot call writer `#{property_name}=' for: #{pretty_inspect.chomp}")
                 end
               end
             end
@@ -228,7 +247,7 @@ module Scorpio
           property_schema = property_schema && property_schema.match_to_object(object[property_name])
 
           if property_schema && object[property_name].is_a?(JSON::Node)
-            Scorpio.class_for_schema(property_schema.schema_node).new(object[property_name])
+            Scorpio.class_for_schema(property_schema).new(object[property_name])
           else
             object[property_name]
           end
@@ -280,7 +299,7 @@ module Scorpio
           index_schema = index_schema && index_schema.match_to_object(object[i])
 
           if index_schema && object[i].is_a?(JSON::Node)
-            Scorpio.class_for_schema(index_schema.schema_node).new(object[i])
+            Scorpio.class_for_schema(index_schema).new(object[i])
           else
             object[i]
           end

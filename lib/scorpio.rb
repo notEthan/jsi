@@ -8,7 +8,11 @@ module Scorpio
   def self.root
     @root ||= Pathname.new(__FILE__).dirname.parent.expand_path
   end
+end
 
+require "scorpio/util"
+
+module Scorpio
   # generally put in code paths that are not expected to be valid control flow paths.
   # rather a NotImplementedCorrectlyError. but that's too long.
   class Bug < NotImplementedError
@@ -74,38 +78,4 @@ module Scorpio
   autoload :Typelike, 'scorpio/typelike_modules'
   autoload :Hashlike, 'scorpio/typelike_modules'
   autoload :Arraylike, 'scorpio/typelike_modules'
-
-  class << self
-    def stringify_symbol_keys(hash)
-      unless hash.respond_to?(:to_hash)
-        raise ArgumentError, "expected argument to be a Hash; got #{hash.class}: #{hash.pretty_inspect}"
-      end
-      Scorpio::Typelike.modified_copy(hash) do |hash_|
-        hash_.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
-      end
-    end
-  end
-
-  module FingerprintHash
-    def ==(other)
-      other.respond_to?(:fingerprint) && other.fingerprint == self.fingerprint
-    end
-
-    alias eql? ==
-
-    def hash
-      fingerprint.hash
-    end
-  end
-
-  module Memoize
-    def memoize(key, *args_)
-      @memos ||= {}
-      @memos[key] ||= Hash.new do |h, args|
-        h[args] = yield(*args)
-      end
-      @memos[key][args_]
-    end
-  end
-  extend Memoize
 end

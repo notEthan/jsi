@@ -20,6 +20,18 @@ describe Scorpio::SchemaObjectBase do
         assert_equal(%q(Scorpio::SchemaClasses["https://scorpio/foo#"]), subject.class.inspect)
       end
     end
+    it 'is the constant name plus the id for a class assigned to a constant' do
+      assert_equal(%q(Scorpio::OpenAPI::V2::Operation (http://swagger.io/v2/schema.json#/definitions/operation)), Scorpio::OpenAPI::V2::Operation.inspect)
+    end
+  end
+  describe 'class name' do
+    let(:schema_content) { {'id' => 'https://scorpio/SchemaObjectBaseTest'} }
+    it 'generates a class name from schema_id' do
+      assert_equal('Scorpio::SchemaClasses::Https___scorpio_SchemaObjectBaseTest_', subject.class.name)
+    end
+    it 'uses an existing name' do
+      assert_equal('Scorpio::OpenAPI::V2::Operation', Scorpio::OpenAPI::V2::Operation.name)
+    end
   end
   describe 'class for schema .schema' do
     it '.schema' do
@@ -221,6 +233,59 @@ describe Scorpio::SchemaObjectBase do
         refute_respond_to(subject.baz, :to_ary)
         refute_respond_to(subject, :qux)
       end
+      describe 'when the object is not hashlike' do
+        let(:object) { nil }
+        it 'errors' do
+          err = assert_raises(NoMethodError) { subject.foo }
+          assert_match(%r(\Aobject does not respond to \[\]; cannot call reader `foo' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
+        end
+      end
+      describe 'properties with the same names as instance methods' do
+        let(:schema_content) do
+          {
+            'type' => 'object',
+            'properties' => {
+              'foo' => {},            # not an instance method
+              'initialize' => {},     # SchemaObjectBase
+              'inspect' => {},        # SchemaObjectBase
+              'pretty_inspect' => {}, # Kernel
+              'as_json' => {},        # SchemaObjectBase::OverrideFromExtensions, extended on initialization
+              'each' => {},           # SchemaObjectBaseHash / SchemaObjectBaseArray
+              'instance_exec' => {},  # BasicObject
+              'object' => {},         # SchemaObjectBase
+              '__schema__' => {},     # module_for_schema singleton definition
+            },
+          }
+        end
+        let(:document) do
+          {
+            'foo' => 'bar',
+            'initialize' => 'hi',
+            'inspect' => 'hi',
+            'pretty_inspect' => 'hi',
+            'as_json' => 'hi',
+            'each' => 'hi',
+            'instance_exec' => 'hi',
+            'object' => 'hi',
+            '__schema__' => 'hi',
+          }
+        end
+        it 'does not define readers' do
+          assert_equal('bar', subject.foo)
+          assert_equal(Scorpio.module_for_schema(subject.__schema__), subject.method(:foo).owner)
+
+          assert_equal(Scorpio::SchemaObjectBase, subject.method(:initialize).owner)
+          assert_equal('hi', subject['initialize'])
+          assert_match(%r(\A#\{<Scorpio::SchemaClasses\[".*#"\].*}\z)m, subject.inspect)
+          assert_equal('hi', subject['inspect'])
+          assert_match(%r(\A#\{<Scorpio::SchemaClasses\[".*#"\].*}\Z)m, subject.pretty_inspect)
+          assert_equal(document, subject.as_json)
+          assert_equal(subject, subject.each { })
+          assert_equal(2, subject.instance_exec { 2 })
+          assert_equal(object, subject.object)
+          assert_equal(schema, subject.__schema__)
+        end
+      end
     end
     describe 'writers' do
       it 'writes attributes described as properties' do
@@ -241,6 +306,13 @@ describe Scorpio::SchemaObjectBase do
         assert_equal({'x' => 'y'}, orig_object['foo'].as_json)
         assert_equal({'y' => 'z'}, subject.object['foo'].as_json)
         assert_equal(orig_object.class, subject.object.class)
+      end
+      describe 'when the object is not hashlike' do
+        let(:object) { nil }
+        it 'errors' do
+          err = assert_raises(NoMethodError) { subject.foo = 0 }
+          assert_match(%r(\Aobject does not respond to \[\]=; cannot call writer `foo=' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
+        end
       end
     end
   end
