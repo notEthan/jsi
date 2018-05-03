@@ -18,6 +18,20 @@ module Scorpio
           %Q(#{name} (#{schema_id}))
         end
       end
+
+      def schema_classes_const_name
+        name = schema.schema_id.gsub(/[^\w]/, '_')
+        name = 'X' + name unless name[/\A[a-zA-Z_]/]
+        name = name[0].upcase + name[1..-1]
+        name
+      end
+
+      def name
+        unless super
+          SchemaClasses.const_set(schema_classes_const_name, self)
+        end
+        super
+      end
     end
 
     def initialize(object)
@@ -134,10 +148,6 @@ module Scorpio
             begin
               include(Scorpio.module_for_schema(schema))
 
-              name = schema.schema_id.gsub(/[^\w]/, '_')
-              name = 'X' + name unless name[/\A[a-zA-Z_]/]
-              name = name[0].upcase + name[1..-1]
-              SchemaClasses.const_set(name, self)
               SchemaClasses.instance_exec(self) { |klass| @classes_by_id[klass.schema_id] = klass }
 
               self
