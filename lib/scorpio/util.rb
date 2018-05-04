@@ -2,7 +2,7 @@ module Scorpio
   module Util
     def stringify_symbol_keys(hash)
       unless hash.respond_to?(:to_hash)
-        raise(ArgumentError, "expected argument to be a hash; got #{hash.class}: #{hash.pretty_inspect.chomp}")
+        raise(ArgumentError, "expected argument to be a hash; got #{hash.class.inspect}: #{hash.pretty_inspect.chomp}")
       end
       Scorpio::Typelike.modified_copy(hash) do |hash_|
         changed = false
