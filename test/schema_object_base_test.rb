@@ -339,14 +339,10 @@ describe Scorpio::SchemaObjectBase do
     # is definitely not defined behavior.
     #
     # make thing whose #modified_copy behaves incorrectly, to abuse the internals of []=
-    let(:object) do
-      Scorpio::JSON::HashNode.new({}, []).tap do |object|
-        object.define_singleton_method(:modified_copy) { |*_a| [] }
-      end
-    end
     let(:schema_content) { {'type' => 'object'} }
 
     it 'errors' do
+      subject.object.define_singleton_method(:modified_copy) { |*_a| [] }
       err = assert_raises(Scorpio::Bug) { subject['foo'] = 'bar' }
       assert_match(%r(\Awill not accept object of different class Array to current object class Scorpio::JSON::HashNode on Scorpio::SchemaClasses\["[a-z0-9\-]+#"\]\z), err.message)
     end
