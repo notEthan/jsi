@@ -5,18 +5,46 @@ module Scorpio
         raise(ArgumentError, "expected argument to be a hash; got #{hash.class}: #{hash.pretty_inspect.chomp}")
       end
       Scorpio::Typelike.modified_copy(hash) do |hash_|
-        hash_.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
+        changed = false
+        out = {}
+        hash_.each do |k, v|
+          if k.is_a?(Symbol)
+            changed = true
+            k = k.to_s
+          end
+          out[k] = v
+        end
+        changed ? out : hash_
       end
     end
 
     def deep_stringify_symbol_keys(object)
       if object.respond_to?(:to_hash)
         Scorpio::Typelike.modified_copy(object) do |hash|
-          hash.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => deep_stringify_symbol_keys(v)} }.inject({}, &:update)
+          changed = false
+          out = {}
+          hash.each do |k, v|
+            if k.is_a?(Symbol)
+              changed = true
+              k = k.to_s
+            end
+            out_k = deep_stringify_symbol_keys(k)
+            out_v = deep_stringify_symbol_keys(v)
+            changed = true if out_k.object_id != k.object_id
+            changed = true if out_v.object_id != v.object_id
+            out[out_k] = out_v
+          end
+          changed ? out : hash
         end
       elsif object.respond_to?(:to_ary)
         Scorpio::Typelike.modified_copy(object) do |ary|
-          ary.map { |e| deep_stringify_symbol_keys(e) }
+          changed = false
+          out = ary.map do |e|
+            out_e = deep_stringify_symbol_keys(e)
+            changed = true if out_e.object_id != e.object_id
+            out_e
+          end
+          changed ? out : ary
         end
       else
         object
