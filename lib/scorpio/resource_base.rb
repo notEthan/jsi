@@ -234,16 +234,6 @@ module Scorpio
         end
       end
 
-      MODULES_FOR_JSON_SCHEMA_TYPES = {
-        'object' => [Hash],
-        'array' => [Array, Set],
-        'string' => [String],
-        'integer' => [Integer],
-        'number' => [Numeric],
-        'boolean' => [TrueClass, FalseClass],
-        'null' => [NilClass],
-      }
-
       def connection
         Faraday.new do |c|
           faraday_request_middleware.each do |m|
