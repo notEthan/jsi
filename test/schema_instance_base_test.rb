@@ -1,15 +1,15 @@
 require_relative 'test_helper'
 
-describe Scorpio::SchemaObjectBase do
+describe Scorpio::SchemaInstanceBase do
   let(:document) { {} }
   let(:path) { [] }
-  let(:object) { Scorpio::JSON::Node.new_by_type(document, path) }
+  let(:instance) { Scorpio::JSON::Node.new_by_type(document, path) }
   let(:schema_content) { {} }
   let(:schema) { Scorpio::Schema.new(schema_content) }
-  let(:subject) { Scorpio.class_for_schema(schema).new(object) }
+  let(:subject) { Scorpio.class_for_schema(schema).new(instance) }
   describe 'class .inspect' do
     it 'is the same as Class#inspect on the base' do
-      assert_equal('Scorpio::SchemaObjectBase', Scorpio::SchemaObjectBase.inspect)
+      assert_equal('Scorpio::SchemaInstanceBase', Scorpio::SchemaInstanceBase.inspect)
     end
     it 'is SchemaClasses[] for generated subclass without id' do
       assert_match(%r(\AScorpio::SchemaClasses\["[a-f0-9\-]+#"\]\z), subject.class.inspect)
@@ -25,9 +25,9 @@ describe Scorpio::SchemaObjectBase do
     end
   end
   describe 'class name' do
-    let(:schema_content) { {'id' => 'https://scorpio/SchemaObjectBaseTest'} }
+    let(:schema_content) { {'id' => 'https://scorpio/SchemaInstanceBaseTest'} }
     it 'generates a class name from schema_id' do
-      assert_equal('Scorpio::SchemaClasses::Https___scorpio_SchemaObjectBaseTest_', subject.class.name)
+      assert_equal('Scorpio::SchemaClasses::Https___scorpio_SchemaInstanceBaseTest_', subject.class.name)
     end
     it 'uses an existing name' do
       assert_equal('Scorpio::OpenAPI::V2::Operation', Scorpio::OpenAPI::V2::Operation.name)
@@ -63,7 +63,7 @@ describe Scorpio::SchemaObjectBase do
       class_for_schema = Scorpio.class_for_schema(schema)
       # same class every time
       assert_equal(Scorpio.class_for_schema(schema), class_for_schema)
-      assert_operator(class_for_schema, :<, Scorpio::SchemaObjectBase)
+      assert_operator(class_for_schema, :<, Scorpio::SchemaInstanceBase)
     end
     it 'returns a class from a hash' do
       assert_equal(Scorpio.class_for_schema(schema), Scorpio.class_for_schema(schema.schema_node.content))
@@ -71,7 +71,7 @@ describe Scorpio::SchemaObjectBase do
     it 'returns a class from a schema node' do
       assert_equal(Scorpio.class_for_schema(schema), Scorpio.class_for_schema(schema.schema_node))
     end
-    it 'returns a class from a SchemaObjectBase' do
+    it 'returns a class from a SchemaInstanceBase' do
       assert_equal(Scorpio.class_for_schema(schema), Scorpio.class_for_schema(Scorpio.class_for_schema({}).new(schema.schema_node)))
     end
   end
@@ -87,38 +87,38 @@ describe Scorpio::SchemaObjectBase do
     it 'returns a module from a schema node' do
       assert_equal(Scorpio.module_for_schema(schema), Scorpio.module_for_schema(schema.schema_node))
     end
-    it 'returns a module from a SchemaObjectBase' do
+    it 'returns a module from a SchemaInstanceBase' do
       assert_equal(Scorpio.module_for_schema(schema), Scorpio.module_for_schema(Scorpio.class_for_schema({}).new(schema.schema_node)))
     end
   end
   describe 'initialization' do
     describe 'on Base' do
       it 'errors' do
-        err = assert_raises(TypeError) { Scorpio::SchemaObjectBase.new({}) }
-        assert_equal('cannot instantiate Scorpio::SchemaObjectBase which has no method #__schema__. please use Scorpio.class_for_schema', err.message)
+        err = assert_raises(TypeError) { Scorpio::SchemaInstanceBase.new({}) }
+        assert_equal('cannot instantiate Scorpio::SchemaInstanceBase which has no method #__schema__. please use Scorpio.class_for_schema', err.message)
       end
     end
     describe 'nil' do
-      let(:object) { nil }
-      it 'initializes with nil object' do
-        assert_equal(Scorpio::JSON::Node.new_by_type(nil, []), subject.object)
+      let(:instance) { nil }
+      it 'initializes with nil instance' do
+        assert_equal(Scorpio::JSON::Node.new_by_type(nil, []), subject.instance)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
     end
-    describe 'arbitrary object' do
-      let(:object) { Object.new }
+    describe 'arbitrary instance' do
+      let(:instance) { Object.new }
       it 'initializes' do
-        assert_equal(Scorpio::JSON::Node.new_by_type(object, []), subject.object)
+        assert_equal(Scorpio::JSON::Node.new_by_type(instance, []), subject.instance)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
     end
     describe 'hash' do
-      let(:object) { {'foo' => 'bar'} }
+      let(:instance) { {'foo' => 'bar'} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal(Scorpio::JSON::Node.new_by_type({'foo' => 'bar'}, []), subject.object)
+        assert_equal(Scorpio::JSON::Node.new_by_type({'foo' => 'bar'}, []), subject.instance)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -127,16 +127,16 @@ describe Scorpio::SchemaObjectBase do
       let(:document) { {'foo' => 'bar'} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal(Scorpio::JSON::HashNode.new({'foo' => 'bar'}, []), subject.object)
+        assert_equal(Scorpio::JSON::HashNode.new({'foo' => 'bar'}, []), subject.instance)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
     end
     describe 'array' do
-      let(:object) { ['foo'] }
+      let(:instance) { ['foo'] }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(Scorpio::JSON::Node.new_by_type(['foo'], []), subject.object)
+        assert_equal(Scorpio::JSON::Node.new_by_type(['foo'], []), subject.instance)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -145,29 +145,29 @@ describe Scorpio::SchemaObjectBase do
       let(:document) { ['foo'] }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(Scorpio::JSON::ArrayNode.new(['foo'], []), subject.object)
+        assert_equal(Scorpio::JSON::ArrayNode.new(['foo'], []), subject.instance)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
     end
   end
   describe '#modified_copy' do
-    describe 'with an object that does have #modified_copy' do
-      it 'yields the object to modify' do
+    describe 'with an instance that does have #modified_copy' do
+      it 'yields the instance to modify' do
         modified = subject.modified_copy do |o|
           assert_equal({}, o)
           {'a' => 'b'}
         end
-        assert_equal({'a' => 'b'}, modified.object.content)
-        assert_equal({}, subject.object.content)
-        refute_equal(object, modified)
+        assert_equal({'a' => 'b'}, modified.instance.content)
+        assert_equal({}, subject.instance.content)
+        refute_equal(instance, modified)
       end
     end
     describe 'no modification' do
-      it 'yields the object to modify' do
+      it 'yields the instance to modify' do
         modified = subject.modified_copy { |o| o }
         # this doesn't really need to be tested but ... whatever
-        assert_equal(subject.object.content.object_id, modified.object.content.object_id)
+        assert_equal(subject.instance.content.object_id, modified.instance.content.object_id)
         assert_equal(subject, modified)
         refute_equal(subject.object_id, modified.object_id)
       end
@@ -179,14 +179,14 @@ describe Scorpio::SchemaObjectBase do
         modified = subject.modified_copy do |o|
           o.to_s
         end
-        assert_equal('{}', modified.object.content)
-        assert_equal({}, subject.object.content)
-        refute_equal(object, modified)
+        assert_equal('{}', modified.instance.content)
+        assert_equal({}, subject.instance.content)
+        refute_equal(instance, modified)
         # interesting side effect
         assert(subject.respond_to?(:to_hash))
         assert(!modified.respond_to?(:to_hash))
-        assert_equal(Scorpio::JSON::HashNode, subject.object.class)
-        assert_equal(Scorpio::JSON::Node, modified.object.class)
+        assert_equal(Scorpio::JSON::HashNode, subject.instance.class)
+        assert_equal(Scorpio::JSON::Node, modified.instance.class)
       end
     end
   end
@@ -233,11 +233,11 @@ describe Scorpio::SchemaObjectBase do
         refute_respond_to(subject.baz, :to_ary)
         refute_respond_to(subject, :qux)
       end
-      describe 'when the object is not hashlike' do
-        let(:object) { nil }
+      describe 'when the instance is not hashlike' do
+        let(:instance) { nil }
         it 'errors' do
           err = assert_raises(NoMethodError) { subject.foo }
-          assert_match(%r(\Aobject does not respond to \[\]; cannot call reader `foo' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
+          assert_match(%r(\Ainstance does not respond to \[\]; cannot call reader `foo' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
         end
       end
       describe 'properties with the same names as instance methods' do
@@ -246,13 +246,13 @@ describe Scorpio::SchemaObjectBase do
             'type' => 'object',
             'properties' => {
               'foo' => {},            # not an instance method
-              'initialize' => {},     # SchemaObjectBase
-              'inspect' => {},        # SchemaObjectBase
+              'initialize' => {},     # SchemaInstanceBase
+              'inspect' => {},        # SchemaInstanceBase
               'pretty_inspect' => {}, # Kernel
-              'as_json' => {},        # SchemaObjectBase::OverrideFromExtensions, extended on initialization
-              'each' => {},           # SchemaObjectBaseHash / SchemaObjectBaseArray
+              'as_json' => {},        # SchemaInstanceBase::OverrideFromExtensions, extended on initialization
+              'each' => {},           # SchemaInstanceBaseHash / SchemaInstanceBaseArray
               'instance_exec' => {},  # BasicObject
-              'object' => {},         # SchemaObjectBase
+              'instance' => {},       # SchemaInstanceBase
               '__schema__' => {},     # module_for_schema singleton definition
             },
           }
@@ -266,7 +266,7 @@ describe Scorpio::SchemaObjectBase do
             'as_json' => 'hi',
             'each' => 'hi',
             'instance_exec' => 'hi',
-            'object' => 'hi',
+            'instance' => 'hi',
             '__schema__' => 'hi',
           }
         end
@@ -274,7 +274,7 @@ describe Scorpio::SchemaObjectBase do
           assert_equal('bar', subject.foo)
           assert_equal(Scorpio.module_for_schema(subject.__schema__), subject.method(:foo).owner)
 
-          assert_equal(Scorpio::SchemaObjectBase, subject.method(:initialize).owner)
+          assert_equal(Scorpio::SchemaInstanceBase, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
           assert_match(%r(\A#\{<Scorpio::SchemaClasses\[".*#"\].*}\z)m, subject.inspect)
           assert_equal('hi', subject['inspect'])
@@ -282,7 +282,7 @@ describe Scorpio::SchemaObjectBase do
           assert_equal(document, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
-          assert_equal(object, subject.object)
+          assert_equal(instance, subject.instance)
           assert_equal(schema, subject.__schema__)
         end
       end
@@ -297,21 +297,21 @@ describe Scorpio::SchemaObjectBase do
         assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
         assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject.foo)
       end
-      it 'updates to a modified copy of the object without altering the original' do
-        orig_object = subject.object
+      it 'updates to a modified copy of the instance without altering the original' do
+        orig_instance = subject.instance
 
         subject.foo = {'y' => 'z'}
 
-        refute_equal(orig_object, subject.object)
-        assert_equal({'x' => 'y'}, orig_object['foo'].as_json)
-        assert_equal({'y' => 'z'}, subject.object['foo'].as_json)
-        assert_equal(orig_object.class, subject.object.class)
+        refute_equal(orig_instance, subject.instance)
+        assert_equal({'x' => 'y'}, orig_instance['foo'].as_json)
+        assert_equal({'y' => 'z'}, subject.instance['foo'].as_json)
+        assert_equal(orig_instance.class, subject.instance.class)
       end
-      describe 'when the object is not hashlike' do
-        let(:object) { nil }
+      describe 'when the instance is not hashlike' do
+        let(:instance) { nil }
         it 'errors' do
           err = assert_raises(NoMethodError) { subject.foo = 0 }
-          assert_match(%r(\Aobject does not respond to \[\]=; cannot call writer `foo=' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
+          assert_match(%r(\Ainstance does not respond to \[\]=; cannot call writer `foo=' for: #<Scorpio::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
         end
       end
     end
@@ -333,18 +333,18 @@ describe Scorpio::SchemaObjectBase do
       assert_equal(['a', 'b'], Scorpio.class_for_schema({'type' => 'array'}).new(Scorpio::JSON::Node.new_by_type(['a', 'b'], [])).as_json)
     end
   end
-  describe 'ridiculous way to test object= getting the wrong type' do
+  describe 'ridiculous way to test instance= getting the wrong type' do
     # this error message indicates an internal bug (hence Bug class), so there isn't an intended way to
-    # trigger it using SchemaObjectBase properly. we use it improperly just to test that code path. this
+    # trigger it using SchemaInstanceBase properly. we use it improperly just to test that code path. this
     # is definitely not defined behavior.
     #
     # make thing whose #modified_copy behaves incorrectly, to abuse the internals of []=
     let(:schema_content) { {'type' => 'object'} }
 
     it 'errors' do
-      subject.object.define_singleton_method(:modified_copy) { |*_a| [] }
+      subject.instance.define_singleton_method(:modified_copy) { |*_a| [] }
       err = assert_raises(Scorpio::Bug) { subject['foo'] = 'bar' }
-      assert_match(%r(\Awill not accept object of different class Array to current object class Scorpio::JSON::HashNode on Scorpio::SchemaClasses\["[a-z0-9\-]+#"\]\z), err.message)
+      assert_match(%r(\Awill not accept instance of different class Array to current instance class Scorpio::JSON::HashNode on Scorpio::SchemaClasses\["[a-z0-9\-]+#"\]\z), err.message)
     end
   end
 end

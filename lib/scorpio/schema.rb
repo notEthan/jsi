@@ -5,9 +5,9 @@ module Scorpio
     def initialize(schema_object)
       if schema_object.is_a?(Scorpio::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
-      elsif schema_object.is_a?(Scorpio::SchemaObjectBase)
+      elsif schema_object.is_a?(Scorpio::SchemaInstanceBase)
         @schema_object = schema_object.deref
-        @schema_node = @schema_object.object
+        @schema_node = @schema_object.instance
       elsif schema_object.is_a?(Scorpio::JSON::HashNode)
         @schema_node = schema_object.deref
       elsif schema_object.respond_to?(:to_hash)
@@ -16,9 +16,9 @@ module Scorpio
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end
       if @schema_object
-        define_singleton_method(:object) { schema_node } # aka schema_object.object
+        define_singleton_method(:instance) { schema_node } # aka schema_object.instance
         define_singleton_method(:__schema__) { schema_object.__schema__ }
-        extend SchemaObjectBaseHash
+        extend SchemaInstanceBaseHash
       else
         define_singleton_method(:[]) { |*a, &b| schema_node.public_send(:[], *a, &b) }
       end
@@ -83,8 +83,8 @@ module Scorpio
       end
     end
 
-    def match_to_object(object)
-      # matching oneOf is good here. one schema for one object.
+    def match_to_instance(instance)
+      # matching oneOf is good here. one schema for one instance.
       # matching anyOf is okay. there could be more than one schema matched. it's often just one. if more
       #   than one is a match, the problems of allOf occur.
       # matching allOf is questionable. all of the schemas must be matched but we just return the first match.
@@ -93,8 +93,8 @@ module Scorpio
       %w(oneOf allOf anyOf).select { |k| schema_node[k].respond_to?(:to_ary) }.each do |someof_key|
         schema_node[someof_key].map(&:deref).map do |someof_node|
           someof_schema = self.class.new(someof_node)
-          if someof_schema.validate(object)
-            return someof_schema.match_to_object(object)
+          if someof_schema.validate(instance)
+            return someof_schema.match_to_instance(instance)
           end
         end
       end
@@ -186,14 +186,14 @@ module Scorpio
       end
     end
 
-    def fully_validate(object)
-      ::JSON::Validator.fully_validate(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
+    def fully_validate(instance)
+      ::JSON::Validator.fully_validate(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
     end
-    def validate(object)
-      ::JSON::Validator.validate(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
+    def validate(instance)
+      ::JSON::Validator.validate(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
     end
-    def validate!(object)
-      ::JSON::Validator.validate!(schema_node.document, object_to_content(object), fragment: schema_node.fragment)
+    def validate!(instance)
+      ::JSON::Validator.validate!(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
     end
 
     def object_group_text
@@ -223,7 +223,7 @@ module Scorpio
 
     private
     def object_to_content(object)
-      object = object.object if object.is_a?(Scorpio::SchemaObjectBase)
+      object = object.instance if object.is_a?(Scorpio::SchemaInstanceBase)
       object = object.content if object.is_a?(Scorpio::JSON::Node)
       object
     end

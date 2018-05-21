@@ -453,7 +453,7 @@ module Scorpio
       end
 
       def response_object_to_instances(object, initialize_options = {})
-        if object.is_a?(SchemaObjectBase)
+        if object.is_a?(SchemaInstanceBase)
           model = models_by_schema[object.__schema__]
         end
 

@@ -1,11 +1,11 @@
 require_relative 'test_helper'
 
-describe Scorpio::SchemaObjectBaseHash do
+describe Scorpio::SchemaInstanceBaseHash do
   let(:document) do
     {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}
   end
   let(:path) { [] }
-  let(:object) { Scorpio::JSON::Node.new_by_type(document, path) }
+  let(:instance) { Scorpio::JSON::Node.new_by_type(document, path) }
   let(:schema_content) do
     {
       'type' => 'object',
@@ -16,7 +16,7 @@ describe Scorpio::SchemaObjectBaseHash do
   end
   let(:schema) { Scorpio::Schema.new(schema_content) }
   let(:class_for_schema) { Scorpio.class_for_schema(schema) }
-  let(:subject) { class_for_schema.new(object) }
+  let(:subject) { class_for_schema.new(instance) }
 
   describe 'hashlike []=' do
     it 'sets a property' do
@@ -28,18 +28,18 @@ describe Scorpio::SchemaObjectBaseHash do
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
     end
-    it 'updates to a modified copy of the object without altering the original' do
-      orig_object = subject.object
+    it 'updates to a modified copy of the instance without altering the original' do
+      orig_instance = subject.instance
 
       subject['foo'] = {'y' => 'z'}
 
-      refute_equal(orig_object, subject.object)
-      assert_equal({'x' => 'y'}, orig_object['foo'].as_json)
-      assert_equal({'y' => 'z'}, subject.object['foo'].as_json)
-      assert_equal(orig_object.class, subject.object.class)
+      refute_equal(orig_instance, subject.instance)
+      assert_equal({'x' => 'y'}, orig_instance['foo'].as_json)
+      assert_equal({'y' => 'z'}, subject.instance['foo'].as_json)
+      assert_equal(orig_instance.class, subject.instance.class)
     end
-    describe 'when the object is not hashlike' do
-      let(:object) { nil }
+    describe 'when the instance is not hashlike' do
+      let(:instance) { nil }
       it 'errors' do
         err = assert_raises(NoMethodError) { subject['foo'] = 0 }
         assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::X.*>\z), err.message)

@@ -2,8 +2,8 @@ require 'json'
 require 'scorpio/typelike_modules'
 
 module Scorpio
-  # base class for representing an instance of an object described by a schema
-  class SchemaObjectBase
+  # base class for representing an instance of an instance described by a schema
+  class SchemaInstanceBase
     class << self
       def schema_id
         schema.schema_id
@@ -34,17 +34,17 @@ module Scorpio
       end
     end
 
-    def initialize(object)
+    def initialize(instance)
       unless respond_to?(:__schema__)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #__schema__. please use Scorpio.class_for_schema")
       end
 
-      self.object = object
+      self.instance = instance
 
-      if __schema__.describes_hash? && @object.is_a?(Scorpio::JSON::HashNode)
-        extend SchemaObjectBaseHash
-      elsif __schema__.describes_array? && @object.is_a?(Scorpio::JSON::ArrayNode)
-        extend SchemaObjectBaseArray
+      if __schema__.describes_hash? && @instance.is_a?(Scorpio::JSON::HashNode)
+        extend SchemaInstanceBaseHash
+      elsif __schema__.describes_array? && @instance.is_a?(Scorpio::JSON::ArrayNode)
+        extend SchemaInstanceBaseArray
       end
       # certain methods need to be redefined after we are extended by Enumerable
       extend OverrideFromExtensions
@@ -52,15 +52,15 @@ module Scorpio
 
     module OverrideFromExtensions
       def as_json
-        Typelike.as_json(object)
+        Typelike.as_json(instance)
       end
     end
 
-    attr_reader :object
+    attr_reader :instance
 
     def deref
-      derefed = object.deref
-      if derefed.object_id == object.object_id
+      derefed = instance.deref
+      if derefed.object_id == instance.object_id
         self
       else
         self.class.new(derefed)
@@ -68,25 +68,25 @@ module Scorpio
     end
 
     def modified_copy(&block)
-      modified_object = object.modified_copy(&block)
-      self.class.new(modified_object)
+      modified_instance = instance.modified_copy(&block)
+      self.class.new(modified_instance)
     end
 
     def fragment
-      object.fragment
+      instance.fragment
     end
 
     def fully_validate
-      __schema__.fully_validate(object)
+      __schema__.fully_validate(instance)
     end
     def validate
-      __schema__.validate(object)
+      __schema__.validate(instance)
     end
     def validate!
-      __schema__.validate!(object)
+      __schema__.validate!(instance)
     end
     def inspect
-      "\#<#{self.class.inspect} #{object.inspect}>"
+      "\#<#{self.class.inspect} #{instance.inspect}>"
     end
     def pretty_print(q)
       q.instance_exec(self) do |obj|
@@ -94,7 +94,7 @@ module Scorpio
         group_sub {
           nest(2) {
             breakable ' '
-            pp obj.object
+            pp obj.instance
           }
         }
         breakable ''
@@ -103,29 +103,29 @@ module Scorpio
     end
 
     def object_group_text
-      object.class.inspect + ' ' + object.object_group_text
+      instance.class.inspect + ' ' + instance.object_group_text
     end
 
     def fingerprint
-      {class: self.class, object: object}
+      {class: self.class, instance: instance}
     end
     include FingerprintHash
 
     private
-    def object=(thing)
-      @object_mapped.clear if @object_mapped
-      if instance_variable_defined?(:@object)
-        if @object.class != thing.class
-          raise(Scorpio::Bug, "will not accept object of different class #{thing.class} to current object class #{@object.class} on #{self.class.inspect}")
+    def instance=(thing)
+      @instance_mapped.clear if @instance_mapped
+      if instance_variable_defined?(:@instance)
+        if @instance.class != thing.class
+          raise(Scorpio::Bug, "will not accept instance of different class #{thing.class} to current instance class #{@instance.class} on #{self.class.inspect}")
         end
       end
-      if thing.is_a?(SchemaObjectBase)
-        warn "assigning object to a SchemaObjectBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
-        @object = thing.object
+      if thing.is_a?(SchemaInstanceBase)
+        warn "assigning instance to a SchemaInstanceBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
+        @instance = thing.instance
       elsif thing.is_a?(Scorpio::JSON::Node)
-        @object = thing
+        @instance = thing
       else
-        @object = Scorpio::JSON::Node.new_by_type(thing, [])
+        @instance = Scorpio::JSON::Node.new_by_type(thing, [])
       end
     end
   end
@@ -148,7 +148,7 @@ module Scorpio
     memoize(:class_for_schema, schema__) do |schema_|
       begin
         begin
-          Class.new(SchemaObjectBase).instance_exec(schema_) do |schema|
+          Class.new(SchemaInstanceBase).instance_exec(schema_) do |schema|
             begin
               include(Scorpio.module_for_schema(schema))
 
@@ -186,7 +186,7 @@ module Scorpio
           end
 
           if schema.describes_hash?
-            instance_method_modules = [m, SchemaObjectBase, SchemaObjectBaseArray, SchemaObjectBaseHash, SchemaObjectBase::OverrideFromExtensions]
+            instance_method_modules = [m, SchemaInstanceBase, SchemaInstanceBaseArray, SchemaInstanceBaseHash, SchemaInstanceBase::OverrideFromExtensions]
             instance_methods = instance_method_modules.map do |mod|
               mod.instance_methods + mod.private_instance_methods
             end.inject(Set.new, &:|)
@@ -196,14 +196,14 @@ module Scorpio
                 if respond_to?(:[])
                   self[property_name]
                 else
-                  raise(NoMethodError, "object does not respond to []; cannot call reader `#{property_name}' for: #{pretty_inspect.chomp}")
+                  raise(NoMethodError, "instance does not respond to []; cannot call reader `#{property_name}' for: #{pretty_inspect.chomp}")
                 end
               end
               define_method("#{property_name}=") do |value|
                 if respond_to?(:[]=)
                   self[property_name] = value
                 else
-                  raise(NoMethodError, "object does not respond to []=; cannot call writer `#{property_name}=' for: #{pretty_inspect.chomp}")
+                  raise(NoMethodError, "instance does not respond to []=; cannot call writer `#{property_name}=' for: #{pretty_inspect.chomp}")
                 end
               end
             end
@@ -213,11 +213,11 @@ module Scorpio
     end
   end
 
-  module SchemaObjectBaseHash
+  module SchemaInstanceBaseHash
     # Hash methods
     def each
-      return to_enum(__method__) { object.size } unless block_given?
-      object.each_key { |k| yield(k, self[k]) }
+      return to_enum(__method__) { instance.size } unless block_given?
+      instance.each_key { |k| yield(k, self[k]) }
       self
     end
 
@@ -229,44 +229,44 @@ module Scorpio
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
     SAFE_KEY_ONLY_METHODS.each do |method_name|
-      define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
+      define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
     end
 
     SAFE_MODIFIED_COPY_METHODS.each do |method_name|
       define_method(method_name) do |*a, &b|
-        modified_copy do |object_to_modify|
-          object_to_modify.public_send(method_name, *a, &b)
+        modified_copy do |instance_to_modify|
+          instance_to_modify.public_send(method_name, *a, &b)
         end
       end
     end
 
     def [](property_name_)
-      @object_mapped ||= Hash.new do |hash, property_name|
+      @instance_mapped ||= Hash.new do |hash, property_name|
         hash[property_name] = begin
           property_schema = __schema__.subschema_for_property(property_name)
-          property_schema = property_schema && property_schema.match_to_object(object[property_name])
+          property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
 
-          if property_schema && object[property_name].is_a?(JSON::Node)
-            Scorpio.class_for_schema(property_schema).new(object[property_name])
+          if property_schema && instance[property_name].is_a?(JSON::Node)
+            Scorpio.class_for_schema(property_schema).new(instance[property_name])
           else
-            object[property_name]
+            instance[property_name]
           end
         end
       end
-      @object_mapped[property_name_]
+      @instance_mapped[property_name_]
     end
 
     def []=(property_name, value)
-      self.object = object.modified_copy do |hash|
+      self.instance = instance.modified_copy do |hash|
         hash.merge(property_name => value)
       end
     end
   end
 
-  module SchemaObjectBaseArray
+  module SchemaInstanceBaseArray
     def each
-      return to_enum(__method__) { object.size } unless block_given?
-      object.each_index { |i| yield(self[i]) }
+      return to_enum(__method__) { instance.size } unless block_given?
+      instance.each_index { |i| yield(self[i]) }
       self
     end
 
@@ -279,13 +279,13 @@ module Scorpio
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
     # we override these methods from Arraylike
     SAFE_INDEX_ONLY_METHODS.each do |method_name|
-      define_method(method_name) { |*a, &b| object.public_send(method_name, *a, &b) }
+      define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
     end
 
     SAFE_MODIFIED_COPY_METHODS.each do |method_name|
       define_method(method_name) do |*a, &b|
-        modified_copy do |object_to_modify|
-          object_to_modify.public_send(method_name, *a, &b)
+        modified_copy do |instance_to_modify|
+          instance_to_modify.public_send(method_name, *a, &b)
         end
       end
     end
@@ -293,22 +293,22 @@ module Scorpio
     def [](i_)
       # it would make more sense for this to be an array here, but but Array doesn't have a nice memoizing
       # constructor, so it's a hash with integer keys
-      @object_mapped ||= Hash.new do |hash, i|
+      @instance_mapped ||= Hash.new do |hash, i|
         hash[i] = begin
           index_schema = __schema__.subschema_for_index(i)
-          index_schema = index_schema && index_schema.match_to_object(object[i])
+          index_schema = index_schema && index_schema.match_to_instance(instance[i])
 
-          if index_schema && object[i].is_a?(JSON::Node)
-            Scorpio.class_for_schema(index_schema).new(object[i])
+          if index_schema && instance[i].is_a?(JSON::Node)
+            Scorpio.class_for_schema(index_schema).new(instance[i])
           else
-            object[i]
+            instance[i]
           end
         end
       end
-      @object_mapped[i_]
+      @instance_mapped[i_]
     end
     def []=(i, value)
-      self.object = object.modified_copy do |ary|
+      self.instance = instance.modified_copy do |ary|
         ary.each_with_index.map do |el, ary_i|
           ary_i == i ? value : el
         end

@@ -1,11 +1,11 @@
 require_relative 'test_helper'
 
-describe Scorpio::SchemaObjectBaseArray do
+describe Scorpio::SchemaInstanceBaseArray do
   let(:document) do
     ['foo', {'lamp' => [3]}, ['q', 'r']]
   end
   let(:path) { [] }
-  let(:object) { Scorpio::JSON::Node.new_by_type(document, path) }
+  let(:instance) { Scorpio::JSON::Node.new_by_type(document, path) }
   let(:schema_content) do
     {
       'type' => 'array',
@@ -18,7 +18,7 @@ describe Scorpio::SchemaObjectBaseArray do
   end
   let(:schema) { Scorpio::Schema.new(schema_content) }
   let(:class_for_schema) { Scorpio.class_for_schema(schema) }
-  let(:subject) { class_for_schema.new(object) }
+  let(:subject) { class_for_schema.new(instance) }
 
   describe 'arraylike []=' do
     it 'sets an index' do
@@ -30,18 +30,18 @@ describe Scorpio::SchemaObjectBaseArray do
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items'][2]), orig_2)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items'][2]), subject[2])
     end
-    it 'updates to a modified copy of the object without altering the original' do
-      orig_object = subject.object
+    it 'updates to a modified copy of the instance without altering the original' do
+      orig_instance = subject.instance
 
       subject[2] = {'y' => 'z'}
 
-      refute_equal(orig_object, subject.object)
-      assert_equal(['q', 'r'], orig_object[2].as_json)
-      assert_equal({'y' => 'z'}, subject.object[2].as_json)
-      assert_equal(orig_object.class, subject.object.class)
+      refute_equal(orig_instance, subject.instance)
+      assert_equal(['q', 'r'], orig_instance[2].as_json)
+      assert_equal({'y' => 'z'}, subject.instance[2].as_json)
+      assert_equal(orig_instance.class, subject.instance.class)
     end
-    describe 'when the object is not arraylike' do
-      let(:object) { nil }
+    describe 'when the instance is not arraylike' do
+      let(:instance) { nil }
       it 'errors' do
         err = assert_raises(NoMethodError) { subject[2] = 0 }
         assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::X.*>\z), err.message)
@@ -65,7 +65,7 @@ describe Scorpio::SchemaObjectBaseArray do
     it('#<=>')                  { assert_equal(-1, [] <=> subject) }
     require 'abbrev'
     it('#abbrev')               { assert_equal({'a' => 'a'}, class_for_schema.new(['a']).abbrev) }
-    it('#assoc')                { assert_equal(['q', 'r'], subject.object.assoc('q')) }
+    it('#assoc')                { assert_equal(['q', 'r'], subject.instance.assoc('q')) }
     it('#at')                   { assert_equal('foo', subject.at(0)) }
     it('#bsearch')              { assert_equal(nil, subject.bsearch { false }) }
     it('#bsearch_index')        { assert_equal(nil, subject.bsearch_index { false }) } if [].respond_to?(:bsearch_index)
@@ -92,7 +92,7 @@ describe Scorpio::SchemaObjectBaseArray do
     # assoc:  https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3780-L3813
     # rassoc: https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3815-L3847
     # for this reason, rassoc is NOT defined on Arraylike and #content must be called.
-    it('#rassoc')               { assert_equal(['q', 'r'], subject.object.content.rassoc('r')) }
+    it('#rassoc')               { assert_equal(['q', 'r'], subject.instance.content.rassoc('r')) }
     it('#repeated_combination') { assert_equal([[]], subject.repeated_combination(0).to_a) }
     it('#repeated_permutation') { assert_equal([[]], subject.repeated_permutation(0).to_a) }
     it('#reverse')              { assert_equal([subject[2], subject[1], 'foo'], subject.reverse) }

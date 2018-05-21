@@ -1,5 +1,5 @@
 require 'api_hammer/ycomb'
-require 'scorpio/schema_object_base'
+require 'scorpio/schema_instance_base'
 
 module Scorpio
   module Google
@@ -21,7 +21,7 @@ module Scorpio
     # google does a weird thing where it defines a schema with a $ref property where a json-schema is to be used in the document (method request and response fields), instead of just setting the schema to be the json-schema schema. we'll share a module across those schema classes that really represent schemas. is this confusingly meta enough?
     module SchemaLike
       def to_openapi
-        dup_doc = ::JSON.parse(::JSON.generate(object.content))
+        dup_doc = ::JSON.parse(::JSON.generate(instance.content))
         # openapi does not want an id field on schemas
         dup_doc.delete('id')
         if dup_doc['properties'].is_a?(Hash)
@@ -48,7 +48,7 @@ module Scorpio
 
       def to_openapi_hash(options = {})
         # we will be modifying the api document (RestDescription). clone self and modify that one.
-        ad = self.class.new(::JSON.parse(::JSON.generate(object.document)))
+        ad = self.class.new(::JSON.parse(::JSON.generate(instance.document)))
         ad_methods = []
         if ad['methods']
           ad_methods += ad['methods'].map do |mn, m|

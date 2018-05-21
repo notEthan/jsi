@@ -1,4 +1,4 @@
-require 'scorpio/schema_object_base'
+require 'scorpio/schema_instance_base'
 
 module Scorpio
   module OpenAPI

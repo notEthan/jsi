@@ -73,7 +73,7 @@ module Scorpio
   autoload :OpenAPI, 'scorpio/openapi'
   autoload :Google, 'scorpio/google_api_document'
   autoload :JSON, 'scorpio/json'
-  autoload :SchemaObjectBase, 'scorpio/schema_object_base'
+  autoload :SchemaInstanceBase, 'scorpio/schema_instance_base'
   autoload :Schema, 'scorpio/schema'
   autoload :Typelike, 'scorpio/typelike_modules'
   autoload :Hashlike, 'scorpio/typelike_modules'
