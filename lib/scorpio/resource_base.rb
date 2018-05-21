@@ -349,7 +349,7 @@ module Scorpio
         if operation.responses
           _, operation_response = operation.responses.detect { |k, v| k.to_s == response.status.to_s }
           operation_response ||= operation.responses['default']
-          response_schema = operation_response.schema if operation_response
+          response_schema = operation_response['schema'] if operation_response
         end
         if response_schema
           response_object = Scorpio.class_for_schema(response_schema).new(response_object)
@@ -454,7 +454,7 @@ module Scorpio
 
       def response_object_to_instances(object, initialize_options = {})
         if object.is_a?(SchemaInstanceBase)
-          model = models_by_schema[object.__schema__]
+          model = models_by_schema[object.schema]
         end
 
         if object.respond_to?(:to_hash)

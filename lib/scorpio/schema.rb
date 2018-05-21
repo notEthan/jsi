@@ -17,7 +17,7 @@ module Scorpio
       end
       if @schema_object
         define_singleton_method(:instance) { schema_node } # aka schema_object.instance
-        define_singleton_method(:__schema__) { schema_object.__schema__ }
+        define_singleton_method(:schema) { schema_object.schema }
         extend SchemaInstanceBaseHash
       else
         define_singleton_method(:[]) { |*a, &b| schema_node.public_send(:[], *a, &b) }

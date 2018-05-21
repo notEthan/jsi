@@ -35,15 +35,15 @@ module Scorpio
     end
 
     def initialize(instance)
-      unless respond_to?(:__schema__)
-        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #__schema__. please use Scorpio.class_for_schema")
+      unless respond_to?(:schema)
+        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use Scorpio.class_for_schema")
       end
 
       self.instance = instance
 
-      if __schema__.describes_hash? && @instance.is_a?(Scorpio::JSON::HashNode)
+      if schema.describes_hash? && @instance.is_a?(Scorpio::JSON::HashNode)
         extend SchemaInstanceBaseHash
-      elsif __schema__.describes_array? && @instance.is_a?(Scorpio::JSON::ArrayNode)
+      elsif schema.describes_array? && @instance.is_a?(Scorpio::JSON::ArrayNode)
         extend SchemaInstanceBaseArray
       end
       # certain methods need to be redefined after we are extended by Enumerable
@@ -77,13 +77,13 @@ module Scorpio
     end
 
     def fully_validate
-      __schema__.fully_validate(instance)
+      schema.fully_validate(instance)
     end
     def validate
-      __schema__.validate(instance)
+      schema.validate(instance)
     end
     def validate!
-      __schema__.validate!(instance)
+      schema.validate!(instance)
     end
     def inspect
       "\#<#{self.class.inspect} #{instance.inspect}>"
@@ -172,7 +172,7 @@ module Scorpio
     memoize(:module_for_schema, schema__) do |schema_|
       Module.new.tap do |m|
         m.instance_exec(schema_) do |schema|
-          define_method(:__schema__) { schema }
+          define_method(:schema) { schema }
           define_singleton_method(:schema) { schema }
           define_singleton_method(:included) do |includer|
             includer.send(:define_singleton_method, :schema) { schema }
@@ -243,7 +243,7 @@ module Scorpio
     def [](property_name_)
       @instance_mapped ||= Hash.new do |hash, property_name|
         hash[property_name] = begin
-          property_schema = __schema__.subschema_for_property(property_name)
+          property_schema = schema.subschema_for_property(property_name)
           property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
 
           if property_schema && instance[property_name].is_a?(JSON::Node)
@@ -295,7 +295,7 @@ module Scorpio
       # constructor, so it's a hash with integer keys
       @instance_mapped ||= Hash.new do |hash, i|
         hash[i] = begin
-          index_schema = __schema__.subschema_for_index(i)
+          index_schema = schema.subschema_for_index(i)
           index_schema = index_schema && index_schema.match_to_instance(instance[i])
 
           if index_schema && instance[i].is_a?(JSON::Node)

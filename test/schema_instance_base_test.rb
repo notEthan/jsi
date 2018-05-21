@@ -95,7 +95,7 @@ describe Scorpio::SchemaInstanceBase do
     describe 'on Base' do
       it 'errors' do
         err = assert_raises(TypeError) { Scorpio::SchemaInstanceBase.new({}) }
-        assert_equal('cannot instantiate Scorpio::SchemaInstanceBase which has no method #__schema__. please use Scorpio.class_for_schema', err.message)
+        assert_equal('cannot instantiate Scorpio::SchemaInstanceBase which has no method #schema. please use Scorpio.class_for_schema', err.message)
       end
     end
     describe 'nil' do
@@ -253,7 +253,7 @@ describe Scorpio::SchemaInstanceBase do
               'each' => {},           # SchemaInstanceBaseHash / SchemaInstanceBaseArray
               'instance_exec' => {},  # BasicObject
               'instance' => {},       # SchemaInstanceBase
-              '__schema__' => {},     # module_for_schema singleton definition
+              'schema' => {},         # module_for_schema singleton definition
             },
           }
         end
@@ -267,12 +267,12 @@ describe Scorpio::SchemaInstanceBase do
             'each' => 'hi',
             'instance_exec' => 'hi',
             'instance' => 'hi',
-            '__schema__' => 'hi',
+            'schema' => 'hi',
           }
         end
         it 'does not define readers' do
           assert_equal('bar', subject.foo)
-          assert_equal(Scorpio.module_for_schema(subject.__schema__), subject.method(:foo).owner)
+          assert_equal(Scorpio.module_for_schema(subject.schema), subject.method(:foo).owner)
 
           assert_equal(Scorpio::SchemaInstanceBase, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
@@ -283,7 +283,7 @@ describe Scorpio::SchemaInstanceBase do
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.instance)
-          assert_equal(schema, subject.__schema__)
+          assert_equal(schema, subject.schema)
         end
       end
     end
