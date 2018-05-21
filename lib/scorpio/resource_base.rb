@@ -110,6 +110,13 @@ module Scorpio
         rescue NameError
         end
         define_singleton_method(:openapi_document) { openapi_document }
+        define_singleton_method(:openapi_document=) do
+          if self == openapi_document_class
+            raise(ArgumentError, "openapi_document may only be set once on #{self.inspect}")
+          else
+            raise(ArgumentError, "openapi_document may not be overridden on subclass #{self.inspect} after it was set on #{openapi_document_class.inspect}")
+          end
+        end
         update_dynamic_methods
 
         openapi_document.paths.each do |path, path_item|
