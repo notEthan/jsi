@@ -37,9 +37,6 @@ module Scorpio
               klass.instance_exec(&options[:on_set])
             end
           end
-          if options[:update_methods]
-            update_dynamic_methods
-          end
         end
       end
     end
@@ -47,8 +44,8 @@ module Scorpio
     # (except in the unlikely event it is overwritten by a subclass)
     define_inheritable_accessor(:openapi_document_class)
     # the openapi document
-    define_inheritable_accessor(:tag_name, update_methods: true)
-    define_inheritable_accessor(:represented_schemas, default_value: [], update_methods: true, on_set: proc do
+    define_inheritable_accessor(:tag_name, on_set: -> { update_dynamic_methods })
+    define_inheritable_accessor(:represented_schemas, default_value: [], on_set: proc do
       unless represented_schemas.respond_to?(:to_ary)
         raise(TypeError, "represented_schemas must be an array. received: #{represented_schemas.pretty_inspect.chomp}")
       end
@@ -56,6 +53,7 @@ module Scorpio
         represented_schemas.each do |schema|
           openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schema => self)
         end
+        update_dynamic_methods
       else
         self.represented_schemas = self.represented_schemas.map do |schema|
           unless schema.is_a?(Scorpio::Schema)
