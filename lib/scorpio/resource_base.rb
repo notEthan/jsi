@@ -90,6 +90,9 @@ module Scorpio
       end
     })
 
+    define_inheritable_accessor(:user_agent, default_getter: -> {
+      "Scorpio/#{Scorpio::VERSION} (https://github.com/notEthan/scorpio) Faraday/#{Faraday::VERSION} Ruby/#{RUBY_VERSION}"
+    })
     define_inheritable_accessor(:faraday_request_middleware, default_value: [])
     define_inheritable_accessor(:faraday_adapter, default_getter: proc { Faraday.default_adapter })
     define_inheritable_accessor(:faraday_response_middleware, default_value: [])
@@ -235,7 +238,7 @@ module Scorpio
       end
 
       def connection
-        Faraday.new do |c|
+        Faraday.new(:headers => {'User-Agent' => user_agent}) do |c|
           faraday_request_middleware.each do |m|
             c.request(*m)
           end
