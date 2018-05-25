@@ -7,7 +7,7 @@ class ScorpioTest < Minitest::Test
 end
 
 describe 'blog' do
-  let(:blog_article) { Blog::Article.create!(title: "sports!") }
+  let(:blog_article) { Article.post('title' => "sports!") }
 
   it 'indexes articles' do
     blog_article

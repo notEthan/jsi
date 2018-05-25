@@ -15,9 +15,8 @@ class BlogModel < Scorpio::ResourceBase
   else
     self.openapi_document = YAML.load_file('test/blog.openapi.yml')
   end
-  self.base_url = File.join('https://blog.example.com/', openapi_document.basePath)
+  self.base_url = File.join("http://localhost:#{$blog_port || raise(Bug)}/", openapi_document.basePath)
   self.faraday_request_middleware = [[:api_hammer_request_logger, logger]]
-  self.faraday_adapter = [:rack, Blog.new]
 end
 
 # this is a model of Article, a resource of the blog API. it sets the resource_name
