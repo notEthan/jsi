@@ -76,7 +76,9 @@ describe Scorpio::SchemaInstanceBaseHash do
     it('#rassoc')       { assert_equal(['baz', true], subject.rassoc(true)) }
     it('#to_h')         { assert_equal({'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => true}, subject.to_h) }
     it('#to_proc')      { assert_equal(true, subject.to_proc.call('baz')) } if {}.respond_to?(:to_proc)
-    it('#transform_values') { assert_equal({'foo' => nil, 'bar' => nil, 'baz' => nil}, subject.transform_values { |_| nil}) }
+    if {}.respond_to?(:transform_values)
+      it('#transform_values') { assert_equal({'foo' => nil, 'bar' => nil, 'baz' => nil}, subject.transform_values { |_| nil}) }
+    end
     it('#value?')       { assert_equal(false, subject.value?('0')) }
     it('#values')       { assert_equal([subject['foo'], subject['bar'], true], subject.values) }
     it('#values_at')    { assert_equal([true], subject.values_at('baz')) }
