@@ -20,3 +20,7 @@ class Article < BlogModel
   self.tag_name = 'articles'
   self.represented_schemas = [openapi_document.definitions['articles']]
 end
+
+class BlogClean < BlogModel
+  self.tag_name = 'clean'
+end

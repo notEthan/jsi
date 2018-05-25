@@ -105,4 +105,10 @@ class Blog
       halt_unprocessable_entity(article.errors.messages)
     end
   end
+
+  require 'database_cleaner'
+  post '/v1/clean' do
+    DatabaseCleaner.clean_with(:truncation)
+    format_response(200, nil)
+  end
 end

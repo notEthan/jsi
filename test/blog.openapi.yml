@@ -93,6 +93,14 @@ paths:
           description: default response
           schema:
             "$ref": "#/definitions/articles"
+  "/clean":
+    post:
+      tags:
+      - clean
+      operationId: clean
+      responses:
+        default:
+          description: default response
 definitions:
   articles:
     type: object

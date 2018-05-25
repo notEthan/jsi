@@ -21,11 +21,10 @@ require 'byebug'
 require_relative 'blog'
 require_relative 'blog_scorpio_models'
 
-require 'database_cleaner'
-# DatabaseCleaner.clean_with(:truncation) # don't need this as long as the database is in-memory
 class ScorpioSpec < Minitest::Spec
   around do |test|
-    DatabaseCleaner.cleaning { test.call }
+    test.call
+    BlogClean.clean
   end
 
   def assert_equal exp, act, msg = nil
