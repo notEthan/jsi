@@ -27,4 +27,36 @@ describe Scorpio::Util do
       end
     end
   end
+  describe '.deep_stringify_symbol_keys' do
+    it 'stringifies symbol hash keys' do
+      actual = Scorpio.deep_stringify_symbol_keys({
+        a: 'b',
+        'c' => [
+          {d: true},
+          [{'e' => 0}],
+        ],
+        nil => 3,
+      })
+      expected = {
+        'a' => 'b',
+        'c' => [
+          {'d' => true},
+          [{'e' => 0}],
+        ],
+        nil => 3,
+      }
+      assert_equal(expected, actual)
+    end
+    it 'deep stringifies HashNode keys' do
+      actual = Scorpio.deep_stringify_symbol_keys(Scorpio::JSON::HashNode.new({a: 'b', 'c' => {d: 0}, nil => 3}, []))
+      expected = Scorpio::JSON::HashNode.new({'a' => 'b', 'c' => {'d' => 0}, nil => 3}, [])
+      assert_equal(expected, actual)
+    end
+    it 'deep stringifies SchemaObjectBase instance on initialize' do
+      klass = Scorpio.class_for_schema(type: 'object')
+      expected = klass.new(Scorpio::JSON::HashNode.new({a: 'b', 'c' => {d: 0}, nil => 3}, []))
+      actual = klass.new(Scorpio::JSON::HashNode.new({'a' => 'b', 'c' => {'d' => 0}, nil => 3}, []))
+      assert_equal(expected, actual)
+    end
+  end
 end
