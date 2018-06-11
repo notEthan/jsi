@@ -3,4 +3,7 @@ language: ruby
 rvm:
   - 2.1.10
   - 2.4.1
+env:
+  - SCORPIO_API_SPECIFIER=rest_description
+  - SCORPIO_API_SPECIFIER=openapi2
 script: rake test

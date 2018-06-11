@@ -37,9 +37,6 @@ module Scorpio
               klass.instance_exec(&options[:on_set])
             end
           end
-          if options[:update_methods]
-            update_dynamic_methods
-          end
         end
       end
     end
@@ -47,8 +44,8 @@ module Scorpio
     # (except in the unlikely event it is overwritten by a subclass)
     define_inheritable_accessor(:openapi_document_class)
     # the openapi document
-    define_inheritable_accessor(:tag_name, update_methods: true)
-    define_inheritable_accessor(:represented_schemas, default_value: [], update_methods: true, on_set: proc do
+    define_inheritable_accessor(:tag_name, on_set: -> { update_dynamic_methods })
+    define_inheritable_accessor(:represented_schemas, default_value: [], on_set: proc do
       unless represented_schemas.respond_to?(:to_ary)
         raise(TypeError, "represented_schemas must be an array. received: #{represented_schemas.pretty_inspect.chomp}")
       end
@@ -56,6 +53,7 @@ module Scorpio
         represented_schemas.each do |schema|
           openapi_document_class.models_by_schema = openapi_document_class.models_by_schema.merge(schema => self)
         end
+        update_dynamic_methods
       else
         self.represented_schemas = self.represented_schemas.map do |schema|
           unless schema.is_a?(Scorpio::Schema)
@@ -92,6 +90,9 @@ module Scorpio
       end
     })
 
+    define_inheritable_accessor(:user_agent, default_getter: -> {
+      "Scorpio/#{Scorpio::VERSION} (https://github.com/notEthan/scorpio) Faraday/#{Faraday::VERSION} Ruby/#{RUBY_VERSION}"
+    })
     define_inheritable_accessor(:faraday_request_middleware, default_value: [])
     define_inheritable_accessor(:faraday_adapter, default_getter: proc { Faraday.default_adapter })
     define_inheritable_accessor(:faraday_response_middleware, default_value: [])
@@ -112,6 +113,13 @@ module Scorpio
         rescue NameError
         end
         define_singleton_method(:openapi_document) { openapi_document }
+        define_singleton_method(:openapi_document=) do
+          if self == openapi_document_class
+            raise(ArgumentError, "openapi_document may only be set once on #{self.inspect}")
+          else
+            raise(ArgumentError, "openapi_document may not be overridden on subclass #{self.inspect} after it was set on #{openapi_document_class.inspect}")
+          end
+        end
         update_dynamic_methods
 
         openapi_document.paths.each do |path, path_item|
@@ -229,18 +237,8 @@ module Scorpio
         end
       end
 
-      MODULES_FOR_JSON_SCHEMA_TYPES = {
-        'object' => [Hash],
-        'array' => [Array, Set],
-        'string' => [String],
-        'integer' => [Integer],
-        'number' => [Numeric],
-        'boolean' => [TrueClass, FalseClass],
-        'null' => [NilClass],
-      }
-
       def connection
-        Faraday.new do |c|
+        Faraday.new(:headers => {'User-Agent' => user_agent}) do |c|
           faraday_request_middleware.each do |m|
             c.request(*m)
           end
