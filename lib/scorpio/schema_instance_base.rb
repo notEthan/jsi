@@ -232,14 +232,6 @@ module Scorpio
       define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
     end
 
-    SAFE_MODIFIED_COPY_METHODS.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        modified_copy do |instance_to_modify|
-          instance_to_modify.public_send(method_name, *a, &b)
-        end
-      end
-    end
-
     def [](property_name_)
       @instance_mapped ||= Hash.new do |hash, property_name|
         hash[property_name] = begin
@@ -280,14 +272,6 @@ module Scorpio
     # we override these methods from Arraylike
     SAFE_INDEX_ONLY_METHODS.each do |method_name|
       define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
-    end
-
-    SAFE_MODIFIED_COPY_METHODS.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        modified_copy do |instance_to_modify|
-          instance_to_modify.public_send(method_name, *a, &b)
-        end
-      end
     end
 
     def [](i_)

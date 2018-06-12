@@ -113,7 +113,15 @@ describe Scorpio::SchemaInstanceBaseArray do
   end
   describe 'modified copy methods' do
     it('#reject')  { assert_equal(class_for_schema.new(Scorpio::JSON::ArrayNode.new(['foo'], [])), subject.reject { |e| e != 'foo' }) }
+    it('#reject block var') do
+      subj_a = subject.to_a
+      subject.reject { |e| assert_equal(e, subj_a.shift) }
+    end
     it('#select')  { assert_equal(class_for_schema.new(Scorpio::JSON::ArrayNode.new(['foo'], [])), subject.select { |e| e == 'foo' }) }
+    it('#select block var') do
+      subj_a = subject.to_a
+      subject.select { |e| assert_equal(e, subj_a.shift) }
+    end
     it('#compact') { assert_equal(subject, subject.compact) }
     describe 'at a depth' do
       let(:document) { [['b', 'q'], {'c' => ['d', 'e']}] }
