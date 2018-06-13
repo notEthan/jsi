@@ -4,6 +4,8 @@ require 'scorpio/typelike_modules'
 module Scorpio
   # base class for representing an instance of an instance described by a schema
   class SchemaInstanceBase
+    include Memoize
+
     class << self
       def schema_id
         schema.schema_id
@@ -113,7 +115,7 @@ module Scorpio
 
     private
     def instance=(thing)
-      @instance_mapped.clear if @instance_mapped
+      clear_memo(:[])
       if instance_variable_defined?(:@instance)
         if @instance.class != thing.class
           raise(Scorpio::Bug, "will not accept instance of different class #{thing.class} to current instance class #{@instance.class} on #{self.class.inspect}")
@@ -233,8 +235,8 @@ module Scorpio
     end
 
     def [](property_name_)
-      @instance_mapped ||= Hash.new do |hash, property_name|
-        hash[property_name] = begin
+      memoize(:[], property_name_) do |property_name|
+        begin
           property_schema = schema.subschema_for_property(property_name)
           property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
 
@@ -245,7 +247,6 @@ module Scorpio
           end
         end
       end
-      @instance_mapped[property_name_]
     end
 
     def []=(property_name, value)
@@ -275,10 +276,8 @@ module Scorpio
     end
 
     def [](i_)
-      # it would make more sense for this to be an array here, but but Array doesn't have a nice memoizing
-      # constructor, so it's a hash with integer keys
-      @instance_mapped ||= Hash.new do |hash, i|
-        hash[i] = begin
+      memoize(:[], i_) do |i|
+        begin
           index_schema = schema.subschema_for_index(i)
           index_schema = index_schema && index_schema.match_to_instance(instance[i])
 
@@ -289,7 +288,6 @@ module Scorpio
           end
         end
       end
-      @instance_mapped[i_]
     end
     def []=(i, value)
       self.instance = instance.modified_copy do |ary|
