@@ -8,12 +8,12 @@ module Scorpio
       if schema_object.is_a?(Scorpio::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
       elsif schema_object.is_a?(Scorpio::SchemaInstanceBase)
-        @schema_object = schema_object.deref
+        @schema_object = Scorpio.deep_stringify_symbol_keys(schema_object.deref)
         @schema_node = @schema_object.instance
       elsif schema_object.is_a?(Scorpio::JSON::HashNode)
-        @schema_node = schema_object.deref
+        @schema_node = Scorpio.deep_stringify_symbol_keys(schema_object.deref)
       elsif schema_object.respond_to?(:to_hash)
-        @schema_node = Scorpio::JSON::Node.new_by_type(schema_object, [])
+        @schema_node = Scorpio::JSON::Node.new_by_type(Scorpio.deep_stringify_symbol_keys(schema_object), [])
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end

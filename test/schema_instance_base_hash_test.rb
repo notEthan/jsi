@@ -76,6 +76,7 @@ describe Scorpio::SchemaInstanceBaseHash do
     it('#rassoc')       { assert_equal(['baz', true], subject.rassoc(true)) }
     it('#to_h')         { assert_equal({'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => true}, subject.to_h) }
     it('#to_proc')      { assert_equal(true, subject.to_proc.call('baz')) } if {}.respond_to?(:to_proc)
+    it('#transform_values') { assert_equal({'foo' => nil, 'bar' => nil, 'baz' => nil}, subject.transform_values { |_| nil}) }
     it('#value?')       { assert_equal(false, subject.value?('0')) }
     it('#values')       { assert_equal([subject['foo'], subject['bar'], true], subject.values) }
     it('#values_at')    { assert_equal([true], subject.values_at('baz')) }
@@ -84,9 +85,15 @@ describe Scorpio::SchemaInstanceBaseHash do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
     it('#merge')            { assert_equal(subject, subject.merge({})) }
-    it('#transform_values') { assert_equal(class_for_schema.new(Scorpio::JSON::HashNode.new({'foo' => nil, 'bar' => nil, 'baz' => nil}, [])), subject.transform_values { |_| nil}) }
     it('#reject')           { assert_equal(class_for_schema.new(Scorpio::JSON::HashNode.new({}, [])), subject.reject { true }) }
     it('#select')           { assert_equal(class_for_schema.new(Scorpio::JSON::HashNode.new({}, [])), subject.select { false }) }
+    describe '#select' do
+      it 'yields properly too' do
+        subject.select do |k, v|
+          assert_equal(subject[k], v)
+        end
+      end
+    end
     # Hash#compact only available as of ruby 2.5.0
     if {}.respond_to?(:compact)
       it('#compact')        { assert_equal(subject, subject.compact) }

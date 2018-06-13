@@ -10,8 +10,10 @@ class Blog < Sinatra::Base
   self.supported_media_types = ['application/json']
   set :static, false
   disable :protection
-  set :logger, ::Logger.new(STDOUT)
-  logger.level = ::Logger::WARN
+  logpath = Pathname.new('log/test.log')
+  FileUtils.mkdir_p(logpath.dirname)
+  set :logger, ::Logger.new(logpath)
+  logger.level = ::Logger::INFO
   define_method(:logger) { self.class.logger }
   use_with_lint ApiHammer::RequestLogger, logger
 

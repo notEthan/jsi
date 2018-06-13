@@ -44,10 +44,25 @@ module Scorpio
     DESTRUCTIVE_METHODS = %w(clear delete delete_if keep_if reject! replace select! shift)
     # methods which return a modified copy, which you'd expect to be of the same class as the receiver.
     # there are some ambiguous ones that are omitted, like #invert.
-    SAFE_MODIFIED_COPY_METHODS = %w(compact merge reject select transform_values)
     SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
     SAFE_METHODS.each do |method_name|
       define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+    end
+    %w(compact merge).each do |method_name|
+      define_method(method_name) do |*a, &b|
+        Scorpio::Typelike.modified_copy(self) do |object_to_modify|
+          object_to_modify.public_send(method_name, *a, &b)
+        end
+      end
+    end
+    %w(select reject).each do |method_name|
+      define_method(method_name) do |*a, &b|
+        Scorpio::Typelike.modified_copy(self) do |object_to_modify|
+          object_to_modify.public_send(method_name, *a) do |k, _v|
+            b.call(k, self[k])
+          end
+        end
+      end
     end
 
     def inspect
@@ -91,12 +106,29 @@ module Scorpio
     # there are some ambiguous ones that are omitted, like #sort, #map / #collect.
     SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev assoc at bsearch bsearch_index combination compact count cycle dig drop drop_while fetch find_index first include? index join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip)
     DESTRUCTIVE_METHODS = %w(<< clear collect! compact! concat delete delete_at delete_if fill flatten! insert keep_if map! pop push reject! replace reverse! rotate! select! shift shuffle! slice! sort! sort_by! uniq! unshift)
-    # methods which return a modified copy, which you'd expect to be of the same class as the receiver.
-    SAFE_MODIFIED_COPY_METHODS = %w(compact reject select)
 
     SAFE_METHODS = SAFE_INDEX_ONLY_METHODS | SAFE_INDEX_ELEMENT_METHODS
     SAFE_METHODS.each do |method_name|
       define_method(method_name) { |*a, &b| to_ary.public_send(method_name, *a, &b) }
+    end
+    # methods (well, method) that returns a modified copy and doesn't need any handling of block variable(s)
+    %w(compact).each do |method_name|
+      define_method(method_name) do |*a, &b|
+        Scorpio::Typelike.modified_copy(self) do |object_to_modify|
+          object_to_modify.public_send(method_name, *a, &b)
+        end
+      end
+    end
+    # methods that return a modified copy and do need handling of block variables
+    %w(reject select).each do |method_name|
+      define_method(method_name) do |*a, &b|
+        Scorpio::Typelike.modified_copy(self) do |object_to_modify|
+          i = 0
+          object_to_modify.public_send(method_name, *a) do |_e|
+            b.call(self[i]).tap { i += 1 }
+          end
+        end
+      end
     end
 
     def inspect

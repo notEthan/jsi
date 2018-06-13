@@ -214,15 +214,6 @@ module Scorpio
       SAFE_INDEX_ONLY_METHODS.each do |method_name|
         define_method(method_name) { |*a, &b| content.public_send(method_name, *a, &b) }
       end
-
-      # methods that return a modified copy
-      SAFE_MODIFIED_COPY_METHODS.each do |method_name|
-        define_method(method_name) do |*a, &b|
-          modified_copy do |content_to_modify|
-            content_to_modify.public_send(method_name, *a, &b)
-          end
-        end
-      end
     end
 
     class HashNode < Node
@@ -249,15 +240,6 @@ module Scorpio
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
       SAFE_KEY_ONLY_METHODS.each do |method_name|
         define_method(method_name) { |*a, &b| content.public_send(method_name, *a, &b) }
-      end
-
-      # methods that return a modified copy
-      SAFE_MODIFIED_COPY_METHODS.each do |method_name|
-        define_method(method_name) do |*a, &b|
-          modified_copy do |content_to_modify|
-            content_to_modify.public_send(method_name, *a, &b)
-          end
-        end
       end
     end
   end
