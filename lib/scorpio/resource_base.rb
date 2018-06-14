@@ -305,7 +305,7 @@ module Scorpio
 
         request_headers = {}
 
-        if METHODS_WITH_BODIES.any? { |m| m.to_s == http_method.downcase.to_s }
+        if METHODS_WITH_BODIES.any? { |m| m.to_s == http_method.downcase.to_s } && body != nil
           consumes = operation.consumes || openapi_document.consumes || []
           if consumes.include?("application/json") || (!body.respond_to?(:to_str) && consumes.empty?)
           # if we have a body that's not a string and no indication of how to serialize it, we guess json.
