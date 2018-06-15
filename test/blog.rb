@@ -86,7 +86,7 @@ class Blog
     format_response(200, article.serializable_hash)
   end
   post '/v1/articles' do
-    article = Article.create(parsed_body)
+    article = Blog::Article.create(parsed_body)
     if article.persisted?
       format_response(200, article.serializable_hash)
     else
