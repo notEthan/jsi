@@ -517,7 +517,6 @@ module Scorpio
 
       # if we're making a POST or PUT and the request schema is this resource, we'll assume that
       # the request is persisting this resource
-      operation.request_schema
       request_resource_is_self = operation.request_schema && self.class.represented_schemas.include?(operation.request_schema)
       if @options['response'] && @options['response'].status && operation.responses
         _, response_schema_node = operation.responses.detect { |k, v| k.to_s == @options['response'].status.to_s }
