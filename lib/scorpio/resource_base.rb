@@ -350,7 +350,11 @@ module Scorpio
           response_schema = operation_response['schema'] if operation_response
         end
         if response_schema
-          response_object = Scorpio.class_for_schema(response_schema).new(response_object)
+          # not too sure about this, but I don't think it makes sense to instantiate things that are
+          # not hash or array as a SchemaInstanceBase
+          if response_object.respond_to?(:to_hash) || response_object.respond_to?(:to_ary)
+            response_object = Scorpio.class_for_schema(response_schema).new(response_object)
+          end
         end
 
         error_class = Scorpio.error_classes_by_status[response.status]
