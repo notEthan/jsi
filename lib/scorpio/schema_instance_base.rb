@@ -18,6 +18,15 @@ module Scorpio
           %Q(#{name} (#{schema_id}))
         end
       end
+      def to_s
+        if !respond_to?(:schema)
+          super
+        elsif !name || name =~ /\AScorpio::SchemaClasses::/
+          %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
+        else
+          name
+        end
+      end
 
       def schema_classes_const_name
         name = schema.schema_id.gsub(/[^\w]/, '_')
@@ -86,11 +95,11 @@ module Scorpio
       schema.validate!(instance)
     end
     def inspect
-      "\#<#{self.class.inspect} #{instance.inspect}>"
+      "\#<#{self.class.to_s} #{instance.inspect}>"
     end
     def pretty_print(q)
       q.instance_exec(self) do |obj|
-        text "\#<#{obj.class.inspect}"
+        text "\#<#{obj.class.to_s}"
         group_sub {
           nest(2) {
             breakable ' '
@@ -103,7 +112,7 @@ module Scorpio
     end
 
     def object_group_text
-      instance.class.inspect + ' ' + instance.object_group_text
+      instance.object_group_text
     end
 
     def fingerprint

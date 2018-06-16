@@ -67,7 +67,7 @@ module Scorpio
 
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
-      "\#{<#{self.class.inspect}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
+      "\#{<#{self.class.to_s}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
     end
 
     def to_s
@@ -77,7 +77,7 @@ module Scorpio
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
-        text "\#{<#{obj.class.inspect}#{object_group_text}>"
+        text "\#{<#{obj.class.to_s}#{object_group_text}>"
         group_sub {
           nest(2) {
             breakable(obj.any? { true } ? ' ' : '')
@@ -133,7 +133,7 @@ module Scorpio
 
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
-      "\#[<#{self.class.inspect}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
+      "\#[<#{self.class.to_s}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
     end
 
     def to_s
@@ -143,7 +143,7 @@ module Scorpio
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
-        text "\#[<#{obj.class.inspect}#{object_group_text}>"
+        text "\#[<#{obj.class.to_s}#{object_group_text}>"
         group_sub {
           nest(2) {
             breakable(obj.any? { true } ? ' ' : '')
