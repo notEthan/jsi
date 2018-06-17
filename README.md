@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/notEthan/scorpio.svg?branch=master)](https://travis-ci.org/notEthan/scorpio)
 [![Coverage Status](https://coveralls.io/repos/github/notEthan/scorpio/badge.svg)](https://coveralls.io/github/notEthan/scorpio)
 
-Scorpio is a library intended to make use of an OpenAPI document describing a service you are consuming.
+Scorpio is a library that helps you, as a client, consume an HTTP service described by an OpenAPI document. You provide the OpenAPI specification, a little bit of configuration, and Scorpio will take that and dynamically generate an interface for you to call the service's operations and interact with its resources as an ORM.
 
 Note: The canonical location of this README is on [RubyDoc](http://rubydoc.info/gems/scorpio/). When viewed on [Github](https://github.com/notEthan/scorpio/), it may be inconsistent with the latest released gem, and Yardoc links will not work.
 
@@ -65,9 +65,11 @@ end
 That should be all you need to start calling operations:
 
 ```ruby
+# call the operation findPetsByStatus: http://petstore.swagger.io/#/pet/findPetsByStatus
 sold_pets = PetStore::Pet.findPetsByStatus(status: 'sold')
 # sold_pets is an array-like collection of PetStore::Pet instances
 
+# compare to getPetById: http://petstore.swagger.io/#/pet/getPetById
 pet1 = sold_pets.last
 pet2 = PetStore::Pet.getPetById(petId: pet1['id'])
 # pet2 is the same pet as pet1, retrieved using the getPetById operation
@@ -84,7 +86,10 @@ pet1.tags.map(&:name)
 # let's name the pet after ourself
 pet1.name = ENV['USER']
 
-# store the result in the pet store
+# store the result in the pet store. note the updatePet call from the instance - our
+# calls so far have been on the class PetStore::Pet, but scorpio defines instance
+# methods to call operations where appropriate as well.
+# updatePet: http://petstore.swagger.io/#/pet/updatePet
 pet1.updatePet
 
 # check that it was saved
