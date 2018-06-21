@@ -89,7 +89,7 @@ describe 'blog' do
     assert_raises(ArgumentError) { Article.new("foo") }
   end
   it 'reports schema failure when the request does not match the request schema' do
-    err = assert_raises(Scorpio::RequestSchemaFailure) do
+    assert_raises(Scorpio::RequestSchemaFailure) do
       # title is supposed to be a string
       Article.post('title' => {'music' => '!'})
     end
