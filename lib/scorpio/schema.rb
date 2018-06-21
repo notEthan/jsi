@@ -11,8 +11,10 @@ module Scorpio
         @schema_object = Scorpio.deep_stringify_symbol_keys(schema_object.deref)
         @schema_node = @schema_object.instance
       elsif schema_object.is_a?(Scorpio::JSON::HashNode)
+        @schema_object = nil
         @schema_node = Scorpio.deep_stringify_symbol_keys(schema_object.deref)
       elsif schema_object.respond_to?(:to_hash)
+        @schema_object = nil
         @schema_node = Scorpio::JSON::Node.new_by_type(Scorpio.deep_stringify_symbol_keys(schema_object), [])
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
