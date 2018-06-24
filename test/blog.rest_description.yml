@@ -47,6 +47,13 @@ resources:
           $ref: https://blog.example.com/schemas/articles/v1.0.0
         response:
           $ref: https://blog.example.com/schemas/articles/v1.0.0
+  clean:
+    methods:
+      clean:
+        path: clean
+        httpMethod: POST
+        response:
+          {}
 schemas:
   articles:
     id: https://blog.example.com/schemas/articles/v1.0.0

@@ -29,9 +29,12 @@ end
 
 require 'active_record'
 ActiveRecord::Base.logger = Blog.logger
+dbpath = Pathname.new('tmp/blog.sqlite3')
+FileUtils.mkdir_p(dbpath.dirname)
+dbpath.unlink if dbpath.exist?
 ActiveRecord::Base.establish_connection(
   :adapter => "sqlite3",
-  :database  => ":memory:"
+  :database  => dbpath
 )
 
 ActiveRecord::Schema.define do
@@ -86,7 +89,7 @@ class Blog
     format_response(200, article.serializable_hash)
   end
   post '/v1/articles' do
-    article = Article.create(parsed_body)
+    article = Blog::Article.create(parsed_body)
     if article.persisted?
       format_response(200, article.serializable_hash)
     else
@@ -104,5 +107,11 @@ class Blog
     else
       halt_unprocessable_entity(article.errors.messages)
     end
+  end
+
+  require 'database_cleaner'
+  post '/v1/clean' do
+    DatabaseCleaner.clean_with(:truncation)
+    format_response(200, nil)
   end
 end

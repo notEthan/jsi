@@ -7,7 +7,7 @@ class ScorpioTest < Minitest::Test
 end
 
 describe 'blog' do
-  let(:blog_article) { Blog::Article.create!(title: "sports!") }
+  let(:blog_article) { Article.post('title' => "sports!") }
 
   it 'indexes articles' do
     blog_article
@@ -89,7 +89,7 @@ describe 'blog' do
     assert_raises(ArgumentError) { Article.new("foo") }
   end
   it 'reports schema failure when the request does not match the request schema' do
-    err = assert_raises(Scorpio::RequestSchemaFailure) do
+    assert_raises(Scorpio::RequestSchemaFailure) do
       # title is supposed to be a string
       Article.post('title' => {'music' => '!'})
     end

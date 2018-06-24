@@ -180,7 +180,7 @@ module Scorpio
                         proc do |toopenapiobject|
                           toopenapiobject = toopenapiobject.to_openapi if toopenapiobject.respond_to?(:to_openapi)
                           if toopenapiobject.respond_to?(:to_hash)
-                            toopenapiobject.map { |k, v| {toopenapirec.call(k) => toopenapirec.call(v)} }.inject({}, &:update)
+                            toopenapiobject.map { |k2, v2| {toopenapirec.call(k2) => toopenapirec.call(v2)} }.inject({}, &:update)
                           elsif toopenapiobject.respond_to?(:to_ary)
                             toopenapiobject.map(&toopenapirec)
                           elsif toopenapiobject.is_a?(Symbol)

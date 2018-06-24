@@ -284,7 +284,7 @@ module Scorpio
             body = request_body_for_schema(model_attributes, operation.request_schema)
           elsif call_params.is_a?(Hash)
             body = request_body_for_schema(model_attributes.merge(call_params), operation.request_schema)
-            body.update(call_params)
+            body = body.merge(call_params) # TODO
           else
             body = call_params
           end
@@ -305,7 +305,7 @@ module Scorpio
 
         request_headers = {}
 
-        if METHODS_WITH_BODIES.any? { |m| m.to_s == http_method.downcase.to_s }
+        if METHODS_WITH_BODIES.any? { |m| m.to_s == http_method.downcase.to_s } && body != nil
           consumes = operation.consumes || openapi_document.consumes || []
           if consumes.include?("application/json") || (!body.respond_to?(:to_str) && consumes.empty?)
           # if we have a body that's not a string and no indication of how to serialize it, we guess json.
@@ -350,7 +350,11 @@ module Scorpio
           response_schema = operation_response['schema'] if operation_response
         end
         if response_schema
-          response_object = Scorpio.class_for_schema(response_schema).new(response_object)
+          # not too sure about this, but I don't think it makes sense to instantiate things that are
+          # not hash or array as a SchemaInstanceBase
+          if response_object.respond_to?(:to_hash) || response_object.respond_to?(:to_ary)
+            response_object = Scorpio.class_for_schema(response_schema).new(response_object)
+          end
         end
 
         error_class = Scorpio.error_classes_by_status[response.status]
@@ -380,7 +384,11 @@ module Scorpio
       def request_body_for_schema(object, schema)
         if object.is_a?(Scorpio::ResourceBase)
           # TODO request_schema_fail unless schema is for given model type 
-          request_body_for_schema(object.represent_for_schema(schema), schema)
+          request_body_for_schema(object.attributes, schema)
+        elsif object.is_a?(Scorpio::SchemaInstanceBase)
+          request_body_for_schema(object.instance, schema)
+        elsif object.is_a?(Scorpio::JSON::Node)
+          request_body_for_schema(object.content, schema)
         else
           if object.is_a?(Hash)
             object.map do |key, value|
@@ -525,11 +533,6 @@ module Scorpio
       end
 
       response
-    end
-
-    # TODO
-    def represent_for_schema(schema)
-      @attributes
     end
 
     def as_json
