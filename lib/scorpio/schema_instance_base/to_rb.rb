@@ -4,6 +4,14 @@ module Scorpio
     class << self
       def to_rb
         lines = []
+        description = schema &&
+          schema['description'].respond_to?(:to_str) &&
+          schema['description'].to_str
+        if description
+          description.split("\n", -1).each do |descline|
+            lines << "# " + descline
+          end
+        end
         lines << "class #{name}"
         schema.described_hash_property_names.each_with_index do |propname, i|
           lines << "" unless i == 0
