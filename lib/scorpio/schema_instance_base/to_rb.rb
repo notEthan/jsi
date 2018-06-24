@@ -22,6 +22,7 @@ module Scorpio
 
           required = property_schema && property_schema['required']
           required ||= schema['required'].respond_to?(:to_ary) && schema['required'].include?(propname)
+          lines << "  # @required" if required
 
           type = property_schema &&
             property_schema['type'].respond_to?(:to_str) &&
