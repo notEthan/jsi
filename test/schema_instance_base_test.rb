@@ -317,13 +317,17 @@ describe Scorpio::SchemaInstanceBase do
     end
   end
   describe '#inspect' do
+    # if the instance is hash-like, #inspect gets overridden
+    let(:document) { Object.new }
     it 'inspects' do
-      assert_match(%r(\A#<Scorpio::SchemaClasses\["[^"]+#"\] #\{<Scorpio::JSON::HashNode fragment="#">\}>\z), subject.inspect)
+      assert_match(%r(\A#<Scorpio::SchemaClasses\["[^"]+#"\] #<Scorpio::JSON::Node fragment="#" #<Object:[^<>]*>>>\z), subject.inspect)
     end
   end
   describe '#pretty_print' do
+    # if the instance is hash-like, #pretty_print gets overridden
+    let(:document) { Object.new }
     it 'pretty_prints' do
-      assert_match(%r(\A#<Scorpio::SchemaClasses\["[^"]+#"\]\n  #\{<Scorpio::JSON::HashNode fragment="#">\}\n>\z), subject.pretty_inspect.chomp)
+      assert_match(%r(\A#<Scorpio::SchemaClasses\["[^"]+#"\]\n  #<Scorpio::JSON::Node fragment="#" #<Object:[^<>]*>>\n>\z), subject.pretty_inspect.chomp)
     end
   end
   describe '#as_json' do
