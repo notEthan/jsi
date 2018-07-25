@@ -523,7 +523,7 @@ module Scorpio
       end
       response_schema = Scorpio::Schema.new(response_schema_node) if response_schema_node
       response_resource_is_self = response_schema && self.class.represented_schemas.include?(response_schema)
-      if request_resource_is_self && %w(PUT POST).include?(operation.http_method)
+      if request_resource_is_self && %w(put post).include?(operation.http_method.to_s.downcase)
         @persisted = true
 
         if response_resource_is_self
