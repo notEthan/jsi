@@ -82,13 +82,13 @@ module Scorpio
   include HTTPErrors
   error_classes_by_status.freeze
 
-  autoload :ResourceBase, 'scorpio/resource_base'
-  autoload :OpenAPI, 'scorpio/openapi'
-  autoload :Google, 'scorpio/google_api_document'
-  autoload :JSON, 'scorpio/json'
+  autoload :JSON,       'scorpio/json'
+  autoload :Google,      'scorpio/google_api_document'
+  autoload :OpenAPI,      'scorpio/openapi'
+  autoload :Typelike,      'scorpio/typelike_modules'
+  autoload :Hashlike,       'scorpio/typelike_modules'
+  autoload :Arraylike,       'scorpio/typelike_modules'
+  autoload :ResourceBase,     'scorpio/resource_base'
+  autoload :Schema,            'scorpio/schema'
   autoload :SchemaInstanceBase, 'scorpio/schema_instance_base'
-  autoload :Schema, 'scorpio/schema'
-  autoload :Typelike, 'scorpio/typelike_modules'
-  autoload :Hashlike, 'scorpio/typelike_modules'
-  autoload :Arraylike, 'scorpio/typelike_modules'
 end
