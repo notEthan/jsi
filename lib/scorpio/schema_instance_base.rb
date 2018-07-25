@@ -52,9 +52,9 @@ module Scorpio
 
       self.instance = instance
 
-      if schema.describes_hash? && @instance.is_a?(Scorpio::JSON::HashNode)
+      if @instance.is_a?(Scorpio::JSON::HashNode)
         extend SchemaInstanceBaseHash
-      elsif schema.describes_array? && @instance.is_a?(Scorpio::JSON::ArrayNode)
+      elsif @instance.is_a?(Scorpio::JSON::ArrayNode)
         extend SchemaInstanceBaseArray
       end
       # certain methods need to be redefined after we are extended by Enumerable
