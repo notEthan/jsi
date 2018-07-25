@@ -15,7 +15,7 @@ module Scorpio
 
       # get a list of column names for a given class
       def self.column_names(klass)
-        klass.all_schema_properties
+        klass.all_schema_properties.to_a
       end
 
       # Get an instance by id of the model
