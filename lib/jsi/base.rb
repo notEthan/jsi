@@ -128,7 +128,7 @@ module JSI
     #
     # @return [JSI::Base, self]
     def deref
-      derefed = instance.deref
+      derefed = instance.respond_to?(:deref) ? instance.deref : instance
       if derefed.object_id == instance.object_id
         self
       else
