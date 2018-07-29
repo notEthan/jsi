@@ -45,11 +45,12 @@ module Scorpio
       end
     end
 
-    def initialize(instance)
+    def initialize(instance, origin: nil)
       unless respond_to?(:schema)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use Scorpio.class_for_schema")
       end
 
+      @origin = origin || self
       self.instance = instance
 
       if @instance.is_a?(Scorpio::JSON::HashNode)
@@ -69,18 +70,30 @@ module Scorpio
 
     attr_reader :instance
 
+    def parents
+      parent = @origin
+      (@origin.instance.path.size...self.instance.path.size).map do |i|
+        parent.tap do
+          parent = parent[self.instance.path[i]]
+        end
+      end.reverse
+    end
+    def parent
+      parents.first
+    end
+
     def deref
       derefed = instance.deref
       if derefed.object_id == instance.object_id
         self
       else
-        self.class.new(derefed)
+        self.class.new(derefed, origin: @origin)
       end
     end
 
     def modified_copy(&block)
       modified_instance = instance.modified_copy(&block)
-      self.class.new(modified_instance)
+      self.class.new(modified_instance, origin: @origin)
     end
 
     def fragment
@@ -250,7 +263,7 @@ module Scorpio
           property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
 
           if property_schema && instance[property_name].is_a?(JSON::Node)
-            Scorpio.class_for_schema(property_schema).new(instance[property_name])
+            Scorpio.class_for_schema(property_schema).new(instance[property_name], origin: @origin)
           else
             instance[property_name]
           end
@@ -291,7 +304,7 @@ module Scorpio
           index_schema = index_schema && index_schema.match_to_instance(instance[i])
 
           if index_schema && instance[i].is_a?(JSON::Node)
-            Scorpio.class_for_schema(index_schema).new(instance[i])
+            Scorpio.class_for_schema(index_schema).new(instance[i], origin: @origin)
           else
             instance[i]
           end
