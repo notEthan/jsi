@@ -138,8 +138,18 @@ module Scorpio
       JsonReference               = openapi_class.call('definitions', 'jsonReference')
 
       class Operation
-        attr_accessor :path
-        attr_accessor :http_method
+        attr_writer :path
+        attr_writer :http_method
+        def path
+          @path ||= if parent.is_a?(Scorpio::OpenAPI::V2::PathItem) && parent.parent.is_a?(Scorpio::OpenAPI::V2::Paths)
+            parent.instance.path.last
+          end
+        end
+        def http_method
+          @http_method ||= if parent.is_a?(Scorpio::OpenAPI::V2::PathItem)
+            instance.path.last
+          end
+        end
 
         # there should only be one body parameter; this returns it
         def body_parameter
