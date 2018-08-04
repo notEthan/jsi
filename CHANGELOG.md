@@ -1,3 +1,7 @@
+# v0.2.1
+- SchemaInstanceBase#parent, #parents
+- compatibility fix #as_json
+
 # v0.2.0
 
 # v0.1.0
