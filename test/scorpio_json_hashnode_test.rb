@@ -58,6 +58,7 @@ describe Scorpio::JSON::HashNode do
     let(:document) { {'a' => 'b'} }
     it '#as_json' do
       assert_equal({'a' => 'b'}, node.as_json)
+      assert_equal({'a' => 'b'}, node.as_json(this_option: 'what?'))
     end
   end
   # these methods just delegate to Hash so not going to test excessively
