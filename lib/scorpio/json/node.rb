@@ -114,8 +114,8 @@ module Scorpio
         pointer.fragment
       end
 
-      def as_json
-        Typelike.as_json(content)
+      def as_json(*opt)
+        Typelike.as_json(content, *opt)
       end
 
       # takes a block. the block is yielded the content of this node. the block MUST return a modified
@@ -205,8 +205,8 @@ module Scorpio
 
       include Arraylike
 
-      def as_json # needs redefined after including Enumerable
-        Typelike.as_json(content)
+      def as_json(*opt) # needs redefined after including Enumerable
+        Typelike.as_json(content, *opt)
       end
 
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
@@ -233,8 +233,8 @@ module Scorpio
 
       include Hashlike
 
-      def as_json # needs redefined after including Enumerable
-        Typelike.as_json(content)
+      def as_json(*opt) # needs redefined after including Enumerable
+        Typelike.as_json(content, *opt)
       end
 
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)

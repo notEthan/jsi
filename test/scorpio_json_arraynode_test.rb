@@ -45,6 +45,7 @@ describe Scorpio::JSON::ArrayNode do
     let(:document) { ['a', 'b'] }
     it '#as_json' do
       assert_equal(['a', 'b'], node.as_json)
+      assert_equal(['a', 'b'], node.as_json(some_option: false))
     end
   end
   # these methods just delegate to Array so not going to test excessively

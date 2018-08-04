@@ -63,8 +63,8 @@ module Scorpio
     end
 
     module OverrideFromExtensions
-      def as_json
-        Typelike.as_json(instance)
+      def as_json(*opt)
+        Typelike.as_json(instance, *opt)
       end
     end
 

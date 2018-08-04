@@ -357,6 +357,7 @@ describe Scorpio::SchemaInstanceBase do
       assert_equal({'a' => 'b'}, Scorpio.class_for_schema({}).new(Scorpio::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
       assert_equal({'a' => 'b'}, Scorpio.class_for_schema({'type' => 'object'}).new(Scorpio::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
       assert_equal(['a', 'b'], Scorpio.class_for_schema({'type' => 'array'}).new(Scorpio::JSON::Node.new_by_type(['a', 'b'], [])).as_json)
+      assert_equal(['a'], Scorpio::class_for_schema({}).new(['a']).as_json(some_option: true))
     end
   end
   describe 'ridiculous way to test instance= getting the wrong type' do

@@ -530,8 +530,8 @@ module Scorpio
       response
     end
 
-    def as_json
-      Typelike.as_json(@attributes)
+    def as_json(*opt)
+      Typelike.as_json(@attributes, *opt)
     end
 
     def inspect
