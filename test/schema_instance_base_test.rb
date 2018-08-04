@@ -151,6 +151,28 @@ describe Scorpio::SchemaInstanceBase do
       end
     end
   end
+  describe '#parents, #parent' do
+    let(:schema_content) { {properties: {foo: {properties: {bar: {properties: {baz: {}}}}}}} }
+    let(:document) { {foo: {bar: {baz: {}}}} }
+    describe 'no parents' do
+      it 'has none' do
+        assert_equal([], subject.parents)
+        assert_equal(nil, subject.parent)
+      end
+    end
+    describe 'one parent' do
+      it 'has one' do
+        assert_equal([subject], subject.foo.parents)
+        assert_equal(subject, subject.foo.parent)
+      end
+    end
+    describe 'more parents' do
+      it 'has more' do
+        assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.parents)
+        assert_equal(subject.foo.bar, subject.foo.bar.baz.parent)
+      end
+    end
+  end
   describe '#modified_copy' do
     describe 'with an instance that does have #modified_copy' do
       it 'yields the instance to modify' do
