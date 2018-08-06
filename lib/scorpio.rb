@@ -91,4 +91,9 @@ module Scorpio
   autoload :ResourceBase,     'scorpio/resource_base'
   autoload :Schema,            'scorpio/schema'
   autoload :SchemaInstanceBase, 'scorpio/schema_instance_base'
+  autoload :SchemaClasses, 'scorpio/schema_instance_base'
+
+  def self.class_for_schema(*a, &b)
+    SchemaClasses.class_for_schema(*a, &b)
+  end
 end

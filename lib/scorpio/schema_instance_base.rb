@@ -156,13 +156,14 @@ module Scorpio
 
   # this module is just a namespace for schema classes.
   module SchemaClasses
+    extend Memoize
     def self.[](schema_id)
       @classes_by_id[schema_id]
     end
     @classes_by_id = {}
   end
 
-  def self.class_for_schema(schema_object)
+  def SchemaClasses.class_for_schema(schema_object)
     if schema_object.is_a?(Scorpio::Schema)
       schema__ = schema_object
     else
