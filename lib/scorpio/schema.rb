@@ -87,6 +87,10 @@ module Scorpio
       end
     end
 
+    def schema_class
+      Scorpio.class_for_schema(self)
+    end
+
     def match_to_instance(instance)
       # matching oneOf is good here. one schema for one instance.
       # matching anyOf is okay. there could be more than one schema matched. it's often just one. if more

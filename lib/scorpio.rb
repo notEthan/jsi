@@ -91,7 +91,12 @@ module Scorpio
   autoload :ResourceBase,     'scorpio/resource_base'
   autoload :Schema,            'scorpio/schema'
   autoload :SchemaInstanceBase, 'scorpio/schema_instance_base'
-  autoload :ObjectJSONCoder, 'scorpio/schema_instance_json_coder'
-  autoload :SchemaInstanceJSONCoder, 'scorpio/schema_instance_json_coder'
-  autoload :StructJSONCoder, 'scorpio/struct_json_coder'
+  autoload :SchemaClasses,       'scorpio/schema_instance_base'
+  autoload :ObjectJSONCoder,      'scorpio/schema_instance_json_coder'
+  autoload :StructJSONCoder,       'scorpio/struct_json_coder'
+  autoload :SchemaInstanceJSONCoder,'scorpio/schema_instance_json_coder'
+
+  def self.class_for_schema(*a, &b)
+    SchemaClasses.class_for_schema(*a, &b)
+  end
 end
