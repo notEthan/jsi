@@ -1,3 +1,6 @@
+# v0.2.2
+- Scorpio::SchemaInstanceJSONCoder
+
 # v0.2.1
 - SchemaInstanceBase#parent, #parents
 - compatibility fix #as_json
