@@ -173,6 +173,13 @@ describe Scorpio::SchemaInstanceBase do
       end
     end
   end
+  describe '#each, Enumerable methods' do
+    let(:document) { 'a string' }
+    it "raises NoMethodError calling each or Enumerable methods" do
+      assert_raises(NoMethodError) { subject.each { nil } }
+      assert_raises(NoMethodError) { subject.map { nil } }
+    end
+  end
   describe '#modified_copy' do
     describe 'with an instance that does have #modified_copy' do
       it 'yields the instance to modify' do
