@@ -203,6 +203,7 @@ module Scorpio
         to_a
       end
 
+      include Enumerable
       include Arraylike
 
       def as_json(*opt) # needs redefined after including Enumerable
@@ -231,6 +232,7 @@ module Scorpio
         inject({}) { |h, (k, v)| h[k] = v; h }
       end
 
+      include Enumerable
       include Hashlike
 
       def as_json(*opt) # needs redefined after including Enumerable

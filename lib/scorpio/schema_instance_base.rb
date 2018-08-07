@@ -5,6 +5,7 @@ module Scorpio
   # base class for representing an instance of an instance described by a schema
   class SchemaInstanceBase
     include Memoize
+    include Enumerable
 
     class << self
       def schema_id
@@ -58,17 +59,15 @@ module Scorpio
       elsif @instance.is_a?(Scorpio::JSON::ArrayNode)
         extend SchemaInstanceBaseArray
       end
-      # certain methods need to be redefined after we are extended by Enumerable
-      extend OverrideFromExtensions
-    end
-
-    module OverrideFromExtensions
-      def as_json(*opt)
-        Typelike.as_json(instance, *opt)
-      end
     end
 
     attr_reader :instance
+
+    # each is overridden by SchemaInstanceBaseHash or SchemaInstanceBaseArray when appropriate. the base
+    # #each is not actually implemented, along with all the methods of Enumerable.
+    def each
+      raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{instance.pretty_inspect.chomp}"
+    end
 
     def parents
       parent = @origin
@@ -128,6 +127,10 @@ module Scorpio
 
     def object_group_text
       instance.object_group_text
+    end
+
+    def as_json(*opt)
+      Typelike.as_json(instance, *opt)
     end
 
     def fingerprint
@@ -211,7 +214,7 @@ module Scorpio
           end
 
           if schema.describes_hash?
-            instance_method_modules = [m, SchemaInstanceBase, SchemaInstanceBaseArray, SchemaInstanceBaseHash, SchemaInstanceBase::OverrideFromExtensions]
+            instance_method_modules = [m, SchemaInstanceBase, SchemaInstanceBaseArray, SchemaInstanceBaseHash]
             instance_methods = instance_method_modules.map do |mod|
               mod.instance_methods + mod.private_instance_methods
             end.inject(Set.new, &:|)

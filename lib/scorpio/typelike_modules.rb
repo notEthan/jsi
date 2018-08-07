@@ -33,8 +33,6 @@ module Scorpio
     end
   end
   module Hashlike
-    include Enumerable
-
     # safe methods which can be delegated to #to_hash (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 
@@ -99,8 +97,6 @@ module Scorpio
     end
   end
   module Arraylike
-    include Enumerable
-
     # safe methods which can be delegated to #to_ary (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 
