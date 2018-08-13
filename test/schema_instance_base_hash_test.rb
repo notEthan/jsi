@@ -28,13 +28,13 @@ describe Scorpio::SchemaInstanceBaseHash do
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
     end
-    it 'updates to a modified copy of the instance without altering the original' do
+    it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.instance
 
       subject['foo'] = {'y' => 'z'}
 
-      refute_equal(orig_instance, subject.instance)
-      assert_equal({'x' => 'y'}, orig_instance['foo'].as_json)
+      assert_equal(orig_instance, subject.instance)
+      assert_equal({'y' => 'z'}, orig_instance['foo'].as_json)
       assert_equal({'y' => 'z'}, subject.instance['foo'].as_json)
       assert_equal(orig_instance.class, subject.instance.class)
     end

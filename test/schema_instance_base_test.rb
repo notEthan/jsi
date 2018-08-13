@@ -319,13 +319,13 @@ describe Scorpio::SchemaInstanceBase do
         assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
         assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject.foo)
       end
-      it 'updates to a modified copy of the instance without altering the original' do
+      it 'modifies the instance, visible to other references to the same instance' do
         orig_instance = subject.instance
 
         subject.foo = {'y' => 'z'}
 
-        refute_equal(orig_instance, subject.instance)
-        assert_equal({'x' => 'y'}, orig_instance['foo'].as_json)
+        assert_equal(orig_instance, subject.instance)
+        assert_equal({'y' => 'z'}, orig_instance['foo'].as_json)
         assert_equal({'y' => 'z'}, subject.instance['foo'].as_json)
         assert_equal(orig_instance.class, subject.instance.class)
       end
@@ -360,18 +360,13 @@ describe Scorpio::SchemaInstanceBase do
       assert_equal(['a'], Scorpio::class_for_schema({}).new(['a']).as_json(some_option: true))
     end
   end
-  describe 'ridiculous way to test instance= getting the wrong type' do
+  describe 'overwrite schema instance with instance=' do
     # this error message indicates an internal bug (hence Bug class), so there isn't an intended way to
     # trigger it using SchemaInstanceBase properly. we use it improperly just to test that code path. this
     # is definitely not defined behavior.
-    #
-    # make thing whose #modified_copy behaves incorrectly, to abuse the internals of []=
-    let(:schema_content) { {'type' => 'object'} }
-
     it 'errors' do
-      subject.instance.define_singleton_method(:modified_copy) { |*_a| [] }
-      err = assert_raises(Scorpio::Bug) { subject['foo'] = 'bar' }
-      assert_match(%r(\Awill not accept instance of different class Array to current instance class Scorpio::JSON::HashNode on Scorpio::SchemaClasses\["[a-z0-9\-]+#"\]\z), err.message)
+      err = assert_raises(Scorpio::Bug) { subject.send(:instance=, {'foo' => 'bar'}) }
+      assert_match(%r(\Aoverwriting instance is not supported\z), err.message)
     end
   end
 end

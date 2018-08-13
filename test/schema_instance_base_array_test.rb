@@ -30,13 +30,13 @@ describe Scorpio::SchemaInstanceBaseArray do
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items'][2]), orig_2)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items'][2]), subject[2])
     end
-    it 'updates to a modified copy of the instance without altering the original' do
+    it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.instance
 
       subject[2] = {'y' => 'z'}
 
-      refute_equal(orig_instance, subject.instance)
-      assert_equal(['q', 'r'], orig_instance[2].as_json)
+      assert_equal(orig_instance, subject.instance)
+      assert_equal({'y' => 'z'}, orig_instance[2].as_json)
       assert_equal({'y' => 'z'}, subject.instance[2].as_json)
       assert_equal(orig_instance.class, subject.instance.class)
     end
