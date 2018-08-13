@@ -137,11 +137,8 @@ module Scorpio
 
     private
     def instance=(thing)
-      clear_memo(:[])
       if instance_variable_defined?(:@instance)
-        if @instance.class != thing.class
-          raise(Scorpio::Bug, "will not accept instance of different class #{thing.class} to current instance class #{@instance.class} on #{self.class.inspect}")
-        end
+        raise(Scorpio::Bug, "overwriting instance is not supported")
       end
       if thing.is_a?(SchemaInstanceBase)
         warn "assigning instance to a SchemaInstanceBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
@@ -150,6 +147,15 @@ module Scorpio
         @instance = Scorpio.deep_stringify_symbol_keys(thing)
       else
         @instance = Scorpio::JSON::Node.new_by_type(Scorpio.deep_stringify_symbol_keys(thing), [])
+      end
+    end
+
+    def subscript_assign(subscript, value)
+      clear_memo(:[], subscript)
+      if value.is_a?(SchemaInstanceBase)
+        instance[subscript] = value.instance
+      else
+        instance[subscript] = value
       end
     end
   end
@@ -271,11 +277,8 @@ module Scorpio
         end
       end
     end
-
     def []=(property_name, value)
-      self.instance = instance.modified_copy do |hash|
-        hash.merge(property_name => value)
-      end
+      subscript_assign(property_name, value)
     end
   end
 
@@ -313,11 +316,7 @@ module Scorpio
       end
     end
     def []=(i, value)
-      self.instance = instance.modified_copy do |ary|
-        ary.each_with_index.map do |el, ary_i|
-          ary_i == i ? value : el
-        end
-      end
+      subscript_assign(i, value)
     end
   end
 end
