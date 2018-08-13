@@ -66,6 +66,14 @@ module Scorpio
         end
       end
 
+      def []=(k, v)
+        if v.is_a?(Node)
+          content[k] = v.content
+        else
+          content[k] = v
+        end
+      end
+
       def deref
         content = self.content
 
