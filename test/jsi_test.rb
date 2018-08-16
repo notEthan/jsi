@@ -1,8 +1,8 @@
 require "test_helper"
 
-class JsiTest < Minitest::Test
+class JSITest < Minitest::Test
   def test_that_it_has_a_version_number
-    refute_nil ::Jsi::VERSION
+    refute_nil ::JSI::VERSION
   end
 
   def test_it_does_something_useful

@@ -1,5 +1,4 @@
 require "jsi/version"
 
-module Jsi
-  # Your code goes here...
+module JSI
 end

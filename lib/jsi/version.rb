@@ -1,3 +1,3 @@
-module Jsi
-  VERSION = "0.1.0"
+module JSI
+  VERSION = "0.0.1"
 end
