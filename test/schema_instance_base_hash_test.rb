@@ -11,6 +11,7 @@ describe Scorpio::SchemaInstanceBaseHash do
       'type' => 'object',
       'properties' => {
         'foo' => {'type' => 'object'},
+        'bar' => {},
       },
     }
   end
@@ -27,6 +28,17 @@ describe Scorpio::SchemaInstanceBaseHash do
       assert_equal({'y' => 'z'}, subject['foo'].as_json)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
+    end
+    it 'sets a property to a schema instance' do
+      orig_foo = subject['foo']
+
+      subject['foo'] = subject['bar']
+
+      # the content of the subscripts' instances is the same but the subscripts' classes are different
+      assert_equal([9], subject['foo'].as_json)
+      assert_equal([9], subject['bar'].as_json)
+      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
+      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['bar']), subject['bar'])
     end
     it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.instance
