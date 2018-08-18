@@ -74,9 +74,15 @@ module Scorpio
       @memos[key][args_]
     end
 
-    def clear_memo(key)
+    def clear_memo(key, *args)
       @memos ||= {}
-      @memos[key].clear if @memos[key]
+      if @memos[key]
+        if args.empty?
+          @memos[key].clear
+        else
+          @memos[key].delete(args)
+        end
+      end
     end
   end
   extend Memoize
