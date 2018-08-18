@@ -135,6 +135,22 @@ describe Scorpio::JSON::Node do
       end
     end
   end
+  describe '#[]=' do
+    let(:document) { [0, {'x' => [{'a' => ['b']}]}] }
+    it 'assigns' do
+      node[0] = 'abcdefg'
+      assert_equal(['abcdefg', {'x' => [{'a' => ['b']}]}], document)
+      string_node = Scorpio::JSON::Node.new(document, [0])
+      string_node[0..2] = '0'
+      assert_equal(['0defg', {'x' => [{'a' => ['b']}]}], document)
+      node[0] = node[1]
+      assert_equal([{'x' => [{'a' => ['b']}]}, {'x' => [{'a' => ['b']}]}], document)
+    end
+    it 'assigns, deeper' do
+      node[1]['y'] = node[1]['x'][0]
+      assert_equal([0, {'x' => [{'a' => ['b']}], 'y' => {'a' => ['b']}}], document)
+    end
+  end
   describe '#document_node' do
     let(:document) { {'a' => {'b' => 3}} }
     it 'has content that is the document' do
