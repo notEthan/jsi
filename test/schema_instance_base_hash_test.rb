@@ -42,7 +42,7 @@ describe Scorpio::SchemaInstanceBaseHash do
       let(:instance) { nil }
       it 'errors' do
         err = assert_raises(NoMethodError) { subject['foo'] = 0 }
-        assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::X.*>\z), err.message)
+        assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::.*>\z), err.message)
       end
     end
   end
