@@ -7,21 +7,25 @@ describe Scorpio::SchemaInstanceBase do
   let(:schema_content) { {} }
   let(:schema) { Scorpio::Schema.new(schema_content) }
   let(:subject) { Scorpio.class_for_schema(schema).new(instance) }
-  describe 'class .inspect' do
+  describe 'class .inspect + .to_s' do
     it 'is the same as Class#inspect on the base' do
       assert_equal('Scorpio::SchemaInstanceBase', Scorpio::SchemaInstanceBase.inspect)
+      assert_equal('Scorpio::SchemaInstanceBase', Scorpio::SchemaInstanceBase.to_s)
     end
     it 'is SchemaClasses[] for generated subclass without id' do
       assert_match(%r(\AScorpio::SchemaClasses\["[a-f0-9\-]+#"\]\z), subject.class.inspect)
+      assert_match(%r(\AScorpio::SchemaClasses\["[a-f0-9\-]+#"\]\z), subject.class.to_s)
     end
     describe 'with schema id' do
       let(:schema_content) { {'id' => 'https://scorpio/foo'} }
       it 'is SchemaClasses[] for generated subclass with id' do
         assert_equal(%q(Scorpio::SchemaClasses["https://scorpio/foo#"]), subject.class.inspect)
+        assert_equal(%q(Scorpio::SchemaClasses["https://scorpio/foo#"]), subject.class.to_s)
       end
     end
-    it 'is the constant name plus the id for a class assigned to a constant' do
+    it 'is the constant name (plus id for .inspect) for a class assigned to a constant' do
       assert_equal(%q(Scorpio::OpenAPI::V2::Operation (http://swagger.io/v2/schema.json#/definitions/operation)), Scorpio::OpenAPI::V2::Operation.inspect)
+      assert_equal(%q(Scorpio::OpenAPI::V2::Operation), Scorpio::OpenAPI::V2::Operation.to_s)
     end
   end
   describe 'class name' do
