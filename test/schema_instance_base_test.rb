@@ -154,6 +154,16 @@ describe Scorpio::SchemaInstanceBase do
         assert(!subject.respond_to?(:to_hash))
       end
     end
+    describe 'another SchemaInstanceBase' do
+      let(:schema_content) { {'type' => 'object'} }
+      let(:instance) { Scorpio.class_for_schema(schema).new({'foo' => 'bar'}) }
+      it 'initializes with a warning' do
+        assert_output(nil, /assigning instance to a SchemaInstanceBase instance is incorrect. received: #\{<Scorpio::SchemaClasses\["[^"]+#"\][^>]*>[^}]+}/) do
+          subject
+        end
+        assert_equal(Scorpio::JSON::HashNode.new({'foo' => 'bar'}, []), subject.instance)
+      end
+    end
   end
   describe '#parents, #parent' do
     let(:schema_content) { {properties: {foo: {properties: {bar: {properties: {baz: {}}}}}}} }
