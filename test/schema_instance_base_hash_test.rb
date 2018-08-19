@@ -29,7 +29,7 @@ describe Scorpio::SchemaInstanceBaseHash do
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
     end
-    it 'sets a property to a schema instance' do
+    it 'sets a property to a schema instance with a different schema' do
       orig_foo = subject['foo']
 
       subject['foo'] = subject['bar']
@@ -39,6 +39,20 @@ describe Scorpio::SchemaInstanceBaseHash do
       assert_equal([9], subject['bar'].as_json)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['bar']), subject['bar'])
+    end
+    it 'sets a property to a schema instance with the same schema' do
+      other_subject = class_for_schema.new(Scorpio::JSON::Node.new_by_type({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}, []))
+      # Given
+      assert_equal(other_subject, subject)
+
+      # When:
+      subject['foo'] = other_subject['foo']
+
+      # Then:
+      # still equal
+      assert_equal(other_subject, subject)
+      # but different instances
+      refute_equal(other_subject['foo'].object_id, subject['foo'].object_id)
     end
     it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.instance
