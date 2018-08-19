@@ -1,5 +1,7 @@
 require_relative 'test_helper'
 
+NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/schema_instance_base/named_schema'})
+
 describe JSI::SchemaInstanceBase do
   let(:document) { {} }
   let(:path) { [] }
@@ -24,8 +26,8 @@ describe JSI::SchemaInstanceBase do
       end
     end
     it 'is the constant name (plus id for .inspect) for a class assigned to a constant' do
-      assert_equal(%q(JSI::OpenAPI::V2::Operation (http://swagger.io/v2/schema.json#/definitions/operation)), JSI::OpenAPI::V2::Operation.inspect)
-      assert_equal(%q(JSI::OpenAPI::V2::Operation), JSI::OpenAPI::V2::Operation.to_s)
+      assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/schema_instance_base/named_schema#)), NamedSchemaInstance.inspect)
+      assert_equal(%q(NamedSchemaInstance), NamedSchemaInstance.to_s)
     end
   end
   describe 'class name' do
@@ -34,7 +36,7 @@ describe JSI::SchemaInstanceBase do
       assert_equal('JSI::SchemaClasses::Https___jsi_SchemaInstanceBaseTest_', subject.class.name)
     end
     it 'uses an existing name' do
-      assert_equal('JSI::OpenAPI::V2::Operation', JSI::OpenAPI::V2::Operation.name)
+      assert_equal('NamedSchemaInstance', NamedSchemaInstance.name)
     end
   end
   describe 'class for schema .schema' do
