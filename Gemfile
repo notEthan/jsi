@@ -1,6 +1,8 @@
 source "https://rubygems.org"
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
-
 # Specify your gem's dependencies in jsi.gemspec
 gemspec
+
+gem 'byebug'
+gem 'coveralls_reborn', '~> 0.11'
+gem 'wwtd'
