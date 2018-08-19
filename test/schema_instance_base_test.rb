@@ -17,10 +17,10 @@ describe JSI::SchemaInstanceBase do
       assert_match(%r(\AJSI::SchemaClasses\["[a-f0-9\-]+#"\]\z), subject.class.to_s)
     end
     describe 'with schema id' do
-      let(:schema_content) { {'id' => 'https://scorpio/foo'} }
+      let(:schema_content) { {'id' => 'https://jsi/foo'} }
       it 'is SchemaClasses[] for generated subclass with id' do
-        assert_equal(%q(JSI::SchemaClasses["https://scorpio/foo#"]), subject.class.inspect)
-        assert_equal(%q(JSI::SchemaClasses["https://scorpio/foo#"]), subject.class.to_s)
+        assert_equal(%q(JSI::SchemaClasses["https://jsi/foo#"]), subject.class.inspect)
+        assert_equal(%q(JSI::SchemaClasses["https://jsi/foo#"]), subject.class.to_s)
       end
     end
     it 'is the constant name (plus id for .inspect) for a class assigned to a constant' do
@@ -29,9 +29,9 @@ describe JSI::SchemaInstanceBase do
     end
   end
   describe 'class name' do
-    let(:schema_content) { {'id' => 'https://scorpio/SchemaInstanceBaseTest'} }
+    let(:schema_content) { {'id' => 'https://jsi/SchemaInstanceBaseTest'} }
     it 'generates a class name from schema_id' do
-      assert_equal('JSI::SchemaClasses::Https___scorpio_SchemaInstanceBaseTest_', subject.class.name)
+      assert_equal('JSI::SchemaClasses::Https___jsi_SchemaInstanceBaseTest_', subject.class.name)
     end
     it 'uses an existing name' do
       assert_equal('JSI::OpenAPI::V2::Operation', JSI::OpenAPI::V2::Operation.name)

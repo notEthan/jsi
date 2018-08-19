@@ -1,5 +1,5 @@
 module JSI
   module JSON
-    autoload :Node, 'scorpio/json/node'
+    autoload :Node, 'jsi/json/node'
   end
 end

@@ -1,5 +1,5 @@
 require 'json'
-require 'scorpio/typelike_modules'
+require 'jsi/typelike_modules'
 
 module JSI
   # base class for representing an instance of an instance described by a schema

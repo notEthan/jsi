@@ -1,4 +1,4 @@
-require 'scorpio/json/node'
+require 'jsi/json/node'
 
 module JSI
   class Schema
