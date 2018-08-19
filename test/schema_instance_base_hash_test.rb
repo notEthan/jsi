@@ -11,6 +11,7 @@ describe Scorpio::SchemaInstanceBaseHash do
       'type' => 'object',
       'properties' => {
         'foo' => {'type' => 'object'},
+        'bar' => {},
       },
     }
   end
@@ -28,13 +29,38 @@ describe Scorpio::SchemaInstanceBaseHash do
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
       assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
     end
-    it 'updates to a modified copy of the instance without altering the original' do
+    it 'sets a property to a schema instance with a different schema' do
+      orig_foo = subject['foo']
+
+      subject['foo'] = subject['bar']
+
+      # the content of the subscripts' instances is the same but the subscripts' classes are different
+      assert_equal([9], subject['foo'].as_json)
+      assert_equal([9], subject['bar'].as_json)
+      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
+      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['bar']), subject['bar'])
+    end
+    it 'sets a property to a schema instance with the same schema' do
+      other_subject = class_for_schema.new(Scorpio::JSON::Node.new_by_type({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}, []))
+      # Given
+      assert_equal(other_subject, subject)
+
+      # When:
+      subject['foo'] = other_subject['foo']
+
+      # Then:
+      # still equal
+      assert_equal(other_subject, subject)
+      # but different instances
+      refute_equal(other_subject['foo'].object_id, subject['foo'].object_id)
+    end
+    it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.instance
 
       subject['foo'] = {'y' => 'z'}
 
-      refute_equal(orig_instance, subject.instance)
-      assert_equal({'x' => 'y'}, orig_instance['foo'].as_json)
+      assert_equal(orig_instance, subject.instance)
+      assert_equal({'y' => 'z'}, orig_instance['foo'].as_json)
       assert_equal({'y' => 'z'}, subject.instance['foo'].as_json)
       assert_equal(orig_instance.class, subject.instance.class)
     end
@@ -42,7 +68,7 @@ describe Scorpio::SchemaInstanceBaseHash do
       let(:instance) { nil }
       it 'errors' do
         err = assert_raises(NoMethodError) { subject['foo'] = 0 }
-        assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::X.*>\z), err.message)
+        assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::.*>\z), err.message)
       end
     end
   end
