@@ -1,3 +1,8 @@
+# v0.2.3
+- fix mutability of SchemaInstanceBase with #[]=; instance is modified in place
+- add mutability to JSON::Node with #[]=
+- fix problems with initialize extending SchemaInstanceBase instances with Enumerable; just include it on SchemaInstanceBase itself
+
 # v0.2.2
 - Scorpio::SchemaInstanceJSONCoder
 
