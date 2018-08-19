@@ -1,8 +1,8 @@
 require_relative 'test_helper'
 
-NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/schema_instance_base/named_schema'})
+NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema'})
 
-describe JSI::SchemaInstanceBase do
+describe JSI::Base do
   let(:document) { {} }
   let(:path) { [] }
   let(:instance) { JSI::JSON::Node.new_by_type(document, path) }
@@ -11,8 +11,8 @@ describe JSI::SchemaInstanceBase do
   let(:subject) { JSI.class_for_schema(schema).new(instance) }
   describe 'class .inspect + .to_s' do
     it 'is the same as Class#inspect on the base' do
-      assert_equal('JSI::SchemaInstanceBase', JSI::SchemaInstanceBase.inspect)
-      assert_equal('JSI::SchemaInstanceBase', JSI::SchemaInstanceBase.to_s)
+      assert_equal('JSI::Base', JSI::Base.inspect)
+      assert_equal('JSI::Base', JSI::Base.to_s)
     end
     it 'is SchemaClasses[] for generated subclass without id' do
       assert_match(%r(\AJSI::SchemaClasses\["[a-f0-9\-]+#"\]\z), subject.class.inspect)
@@ -26,14 +26,14 @@ describe JSI::SchemaInstanceBase do
       end
     end
     it 'is the constant name (plus id for .inspect) for a class assigned to a constant' do
-      assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/schema_instance_base/named_schema#)), NamedSchemaInstance.inspect)
+      assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/base/named_schema#)), NamedSchemaInstance.inspect)
       assert_equal(%q(NamedSchemaInstance), NamedSchemaInstance.to_s)
     end
   end
   describe 'class name' do
-    let(:schema_content) { {'id' => 'https://jsi/SchemaInstanceBaseTest'} }
+    let(:schema_content) { {'id' => 'https://jsi/BaseTest'} }
     it 'generates a class name from schema_id' do
-      assert_equal('JSI::SchemaClasses::Https___jsi_SchemaInstanceBaseTest_', subject.class.name)
+      assert_equal('JSI::SchemaClasses::Https___jsi_BaseTest_', subject.class.name)
     end
     it 'uses an existing name' do
       assert_equal('NamedSchemaInstance', NamedSchemaInstance.name)
@@ -69,7 +69,7 @@ describe JSI::SchemaInstanceBase do
       class_for_schema = JSI.class_for_schema(schema)
       # same class every time
       assert_equal(JSI.class_for_schema(schema), class_for_schema)
-      assert_operator(class_for_schema, :<, JSI::SchemaInstanceBase)
+      assert_operator(class_for_schema, :<, JSI::Base)
     end
     it 'returns a class from a hash' do
       assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema.schema_node.content))
@@ -77,7 +77,7 @@ describe JSI::SchemaInstanceBase do
     it 'returns a class from a schema node' do
       assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema.schema_node))
     end
-    it 'returns a class from a SchemaInstanceBase' do
+    it 'returns a class from a Base' do
       assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(JSI.class_for_schema({}).new(schema.schema_node)))
     end
   end
@@ -93,15 +93,15 @@ describe JSI::SchemaInstanceBase do
     it 'returns a module from a schema node' do
       assert_equal(JSI.module_for_schema(schema), JSI.module_for_schema(schema.schema_node))
     end
-    it 'returns a module from a SchemaInstanceBase' do
+    it 'returns a module from a Base' do
       assert_equal(JSI.module_for_schema(schema), JSI.module_for_schema(JSI.class_for_schema({}).new(schema.schema_node)))
     end
   end
   describe 'initialization' do
     describe 'on Base' do
       it 'errors' do
-        err = assert_raises(TypeError) { JSI::SchemaInstanceBase.new({}) }
-        assert_equal('cannot instantiate JSI::SchemaInstanceBase which has no method #schema. please use JSI.class_for_schema', err.message)
+        err = assert_raises(TypeError) { JSI::Base.new({}) }
+        assert_equal('cannot instantiate JSI::Base which has no method #schema. please use JSI.class_for_schema', err.message)
       end
     end
     describe 'nil' do
@@ -156,11 +156,11 @@ describe JSI::SchemaInstanceBase do
         assert(!subject.respond_to?(:to_hash))
       end
     end
-    describe 'another SchemaInstanceBase' do
+    describe 'another Base' do
       let(:schema_content) { {'type' => 'object'} }
       let(:instance) { JSI.class_for_schema(schema).new({'foo' => 'bar'}) }
       it 'initializes with a warning' do
-        assert_output(nil, /assigning instance to a SchemaInstanceBase instance is incorrect. received: #\{<JSI::SchemaClasses\["[^"]+#"\][^>]*>[^}]+}/) do
+        assert_output(nil, /assigning instance to a Base instance is incorrect. received: #\{<JSI::SchemaClasses\["[^"]+#"\][^>]*>[^}]+}/) do
           subject
         end
         assert_equal(JSI::JSON::HashNode.new({'foo' => 'bar'}, []), subject.instance)
@@ -291,13 +291,13 @@ describe JSI::SchemaInstanceBase do
             'type' => 'object',
             'properties' => {
               'foo' => {},            # not an instance method
-              'initialize' => {},     # SchemaInstanceBase
-              'inspect' => {},        # SchemaInstanceBase
+              'initialize' => {},     # Base
+              'inspect' => {},        # Base
               'pretty_inspect' => {}, # Kernel
-              'as_json' => {},        # SchemaInstanceBase::OverrideFromExtensions, extended on initialization
-              'each' => {},           # SchemaInstanceBaseHash / SchemaInstanceBaseArray
+              'as_json' => {},        # Base::OverrideFromExtensions, extended on initialization
+              'each' => {},           # BaseHash / BaseArray
               'instance_exec' => {},  # BasicObject
-              'instance' => {},       # SchemaInstanceBase
+              'instance' => {},       # Base
               'schema' => {},         # module_for_schema singleton definition
             },
           }
@@ -319,7 +319,7 @@ describe JSI::SchemaInstanceBase do
           assert_equal('bar', subject.foo)
           assert_equal(JSI.module_for_schema(subject.schema), subject.method(:foo).owner)
 
-          assert_equal(JSI::SchemaInstanceBase, subject.method(:initialize).owner)
+          assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
           assert_match(%r(\A#\{<JSI::SchemaClasses\[".*#"\].*}\z)m, subject.inspect)
           assert_equal('hi', subject['inspect'])
@@ -385,7 +385,7 @@ describe JSI::SchemaInstanceBase do
   end
   describe 'overwrite schema instance with instance=' do
     # this error message indicates an internal bug (hence Bug class), so there isn't an intended way to
-    # trigger it using SchemaInstanceBase properly. we use it improperly just to test that code path. this
+    # trigger it using JSI::Base properly. we use it improperly just to test that code path. this
     # is definitely not defined behavior.
     it 'errors' do
       err = assert_raises(JSI::Bug) { subject.send(:instance=, {'foo' => 'bar'}) }

@@ -3,7 +3,7 @@ require 'jsi/typelike_modules'
 
 module JSI
   # base class for representing an instance of an instance described by a schema
-  class SchemaInstanceBase
+  class Base
     include Memoize
     include Enumerable
 
@@ -55,15 +55,15 @@ module JSI
       self.instance = instance
 
       if @instance.is_a?(JSI::JSON::HashNode)
-        extend SchemaInstanceBaseHash
+        extend BaseHash
       elsif @instance.is_a?(JSI::JSON::ArrayNode)
-        extend SchemaInstanceBaseArray
+        extend BaseArray
       end
     end
 
     attr_reader :instance
 
-    # each is overridden by SchemaInstanceBaseHash or SchemaInstanceBaseArray when appropriate. the base
+    # each is overridden by BaseHash or BaseArray when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
     def each
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{instance.pretty_inspect.chomp}"
@@ -143,8 +143,8 @@ module JSI
       if instance_variable_defined?(:@instance)
         raise(JSI::Bug, "overwriting instance is not supported")
       end
-      if thing.is_a?(SchemaInstanceBase)
-        warn "assigning instance to a SchemaInstanceBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
+      if thing.is_a?(Base)
+        warn "assigning instance to a Base instance is incorrect. received: #{thing.pretty_inspect.chomp}"
         @instance = JSI.deep_stringify_symbol_keys(thing.instance)
       elsif thing.is_a?(JSI::JSON::Node)
         @instance = JSI.deep_stringify_symbol_keys(thing)
@@ -155,7 +155,7 @@ module JSI
 
     def subscript_assign(subscript, value)
       clear_memo(:[], subscript)
-      if value.is_a?(SchemaInstanceBase)
+      if value.is_a?(Base)
         instance[subscript] = value.instance
       else
         instance[subscript] = value
@@ -182,7 +182,7 @@ module JSI
     memoize(:class_for_schema, schema__) do |schema_|
       begin
         begin
-          Class.new(SchemaInstanceBase).instance_exec(schema_) do |schema|
+          Class.new(Base).instance_exec(schema_) do |schema|
             begin
               include(JSI.module_for_schema(schema))
 
@@ -220,7 +220,7 @@ module JSI
           end
 
           if schema.describes_hash?
-            instance_method_modules = [m, SchemaInstanceBase, SchemaInstanceBaseArray, SchemaInstanceBaseHash]
+            instance_method_modules = [m, Base, BaseArray, BaseHash]
             instance_methods = instance_method_modules.map do |mod|
               mod.instance_methods + mod.private_instance_methods
             end.inject(Set.new, &:|)
@@ -247,7 +247,7 @@ module JSI
     end
   end
 
-  module SchemaInstanceBaseHash
+  module BaseHash
     # Hash methods
     def each
       return to_enum(__method__) { instance.size } unless block_given?
@@ -285,7 +285,7 @@ module JSI
     end
   end
 
-  module SchemaInstanceBaseArray
+  module BaseArray
     def each
       return to_enum(__method__) { instance.size } unless block_given?
       instance.each_index { |i| yield(self[i]) }

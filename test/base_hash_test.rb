@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-describe JSI::SchemaInstanceBaseHash do
+describe JSI::BaseHash do
   let(:document) do
     {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}
   end

@@ -7,7 +7,7 @@ module JSI
     def initialize(schema_object)
       if schema_object.is_a?(JSI::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
-      elsif schema_object.is_a?(JSI::SchemaInstanceBase)
+      elsif schema_object.is_a?(JSI::Base)
         @schema_object = JSI.deep_stringify_symbol_keys(schema_object.deref)
         @schema_node = @schema_object.instance
       elsif schema_object.is_a?(JSI::JSON::HashNode)
@@ -22,7 +22,7 @@ module JSI
       if @schema_object
         define_singleton_method(:instance) { schema_node } # aka schema_object.instance
         define_singleton_method(:schema) { schema_object.schema }
-        extend SchemaInstanceBaseHash
+        extend BaseHash
       else
         define_singleton_method(:[]) { |*a, &b| schema_node.public_send(:[], *a, &b) }
       end
@@ -241,7 +241,7 @@ module JSI
 
     private
     def object_to_content(object)
-      object = object.instance if object.is_a?(JSI::SchemaInstanceBase)
+      object = object.instance if object.is_a?(JSI::Base)
       object = object.content if object.is_a?(JSI::JSON::Node)
       object
     end

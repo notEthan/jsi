@@ -1,6 +1,6 @@
 module JSI
   # base class for representing an instance of an instance described by a schema
-  class SchemaInstanceBase
+  class Base
     class << self
       def class_comment
         lines = []

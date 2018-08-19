@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-describe JSI::SchemaInstanceBaseArray do
+describe JSI::BaseArray do
   let(:document) do
     ['foo', {'lamp' => [3]}, ['q', 'r']]
   end

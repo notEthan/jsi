@@ -68,7 +68,7 @@ module JSI
     end
   end
   # this is a ActiveRecord serialization class intended to store JSON in the
-  # database column and expose a given SchemaInstanceBase subclass once loaded
+  # database column and expose a given JSI::Base subclass once loaded
   # on a model instance.
   class SchemaInstanceJSONCoder < ObjectJSONCoder
     private
