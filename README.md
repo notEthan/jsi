@@ -1,5 +1,8 @@
 # JSI
 
+[![Build Status](https://travis-ci.org/notEthan/jsi.svg?branch=master)](https://travis-ci.org/notEthan/jsi)
+[![Coverage Status](https://coveralls.io/repos/github/notEthan/jsi/badge.svg)](https://coveralls.io/github/notEthan/jsi)
+
 JSON-Schema Instantiation
 
 ## Contributing
