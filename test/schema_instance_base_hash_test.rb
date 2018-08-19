@@ -1,11 +1,11 @@
 require_relative 'test_helper'
 
-describe Scorpio::SchemaInstanceBaseHash do
+describe JSI::SchemaInstanceBaseHash do
   let(:document) do
     {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}
   end
   let(:path) { [] }
-  let(:instance) { Scorpio::JSON::Node.new_by_type(document, path) }
+  let(:instance) { JSI::JSON::Node.new_by_type(document, path) }
   let(:schema_content) do
     {
       'type' => 'object',
@@ -15,8 +15,8 @@ describe Scorpio::SchemaInstanceBaseHash do
       },
     }
   end
-  let(:schema) { Scorpio::Schema.new(schema_content) }
-  let(:class_for_schema) { Scorpio.class_for_schema(schema) }
+  let(:schema) { JSI::Schema.new(schema_content) }
+  let(:class_for_schema) { JSI.class_for_schema(schema) }
   let(:subject) { class_for_schema.new(instance) }
 
   describe 'hashlike []=' do
@@ -26,8 +26,8 @@ describe Scorpio::SchemaInstanceBaseHash do
       subject['foo'] = {'y' => 'z'}
 
       assert_equal({'y' => 'z'}, subject['foo'].as_json)
-      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
-      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
+      assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
+      assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
     end
     it 'sets a property to a schema instance with a different schema' do
       orig_foo = subject['foo']
@@ -37,11 +37,11 @@ describe Scorpio::SchemaInstanceBaseHash do
       # the content of the subscripts' instances is the same but the subscripts' classes are different
       assert_equal([9], subject['foo'].as_json)
       assert_equal([9], subject['bar'].as_json)
-      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
-      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['properties']['bar']), subject['bar'])
+      assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
+      assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['bar']), subject['bar'])
     end
     it 'sets a property to a schema instance with the same schema' do
-      other_subject = class_for_schema.new(Scorpio::JSON::Node.new_by_type({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}, []))
+      other_subject = class_for_schema.new(JSI::JSON::Node.new_by_type({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}, []))
       # Given
       assert_equal(other_subject, subject)
 
@@ -68,7 +68,7 @@ describe Scorpio::SchemaInstanceBaseHash do
       let(:instance) { nil }
       it 'errors' do
         err = assert_raises(NoMethodError) { subject['foo'] = 0 }
-        assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::.*>\z), err.message)
+        assert_match(%r(\Aundefined method `\[\]=' for #<JSI::SchemaClasses::.*>\z), err.message)
       end
     end
   end
@@ -113,8 +113,8 @@ describe Scorpio::SchemaInstanceBaseHash do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
     it('#merge')            { assert_equal(subject, subject.merge({})) }
-    it('#reject')           { assert_equal(class_for_schema.new(Scorpio::JSON::HashNode.new({}, [])), subject.reject { true }) }
-    it('#select')           { assert_equal(class_for_schema.new(Scorpio::JSON::HashNode.new({}, [])), subject.select { false }) }
+    it('#reject')           { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.reject { true }) }
+    it('#select')           { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.select { false }) }
     describe '#select' do
       it 'yields properly too' do
         subject.select do |k, v|
@@ -127,7 +127,7 @@ describe Scorpio::SchemaInstanceBaseHash do
       it('#compact')        { assert_equal(subject, subject.compact) }
     end
   end
-  Scorpio::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+  JSI::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
       assert(!subject.respond_to?(destructive_method_name))
     end

@@ -1,10 +1,10 @@
-module Scorpio
+module JSI
   module Util
     def stringify_symbol_keys(hash)
       unless hash.respond_to?(:to_hash)
         raise(ArgumentError, "expected argument to be a hash; got #{hash.class.inspect}: #{hash.pretty_inspect.chomp}")
       end
-      Scorpio::Typelike.modified_copy(hash) do |hash_|
+      JSI::Typelike.modified_copy(hash) do |hash_|
         changed = false
         out = {}
         hash_.each do |k, v|
@@ -20,7 +20,7 @@ module Scorpio
 
     def deep_stringify_symbol_keys(object)
       if object.respond_to?(:to_hash)
-        Scorpio::Typelike.modified_copy(object) do |hash|
+        JSI::Typelike.modified_copy(object) do |hash|
           changed = false
           out = {}
           hash.each do |k, v|
@@ -37,7 +37,7 @@ module Scorpio
           changed ? out : hash
         end
       elsif object.respond_to?(:to_ary)
-        Scorpio::Typelike.modified_copy(object) do |ary|
+        JSI::Typelike.modified_copy(object) do |ary|
           changed = false
           out = ary.map do |e|
             out_e = deep_stringify_symbol_keys(e)

@@ -1,4 +1,4 @@
-module Scorpio
+module JSI
   module Typelike
     def self.modified_copy(other, &block)
       if other.respond_to?(:modified_copy)
@@ -51,14 +51,14 @@ module Scorpio
     end
     safe_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        Scorpio::Typelike.modified_copy(self) do |object_to_modify|
+        JSI::Typelike.modified_copy(self) do |object_to_modify|
           object_to_modify.public_send(method_name, *a, &b)
         end
       end
     end
     safe_kv_block_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        Scorpio::Typelike.modified_copy(self) do |object_to_modify|
+        JSI::Typelike.modified_copy(self) do |object_to_modify|
           object_to_modify.public_send(method_name, *a) do |k, _v|
             b.call(k, self[k])
           end
@@ -119,14 +119,14 @@ module Scorpio
     end
     safe_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        Scorpio::Typelike.modified_copy(self) do |object_to_modify|
+        JSI::Typelike.modified_copy(self) do |object_to_modify|
           object_to_modify.public_send(method_name, *a, &b)
         end
       end
     end
     safe_el_block_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        Scorpio::Typelike.modified_copy(self) do |object_to_modify|
+        JSI::Typelike.modified_copy(self) do |object_to_modify|
           i = 0
           object_to_modify.public_send(method_name, *a) do |_e|
             b.call(self[i]).tap { i += 1 }

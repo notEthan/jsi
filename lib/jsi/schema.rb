@@ -1,21 +1,21 @@
 require 'scorpio/json/node'
 
-module Scorpio
+module JSI
   class Schema
     include Memoize
 
     def initialize(schema_object)
-      if schema_object.is_a?(Scorpio::Schema)
+      if schema_object.is_a?(JSI::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
-      elsif schema_object.is_a?(Scorpio::SchemaInstanceBase)
-        @schema_object = Scorpio.deep_stringify_symbol_keys(schema_object.deref)
+      elsif schema_object.is_a?(JSI::SchemaInstanceBase)
+        @schema_object = JSI.deep_stringify_symbol_keys(schema_object.deref)
         @schema_node = @schema_object.instance
-      elsif schema_object.is_a?(Scorpio::JSON::HashNode)
+      elsif schema_object.is_a?(JSI::JSON::HashNode)
         @schema_object = nil
-        @schema_node = Scorpio.deep_stringify_symbol_keys(schema_object.deref)
+        @schema_node = JSI.deep_stringify_symbol_keys(schema_object.deref)
       elsif schema_object.respond_to?(:to_hash)
         @schema_object = nil
-        @schema_node = Scorpio::JSON::Node.new_by_type(Scorpio.deep_stringify_symbol_keys(schema_object), [])
+        @schema_node = JSI::JSON::Node.new_by_type(JSI.deep_stringify_symbol_keys(schema_object), [])
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end
@@ -88,7 +88,7 @@ module Scorpio
     end
 
     def schema_class
-      Scorpio.class_for_schema(self)
+      JSI.class_for_schema(self)
     end
 
     def match_to_instance(instance)
@@ -241,8 +241,8 @@ module Scorpio
 
     private
     def object_to_content(object)
-      object = object.instance if object.is_a?(Scorpio::SchemaInstanceBase)
-      object = object.content if object.is_a?(Scorpio::JSON::Node)
+      object = object.instance if object.is_a?(JSI::SchemaInstanceBase)
+      object = object.content if object.is_a?(JSI::JSON::Node)
       object
     end
   end

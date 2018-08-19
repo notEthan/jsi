@@ -1,9 +1,9 @@
 require_relative 'test_helper'
 
-describe Scorpio::StructJSONCoder do
+describe JSI::StructJSONCoder do
   let(:struct) { Struct.new(:foo, :bar) }
   let(:options) { {} }
-  let(:struct_json_coder) { Scorpio::StructJSONCoder.new(struct, options) }
+  let(:struct_json_coder) { JSI::StructJSONCoder.new(struct, options) }
   describe 'json' do
     describe 'load' do
       it 'loads nil' do
@@ -13,12 +13,12 @@ describe Scorpio::StructJSONCoder do
         assert_equal(struct.new('bar'), struct_json_coder.load({"foo" => "bar"}))
       end
       it 'loads something else' do
-        assert_raises(Scorpio::StructJSONCoder::LoadError) do
+        assert_raises(JSI::StructJSONCoder::LoadError) do
           struct_json_coder.load([[]])
         end
       end
       it 'loads unrecognized keys' do
-        assert_raises(Scorpio::StructJSONCoder::LoadError) do
+        assert_raises(JSI::StructJSONCoder::LoadError) do
           struct_json_coder.load({"uhoh" => "spaghettio"})
         end
       end
@@ -70,7 +70,7 @@ describe Scorpio::StructJSONCoder do
         assert_equal(struct.new('bar'), struct_json_coder.load('{"foo": "bar"}'))
       end
       it 'loads something else' do
-        assert_raises(Scorpio::StructJSONCoder::LoadError) do
+        assert_raises(JSI::StructJSONCoder::LoadError) do
           struct_json_coder.load('[[]]')
         end
       end
@@ -80,7 +80,7 @@ describe Scorpio::StructJSONCoder do
         end
       end
       it 'loads unrecognized keys' do
-        assert_raises(Scorpio::StructJSONCoder::LoadError) do
+        assert_raises(JSI::StructJSONCoder::LoadError) do
           struct_json_coder.load('{"uhoh": "spaghettio"}')
         end
       end

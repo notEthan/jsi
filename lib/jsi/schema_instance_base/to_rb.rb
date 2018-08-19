@@ -1,4 +1,4 @@
-module Scorpio
+module JSI
   # base class for representing an instance of an instance described by a schema
   class SchemaInstanceBase
     class << self
@@ -36,8 +36,8 @@ module Scorpio
             rettypes << simple[type]
           elsif type == 'object' || type == 'array'
             rettypes = []
-            schema_class = Scorpio.class_for_schema(property_schema)
-            unless schema_class.name =~ /\AScorpio::SchemaClasses::/
+            schema_class = JSI.class_for_schema(property_schema)
+            unless schema_class.name =~ /\AJSI::SchemaClasses::/
               rettypes << schema_class.name
             end
             rettypes << {'object' => '#to_hash', 'array' => '#to_ary'}[type]
@@ -101,8 +101,8 @@ module Scorpio
             rettypes << simple[type]
           elsif type == 'object' || type == 'array'
             rettypes = []
-            schema_class = Scorpio.class_for_schema(property_schema)
-            unless schema_class.name =~ /\AScorpio::SchemaClasses::/
+            schema_class = JSI.class_for_schema(property_schema)
+            unless schema_class.name =~ /\AJSI::SchemaClasses::/
               rettypes << schema_class.name
             end
             rettypes << {'object' => '#to_hash', 'array' => '#to_ary'}[type]

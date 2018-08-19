@@ -1,6 +1,6 @@
-module Scorpio
+module JSI
   module JSON
-    # Scorpio::JSON::Node is an abstraction of a node within a JSON document.
+    # JSI::JSON::Node is an abstraction of a node within a JSON document.
     # it aims to act like the underlying data type of the node's content
     # (Hash or Array, generally) in most cases, defining methods of Hash
     # and Array which delegate to the content. However, destructive methods
@@ -195,7 +195,7 @@ module Scorpio
       end
 
       def fingerprint
-        {is_node: self.is_a?(Scorpio::JSON::Node), document: document, path: path}
+        {is_node: self.is_a?(JSI::JSON::Node), document: document, path: path}
       end
       include FingerprintHash
     end

@@ -1,12 +1,12 @@
 require_relative 'test_helper'
 
-describe Scorpio::JSON::HashNode do
+describe JSI::JSON::HashNode do
   # document of the node being tested
   let(:document) { {'a' => 'b', 'c' => {'d' => 'e'}} }
   # by default the node is the whole document
   let(:path) { [] }
   # the node being tested
-  let(:node) { Scorpio::JSON::Node.new_by_type(document, path) }
+  let(:node) { JSI::JSON::Node.new_by_type(document, path) }
 
   describe '#each' do
     it 'iterates, one argument' do
@@ -14,7 +14,7 @@ describe Scorpio::JSON::HashNode do
       node.each do |arg|
         out << arg
       end
-      assert_instance_of(Scorpio::JSON::HashNode, node['c'])
+      assert_instance_of(JSI::JSON::HashNode, node['c'])
       assert_equal([['a', 'b'], ['c', node['c']]], out)
     end
     it 'iterates, two arguments' do
@@ -22,7 +22,7 @@ describe Scorpio::JSON::HashNode do
       node.each do |k, v|
         out << [k, v]
       end
-      assert_instance_of(Scorpio::JSON::HashNode, node['c'])
+      assert_instance_of(JSI::JSON::HashNode, node['c'])
       assert_equal([['a', 'b'], ['c', node['c']]], out)
     end
     it 'returns self' do
@@ -102,14 +102,14 @@ describe Scorpio::JSON::HashNode do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
     it('#merge')            { assert_equal(node, node.merge({})) }
-    it('#reject')           { assert_equal(Scorpio::JSON::Node.new_by_type({}, []), node.reject { true }) }
-    it('#select')           { assert_equal(Scorpio::JSON::Node.new_by_type({}, []), node.select { false }) }
+    it('#reject')           { assert_equal(JSI::JSON::Node.new_by_type({}, []), node.reject { true }) }
+    it('#select')           { assert_equal(JSI::JSON::Node.new_by_type({}, []), node.select { false }) }
     # Hash#compact only available as of ruby 2.5.0
     if {}.respond_to?(:compact)
       it('#compact')          { assert_equal(node, node.compact) }
     end
   end
-  Scorpio::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+  JSI::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
       assert(!node.respond_to?(destructive_method_name))
     end

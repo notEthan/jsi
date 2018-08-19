@@ -1,7 +1,7 @@
 require 'json'
 require 'scorpio/typelike_modules'
 
-module Scorpio
+module JSI
   # base class for representing an instance of an instance described by a schema
   class SchemaInstanceBase
     include Memoize
@@ -15,7 +15,7 @@ module Scorpio
       def inspect
         if !respond_to?(:schema)
           super
-        elsif !name || name =~ /\AScorpio::SchemaClasses::/
+        elsif !name || name =~ /\AJSI::SchemaClasses::/
           %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
         else
           %Q(#{name} (#{schema_id}))
@@ -24,7 +24,7 @@ module Scorpio
       def to_s
         if !respond_to?(:schema)
           super
-        elsif !name || name =~ /\AScorpio::SchemaClasses::/
+        elsif !name || name =~ /\AJSI::SchemaClasses::/
           %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
         else
           name
@@ -48,15 +48,15 @@ module Scorpio
 
     def initialize(instance, origin: nil)
       unless respond_to?(:schema)
-        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use Scorpio.class_for_schema")
+        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
       end
 
       @origin = origin || self
       self.instance = instance
 
-      if @instance.is_a?(Scorpio::JSON::HashNode)
+      if @instance.is_a?(JSI::JSON::HashNode)
         extend SchemaInstanceBaseHash
-      elsif @instance.is_a?(Scorpio::JSON::ArrayNode)
+      elsif @instance.is_a?(JSI::JSON::ArrayNode)
         extend SchemaInstanceBaseArray
       end
     end
@@ -141,15 +141,15 @@ module Scorpio
     private
     def instance=(thing)
       if instance_variable_defined?(:@instance)
-        raise(Scorpio::Bug, "overwriting instance is not supported")
+        raise(JSI::Bug, "overwriting instance is not supported")
       end
       if thing.is_a?(SchemaInstanceBase)
         warn "assigning instance to a SchemaInstanceBase instance is incorrect. received: #{thing.pretty_inspect.chomp}"
-        @instance = Scorpio.deep_stringify_symbol_keys(thing.instance)
-      elsif thing.is_a?(Scorpio::JSON::Node)
-        @instance = Scorpio.deep_stringify_symbol_keys(thing)
+        @instance = JSI.deep_stringify_symbol_keys(thing.instance)
+      elsif thing.is_a?(JSI::JSON::Node)
+        @instance = JSI.deep_stringify_symbol_keys(thing)
       else
-        @instance = Scorpio::JSON::Node.new_by_type(Scorpio.deep_stringify_symbol_keys(thing), [])
+        @instance = JSI::JSON::Node.new_by_type(JSI.deep_stringify_symbol_keys(thing), [])
       end
     end
 
@@ -173,10 +173,10 @@ module Scorpio
   end
 
   def SchemaClasses.class_for_schema(schema_object)
-    if schema_object.is_a?(Scorpio::Schema)
+    if schema_object.is_a?(JSI::Schema)
       schema__ = schema_object
     else
-      schema__ = Scorpio::Schema.new(schema_object)
+      schema__ = JSI::Schema.new(schema_object)
     end
 
     memoize(:class_for_schema, schema__) do |schema_|
@@ -184,7 +184,7 @@ module Scorpio
         begin
           Class.new(SchemaInstanceBase).instance_exec(schema_) do |schema|
             begin
-              include(Scorpio.module_for_schema(schema))
+              include(JSI.module_for_schema(schema))
 
               SchemaClasses.instance_exec(self) { |klass| @classes_by_id[klass.schema_id] = klass }
 
@@ -197,10 +197,10 @@ module Scorpio
   end
 
   def self.module_for_schema(schema_object)
-    if schema_object.is_a?(Scorpio::Schema)
+    if schema_object.is_a?(JSI::Schema)
       schema__ = schema_object
     else
-      schema__ = Scorpio::Schema.new(schema_object)
+      schema__ = JSI::Schema.new(schema_object)
     end
 
     memoize(:module_for_schema, schema__) do |schema_|
@@ -273,7 +273,7 @@ module Scorpio
           property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
 
           if property_schema && instance[property_name].is_a?(JSON::Node)
-            Scorpio.class_for_schema(property_schema).new(instance[property_name], origin: @origin)
+            JSI.class_for_schema(property_schema).new(instance[property_name], origin: @origin)
           else
             instance[property_name]
           end
@@ -311,7 +311,7 @@ module Scorpio
           index_schema = index_schema && index_schema.match_to_instance(instance[i])
 
           if index_schema && instance[i].is_a?(JSON::Node)
-            Scorpio.class_for_schema(index_schema).new(instance[i], origin: @origin)
+            JSI.class_for_schema(index_schema).new(instance[i], origin: @origin)
           else
             instance[i]
           end

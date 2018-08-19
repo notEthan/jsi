@@ -1,4 +1,4 @@
-module Scorpio
+module JSI
   module JSON
     autoload :Node, 'scorpio/json/node'
   end

@@ -1,4 +1,4 @@
-module Scorpio
+module JSI
   # this is a ActiveRecord serialization class intended to store JSON in the
   # database column and expose a ruby class once loaded on a model instance.
   # this allows for better ruby idioms to access to properties, and definition
@@ -77,7 +77,7 @@ module Scorpio
     end
 
     def dump_object(object)
-      Scorpio::Typelike.as_json(object)
+      JSI::Typelike.as_json(object)
     end
   end
 end

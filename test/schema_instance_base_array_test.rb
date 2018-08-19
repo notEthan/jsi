@@ -1,11 +1,11 @@
 require_relative 'test_helper'
 
-describe Scorpio::SchemaInstanceBaseArray do
+describe JSI::SchemaInstanceBaseArray do
   let(:document) do
     ['foo', {'lamp' => [3]}, ['q', 'r']]
   end
   let(:path) { [] }
-  let(:instance) { Scorpio::JSON::Node.new_by_type(document, path) }
+  let(:instance) { JSI::JSON::Node.new_by_type(document, path) }
   let(:schema_content) do
     {
       'type' => 'array',
@@ -16,8 +16,8 @@ describe Scorpio::SchemaInstanceBaseArray do
       ],
     }
   end
-  let(:schema) { Scorpio::Schema.new(schema_content) }
-  let(:class_for_schema) { Scorpio.class_for_schema(schema) }
+  let(:schema) { JSI::Schema.new(schema_content) }
+  let(:class_for_schema) { JSI.class_for_schema(schema) }
   let(:subject) { class_for_schema.new(instance) }
 
   describe 'arraylike []=' do
@@ -27,8 +27,8 @@ describe Scorpio::SchemaInstanceBaseArray do
       subject[2] = {'y' => 'z'}
 
       assert_equal({'y' => 'z'}, subject[2].as_json)
-      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items'][2]), orig_2)
-      assert_instance_of(Scorpio.class_for_schema(schema.schema_node['items'][2]), subject[2])
+      assert_instance_of(JSI.class_for_schema(schema.schema_node['items'][2]), orig_2)
+      assert_instance_of(JSI.class_for_schema(schema.schema_node['items'][2]), subject[2])
     end
     it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.instance
@@ -44,7 +44,7 @@ describe Scorpio::SchemaInstanceBaseArray do
       let(:instance) { nil }
       it 'errors' do
         err = assert_raises(NoMethodError) { subject[2] = 0 }
-        assert_match(%r(\Aundefined method `\[\]=' for #<Scorpio::SchemaClasses::X.*>\z), err.message)
+        assert_match(%r(\Aundefined method `\[\]=' for #<JSI::SchemaClasses::X.*>\z), err.message)
       end
     end
   end
@@ -112,12 +112,12 @@ describe Scorpio::SchemaInstanceBaseArray do
     it('#zip')                  { assert_equal([['foo', 'foo'], [subject[1], subject[1]], [subject[2], subject[2]]], subject.zip(subject)) }
   end
   describe 'modified copy methods' do
-    it('#reject')  { assert_equal(class_for_schema.new(Scorpio::JSON::ArrayNode.new(['foo'], [])), subject.reject { |e| e != 'foo' }) }
+    it('#reject')  { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], [])), subject.reject { |e| e != 'foo' }) }
     it('#reject block var') do
       subj_a = subject.to_a
       subject.reject { |e| assert_equal(e, subj_a.shift) }
     end
-    it('#select')  { assert_equal(class_for_schema.new(Scorpio::JSON::ArrayNode.new(['foo'], [])), subject.select { |e| e == 'foo' }) }
+    it('#select')  { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], [])), subject.select { |e| e == 'foo' }) }
     it('#select block var') do
       subj_a = subject.to_a
       subject.select { |e| assert_equal(e, subj_a.shift) }
@@ -128,13 +128,13 @@ describe Scorpio::SchemaInstanceBaseArray do
       let(:path) { ['1', 'c'] }
       it('#select') do
         selected = subject.select { |e| e == 'd' }
-        equivalent_node = Scorpio::JSON::ArrayNode.new([['b', 'q'], {'c' => ['d']}], path)
+        equivalent_node = JSI::JSON::ArrayNode.new([['b', 'q'], {'c' => ['d']}], path)
         equivalent = class_for_schema.new(equivalent_node)
         assert_equal(equivalent, selected)
       end
     end
   end
-  Scorpio::Arraylike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+  JSI::Arraylike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
       assert(!subject.respond_to?(destructive_method_name))
     end

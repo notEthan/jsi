@@ -1,4 +1,4 @@
-module Scorpio
+module JSI
   # this is a ActiveRecord serialization class intended to store JSON in the
   # database column and expose a Struct subclass once loaded on a model instance.
   class StructJSONCoder < ObjectJSONCoder
