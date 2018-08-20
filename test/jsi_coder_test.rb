@@ -1,28 +1,28 @@
 require_relative 'test_helper'
 
 describe JSI::JSICoder do
-  let(:schema) do
+  let(:schema_object) do
     {properties: {foo: {}, bar: {}}}
   end
-  let(:schema_instance_class) { JSI.class_for_schema(schema) }
+  let(:schema) { JSI::Schema.new(schema_object) }
   let(:options) { {} }
-  let(:schema_instance_json_coder) { JSI::JSICoder.new(schema_instance_class, options) }
+  let(:schema_instance_json_coder) { JSI::JSICoder.new(schema, options) }
   describe 'json' do
     describe 'load' do
       it 'loads nil' do
         assert_nil(schema_instance_json_coder.load(nil))
       end
       it 'loads a hash' do
-        assert_equal(schema_instance_class.new('foo' => 'bar'), schema_instance_json_coder.load({"foo" => "bar"}))
+        assert_equal(schema.new_jsi('foo' => 'bar'), schema_instance_json_coder.load({"foo" => "bar"}))
       end
       it 'loads something else' do
-        assert_equal(schema_instance_class.new([[]]), schema_instance_json_coder.load([[]]))
+        assert_equal(schema.new_jsi([[]]), schema_instance_json_coder.load([[]]))
       end
       describe 'array' do
         let(:options) { {array: true} }
         it 'loads an array of hashes' do
           data = [{"foo" => "bar"}, {"foo" => "baz"}]
-          assert_equal([schema_instance_class.new('foo' => 'bar'), schema_instance_class.new('foo' => 'baz')], schema_instance_json_coder.load(data))
+          assert_equal([schema.new_jsi('foo' => 'bar'), schema.new_jsi('foo' => 'baz')], schema_instance_json_coder.load(data))
         end
         it 'loads an empty array' do
           assert_equal([], schema_instance_json_coder.load([]))
@@ -34,17 +34,17 @@ describe JSI::JSICoder do
         end
       end
       describe 'array schema' do
-        let(:schema) { {items: {properties: {foo: {}, bar: {}}}} }
+        let(:schema_object) { {items: {properties: {foo: {}, bar: {}}}} }
         it 'loads an array of hashes' do
           data = [{"foo" => "bar"}, {"foo" => "baz"}]
-          assert_equal(schema_instance_class.new([{'foo' => 'bar'}, {'foo' => 'baz'}]), schema_instance_json_coder.load(data))
+          assert_equal(schema.new_jsi([{'foo' => 'bar'}, {'foo' => 'baz'}]), schema_instance_json_coder.load(data))
         end
         it 'loads an empty array' do
-          assert_equal(schema_instance_class.new([]), schema_instance_json_coder.load([]))
+          assert_equal(schema.new_jsi([]), schema_instance_json_coder.load([]))
         end
         it 'loads a not an array' do
           instance = Object.new
-          assert_equal(schema_instance_class.new(instance), schema_instance_json_coder.load(instance))
+          assert_equal(schema.new_jsi(instance), schema_instance_json_coder.load(instance))
         end
       end
     end
@@ -53,7 +53,7 @@ describe JSI::JSICoder do
         assert_nil(schema_instance_json_coder.dump(nil))
       end
       it 'dumps a schema_instance_class' do
-        assert_equal({"foo" => "x", "bar" => "y"}, schema_instance_json_coder.dump(schema_instance_class.new(foo: 'x', bar: 'y')))
+        assert_equal({"foo" => "x", "bar" => "y"}, schema_instance_json_coder.dump(schema.new_jsi(foo: 'x', bar: 'y')))
       end
       it 'dumps something else' do
         assert_raises(TypeError) do
@@ -69,14 +69,14 @@ describe JSI::JSICoder do
       describe 'array' do
         let(:options) { {array: true} }
         it 'dumps an array of schema_instances' do
-          schema_instances = [schema_instance_class.new(foo: 'x', bar: 'y'), schema_instance_class.new(foo: 'z', bar: 'q')]
+          schema_instances = [schema.new_jsi(foo: 'x', bar: 'y'), schema.new_jsi(foo: 'z', bar: 'q')]
           assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], schema_instance_json_coder.dump(schema_instances))
         end
       end
       describe 'array schema' do
-        let(:schema) { {items: {properties: {foo: {}, bar: {}}}} }
+        let(:schema_object) { {items: {properties: {foo: {}, bar: {}}}} }
         it 'dumps a schema_instance array' do
-          schema_instances = schema_instance_class.new([{foo: 'x', bar: 'y'}, {foo: 'z', bar: 'q'}])
+          schema_instances = schema.new_jsi([{foo: 'x', bar: 'y'}, {foo: 'z', bar: 'q'}])
           assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], schema_instance_json_coder.dump(schema_instances))
         end
       end
