@@ -5,7 +5,7 @@
 
 JSI represents JSON-schemas as ruby classes, and schema instances as instances of those classes.
 
-A JSI class aims to be a fairly unobtrusive wrapper around its instance. It adds accessors for known property names, validation methods, and a few other nice things. Mostly though, you use a JSI as you would use its underlying data.
+A JSI class aims to be a fairly unobtrusive wrapper around its instance. It adds accessors for known property names, validation methods, and a few other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting #to_ary or #to_hash.
 
 ## Example
 
@@ -25,7 +25,7 @@ properties:
         number: {type: "string"}
 ```
 
-And here's an instance of that schema with JSI:
+And here's the class for that schema from JSI:
 
 ```ruby
 Contact = JSI.class_for_schema(YAML.load_file('contact.schema.yml'))
@@ -93,14 +93,14 @@ bill['nickname']
 
 There's plenty more JSI has to offer, but this should give you a pretty good idea of basic usage.
 
-## Terminology
+## Terminology and Concepts
 
 - JSI::Base is the base class from which other classes representing JSON-Schemas inherit.
 - a JSI class refers to a class representing a schema, a subclass of JSI::Base.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a json-schema.
-  - a JSI instance is a ruby object instantiating a JSI class. it has a method #instance which contains the underlying data.
-- a schema refers to a json-schema. a JSI::Schema represents such a json-schema. a JSI class allow instantiation of such a schema.
+  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI class. it has a method #instance which contains the underlying data.
+- a schema refers to a json-schema. a JSI::Schema represents such a json-schema. a JSI class allows instantiation of such a schema.
 
 ## JSI classes
 
@@ -127,7 +127,7 @@ bill.instance['name']
 # => "rob"
 ```
 
-Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers (these accessor methods are defined on an included class instead of the JSI class for this reason). You can also use [] and []=, of course, with the same effect.
+Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers (these accessor methods are defined on an included module instead of the JSI class for this reason). You can also use [] and []=, of course, with the same effect.
 
 ## ActiveRecord serialization
 
