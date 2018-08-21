@@ -37,8 +37,8 @@ This definition gives you not just the Contact class, but classes for the whole 
 bill = Contact.new(name: 'bill', phone: [{location: 'home', number: '555'}], nickname: 'big b')
 # => #{<Contact fragment="#">
 # #{<Contact fragment="#">
-#   "phone" => #[<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone"] fragment="#/phone">
-#     #{<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone/items"] fragment="#/phone/0"> "location" => "home", "number" => "555"}
+#   "phone" => #[<JSI::SchemaClasses["1f97#/properties/phone"] fragment="#/phone">
+#     #{<JSI::SchemaClasses["1f97#/properties/phone/items"] fragment="#/phone/0"> "location" => "home", "number" => "555"}
 #   ],
 #   "nickname" => "big b"
 # }
@@ -72,14 +72,14 @@ bill.validate
 ```ruby
 bad = Contact.new(phone: [{number: [5, 5, 5]}])
 # => #{<Contact fragment="#">
-#   "phone" => #[<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone"] fragment="#/phone">
-#     #{<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone/items"] fragment="#/phone/0">
-#       "number" => #[<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone/items/properties/number"] fragment="#/phone/0/number"> 5, 5, 5]
+#   "phone" => #[<JSI::SchemaClasses["1f97#/properties/phone"] fragment="#/phone">
+#     #{<JSI::SchemaClasses["1f97#/properties/phone/items"] fragment="#/phone/0">
+#       "number" => #[<JSI::SchemaClasses["1f97#/properties/phone/items/properties/number"] fragment="#/phone/0/number"> 5, 5, 5]
 #     }
 #   ]
 # }
 bad.phone.fully_validate
-# => ["The property '#/0/number' of type array did not match the following type: string in schema 594126e3-ea3c-5d9a-b5f4-7423a8701f97"]
+# => ["The property '#/0/number' of type array did not match the following type: string in schema 1f97"]
 ```
 
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with #[] or, say, #transform_values:
