@@ -106,7 +106,7 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 ## JSI classes
 
-A JSI class (that is, subclass of JSI::Base) is a starting point but obviously you want your own methods, so you reopen the class as you would any other. referring back to the Example section above, here's an example:
+A JSI class (that is, subclass of JSI::Base) is a starting point but obviously you want your own methods, so you reopen the class as you would any other. referring back to the Example section above, we reopen the Contact class:
 
 ```ruby
 class Contact
@@ -130,6 +130,32 @@ bill.instance['name']
 ```
 
 Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers (these accessor methods are defined on an included module instead of the JSI class for this reason). You can also use [] and []=, of course, with the same effect.
+
+If you want to add methods to a subschema, get the class_for_schema for that schema and open up that class. You can leave the class anonymous, as in this example:
+
+```ruby
+phone_schema = Contact.schema['properties']['phone']['items']
+JSI.class_for_schema(phone_schema).class_eval do
+  def number_with_dashes
+    number.split(//).join('-')
+  end
+end
+bill.phone.first.number_with_dashes
+# => "5-5-5"
+```
+
+If you want to name the class, this works:
+
+```ruby
+Phone = JSI.class_for_schema(Contact.schema['properties']['phone']['items'])
+class Phone
+  def number_with_dashes
+    number.split(//).join('-')
+  end
+end
+```
+
+Either syntax is slightly cumbersome and a better syntax is in the works.
 
 ## ActiveRecord serialization
 
