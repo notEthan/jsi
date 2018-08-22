@@ -29,6 +29,8 @@ And here's the class for that schema from JSI:
 
 ```ruby
 Contact = JSI.class_for_schema(YAML.load_file('contact.schema.yml'))
+# you can copy/paste this line instead, to follow along in irb:
+Contact = JSI.class_for_schema({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
 This definition gives you not just the Contact class, but classes for the whole nested structure. So, if we construct an instance like:
