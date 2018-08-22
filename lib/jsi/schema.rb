@@ -1,9 +1,14 @@
 require 'jsi/json/node'
 
 module JSI
+  # JSI::Schema represents a JSON Schema. initialized from a Hash-like schema
+  # object, JSI::Schema is a relatively simple class to abstract useful methods
+  # applied to a JSON Schema.
   class Schema
     include Memoize
 
+    # initializes a schema from a given JSI::Base, JSI::JSON::Node, or hash.
+    # @param schema_object [JSI::Base, #to_hash] the schema
     def initialize(schema_object)
       if schema_object.is_a?(JSI::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
@@ -28,12 +33,19 @@ module JSI
       end
     end
 
-    attr_reader :schema_node, :schema_jsi
+    # @return [JSI::JSON::Node] a JSI::JSON::Node for the schema
+    attr_reader :schema_node
 
+    # @return [JSI::Base, nil] a JSI for this schema, if a metaschema is known; otherwise nil
+    attr_reader :schema_jsi
+
+    # @return [JSI::Base, JSI::JSON::Node] either a JSI::Base subclass or a
+    #   JSI::JSON::Node for the schema
     def schema_object
       @schema_jsi || @schema_node
     end
 
+    # @return [String] an absolute id for the schema, with a json pointer fragment
     def schema_id
       @schema_id ||= begin
         # start from schema_node and ascend parents looking for an 'id' property.
@@ -89,10 +101,17 @@ module JSI
       end
     end
 
+    # @return [Class subclassing JSI::Base] shortcut for JSI.class_for_schema(schema)
     def schema_class
       JSI.class_for_schema(self)
     end
 
+    # if this schema is a oneOf, allOf, anyOf schema, #match_to_instance finds
+    # one of the subschemas that matches the given instance and returns it. if
+    # there are no matching *Of schemas, this schema is returned.
+    #
+    # @param instance [Object] the instance to which to attempt to match *Of subschemas
+    # @return [JSI::Schema] a matched subschema, or this schema (self)
     def match_to_instance(instance)
       # matching oneOf is good here. one schema for one instance.
       # matching anyOf is okay. there could be more than one schema matched. it's often just one. if more
@@ -111,6 +130,10 @@ module JSI
       return self
     end
 
+    # @param property_name_ [String] the property for which to find a subschema
+    # @return [JSI::Schema, nil] a subschema from `properties`,
+    #   `patternProperties`, or `additionalProperties` for the given
+    #    property_name
     def subschema_for_property(property_name_)
       memoize(:subschema_for_property, property_name_) do |property_name|
         if schema_object['properties'].respond_to?(:to_hash) && schema_object['properties'][property_name].respond_to?(:to_hash)
@@ -134,6 +157,9 @@ module JSI
       end
     end
 
+    # @param index_ [Integer] the index for which to find a subschema
+    # @return [JSI::Schema, nil] a subschema from `items` or
+    #   `additionalItems` for the given index
     def subschema_for_index(index_)
       memoize(:subschema_for_index, index_) do |index|
         if schema_object['items'].respond_to?(:to_ary)
@@ -150,6 +176,12 @@ module JSI
       end
     end
 
+    # @return [Set] any object property names this schema indicates may be
+    #   present on its instances. this includes, if present: keys of this
+    #   schema's "properties" object; entries of this schema's array of
+    #   "required" property keys. if this schema has oneOf/allOf/anyOf
+    #   subschemas, those schemas are checked (recursively) for their
+    #   described object property names.
     def described_object_property_names
       memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
@@ -170,32 +202,58 @@ module JSI
       end
     end
 
+    # @return [Array<String>] array of schema validation error messages for
+    #   the given instance against this schema
     def fully_validate(instance)
       ::JSON::Validator.fully_validate(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
     end
+
+    # @return [true, false] whether the given instance validates against this schema
     def validate(instance)
       ::JSON::Validator.validate(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
     end
+
+    # @return [true] if this method does not raise, it returns true to
+    #   indicate the instance is valid against this schema
+    # @raise [::JSON::Schema::ValidationError] raises if the instance has
+    #   validation errors against this schema
     def validate!(instance)
       ::JSON::Validator.validate!(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
     end
+
+    # @return [Array<String>] array of schema validation error messages for
+    #   this schema, validated against its metaschema. a default metaschema
+    #   is assumed if the schema does not specify a $schema.
     def fully_validate_schema
       ::JSON::Validator.fully_validate(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
     end
+
+    # @return [true, false] whether this schema validates against its metaschema
     def validate_schema
       ::JSON::Validator.validate(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
     end
+
+    # @return [true] if this method does not raise, it returns true to
+    #   indicate this schema is valid against its metaschema
+    # @raise [::JSON::Schema::ValidationError] raises if this schema has
+    #   validation errors against its metaschema
     def validate_schema!
       ::JSON::Validator.validate!(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
     end
 
+    # @return [String] a string for #instance and #pretty_print including the schema_id
     def object_group_text
       "schema_id=#{schema_id}"
     end
+
+    # @return [String] a string representing this Schema
     def inspect
       "\#<#{self.class.inspect} #{object_group_text} #{schema_object.inspect}>"
     end
     alias_method :to_s, :inspect
+
+    # pretty-prints a representation this Schema to the given printer
+    # @return [void]
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         text "\#<#{obj.class.inspect} #{obj.object_group_text}"
@@ -210,10 +268,12 @@ module JSI
       end
     end
 
+    # @return [Object] returns a jsonifiable representation of this schema
     def as_json(*opt)
       Typelike.as_json(schema_object, *opt)
     end
 
+    # @return [Object] an opaque fingerprint of this Schema for FingerprintHash
     def fingerprint
       {class: self.class, schema_node: schema_node}
     end
