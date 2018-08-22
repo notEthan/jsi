@@ -219,7 +219,7 @@ module JSI
             %Q(#<Module for Schema: #{schema_id}>)
           end
 
-          if schema.describes_hash?
+          if schema.describes_object?
             instance_method_modules = [m, Base, BaseArray, BaseHash]
             instance_methods = instance_method_modules.map do |mod|
               mod.instance_methods + mod.private_instance_methods

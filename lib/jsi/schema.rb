@@ -173,8 +173,8 @@ module JSI
     # @return [Boolean] whether this schema appears to describe a json object
     #   (ruby hash), either from its property "type" or the presence of
     #   properties which only make sense for an object/hash type.
-    def describes_hash?
-      memoize(:describes_hash?) do
+    def describes_object?
+      memoize(:describes_object?) do
         schema_node['type'] == 'object' ||
           schema_node['required'].respond_to?(:to_ary) ||
           schema_node['properties'].respond_to?(:to_hash) ||
@@ -183,11 +183,11 @@ module JSI
           schema_node['default'].respond_to?(:to_hash) ||
           (schema_node['enum'].respond_to?(:to_ary) && schema_node['enum'].all? { |enum| enum.respond_to?(:to_hash) }) ||
           schema_node['oneOf'].respond_to?(:to_ary) &&
-            schema_node['oneOf'].all? { |someof_node| self.class.new(someof_node).describes_hash? } ||
+            schema_node['oneOf'].all? { |someof_node| self.class.new(someof_node).describes_object? } ||
           schema_node['allOf'].respond_to?(:to_ary) &&
-            schema_node['allOf'].all? { |someof_node| self.class.new(someof_node).describes_hash? } ||
+            schema_node['allOf'].all? { |someof_node| self.class.new(someof_node).describes_object? } ||
           schema_node['anyOf'].respond_to?(:to_ary) &&
-            schema_node['anyOf'].all? { |someof_node| self.class.new(someof_node).describes_hash? }
+            schema_node['anyOf'].all? { |someof_node| self.class.new(someof_node).describes_object? }
       end
     end
 
