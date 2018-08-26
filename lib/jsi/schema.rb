@@ -234,6 +234,11 @@ module JSI
         text '>'
       end
     end
+
+    def as_json(*opt)
+      Typelike.as_json(schema_object, *opt)
+    end
+
     def fingerprint
       {class: self.class, schema_node: schema_node}
     end
