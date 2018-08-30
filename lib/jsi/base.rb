@@ -398,9 +398,9 @@ module JSI
       memoize(:[], property_name_) do |property_name|
         begin
           property_schema = schema.subschema_for_property(property_name)
-          property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
+          property_schema = property_schema && property_schema.match_to_instance(jsi_instance_sub(property_name))
 
-          if !instance.key?(property_name) && property_schema && property_schema.schema_object.key?('default')
+          if !jsi_instance_hash_pubsend(:key?, property_name) && property_schema && property_schema.schema_object.key?('default')
             # use the default value
             default = property_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
@@ -408,10 +408,10 @@ module JSI
             else
               default
             end
-          elsif property_schema && (instance[property_name].respond_to?(:to_hash) || instance[property_name].respond_to?(:to_ary))
-            class_for_schema(property_schema).new(instance[property_name], ancestor: @ancestor)
+          elsif property_schema && (jsi_instance_sub(property_name).respond_to?(:to_hash) || jsi_instance_sub(property_name).respond_to?(:to_ary))
+            class_for_schema(property_schema).new(jsi_instance_sub(property_name), ancestor: @ancestor)
           else
-            instance[property_name]
+            jsi_instance_sub(property_name)
           end
         end
       end
@@ -425,6 +425,14 @@ module JSI
     #   property_name
     def []=(property_name, value)
       subscript_assign(property_name, value)
+    end
+
+    private
+
+    # @param token [String, Object]
+    # @return [Object]
+    def jsi_instance_sub(token)
+      jsi_instance_hash_pubsend(:[], token)
     end
   end
 
@@ -476,9 +484,9 @@ module JSI
       memoize(:[], i_) do |i|
         begin
           index_schema = schema.subschema_for_index(i)
-          index_schema = index_schema && index_schema.match_to_instance(instance[i])
+          index_schema = index_schema && index_schema.match_to_instance(jsi_instance_sub(i))
 
-          if !instance.each_index.to_a.include?(i) && index_schema && index_schema.schema_object.key?('default')
+          if !jsi_instance_ary_pubsend(:each_index).to_a.include?(i) && index_schema && index_schema.schema_object.key?('default')
             # use the default value
             default = index_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
@@ -486,10 +494,10 @@ module JSI
             else
               default
             end
-          elsif index_schema && (instance[i].respond_to?(:to_hash) || instance[i].respond_to?(:to_ary))
-            class_for_schema(index_schema).new(instance[i], ancestor: @ancestor)
+          elsif index_schema && (jsi_instance_sub(i).respond_to?(:to_hash) || jsi_instance_sub(i).respond_to?(:to_ary))
+            class_for_schema(index_schema).new(jsi_instance_sub(i), ancestor: @ancestor)
           else
-            instance[i]
+            jsi_instance_sub(i)
           end
         end
       end
@@ -501,6 +509,14 @@ module JSI
     # @param value [Object] the value to be assigned to the given subscript i
     def []=(i, value)
       subscript_assign(i, value)
+    end
+
+    private
+
+    # @param token [Integer]
+    # @return [Object]
+    def jsi_instance_sub(token)
+      jsi_instance_ary_pubsend(:[], token)
     end
   end
 end
