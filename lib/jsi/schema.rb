@@ -8,28 +8,30 @@ module JSI
       if schema_object.is_a?(JSI::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
       elsif schema_object.is_a?(JSI::Base)
-        @schema_object = JSI.deep_stringify_symbol_keys(schema_object.deref)
-        @schema_node = @schema_object.instance
+        @schema_jsi = JSI.deep_stringify_symbol_keys(schema_object.deref)
+        @schema_node = @schema_jsi.instance
       elsif schema_object.is_a?(JSI::JSON::HashNode)
-        @schema_object = nil
+        @schema_jsi = nil
         @schema_node = JSI.deep_stringify_symbol_keys(schema_object.deref)
       elsif schema_object.respond_to?(:to_hash)
-        @schema_object = nil
+        @schema_jsi = nil
         @schema_node = JSI::JSON::Node.new_by_type(JSI.deep_stringify_symbol_keys(schema_object), [])
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end
-      if @schema_object
-        define_singleton_method(:instance) { schema_node } # aka schema_object.instance
-        define_singleton_method(:schema) { schema_object.schema }
+      if @schema_jsi
+        define_singleton_method(:instance) { schema_node } # aka schema_jsi.instance
+        define_singleton_method(:schema) { schema_jsi.schema }
         extend BaseHash
       else
         define_singleton_method(:[]) { |*a, &b| schema_node.public_send(:[], *a, &b) }
       end
     end
-    attr_reader :schema_node
+
+    attr_reader :schema_node, :schema_jsi
+
     def schema_object
-      @schema_object || @schema_node
+      @schema_jsi || @schema_node
     end
 
     def schema_id
