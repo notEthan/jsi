@@ -345,7 +345,7 @@ module JSI
     # @return [self, Enumerator]
     def each
       return to_enum(__method__) { instance.size } unless block_given?
-      instance.each_key { |k| yield(k, self[k]) }
+      instance_hash_pubsend(:each_key) { |k| yield(k, self[k]) }
       self
     end
 
@@ -357,9 +357,19 @@ module JSI
 
     include Hashlike
 
+    def instance_hash_pubsend(method_name, *a, &b)
+      if instance.respond_to?(method_name)
+        instance.public_send(method_name, *a, &b)
+      else
+        instance.to_hash.public_send(method_name, *a, &b)
+      end
+    end
+
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
     SAFE_KEY_ONLY_METHODS.each do |method_name|
-      define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
+      define_method(method_name) do |*a, &b|
+        instance_hash_pubsend(method_name, *a, &b)
+      end
     end
 
     # @return [JSI::Base, Object] the instance's subscript value at the given
@@ -409,7 +419,7 @@ module JSI
     # @return [self, Enumerator]
     def each
       return to_enum(__method__) { instance.size } unless block_given?
-      instance.each_index { |i| yield(self[i]) }
+      instance_ary_pubsend(:each_index) { |i| yield(self[i]) }
       self
     end
 
@@ -421,10 +431,20 @@ module JSI
 
     include Arraylike
 
+    def instance_ary_pubsend(method_name, *a, &b)
+      if instance.respond_to?(method_name)
+        instance.public_send(method_name, *a, &b)
+      else
+        instance.to_ary.public_send(method_name, *a, &b)
+      end
+    end
+
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
     # we override these methods from Arraylike
     SAFE_INDEX_ONLY_METHODS.each do |method_name|
-      define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
+      define_method(method_name) do |*a, &b|
+        instance_ary_pubsend(method_name, *a, &b)
+      end
     end
 
     # @return [Object] returns the instance's subscript value at the given index
