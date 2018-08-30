@@ -37,14 +37,14 @@ module JSI
     #   array of object) cannot be expressed as json
     def self.as_json(object, *opt)
       if object.respond_to?(:to_hash)
-        object.map do |k, v|
+        (object.respond_to?(:map) ? object : object.to_hash).map do |k, v|
           unless k.is_a?(Symbol) || k.respond_to?(:to_str)
             raise(TypeError, "json object (hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
           end
           {k.to_s => as_json(v, *opt)}
         end.inject({}, &:update)
       elsif object.respond_to?(:to_ary)
-        object.map { |e| as_json(e, *opt) }
+        (object.respond_to?(:map) ? object : object.to_ary).map { |e| as_json(e, *opt) }
       elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| object.is_a?(c) }
         object
       elsif object.is_a?(Symbol)
