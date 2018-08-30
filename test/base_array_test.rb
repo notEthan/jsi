@@ -167,6 +167,17 @@ describe JSI::BaseArray do
     it('#values_at') { assert_equal(['foo'], subject.values_at(0)) }
     it('#zip')      { assert_equal([['foo', 'foo'], [subject[1], subject[1]], [subject[2], subject[2]]], subject.zip(subject)) }
   end
+  describe 'with an instance that has to_ary but not other ary instance methods' do
+    let(:instance) { SortOfArray.new(['foo', {'lamp' => SortOfArray.new([3])}, SortOfArray.new(['q', 'r'])]) }
+    describe 'delegating instance methods to #to_ary' do
+      it('#each_index') { assert_equal([0, 1, 2], subject.each_index.to_a) }
+      it('#size')      { assert_equal(3, subject.size) }
+      it('#count')    { assert_equal(1, subject.count('foo')) }
+      it('#slice')   { assert_equal(['foo'], subject.slice(0, 1)) }
+      it('#[]')     { assert_equal(SortOfArray.new(['q', 'r']), subject[2].instance) }
+      it('#as_json') { assert_equal(['foo', {'lamp' => [3]}, ['q', 'r']], subject.as_json) }
+    end
+  end
   describe 'modified copy methods' do
     it('#reject') { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], pointer)), subject.reject { |e| e != 'foo' }) }
     it('#reject block var') do

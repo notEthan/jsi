@@ -169,6 +169,15 @@ describe JSI::BaseHash do
     it('#values')   { assert_equal([subject['foo'], subject['bar'], true], subject.values) }
     it('#values_at') { assert_equal([true], subject.values_at('baz')) }
   end
+  describe 'with an instance that has to_hash but not other hash instance methods' do
+    let(:instance) { SortOfHash.new({'foo' => SortOfHash.new({'a' => 'b'})}) }
+    describe 'delegating instance methods to #to_hash' do
+      it('#each_key') { assert_equal(['foo'], subject.each_key.to_a) }
+      it('#each_pair') { assert_equal([['foo', subject['foo']]], subject.each_pair.to_a) }
+      it('#[]')       { assert_equal(SortOfHash.new({'a' => 'b'}), subject['foo'].instance) }
+      it('#as_json') { assert_equal({'foo' => {'a' => 'b'}}, subject.as_json) }
+    end
+  end
   describe 'modified copy methods' do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
