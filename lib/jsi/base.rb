@@ -108,6 +108,7 @@ module JSI
     #
     # @return [Array<JSI::Base>]
     def parents
+      check_can_get_parents!
       parent = @ancestor
       (@ancestor.instance.pointer.reference_tokens.size...self.instance.pointer.reference_tokens.size).map do |i|
         parent.tap do
@@ -239,6 +240,12 @@ module JSI
         instance[subscript] = value.instance
       else
         instance[subscript] = value
+      end
+    end
+
+    def check_can_get_parents!
+      unless @ancestor && @ancestor.instance.is_a?(JSI::JSON::Node)
+        raise(TypeError, "cannot get parents of JSI for instance that is not a JSI::JSON::Node. please wrap the root of the instance as a JSI::JSON::Node and instantiate from that in order to get parents. instance is: #{instance.pretty_inspect.chomp}")
       end
     end
 
