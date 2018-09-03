@@ -45,4 +45,33 @@ describe JSI::Schema do
       assert_equal({'description' => 'items!'}, schema_items.as_json)
     end
   end
+  describe '#schema_id' do
+    it 'generates one' do
+      assert_match(/\A[0-9a-f\-]+#\z/, JSI::Schema.new({}).schema_id)
+    end
+    it 'uses a given id with a fragment' do
+      schema = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/given_id#'})
+      assert_equal('https://schemas.jsi.unth.net/test/given_id#', schema.schema_id)
+    end
+    it 'uses a given id (adding a fragment)' do
+      schema = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/given_id'})
+      assert_equal('https://schemas.jsi.unth.net/test/given_id#', schema.schema_id)
+    end
+    it 'uses a pointer in the fragment' do
+      schema_node = JSI::JSON::Node.new_doc({
+        'id' => 'https://schemas.jsi.unth.net/test/given_id#',
+        'properties' => {'foo' => {'type' => 'object'}},
+      })
+      schema = JSI::Schema.new(schema_node['properties']['foo'])
+      assert_equal('https://schemas.jsi.unth.net/test/given_id#/properties/foo', schema.schema_id)
+    end
+    it 'uses a pointer in the fragment relative to the fragment of the root' do
+      schema_node = JSI::JSON::Node.new_doc({
+        'id' => 'https://schemas.jsi.unth.net/test/given_id#/notroot',
+        'properties' => {'foo' => {'type' => 'object'}},
+      })
+      schema = JSI::Schema.new(schema_node['properties']['foo'])
+      assert_equal('https://schemas.jsi.unth.net/test/given_id#/notroot/properties/foo', schema.schema_id)
+    end
+  end
 end
