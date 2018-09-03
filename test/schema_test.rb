@@ -29,4 +29,20 @@ describe JSI::Schema do
       assert_match(/\Awill not instantiate Schema from another Schema: #<JSI::Schema schema_id=.*>\z/m, err.message)
     end
   end
+  describe 'as an instance of metaschema' do
+    let(:default_metaschema) do
+      validator = ::JSON::Validator.default_validator
+      metaschema_file = validator.metaschema
+      JSI::Schema.new(::JSON.parse(File.read(metaschema_file)))
+    end
+    let(:metaschema_jsi_class) { JSI.class_for_schema(default_metaschema) }
+    let(:schema_object) { {'type' => 'array', 'items' => {'description' => 'items!'}} }
+    let(:schema_jsi) { metaschema_jsi_class.new(schema_object) }
+    let(:schema) { JSI::Schema.new(schema_jsi) }
+    it '#[]' do
+      schema_items = schema['items']
+      assert_instance_of(metaschema_jsi_class, schema_items)
+      assert_equal({'description' => 'items!'}, schema_items.as_json)
+    end
+  end
 end
