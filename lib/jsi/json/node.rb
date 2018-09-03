@@ -11,6 +11,10 @@ module JSI
     # return a copy of the document with the content of the node modified.
     # the original node's document and content are untouched.
     class Node
+      def self.new_doc(document)
+        new_by_type(document, [])
+      end
+
       # if the content of the document at the given path is a Hash, returns
       # a HashNode; if an Array, returns ArrayNode. otherwise returns a
       # regular Node, though, for the most part this will be called with Hash
