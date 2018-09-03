@@ -74,4 +74,10 @@ describe JSI::Schema do
       assert_equal('https://schemas.jsi.unth.net/test/given_id#/notroot/properties/foo', schema.schema_id)
     end
   end
+  describe '#schema_class' do
+    it 'returns the class for the schema' do
+      schema_node = JSI::JSON::Node.new_doc({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
+      assert_equal(JSI.class_for_schema(schema_node), JSI::Schema.new(schema_node).schema_class)
+    end
+  end
 end
