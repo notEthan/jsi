@@ -104,7 +104,7 @@ module JSI
 
       # a Node at the root of the document
       def document_node
-        Node.new_by_type(document, [])
+        Node.new_doc(document)
       end
 
       # the parent of this node. if this node is the document root (its path is empty), raises

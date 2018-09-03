@@ -41,7 +41,7 @@ describe JSI::BaseHash do
       assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['bar']), subject['bar'])
     end
     it 'sets a property to a schema instance with the same schema' do
-      other_subject = class_for_schema.new(JSI::JSON::Node.new_by_type({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}, []))
+      other_subject = class_for_schema.new(JSI::JSON::Node.new_doc({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}))
       # Given
       assert_equal(other_subject, subject)
 

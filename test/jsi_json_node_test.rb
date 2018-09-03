@@ -13,18 +13,18 @@ describe JSI::JSON::Node do
   end
   describe 'initialization by .new_by_type' do
     it 'initializes HashNode' do
-      node = JSI::JSON::Node.new_by_type({'a' => 'b'}, [])
+      node = JSI::JSON::Node.new_doc({'a' => 'b'})
       assert_instance_of(JSI::JSON::HashNode, node)
       assert_equal({'a' => 'b'}, node.document)
     end
     it 'initializes ArrayNode' do
-      node = JSI::JSON::Node.new_by_type(['a', 'b'], [])
+      node = JSI::JSON::Node.new_doc(['a', 'b'])
       assert_instance_of(JSI::JSON::ArrayNode, node)
       assert_equal(['a', 'b'], node.document)
     end
     it 'initializes Node' do
       object = Object.new
-      node = JSI::JSON::Node.new_by_type(object, [])
+      node = JSI::JSON::Node.new_doc(object)
       assert_instance_of(JSI::JSON::Node, node)
       assert_equal(object, node.document)
     end
@@ -261,22 +261,22 @@ describe JSI::JSON::Node do
       assert_equal('x', {JSI::JSON::Node.new([0], []) => 'x'}[JSI::JSON::Node.new([0], [])])
     end
     it 'hashes consistently regardless of the Node being decorated as a subclass' do
-      assert_equal('x', {JSI::JSON::Node.new_by_type([0], []) => 'x'}[JSI::JSON::Node.new([0], [])])
-      assert_equal('x', {JSI::JSON::Node.new([0], []) => 'x'}[JSI::JSON::Node.new_by_type([0], [])])
+      assert_equal('x', {JSI::JSON::Node.new_doc([0]) => 'x'}[JSI::JSON::Node.new([0], [])])
+      assert_equal('x', {JSI::JSON::Node.new([0], []) => 'x'}[JSI::JSON::Node.new_doc([0])])
     end
     it '==' do
       assert_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new([0], []))
-      assert_equal(JSI::JSON::Node.new_by_type([0], []), JSI::JSON::Node.new([0], []))
-      assert_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new_by_type([0], []))
-      assert_equal(JSI::JSON::Node.new_by_type([0], []), JSI::JSON::Node.new_by_type([0], []))
+      assert_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new([0], []))
+      assert_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new_doc([0]))
+      assert_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new_doc([0]))
     end
     it '!=' do
       refute_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new({}, []))
-      refute_equal(JSI::JSON::Node.new_by_type([0], []), JSI::JSON::Node.new({}, []))
-      refute_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new_by_type({}, []))
-      refute_equal(JSI::JSON::Node.new_by_type([0], []), JSI::JSON::Node.new_by_type({}, []))
-      refute_equal({}, JSI::JSON::Node.new_by_type({}, []))
-      refute_equal(JSI::JSON::Node.new_by_type({}, []), {})
+      refute_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new({}, []))
+      refute_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new_doc({}))
+      refute_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new_doc({}))
+      refute_equal({}, JSI::JSON::Node.new_doc({}))
+      refute_equal(JSI::JSON::Node.new_doc({}), {})
     end
   end
   describe '#as_json' do

@@ -64,7 +64,7 @@ describe JSI::JSON::ArrayNode do
     it('#<=>')                  { assert_equal(1, node <=> []) }
     it('#<=>')                  { assert_equal(-1, [] <=> node) }
     require 'abbrev'
-    it('#abbrev')               { assert_equal({'a' => 'a'}, JSI::JSON::Node.new_by_type(['a'], []).abbrev) }
+    it('#abbrev')               { assert_equal({'a' => 'a'}, JSI::JSON::Node.new_doc(['a']).abbrev) }
     it('#assoc')                { assert_equal(['b', 'q'], node.assoc('b')) }
     it('#at')                   { assert_equal('a', node.at(0)) }
     it('#bsearch')              { assert_equal(nil, node.bsearch { false }) }
@@ -80,9 +80,9 @@ describe JSI::JSON::ArrayNode do
     it('#first')                { assert_equal('a', node.first) }
     it('#include?')             { assert_equal(true, node.include?('a')) }
     it('#index')                { assert_equal(0, node.index('a')) }
-    it('#join')                 { assert_equal('a b', JSI::JSON::Node.new_by_type(['a', 'b'], []).join(' ')) }
+    it('#join')                 { assert_equal('a b', JSI::JSON::Node.new_doc(['a', 'b']).join(' ')) }
     it('#last')                 { assert_equal(node[2], node.last) }
-    it('#pack')                 { assert_equal(' ', JSI::JSON::Node.new_by_type([32], []).pack('c')) }
+    it('#pack')                 { assert_equal(' ', JSI::JSON::Node.new_doc([32]).pack('c')) }
     it('#permutation')          { assert_equal([['a'], [node[1]], [node[2]]], node.permutation(1).to_a) }
     it('#product')              { assert_equal([], node.product([])) }
     # due to differences in implementation between #assoc and #rassoc, the reason for which
@@ -99,21 +99,21 @@ describe JSI::JSON::ArrayNode do
     it('#reverse_each')         { assert_equal([node[2], node[1], 'a'], node.reverse_each.to_a) }
     it('#rindex')               { assert_equal(0, node.rindex('a')) }
     it('#rotate')               { assert_equal([node[1], node[2], 'a'], node.rotate) }
-    it('#sample')               { assert_equal('a', JSI::JSON::Node.new_by_type(['a'], []).sample) }
-    it('#shelljoin')            { assert_equal('a', JSI::JSON::Node.new_by_type(['a'], []).shelljoin) } if [].respond_to?(:shelljoin)
+    it('#sample')               { assert_equal('a', JSI::JSON::Node.new_doc(['a']).sample) }
+    it('#shelljoin')            { assert_equal('a', JSI::JSON::Node.new_doc(['a']).shelljoin) } if [].respond_to?(:shelljoin)
     it('#shuffle')              { assert_equal(3, node.shuffle.size) }
     it('#slice')                { assert_equal(['a'], node.slice(0, 1)) }
-    it('#sort')                 { assert_equal(['a'], JSI::JSON::Node.new_by_type(['a'], []).sort) }
+    it('#sort')                 { assert_equal(['a'], JSI::JSON::Node.new_doc(['a']).sort) }
     it('#take')                 { assert_equal(['a'], node.take(1)) }
     it('#take_while')           { assert_equal([], node.take_while { false }) }
-    it('#transpose')            { assert_equal([], JSI::JSON::Node.new_by_type([], []).transpose) }
+    it('#transpose')            { assert_equal([], JSI::JSON::Node.new_doc([]).transpose) }
     it('#uniq')                 { assert_equal(node.to_a, node.uniq) }
     it('#values_at')            { assert_equal(['a'], node.values_at(0)) }
     it('#zip')                  { assert_equal([['a', 'a'], [node[1], node[1]], [node[2], node[2]]], node.zip(node)) }
   end
   describe 'modified copy methods' do
-    it('#reject')  { assert_equal(JSI::JSON::Node.new_by_type(['a'], []), node.reject { |e| e != 'a' }) }
-    it('#select')  { assert_equal(JSI::JSON::Node.new_by_type(['a'], []), node.select { |e| e == 'a' }) }
+    it('#reject')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.reject { |e| e != 'a' }) }
+    it('#select')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.select { |e| e == 'a' }) }
     it('#compact') { assert_equal(node, node.compact) }
     describe 'at a depth' do
       let(:document) { [['b', 'q'], {'c' => ['d', 'e']}] }

@@ -149,7 +149,7 @@ module JSI
       elsif thing.is_a?(JSI::JSON::Node)
         @instance = JSI.deep_stringify_symbol_keys(thing)
       else
-        @instance = JSI::JSON::Node.new_by_type(JSI.deep_stringify_symbol_keys(thing), [])
+        @instance = JSI::JSON::Node.new_doc(JSI.deep_stringify_symbol_keys(thing))
       end
     end
 

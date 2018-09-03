@@ -15,7 +15,7 @@ module JSI
         @schema_node = JSI.deep_stringify_symbol_keys(schema_object.deref)
       elsif schema_object.respond_to?(:to_hash)
         @schema_object = nil
-        @schema_node = JSI::JSON::Node.new_by_type(JSI.deep_stringify_symbol_keys(schema_object), [])
+        @schema_node = JSI::JSON::Node.new_doc(JSI.deep_stringify_symbol_keys(schema_object))
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end

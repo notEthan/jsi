@@ -107,7 +107,7 @@ describe JSI::Base do
     describe 'nil' do
       let(:instance) { nil }
       it 'initializes with nil instance' do
-        assert_equal(JSI::JSON::Node.new_by_type(nil, []), subject.instance)
+        assert_equal(JSI::JSON::Node.new_doc(nil), subject.instance)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -115,7 +115,7 @@ describe JSI::Base do
     describe 'arbitrary instance' do
       let(:instance) { Object.new }
       it 'initializes' do
-        assert_equal(JSI::JSON::Node.new_by_type(instance, []), subject.instance)
+        assert_equal(JSI::JSON::Node.new_doc(instance), subject.instance)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -124,7 +124,7 @@ describe JSI::Base do
       let(:instance) { {'foo' => 'bar'} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal(JSI::JSON::Node.new_by_type({'foo' => 'bar'}, []), subject.instance)
+        assert_equal(JSI::JSON::Node.new_doc({'foo' => 'bar'}), subject.instance)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -142,7 +142,7 @@ describe JSI::Base do
       let(:instance) { ['foo'] }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(JSI::JSON::Node.new_by_type(['foo'], []), subject.instance)
+        assert_equal(JSI::JSON::Node.new_doc(['foo']), subject.instance)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -377,9 +377,9 @@ describe JSI::Base do
   end
   describe '#as_json' do
     it '#as_json' do
-      assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new(JSI::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
-      assert_equal({'a' => 'b'}, JSI.class_for_schema({'type' => 'object'}).new(JSI::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
-      assert_equal(['a', 'b'], JSI.class_for_schema({'type' => 'array'}).new(JSI::JSON::Node.new_by_type(['a', 'b'], [])).as_json)
+      assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
+      assert_equal({'a' => 'b'}, JSI.class_for_schema({'type' => 'object'}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
+      assert_equal(['a', 'b'], JSI.class_for_schema({'type' => 'array'}).new(JSI::JSON::Node.new_doc(['a', 'b'])).as_json)
       assert_equal(['a'], JSI::class_for_schema({}).new(['a']).as_json(some_option: true))
     end
   end

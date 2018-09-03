@@ -102,8 +102,8 @@ describe JSI::JSON::HashNode do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
     it('#merge')            { assert_equal(node, node.merge({})) }
-    it('#reject')           { assert_equal(JSI::JSON::Node.new_by_type({}, []), node.reject { true }) }
-    it('#select')           { assert_equal(JSI::JSON::Node.new_by_type({}, []), node.select { false }) }
+    it('#reject')           { assert_equal(JSI::JSON::Node.new_doc({}), node.reject { true }) }
+    it('#select')           { assert_equal(JSI::JSON::Node.new_doc({}), node.select { false }) }
     # Hash#compact only available as of ruby 2.5.0
     if {}.respond_to?(:compact)
       it('#compact')          { assert_equal(node, node.compact) }
