@@ -80,4 +80,31 @@ describe JSI::Schema do
       assert_equal(JSI.class_for_schema(schema_node), JSI::Schema.new(schema_node).schema_class)
     end
   end
+  describe '#subschema_for_property' do
+    let(:schema) do
+      JSI::Schema.new({
+        properties: {foo: {description: 'foo'}},
+        patternProperties: {"^ba" => {description: 'ba*'}},
+        additionalProperties: {description: 'whatever'},
+      })
+    end
+    it 'has no subschema' do
+      assert_equal(nil, JSI::Schema.new({}).subschema_for_property('no'))
+    end
+    it 'has a subschema by property' do
+      subschema = schema.subschema_for_property('foo')
+      assert_instance_of(JSI::Schema, subschema)
+      assert_equal('foo', subschema['description'])
+    end
+    it 'has a subschema by pattern property' do
+      subschema = schema.subschema_for_property('bar')
+      assert_instance_of(JSI::Schema, subschema)
+      assert_equal('ba*', subschema['description'])
+    end
+    it 'has a subschema by additional properties' do
+      subschema = schema.subschema_for_property('anything')
+      assert_instance_of(JSI::Schema, subschema)
+      assert_equal('whatever', subschema['description'])
+    end
+  end
 end
