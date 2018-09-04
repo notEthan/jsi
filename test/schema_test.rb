@@ -146,4 +146,51 @@ describe JSI::Schema do
       assert_equal("mo' crap", last_subschema['description'])
     end
   end
+  describe 'stringification' do
+    let(:schema) do
+      JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/stringification', type: 'object'})
+    end
+
+    it '#inspect' do
+      assert_equal(%q(#<JSI::Schema schema_id=https://schemas.jsi.unth.net/test/stringification# #{<JSI::JSON::HashNode fragment="#"> "id" => "https://schemas.jsi.unth.net/test/stringification", "type" => "object"}>), schema.inspect)
+    end
+    it '#pretty_print' do
+      assert_equal(%q(#<JSI::Schema schema_id=https://schemas.jsi.unth.net/test/stringification#
+        #{<JSI::JSON::HashNode fragment="#">
+          "id" => "https://schemas.jsi.unth.net/test/stringification",
+          "type" => "object"
+        }
+      >).gsub(/^      /, ''), schema.pretty_inspect.chomp)
+    end
+  end
+  describe 'validation' do
+    let(:schema) { JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/validation', type: 'object'}) }
+    describe 'without errors' do
+      let(:instance) { {'foo' => 'bar'} }
+      it '#fully_validate' do
+        assert_equal([], schema.fully_validate(instance))
+      end
+      it '#validate' do
+        assert_equal(true, schema.validate(instance))
+      end
+      it '#validate!' do
+        assert_equal(true, schema.validate!(instance))
+      end
+    end
+    describe 'with errors' do
+      let(:instance) { ['no'] }
+      it '#fully_validate' do
+        assert_equal(["The property '#/' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/validation"], schema.fully_validate(instance))
+      end
+      it '#validate' do
+        assert_equal(false, schema.validate(instance))
+      end
+      it '#validate!' do
+        err = assert_raises(JSON::Schema::ValidationError) do
+          schema.validate!(instance)
+        end
+        assert_equal("The property '#/' of type array did not match the following type: object", err.message)
+      end
+    end
+  end
 end
