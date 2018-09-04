@@ -107,4 +107,43 @@ describe JSI::Schema do
       assert_equal('whatever', subschema['description'])
     end
   end
+  describe '#subschema_for_index' do
+    it 'has no subschema' do
+      assert_equal(nil, JSI::Schema.new({}).subschema_for_index(0))
+    end
+    it 'has a subschema for items' do
+      schema = JSI::Schema.new({
+        items: {description: 'items!'}
+      })
+      first_subschema = schema.subschema_for_index(0)
+      assert_instance_of(JSI::Schema, first_subschema)
+      assert_equal('items!', first_subschema['description'])
+      last_subschema = schema.subschema_for_index(1)
+      assert_instance_of(JSI::Schema, last_subschema)
+      assert_equal('items!', last_subschema['description'])
+    end
+    it 'has a subschema for each item by index' do
+      schema = JSI::Schema.new({
+        items: [{description: 'item one'}, {description: 'item two'}]
+      })
+      first_subschema = schema.subschema_for_index(0)
+      assert_instance_of(JSI::Schema, first_subschema)
+      assert_equal('item one', first_subschema['description'])
+      last_subschema = schema.subschema_for_index(1)
+      assert_instance_of(JSI::Schema, last_subschema)
+      assert_equal('item two', last_subschema['description'])
+    end
+    it 'has a subschema by additional items' do
+      schema = JSI::Schema.new({
+        items: [{description: 'item one'}],
+        additionalItems: {description: "mo' crap"},
+      })
+      first_subschema = schema.subschema_for_index(0)
+      assert_instance_of(JSI::Schema, first_subschema)
+      assert_equal('item one', first_subschema['description'])
+      last_subschema = schema.subschema_for_index(1)
+      assert_instance_of(JSI::Schema, last_subschema)
+      assert_equal("mo' crap", last_subschema['description'])
+    end
+  end
 end
