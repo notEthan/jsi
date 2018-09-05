@@ -2,10 +2,21 @@ module JSI
   module JSON
     # JSI::JSON::Node is an abstraction of a node within a JSON document.
     # it aims to act like the underlying data type of the node's content
-    # (Hash or Array, generally) in most cases, defining methods of Hash
-    # and Array which delegate to the content. However, destructive methods
-    # are not defined, as modifying the content of a node would change it
-    # for any other nodes in the document that contain or refer to it.
+    # (Hash or Array, generally) in most cases.
+    #
+    # the main advantage offered by using a Node over the underlying data
+    # is in dereferencing. if a Node consists of a hash with a $ref property
+    # pointing within the same document, then the Node will transparently
+    # follow the ref and return the referenced data.
+    #
+    # in most other respects, a Node aims to act like a Hash when the content
+    # is a Hash, an Array when the content is an array. methods of Hash and
+    # Array are defined and delegated to the node's content.
+    #
+    # however, destructive methods are for the most part not implemented.
+    # at the moment only #[]= is implemented. since Node thinly wraps the
+    # underlying data, you can change the data and it will be reflected in
+    # the node. implementations of destructive methods are planned.
     #
     # methods that return a modified copy such as #merge are defined, and
     # return a copy of the document with the content of the node modified.
