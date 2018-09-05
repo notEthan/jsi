@@ -2,7 +2,14 @@ require 'json'
 require 'jsi/typelike_modules'
 
 module JSI
-  # base class for representing an instance of an instance described by a schema
+  # the base class for representing and instantiating a JSON Schema.
+  #
+  # a class inheriting from JSI::Base represents a JSON Schema. an instance of
+  # that class represents a JSON schema instance.
+  #
+  # as such, JSI::Base itself is not intended to be instantiated - subclasses
+  # are dynamically created for schemas using {JSI.class_for_schema}, and these
+  # are what are used to instantiate and represent JSON schema instances.
   class Base
     include Memoize
     include Enumerable
