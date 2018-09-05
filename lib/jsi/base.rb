@@ -15,10 +15,13 @@ module JSI
     include Enumerable
 
     class << self
+      # @return [String] absolute schema_id of the schema this class represents.
+      #   see {Schema#schema_id}.
       def schema_id
         schema.schema_id
       end
 
+      # @return [String] a string representing the class, with schema_id
       def inspect
         if !respond_to?(:schema)
           super
@@ -28,6 +31,9 @@ module JSI
           %Q(#{name} (#{schema_id}))
         end
       end
+
+      # @return [String] a string representing the class - a class name if one
+      #   was explicitly defined, otherwise a reference to JSI::SchemaClasses
       def to_s
         if !respond_to?(:schema)
           super
@@ -38,6 +44,8 @@ module JSI
         end
       end
 
+      # @return [String] a name for a constant for this class, generated from the
+      #   schema_id. only used if the class is not assigned to another constant.
       def schema_classes_const_name
         name = schema.schema_id.gsub(/[^\w]/, '_')
         name = 'X' + name unless name[/\A[a-zA-Z_]/]
@@ -45,6 +53,7 @@ module JSI
         name
       end
 
+      # @return [String] a constant name of this class
       def name
         unless super
           SchemaClasses.const_set(schema_classes_const_name, self)
@@ -53,6 +62,13 @@ module JSI
       end
     end
 
+    # initializes this JSI from the given instance. the instance will be
+    # wrapped as a {JSI::JSON::Node JSI::JSON::Node} (unless what you pass is
+    # a Node already).
+    #
+    # @param instance [Object] the JSON Schema instance being represented
+    # @param origin [JSI::Base] for internal use, specifies a parent
+    #   from which this JSI originated
     def initialize(instance, origin: nil)
       unless respond_to?(:schema)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
@@ -68,6 +84,7 @@ module JSI
       end
     end
 
+    # the instance of the json-schema. this is a JSI::JSON::Node.
     attr_reader :instance
 
     # each is overridden by BaseHash or BaseArray when appropriate. the base
@@ -76,6 +93,11 @@ module JSI
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{instance.pretty_inspect.chomp}"
     end
 
+    # an array of JSI instances above this one in the document. empty if this
+    # JSI is at the root or was instantiated from a source that does not have
+    # a document (e.g. a plain hash or array).
+    #
+    # @return [Array<JSI::Base>]
     def parents
       parent = @origin
       (@origin.instance.path.size...self.instance.path.size).map do |i|
@@ -84,10 +106,18 @@ module JSI
         end
       end.reverse
     end
+
+    # the immediate parent of this JSI. nil if no parent(s) are known.
+    #
+    # @return [JSI::Base, nil]
     def parent
       parents.first
     end
 
+    # if this JSI is a $ref then the $ref is followed. otherwise this JSI
+    # is returned.
+    #
+    # @return [JSI::Base, self]
     def deref
       derefed = instance.deref
       if derefed.object_id == instance.object_id
@@ -97,6 +127,13 @@ module JSI
       end
     end
 
+    # yields the content of the underlying instance. the block must result in
+    # a modified copy of that (not destructively modifying the yielded content)
+    # which will be used to instantiate a new instance of this JSI class with
+    # the modified content.
+    # @yield [Object] the content of the instance. the block should result
+    #   in a (nondestructively) modified copy of this.
+    # @return [JSI::Base subclass the same as self] the modified copy of self
     def modified_copy(&block)
       modified_instance = instance.modified_copy(&block)
       self.class.new(modified_instance, origin: @origin)
@@ -106,18 +143,32 @@ module JSI
       instance.fragment
     end
 
+    # @return [Array<String>] array of schema validation error messages for this instance
     def fully_validate
       schema.fully_validate(instance)
     end
+
+    # @return [true, false] whether the instance validates against its schema
     def validate
       schema.validate(instance)
     end
+
+    # @return [true] if this method does not raise, it returns true to
+    #   indicate a valid instance.
+    # @raise [::JSON::Schema::ValidationError] raises if the instance has
+    #   validation errors
     def validate!
       schema.validate!(instance)
     end
+
+    # @return [String] a string representing this JSI, indicating its class
+    #   and inspecting its instance
     def inspect
       "\#<#{self.class.to_s} #{instance.inspect}>"
     end
+
+    # pretty-prints a representation this JSI to the given printer
+    # @return [void]
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         text "\#<#{obj.class.to_s}"
@@ -132,20 +183,26 @@ module JSI
       end
     end
 
+    # @return [String] the instance's object_group_text
     def object_group_text
       instance.object_group_text
     end
 
+    # @return [Object] a jsonifiable representation of the instance
     def as_json(*opt)
       Typelike.as_json(instance, *opt)
     end
 
+    # @return [Object] an opaque fingerprint of this JSI for FingerprintHash
     def fingerprint
       {class: self.class, instance: instance}
     end
     include FingerprintHash
 
     private
+
+    # assigns @instance to the given thing, raising if the thing is not appropriate for a JSI instance
+    # @param thing [Object] a JSON schema instance for this class's schema
     def instance=(thing)
       if instance_variable_defined?(:@instance)
         raise(JSI::Bug, "overwriting instance is not supported")
@@ -160,6 +217,9 @@ module JSI
       end
     end
 
+    # assigns a subscript, taking care of memoization and unwrapping a JSI if given.
+    # @param subscript [Object] the bit between the [ and ]
+    # @param value [JSI::Base, Object] the value to be assigned
     def subscript_assign(subscript, value)
       clear_memo(:[], subscript)
       if value.is_a?(Base)
@@ -173,12 +233,19 @@ module JSI
   # this module is just a namespace for schema classes.
   module SchemaClasses
     extend Memoize
+
+    # JSI::SchemaClasses[schema_id] returns a class for the schema with the
+    # given id, the same class as returned from JSI.class_for_schema.
+    #
+    # @param schema_id [String] absolute schema id as returned by {JSI::Schema#schema_id}
+    # @return [Class subclassing JSI::Base] the class for that schema
     def self.[](schema_id)
       @classes_by_id[schema_id]
     end
     @classes_by_id = {}
   end
 
+  # see {JSI.class_for_schema}
   def SchemaClasses.class_for_schema(schema_object)
     if schema_object.is_a?(JSI::Schema)
       schema__ = schema_object
@@ -203,6 +270,19 @@ module JSI
     end
   end
 
+  # a module for the given schema, with accessor methods for any object
+  # property names the schema identifies. also has class and instance
+  # methods called #schema to access the {JSI::Schema} this module
+  # represents.
+  #
+  # accessor methods are defined on these modules so that methods can be
+  # defined on {JSI.class_for_schema} classes without method redefinition
+  # warnings. additionally, these overriding instance methods can call
+  # `super` to invoke the normal accessor behavior.
+  #
+  # no property names that are the same as existing method names on the JSI
+  # class will be defined. users should use #[] and #[]= to access properties
+  # whose names conflict with existing methods.
   def SchemaClasses.module_for_schema(schema_object)
     if schema_object.is_a?(JSI::Schema)
       schema__ = schema_object
@@ -252,14 +332,22 @@ module JSI
     end
   end
 
+  # module extending a {JSI::Base} object when its schema instance is Hash-like (responds to #to_hash)
   module BaseHash
-    # Hash methods
+    # yields each key and value of this JSI.
+    # each yielded key is the same as a key of the instance, and each yielded
+    # value is the result of self[key] (see #[]).
+    # returns an Enumerator if no block is given.
+    # @yield [Object, Object] each key and value of this JSI hash
+    # @return [self, Enumerator]
     def each
       return to_enum(__method__) { instance.size } unless block_given?
       instance.each_key { |k| yield(k, self[k]) }
       self
     end
 
+    # @return [Hash] a hash in which each key is a key of the instance hash and
+    #   each value is the result of self[key] (see #[]).
     def to_hash
       inject({}) { |h, (k, v)| h[k] = v; h }
     end
@@ -271,6 +359,10 @@ module JSI
       define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
     end
 
+    # @return [JSI::Base, Object] the instance's subscript value at the given
+    #   key property_name_. if there is a subschema defined for that property
+    #   on this JSI's schema, returns the instance's subscript as a JSI
+    #   instiation of that subschema.
     def [](property_name_)
       memoize(:[], property_name_) do |property_name|
         begin
@@ -285,18 +377,33 @@ module JSI
         end
       end
     end
+
+    # assigns the given property name of the instance to the given value.
+    # if the value is a JSI, its instance is assigned.
+    # @param property_name [Object] this should generally be a String, but JSI
+    #   does not enforce any constraint on it.
+    # @param value [Object] the value to be assigned to the given subscript
+    #   property_name
     def []=(property_name, value)
       subscript_assign(property_name, value)
     end
   end
 
+  # module extending a {JSI::Base} object when its schema instance is Array-like (responds to #to_ary)
   module BaseArray
+    # yields each element. each yielded element is the result of self[index]
+    # for each index of the instance (see #[]).
+    # returns an Enumerator if no block is given.
+    # @yield [Object] each element of this JSI array
+    # @return [self, Enumerator]
     def each
       return to_enum(__method__) { instance.size } unless block_given?
       instance.each_index { |i| yield(self[i]) }
       self
     end
 
+    # @return [Array] an array, the same size as the instance, in which the
+    #   element at each index is the result of self[index] (see #[])
     def to_ary
       to_a
     end
@@ -309,6 +416,10 @@ module JSI
       define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
     end
 
+    # @return [Object] returns the instance's subscript value at the given index
+    #   i_. if there is a subschema defined for that index on this JSI's schema,
+    #   returns the instance's subscript as a JSI instiation of that subschema.
+    # @param i_ the array index to subscript
     def [](i_)
       memoize(:[], i_) do |i|
         begin
@@ -323,6 +434,11 @@ module JSI
         end
       end
     end
+
+    # assigns the given index of the instance to the given value.
+    # if the value is a JSI, its instance is assigned.
+    # @param i [Object] the array index to assign
+    # @param value [Object] the value to be assigned to the given subscript i
     def []=(i, value)
       subscript_assign(i, value)
     end
