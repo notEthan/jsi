@@ -148,49 +148,6 @@ module JSI
       end
     end
 
-    # @return [Boolean] whether this schema appears to describe an array,
-    #   either from its `type` or the presence of properties that only make
-    #   sense for an array type.
-    def describes_array?
-      memoize(:describes_array?) do
-        schema_node['type'] == 'array' ||
-          schema_node['items'] ||
-          schema_node['additionalItems'] ||
-          schema_node['default'].respond_to?(:to_ary) || # TODO make sure this is right
-          (schema_node['enum'].respond_to?(:to_ary) && schema_node['enum'].all? { |enum| enum.respond_to?(:to_ary) }) ||
-          schema_node['maxItems'] ||
-          schema_node['minItems'] ||
-          schema_node.key?('uniqueItems') ||
-          schema_node['oneOf'].respond_to?(:to_ary) &&
-            schema_node['oneOf'].all? { |someof_node| self.class.new(someof_node).describes_array? } ||
-          schema_node['allOf'].respond_to?(:to_ary) &&
-            schema_node['allOf'].all? { |someof_node| self.class.new(someof_node).describes_array? } ||
-          schema_node['anyOf'].respond_to?(:to_ary) &&
-            schema_node['anyOf'].all? { |someof_node| self.class.new(someof_node).describes_array? }
-      end
-    end
-
-    # @return [Boolean] whether this schema appears to describe a json object
-    #   (ruby hash), either from its property "type" or the presence of
-    #   properties which only make sense for an object/hash type.
-    def describes_object?
-      memoize(:describes_object?) do
-        schema_node['type'] == 'object' ||
-          schema_node['required'].respond_to?(:to_ary) ||
-          schema_node['properties'].respond_to?(:to_hash) ||
-          schema_node['additionalProperties'] ||
-          schema_node['patternProperties'] ||
-          schema_node['default'].respond_to?(:to_hash) ||
-          (schema_node['enum'].respond_to?(:to_ary) && schema_node['enum'].all? { |enum| enum.respond_to?(:to_hash) }) ||
-          schema_node['oneOf'].respond_to?(:to_ary) &&
-            schema_node['oneOf'].all? { |someof_node| self.class.new(someof_node).describes_object? } ||
-          schema_node['allOf'].respond_to?(:to_ary) &&
-            schema_node['allOf'].all? { |someof_node| self.class.new(someof_node).describes_object? } ||
-          schema_node['anyOf'].respond_to?(:to_ary) &&
-            schema_node['anyOf'].all? { |someof_node| self.class.new(someof_node).describes_object? }
-      end
-    end
-
     def described_hash_property_names
       memoize(:described_hash_property_names) do
         Set.new.tap do |property_names|

@@ -219,26 +219,24 @@ module JSI
             %Q(#<Module for Schema: #{schema_id}>)
           end
 
-          if schema.describes_object?
-            instance_method_modules = [m, Base, BaseArray, BaseHash]
-            instance_methods = instance_method_modules.map do |mod|
-              mod.instance_methods + mod.private_instance_methods
-            end.inject(Set.new, &:|)
-            accessors_to_define = schema.described_hash_property_names.map(&:to_s) - instance_methods.map(&:to_s)
-            accessors_to_define.each do |property_name|
-              define_method(property_name) do
-                if respond_to?(:[])
-                  self[property_name]
-                else
-                  raise(NoMethodError, "instance does not respond to []; cannot call reader `#{property_name}' for: #{pretty_inspect.chomp}")
-                end
+          instance_method_modules = [m, Base, BaseArray, BaseHash]
+          instance_methods = instance_method_modules.map do |mod|
+            mod.instance_methods + mod.private_instance_methods
+          end.inject(Set.new, &:|)
+          accessors_to_define = schema.described_hash_property_names.map(&:to_s) - instance_methods.map(&:to_s)
+          accessors_to_define.each do |property_name|
+            define_method(property_name) do
+              if respond_to?(:[])
+                self[property_name]
+              else
+                raise(NoMethodError, "instance does not respond to []; cannot call reader `#{property_name}' for: #{pretty_inspect.chomp}")
               end
-              define_method("#{property_name}=") do |value|
-                if respond_to?(:[]=)
-                  self[property_name] = value
-                else
-                  raise(NoMethodError, "instance does not respond to []=; cannot call writer `#{property_name}=' for: #{pretty_inspect.chomp}")
-                end
+            end
+            define_method("#{property_name}=") do |value|
+              if respond_to?(:[]=)
+                self[property_name] = value
+              else
+                raise(NoMethodError, "instance does not respond to []=; cannot call writer `#{property_name}=' for: #{pretty_inspect.chomp}")
               end
             end
           end
