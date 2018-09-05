@@ -22,6 +22,9 @@ module JSI
   autoload :StructJSONCoder, 'jsi/struct_json_coder'
   autoload :SchemaInstanceJSONCoder, 'jsi/schema_instance_json_coder'
 
+  # @return [Class subclassing JSI::Base] a JSI class which represents the
+  #   given schema. instances of the class represent JSON Schema instances
+  #   for the given schema.
   def self.class_for_schema(*a, &b)
     SchemaClasses.class_for_schema(*a, &b)
   end
