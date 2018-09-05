@@ -47,30 +47,32 @@ module JSI
         pointer.evaluate(document)
       end
 
-      def [](k)
+      def [](subscript)
         node = self
         content = node.content
-        if content.is_a?(Hash) && !content.key?(k)
+        if content.is_a?(Hash) && !content.key?(subscript)
           node = node.deref
           content = node.content
         end
         begin
-          el = content[k]
+          subcontent = content[subscript]
         rescue TypeError => e
-          raise(e.class, e.message + "\nsubscripting with #{k.pretty_inspect.chomp} (#{k.class}) from #{content.class.inspect}. self is: #{pretty_inspect.chomp}", e.backtrace)
+          raise(e.class, e.message + "\nsubscripting with #{subscript.pretty_inspect.chomp} (#{subscript.class}) from #{content.class.inspect}. self is: #{pretty_inspect.chomp}", e.backtrace)
         end
-        if el.is_a?(Hash) || el.is_a?(Array)
-          self.class.new_by_type(node.document, node.path + [k])
+        if subcontent.respond_to?(:to_hash)
+          HashNode.new(node.document, node.path + [subscript])
+        elsif subcontent.respond_to?(:to_ary)
+          ArrayNode.new(node.document, node.path + [subscript])
         else
-          el
+          subcontent
         end
       end
 
-      def []=(k, v)
-        if v.is_a?(Node)
-          content[k] = v.content
+      def []=(subscript, value)
+        if value.is_a?(Node)
+          content[subscript] = value.content
         else
-          content[k] = v
+          content[subscript] = value
         end
       end
 
