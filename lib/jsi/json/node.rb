@@ -51,6 +51,15 @@ module JSI
         pointer.evaluate(document)
       end
 
+      # returns content at the given subscript - call this the subcontent.
+      #
+      # if the content cannot be subscripted, raises TypeError.
+      #
+      # if the subcontent is a hash, it is wrapped as a JSI::JSON::HashNode before being returned.
+      # if the subcontent is an array, it is wrapped as a JSI::JSON::ArrayNode before being returned.
+      #
+      # if this node's content is a $ref - that is, a hash with a $ref attribute - and the subscript is
+      # not a key of the hash, then the $ref is followed before returning the subcontent.
       def [](subscript)
         node = self
         content = node.content
@@ -72,6 +81,7 @@ module JSI
         end
       end
 
+      # assigns the given subscript of the content to the given value. the document is modified in place.
       def []=(subscript, value)
         if value.is_a?(Node)
           content[subscript] = value.content
@@ -80,6 +90,10 @@ module JSI
         end
       end
 
+      # returns a Node, dereferencing a $ref attribute if possible. if this node is not a hash,
+      # does not have a $ref, or if what its $ref cannot be found, this node is returned.
+      #
+      # currently only $refs pointing within the same document are followed.
       def deref
         content = self.content
 
@@ -123,11 +137,13 @@ module JSI
       def pointer_path
         pointer.pointer
       end
+
       # the pointer fragment to this node within the document, per RFC 6901 https://tools.ietf.org/html/rfc6901
       def fragment
         pointer.fragment
       end
 
+      # returns a jsonifiable representation of this node's content
       def as_json(*opt)
         Typelike.as_json(content, *opt)
       end
@@ -180,12 +196,17 @@ module JSI
         Node.new_by_type(modified_document, path)
       end
 
+      # meta-information about the object, outside the content. used by #inspect / #pretty_print
       def object_group_text
         "fragment=#{fragment.inspect}"
       end
+
+      # a string representing this node
       def inspect
         "\#<#{self.class.inspect} #{object_group_text} #{content.inspect}>"
       end
+
+      # pretty-prints a representation this node to the given printer
       def pretty_print(q)
         q.instance_exec(self) do |obj|
           text "\#<#{obj.class.inspect} #{obj.object_group_text}"
@@ -200,19 +221,27 @@ module JSI
         end
       end
 
+      # fingerprint for equality (see FingerprintHash). two nodes are equal if they are both nodes
+      # (regardless of type, e.g. one may be a Node and the other may be a HashNode) within equal
+      # documents at equal paths. note that this means two nodes with the same content may not be
+      # considered equal.
       def fingerprint
         {is_node: self.is_a?(JSI::JSON::Node), document: document, path: path}
       end
       include FingerprintHash
     end
 
+    # a JSI::JSON::Node whose content is Array-like (responds to #to_ary)
+    # and includes Array methods from Arraylike
     class ArrayNode < Node
+      # iterates over each element in the same manner as Array#each
       def each
         return to_enum(__method__) { content.size } unless block_given?
         content.each_index { |i| yield self[i] }
         self
       end
 
+      # the content of this ArrayNode, as an Array
       def to_ary
         to_a
       end
@@ -220,6 +249,7 @@ module JSI
       include Enumerable
       include Arraylike
 
+      # returns a jsonifiable representation of this node's content
       def as_json(*opt) # needs redefined after including Enumerable
         Typelike.as_json(content, *opt)
       end
@@ -231,7 +261,10 @@ module JSI
       end
     end
 
+    # a JSI::JSON::Node whose content is Hash-like (responds to #to_hash)
+    # and includes Hash methods from Hashlike
     class HashNode < Node
+      # iterates over each element in the same manner as Array#each
       def each(&block)
         return to_enum(__method__) { content.size } unless block_given?
         if block.arity > 1
@@ -242,6 +275,7 @@ module JSI
         self
       end
 
+      # the content of this HashNode, as a Hash
       def to_hash
         inject({}) { |h, (k, v)| h[k] = v; h }
       end
@@ -249,6 +283,7 @@ module JSI
       include Enumerable
       include Hashlike
 
+      # returns a jsonifiable representation of this node's content
       def as_json(*opt) # needs redefined after including Enumerable
         Typelike.as_json(content, *opt)
       end
