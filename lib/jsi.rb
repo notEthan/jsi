@@ -20,7 +20,7 @@ module JSI
   autoload :SchemaClasses, 'jsi/base'
   autoload :ObjectJSONCoder, 'jsi/schema_instance_json_coder'
   autoload :StructJSONCoder, 'jsi/struct_json_coder'
-  autoload :SchemaInstanceJSONCoder,'jsi/schema_instance_json_coder'
+  autoload :SchemaInstanceJSONCoder, 'jsi/schema_instance_json_coder'
 
   def self.class_for_schema(*a, &b)
     SchemaClasses.class_for_schema(*a, &b)

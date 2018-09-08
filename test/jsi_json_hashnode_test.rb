@@ -92,7 +92,7 @@ describe JSI::JSON::HashNode do
     it('#to_h')         { assert_equal({'a' => 'b', 'c' => node['c']}, node.to_h) }
     it('#to_proc')      { assert_equal('b', node.to_proc.call('a')) } if {}.respond_to?(:to_proc)
     if {}.respond_to?(:transform_values)
-      it('#transform_values') { assert_equal({'a' => nil, 'c' => nil}, node.transform_values { |_| nil}) }
+      it('#transform_values') { assert_equal({'a' => nil, 'c' => nil}, node.transform_values { |_| nil }) }
     end
     it('#value?')       { assert_equal(false, node.value?('0')) }
     it('#values')       { assert_equal(['b', node['c']], node.values) }

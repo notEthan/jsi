@@ -380,7 +380,7 @@ describe JSI::Base do
       assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new(JSI::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
       assert_equal({'a' => 'b'}, JSI.class_for_schema({'type' => 'object'}).new(JSI::JSON::Node.new_by_type({'a' => 'b'}, [])).as_json)
       assert_equal(['a', 'b'], JSI.class_for_schema({'type' => 'array'}).new(JSI::JSON::Node.new_by_type(['a', 'b'], [])).as_json)
-      assert_equal(['a'], JSI::class_for_schema({}).new(['a']).as_json(some_option: true))
+      assert_equal(['a'], JSI.class_for_schema({}).new(['a']).as_json(some_option: true))
     end
   end
   describe 'overwrite schema instance with instance=' do

@@ -112,12 +112,12 @@ describe JSI::BaseArray do
     it('#zip')                  { assert_equal([['foo', 'foo'], [subject[1], subject[1]], [subject[2], subject[2]]], subject.zip(subject)) }
   end
   describe 'modified copy methods' do
-    it('#reject')  { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], [])), subject.reject { |e| e != 'foo' }) }
+    it('#reject') { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], [])), subject.reject { |e| e != 'foo' }) }
     it('#reject block var') do
       subj_a = subject.to_a
       subject.reject { |e| assert_equal(e, subj_a.shift) }
     end
-    it('#select')  { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], [])), subject.select { |e| e == 'foo' }) }
+    it('#select') { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], [])), subject.select { |e| e == 'foo' }) }
     it('#select block var') do
       subj_a = subject.to_a
       subject.select { |e| assert_equal(e, subj_a.shift) }
