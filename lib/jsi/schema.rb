@@ -148,6 +148,9 @@ module JSI
       end
     end
 
+    # @return [Boolean] whether this schema appears to describe an array,
+    #   either from its `type` or the presence of properties that only make
+    #   sense for an array type.
     def describes_array?
       memoize(:describes_array?) do
         schema_node['type'] == 'array' ||
@@ -166,6 +169,10 @@ module JSI
             schema_node['anyOf'].all? { |someof_node| self.class.new(someof_node).describes_array? }
       end
     end
+
+    # @return [Boolean] whether this schema appears to describe a json object
+    #   (ruby hash), either from its property "type" or the presence of
+    #   properties which only make sense for an object/hash type.
     def describes_hash?
       memoize(:describes_hash?) do
         schema_node['type'] == 'object' ||
