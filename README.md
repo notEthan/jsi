@@ -5,7 +5,7 @@
 
 JSI represents JSON-schemas as ruby classes, and schema instances as instances of those classes.
 
-A JSI class aims to be a fairly unobtrusive wrapper around its instance. It adds accessors for known property names, validation methods, and a few other nice things. Mostly though, you use a JSI as you would use its underlying data.
+A JSI class aims to be a fairly unobtrusive wrapper around its instance. It adds accessors for known property names, validation methods, and a few other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting #to_ary or #to_hash.
 
 ## Example
 
@@ -25,10 +25,12 @@ properties:
         number: {type: "string"}
 ```
 
-And here's an instance of that schema with JSI:
+And here's the class for that schema from JSI:
 
 ```ruby
 Contact = JSI.class_for_schema(YAML.load_file('contact.schema.yml'))
+# you can copy/paste this line instead, to follow along in irb:
+Contact = JSI.class_for_schema({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
 This definition gives you not just the Contact class, but classes for the whole nested structure. So, if we construct an instance like:
@@ -37,8 +39,8 @@ This definition gives you not just the Contact class, but classes for the whole 
 bill = Contact.new(name: 'bill', phone: [{location: 'home', number: '555'}], nickname: 'big b')
 # => #{<Contact fragment="#">
 # #{<Contact fragment="#">
-#   "phone" => #[<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone"] fragment="#/phone">
-#     #{<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone/items"] fragment="#/phone/0"> "location" => "home", "number" => "555"}
+#   "phone" => #[<JSI::SchemaClasses["1f97#/properties/phone"] fragment="#/phone">
+#     #{<JSI::SchemaClasses["1f97#/properties/phone/items"] fragment="#/phone/0"> "location" => "home", "number" => "555"}
 #   ],
 #   "nickname" => "big b"
 # }
@@ -72,14 +74,14 @@ bill.validate
 ```ruby
 bad = Contact.new(phone: [{number: [5, 5, 5]}])
 # => #{<Contact fragment="#">
-#   "phone" => #[<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone"] fragment="#/phone">
-#     #{<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone/items"] fragment="#/phone/0">
-#       "number" => #[<JSI::SchemaClasses["594126e3-ea3c-5d9a-b5f4-7423a8701f97#/properties/phone/items/properties/number"] fragment="#/phone/0/number"> 5, 5, 5]
+#   "phone" => #[<JSI::SchemaClasses["1f97#/properties/phone"] fragment="#/phone">
+#     #{<JSI::SchemaClasses["1f97#/properties/phone/items"] fragment="#/phone/0">
+#       "number" => #[<JSI::SchemaClasses["1f97#/properties/phone/items/properties/number"] fragment="#/phone/0/number"> 5, 5, 5]
 #     }
 #   ]
 # }
 bad.phone.fully_validate
-# => ["The property '#/0/number' of type array did not match the following type: string in schema 594126e3-ea3c-5d9a-b5f4-7423a8701f97"]
+# => ["The property '#/0/number' of type array did not match the following type: string in schema 1f97"]
 ```
 
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with #[] or, say, #transform_values:
@@ -93,18 +95,18 @@ bill['nickname']
 
 There's plenty more JSI has to offer, but this should give you a pretty good idea of basic usage.
 
-## Terminology
+## Terminology and Concepts
 
 - JSI::Base is the base class from which other classes representing JSON-Schemas inherit.
 - a JSI class refers to a class representing a schema, a subclass of JSI::Base.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a json-schema.
-  - a JSI instance is a ruby object instantiating a JSI class. it has a method #instance which contains the underlying data.
-- a schema refers to a json-schema. a JSI::Schema represents such a json-schema. a JSI class allow instantiation of such a schema.
+  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI class. it has a method #instance which contains the underlying data.
+- a schema refers to a json-schema. a JSI::Schema represents such a json-schema. a JSI class allows instantiation of such a schema.
 
 ## JSI classes
 
-A JSI class (that is, subclass of JSI::Base) is a starting point but obviously you want your own methods, so you reopen the class as you would any other. referring back to the Example section above, here's an example:
+A JSI class (that is, subclass of JSI::Base) is a starting point but obviously you want your own methods, so you reopen the class as you would any other. referring back to the Example section above, we reopen the Contact class:
 
 ```ruby
 class Contact
@@ -127,7 +129,33 @@ bill.instance['name']
 # => "rob"
 ```
 
-Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers (these accessor methods are defined on an included class instead of the JSI class for this reason). You can also use [] and []=, of course, with the same effect.
+Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers (these accessor methods are defined on an included module instead of the JSI class for this reason). You can also use [] and []=, of course, with the same effect.
+
+If you want to add methods to a subschema, get the class_for_schema for that schema and open up that class. You can leave the class anonymous, as in this example:
+
+```ruby
+phone_schema = Contact.schema['properties']['phone']['items']
+JSI.class_for_schema(phone_schema).class_eval do
+  def number_with_dashes
+    number.split(//).join('-')
+  end
+end
+bill.phone.first.number_with_dashes
+# => "5-5-5"
+```
+
+If you want to name the class, this works:
+
+```ruby
+Phone = JSI.class_for_schema(Contact.schema['properties']['phone']['items'])
+class Phone
+  def number_with_dashes
+    number.split(//).join('-')
+  end
+end
+```
+
+Either syntax is slightly cumbersome and a better syntax is in the works.
 
 ## ActiveRecord serialization
 

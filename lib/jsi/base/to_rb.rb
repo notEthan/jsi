@@ -15,7 +15,7 @@ module JSI
           lines << "#"
         end
 
-        schema.described_hash_property_names.each_with_index do |propname, i|
+        schema.described_object_property_names.each_with_index do |propname, i|
           lines << "#" unless i == 0
           lines << "# @!attribute [rw] #{propname}"
 
@@ -73,7 +73,7 @@ module JSI
           end
         end
         lines << "class #{name}"
-        schema.described_hash_property_names.each_with_index do |propname, i|
+        schema.described_object_property_names.each_with_index do |propname, i|
           lines << "" unless i == 0
           property_schema = schema['properties'].respond_to?(:to_hash) &&
             schema['properties'][propname].respond_to?(:to_hash) &&
