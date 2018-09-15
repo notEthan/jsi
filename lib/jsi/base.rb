@@ -265,11 +265,6 @@ module JSI
       end
     end
 
-    # @return [String] the fragment representation of a pointer to this JSI's instance within its document
-    def fragment
-      @jsi_ptr.fragment
-    end
-
     # @return [Array<String>] array of schema validation error messages for this instance
     def fully_validate
       schema.fully_validate_instance(instance)

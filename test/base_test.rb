@@ -260,7 +260,6 @@ describe JSI::Base do
       end
     end
   end
-  it('#fragment') { assert_equal('#', subject.fragment) }
   describe 'validation' do
     describe 'without errors' do
       it '#fully_validate' do
