@@ -138,7 +138,7 @@ module JSI
         # or hash in the path above this node. this node's content is modified by the caller, and
         # that is recursively merged up to the document root. the recursion is done with a
         # y combinator, for no other reason than that was a fun way to implement it.
-        modified_document = JSI.ycomb do |rec|
+        modified_document = JSI::Util.ycomb do |rec|
           proc do |subdocument, subpath|
             if subpath == []
               yield(subdocument)
