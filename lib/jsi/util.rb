@@ -1,5 +1,19 @@
 module JSI
   module Util
+    # returns a version of the given hash, in which any symbol keys are
+    # converted to strings. behavior on collisions is undefined (but in the
+    # future could take a block like
+    # ActiveSupport::HashWithIndifferentAccess#update)
+    #
+    # at the moment it is undefined whether the returned hash is the same
+    # instance as the `hash` param. if `hash` is already a hash  which contains
+    # no symbol keys, this method MAY return that same instance. use #dup on
+    # the return if you need to ensure it is not the same instance as the
+    # argument instance.
+    #
+    # @param hash [#to_hash] the hash from which to convert symbol keys to strings
+    # @return [same class as the param `hash`, or Hash if the former cannot be done] a
+    #    hash(-like) instance containing no symbol keys
     def stringify_symbol_keys(hash)
       unless hash.respond_to?(:to_hash)
         raise(ArgumentError, "expected argument to be a hash; got #{hash.class.inspect}: #{hash.pretty_inspect.chomp}")
