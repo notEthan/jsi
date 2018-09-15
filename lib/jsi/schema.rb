@@ -148,8 +148,8 @@ module JSI
       end
     end
 
-    def described_hash_property_names
-      memoize(:described_hash_property_names) do
+    def described_object_property_names
+      memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
           if schema_node['properties'].respond_to?(:to_hash)
             property_names.merge(schema_node['properties'].keys)
@@ -161,7 +161,7 @@ module JSI
           # we should look at dependencies (TODO).
           %w(oneOf allOf anyOf).select { |k| schema_node[k].respond_to?(:to_ary) }.each do |schemas_key|
             schema_node[schemas_key].map(&:deref).map do |someof_node|
-              property_names.merge(self.class.new(someof_node).described_hash_property_names)
+              property_names.merge(self.class.new(someof_node).described_object_property_names)
             end
           end
         end
