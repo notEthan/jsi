@@ -1,5 +1,17 @@
 module JSI
+  # a module relating to objects that act like Hash or Array instances
   module Typelike
+    # yields the content of the given param `object`. for objects which have a
+    # #modified_copy method of their own (JSI::Base, JSI::JSON::Node) that
+    # method is invoked with the given block. otherwise the given object itself
+    # is yielded.
+    #
+    # the given block must result in a modified copy of its block parameter
+    # (not destructively modifying the yielded content).
+    #
+    # @yield [Object] the content of the given object. the block should result
+    #   in a (nondestructively) modified copy of this.
+    # @return [object.class] modified copy of the given object
     def self.modified_copy(object, &block)
       if object.respond_to?(:modified_copy)
         object.modified_copy(&block)
@@ -8,7 +20,21 @@ module JSI
       end
     end
 
-    # I could require 'json/add/core' and use #as_json but I like this better.
+    # recursive method to express the given argument object in json-compatible
+    # types of Hash, Array, and basic types of String/boolean/numeric/nil. this
+    # will raise TypeError if an object is given that is not a type that seems
+    # to be expressable as json.
+    #
+    # similar effect could be achieved by requiring 'json/add/core' and using
+    # #as_json, but I don't much care for how it represents classes that are
+    # not naturally expressable in JSON, and prefer not to load its
+    # monkey-patching.
+    #
+    # @param object [Object] the object to be converted to jsonifiability
+    # @return [Array, Hash, String, Boolean, NilClass, Numeric] jsonifiable
+    #   expression of param object
+    # @raise [TypeError] when the object (or an object nested with a hash or
+    #   array of object) cannot be expressed as json
     def self.as_json(object, *opt)
       if object.respond_to?(:to_hash)
         object.map do |k, v|
@@ -32,6 +58,11 @@ module JSI
       end
     end
   end
+
+  # a module of methods for objects which behave like Hash but are not Hash.
+  #
+  # this module is intended to be internal to JSI. no guarantees or API promises
+  # are made for non-JSI classes including this module.
   module Hashlike
     # safe methods which can be delegated to #to_hash (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
@@ -66,15 +97,20 @@ module JSI
       end
     end
 
+    # @return [String] basically the same #inspect as Hash, but has the
+    #   class name and, if responsive, self's #object_group_text
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
       "\#{<#{self.class}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
     end
 
+    # @return [String] see #inspect
     def to_s
       inspect
     end
 
+    # pretty-prints a representation this node to the given printer
+    # @return [void]
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
@@ -96,6 +132,11 @@ module JSI
       end
     end
   end
+
+  # a module of methods for objects which behave like Array but are not Array.
+  #
+  # this module is intended to be internal to JSI. no guarantees or API promises
+  # are made for non-JSI classes including this module.
   module Arraylike
     # safe methods which can be delegated to #to_ary (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
@@ -135,15 +176,20 @@ module JSI
       end
     end
 
+    # @return [String] basically the same #inspect as Array, but has the
+    #   class name and, if responsive, self's #object_group_text
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
       "\#[<#{self.class}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
     end
 
+    # @return [String] see #inspect
     def to_s
       inspect
     end
 
+    # pretty-prints a representation this node to the given printer
+    # @return [void]
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
