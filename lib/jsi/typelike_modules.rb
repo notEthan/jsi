@@ -1,10 +1,10 @@
 module JSI
   module Typelike
-    def self.modified_copy(other, &block)
-      if other.respond_to?(:modified_copy)
-        other.modified_copy(&block)
+    def self.modified_copy(object, &block)
+      if object.respond_to?(:modified_copy)
+        object.modified_copy(&block)
       else
-        return yield(other)
+        return yield(object)
       end
     end
 
