@@ -1,10 +1,10 @@
 module JSI
   module Typelike
-    def self.modified_copy(other, &block)
-      if other.respond_to?(:modified_copy)
-        other.modified_copy(&block)
+    def self.modified_copy(object, &block)
+      if object.respond_to?(:modified_copy)
+        object.modified_copy(&block)
       else
-        return yield(other)
+        return yield(object)
       end
     end
 
@@ -68,7 +68,7 @@ module JSI
 
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
-      "\#{<#{self.class.to_s}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
+      "\#{<#{self.class}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
     end
 
     def to_s
@@ -78,7 +78,7 @@ module JSI
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
-        text "\#{<#{obj.class.to_s}#{object_group_text}>"
+        text "\#{<#{obj.class}#{object_group_text}>"
         group_sub {
           nest(2) {
             breakable(obj.any? { true } ? ' ' : '')
@@ -137,7 +137,7 @@ module JSI
 
     def inspect
       object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
-      "\#[<#{self.class.to_s}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
+      "\#[<#{self.class}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
     end
 
     def to_s
@@ -147,7 +147,7 @@ module JSI
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
-        text "\#[<#{obj.class.to_s}#{object_group_text}>"
+        text "\#[<#{obj.class}#{object_group_text}>"
         group_sub {
           nest(2) {
             breakable(obj.any? { true } ? ' ' : '')

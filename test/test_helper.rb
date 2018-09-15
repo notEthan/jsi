@@ -7,7 +7,7 @@ require 'simplecov'
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
 
-# NO EXPECTATIONS 
+# NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
 
 require 'minitest/autorun'

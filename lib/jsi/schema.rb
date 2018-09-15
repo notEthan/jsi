@@ -215,6 +215,15 @@ module JSI
     def validate!(instance)
       ::JSON::Validator.validate!(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
     end
+    def fully_validate_schema
+      ::JSON::Validator.fully_validate(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
+    end
+    def validate_schema
+      ::JSON::Validator.validate(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
+    end
+    def validate_schema!
+      ::JSON::Validator.validate!(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
+    end
 
     def object_group_text
       "schema_id=#{schema_id}"
@@ -236,6 +245,11 @@ module JSI
         text '>'
       end
     end
+
+    def as_json(*opt)
+      Typelike.as_json(schema_object, *opt)
+    end
+
     def fingerprint
       {class: self.class, schema_node: schema_node}
     end

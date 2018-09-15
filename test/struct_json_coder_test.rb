@@ -38,7 +38,7 @@ describe JSI::StructJSONCoder do
         assert_nil(struct_json_coder.dump(nil))
       end
       it 'dumps a struct' do
-        assert_equal({"foo" => "x","bar" => "y"}, struct_json_coder.dump(struct.new('x', 'y')))
+        assert_equal({"foo" => "x", "bar" => "y"}, struct_json_coder.dump(struct.new('x', 'y')))
       end
       it 'dumps something else' do
         assert_raises(TypeError) do
@@ -55,7 +55,7 @@ describe JSI::StructJSONCoder do
         let(:options) { {array: true} }
         it 'dumps an array of structs' do
           structs = [struct.new('x', 'y'), struct.new('z', 'q')]
-          assert_equal([{"foo" => "x","bar" => "y"},{"foo" => "z","bar" => "q"}], struct_json_coder.dump(structs))
+          assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], struct_json_coder.dump(structs))
         end
       end
     end

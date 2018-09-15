@@ -51,12 +51,12 @@ describe JSI::Base do
   end
   describe 'module for schema .inspect' do
     it '.inspect' do
-      assert_match(%r(\A#<Module for Schema: .+#>\z), JSI.module_for_schema(schema).inspect)
+      assert_match(%r(\A#<Module for Schema: .+#>\z), JSI::SchemaClasses.module_for_schema(schema).inspect)
     end
   end
   describe 'module for schema .schema' do
     it '.schema' do
-      assert_equal(schema, JSI.module_for_schema(schema).schema)
+      assert_equal(schema, JSI::SchemaClasses.module_for_schema(schema).schema)
     end
   end
   describe 'SchemaClasses[]' do
@@ -81,20 +81,20 @@ describe JSI::Base do
       assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(JSI.class_for_schema({}).new(schema.schema_node)))
     end
   end
-  describe '.module_for_schema' do
+  describe 'JSI::SchemaClasses.module_for_schema' do
     it 'returns a module from a schema' do
-      module_for_schema = JSI.module_for_schema(schema)
+      module_for_schema = JSI::SchemaClasses.module_for_schema(schema)
       # same module every time
-      assert_equal(JSI.module_for_schema(schema), module_for_schema)
+      assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
     end
     it 'returns a module from a hash' do
-      assert_equal(JSI.module_for_schema(schema), JSI.module_for_schema(schema.schema_node.content))
+      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.schema_node.content))
     end
     it 'returns a module from a schema node' do
-      assert_equal(JSI.module_for_schema(schema), JSI.module_for_schema(schema.schema_node))
+      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.schema_node))
     end
     it 'returns a module from a Base' do
-      assert_equal(JSI.module_for_schema(schema), JSI.module_for_schema(JSI.class_for_schema({}).new(schema.schema_node)))
+      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(JSI.class_for_schema({}).new(schema.schema_node)))
     end
   end
   describe 'initialization' do
@@ -317,7 +317,7 @@ describe JSI::Base do
         end
         it 'does not define readers' do
           assert_equal('bar', subject.foo)
-          assert_equal(JSI.module_for_schema(subject.schema), subject.method(:foo).owner)
+          assert_equal(JSI::SchemaClasses.module_for_schema(subject.schema), subject.method(:foo).owner)
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
@@ -380,7 +380,7 @@ describe JSI::Base do
       assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
       assert_equal({'a' => 'b'}, JSI.class_for_schema({'type' => 'object'}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
       assert_equal(['a', 'b'], JSI.class_for_schema({'type' => 'array'}).new(JSI::JSON::Node.new_doc(['a', 'b'])).as_json)
-      assert_equal(['a'], JSI::class_for_schema({}).new(['a']).as_json(some_option: true))
+      assert_equal(['a'], JSI.class_for_schema({}).new(['a']).as_json(some_option: true))
     end
   end
   describe 'overwrite schema instance with instance=' do

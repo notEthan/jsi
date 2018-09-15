@@ -184,7 +184,7 @@ module JSI
         begin
           Class.new(Base).instance_exec(schema_) do |schema|
             begin
-              include(JSI.module_for_schema(schema))
+              include(JSI::SchemaClasses.module_for_schema(schema))
 
               SchemaClasses.instance_exec(self) { |klass| @classes_by_id[klass.schema_id] = klass }
 
@@ -196,7 +196,7 @@ module JSI
     end
   end
 
-  def self.module_for_schema(schema_object)
+  def SchemaClasses.module_for_schema(schema_object)
     if schema_object.is_a?(JSI::Schema)
       schema__ = schema_object
     else

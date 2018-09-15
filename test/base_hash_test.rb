@@ -30,7 +30,7 @@ describe JSI::BaseHash do
       assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
     end
     it 'sets a property to a schema instance with a different schema' do
-      orig_foo = subject['foo']
+      assert(subject['foo'])
 
       subject['foo'] = subject['bar']
 
@@ -103,7 +103,7 @@ describe JSI::BaseHash do
     it('#to_h')         { assert_equal({'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => true}, subject.to_h) }
     it('#to_proc')      { assert_equal(true, subject.to_proc.call('baz')) } if {}.respond_to?(:to_proc)
     if {}.respond_to?(:transform_values)
-      it('#transform_values') { assert_equal({'foo' => nil, 'bar' => nil, 'baz' => nil}, subject.transform_values { |_| nil}) }
+      it('#transform_values') { assert_equal({'foo' => nil, 'bar' => nil, 'baz' => nil}, subject.transform_values { |_| nil }) }
     end
     it('#value?')       { assert_equal(false, subject.value?('0')) }
     it('#values')       { assert_equal([subject['foo'], subject['bar'], true], subject.values) }
@@ -112,9 +112,9 @@ describe JSI::BaseHash do
   describe 'modified copy methods' do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
-    it('#merge')            { assert_equal(subject, subject.merge({})) }
-    it('#reject')           { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.reject { true }) }
-    it('#select')           { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.select { false }) }
+    it('#merge')  { assert_equal(subject, subject.merge({})) }
+    it('#reject') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.reject { true }) }
+    it('#select') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.select { false }) }
     describe '#select' do
       it 'yields properly too' do
         subject.select do |k, v|
@@ -124,7 +124,7 @@ describe JSI::BaseHash do
     end
     # Hash#compact only available as of ruby 2.5.0
     if {}.respond_to?(:compact)
-      it('#compact')        { assert_equal(subject, subject.compact) }
+      it('#compact') { assert_equal(subject, subject.compact) }
     end
   end
   JSI::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|

@@ -36,7 +36,7 @@ describe JSI::SchemaInstanceJSONCoder do
         assert_nil(schema_instance_json_coder.dump(nil))
       end
       it 'dumps a schema_instance_class' do
-        assert_equal({"foo" => "x","bar" => "y"}, schema_instance_json_coder.dump(schema_instance_class.new(foo: 'x', bar: 'y')))
+        assert_equal({"foo" => "x", "bar" => "y"}, schema_instance_json_coder.dump(schema_instance_class.new(foo: 'x', bar: 'y')))
       end
       it 'dumps something else' do
         assert_raises(TypeError) do
@@ -53,7 +53,7 @@ describe JSI::SchemaInstanceJSONCoder do
         let(:options) { {array: true} }
         it 'dumps an array of schema_instances' do
           schema_instances = [schema_instance_class.new(foo: 'x', bar: 'y'), schema_instance_class.new(foo: 'z', bar: 'q')]
-          assert_equal([{"foo" => "x","bar" => "y"},{"foo" => "z","bar" => "q"}], schema_instance_json_coder.dump(schema_instances))
+          assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], schema_instance_json_coder.dump(schema_instances))
         end
       end
     end
@@ -118,5 +118,4 @@ describe JSI::SchemaInstanceJSONCoder do
       end
     end
   end
-
 end
