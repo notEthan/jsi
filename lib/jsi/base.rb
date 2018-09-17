@@ -145,11 +145,11 @@ module JSI
       end
       if thing.is_a?(Base)
         warn "assigning instance to a Base instance is incorrect. received: #{thing.pretty_inspect.chomp}"
-        @instance = JSI.deep_stringify_symbol_keys(thing.instance)
+        @instance = thing.instance
       elsif thing.is_a?(JSI::JSON::Node)
-        @instance = JSI.deep_stringify_symbol_keys(thing)
+        @instance = thing
       else
-        @instance = JSI::JSON::Node.new_doc(JSI.deep_stringify_symbol_keys(thing))
+        @instance = JSI::JSON::Node.new_doc(thing)
       end
     end
 
