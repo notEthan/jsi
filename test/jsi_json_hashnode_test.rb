@@ -62,9 +62,9 @@ document_types.each do |document_type|
         # check the content at 'c' was merged with the remainder of the document intact (at 'a')
         assert_equal({'a' => {'b' => 0}, 'c' => {'d' => 'e', 'x' => 'y'}}, merged.document)
         # check the original node retains its original document
-        assert_equal({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}, node.document)
+        assert_equal(document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}), node.document)
         # check that unnecessary copies of unaffected parts of the document were not made
-        assert_equal(node.document['a'].object_id, merged.document['a'].object_id)
+        assert_equal(node.document.to_hash['a'].object_id, merged.document['a'].object_id)
       end
     end
     describe '#as_json' do
@@ -114,12 +114,12 @@ document_types.each do |document_type|
     describe 'modified copy methods' do
       # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
       # tests of all the modified copy methods here
-      it('#merge')            { assert_equal(node, node.merge({})) }
+      it('#merge')            { assert_equal(JSI::JSON::Node.new_doc(node.content.to_hash), node.merge({})) }
       it('#reject')           { assert_equal(JSI::JSON::Node.new_doc({}), node.reject { true }) }
       it('#select')           { assert_equal(JSI::JSON::Node.new_doc({}), node.select { false }) }
       # Hash#compact only available as of ruby 2.5.0
       if {}.respond_to?(:compact)
-        it('#compact')          { assert_equal(node, node.compact) }
+        it('#compact') { assert_equal(JSI::JSON::Node.new_doc({"a" => "b", "c" => node.content.to_hash["c"]}), node.compact) }
       end
     end
     JSI::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|

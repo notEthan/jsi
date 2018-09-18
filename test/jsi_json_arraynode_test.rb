@@ -104,8 +104,10 @@ document_types.each do |document_type|
       # compare:
       # assoc:  https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3780-L3813
       # rassoc: https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3815-L3847
-      # for this reason, rassoc is NOT defined on Arraylike and #content must be called.
-      it('#rassoc')               { assert_equal(['b', 'q'], node.content.rassoc('q')) }
+      # for this reason, rassoc is NOT defined on Arraylike. it's here with as_json.
+      #
+      # I've never even seen anybody use rassoc. of all the methods to put into the standard library ...
+      it('#rassoc')               { assert_equal(['b', 'q'], node.as_json.rassoc('q')) }
       it('#repeated_combination') { assert_equal([[]], node.repeated_combination(0).to_a) }
       it('#repeated_permutation') { assert_equal([[]], node.repeated_permutation(0).to_a) }
       it('#reverse')              { assert_equal([node[2], node[1], 'a'], node.reverse) }
@@ -127,7 +129,7 @@ document_types.each do |document_type|
     describe 'modified copy methods' do
       it('#reject')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.reject { |e| e != 'a' }) }
       it('#select')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.select { |e| e == 'a' }) }
-      it('#compact') { assert_equal(node, node.compact) }
+      it('#compact') { assert_equal(JSI::JSON::Node.new_doc(node.content.to_ary), node.compact) }
       describe 'at a depth' do
         let(:document) { document_type[:make_document].call([['b', 'q'], {'c' => ['d', 'e']}]) }
         let(:path) { ['1', 'c'] }
