@@ -1,9 +1,21 @@
 require_relative 'test_helper'
 
-begin
-  describe JSI::JSON::HashNode do
+document_types = [
+  {
+    make_document: -> (d) { d },
+    document: {'a' => 'b', 'c' => {'d' => 'e'}},
+    type_desc: 'Hash',
+  },
+  {
+    make_document: -> (d) { SortOfHash.new(d) },
+    document: SortOfHash.new({'a' => 'b', 'c' => SortOfHash.new({'d' => 'e'})}),
+    type_desc: 'sort of Hash-like',
+  },
+]
+document_types.each do |document_type|
+  describe "JSI::JSON::HashNode with #{document_type[:type_desc]}" do
     # document of the node being tested
-    let(:document) { {'a' => 'b', 'c' => {'d' => 'e'}} }
+    let(:document) { document_type[:document] }
     # by default the node is the whole document
     let(:path) { [] }
     # the node being tested
@@ -42,7 +54,7 @@ begin
       end
     end
     describe '#merge' do
-      let(:document) { {'a' => {'b' => 0}, 'c' => {'d' => 'e'}} }
+      let(:document) { document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}) }
       # testing the node at 'c' here, merging a hash at a path within a document.
       let(:path) { ['c'] }
       it 'merges' do
@@ -56,7 +68,7 @@ begin
       end
     end
     describe '#as_json' do
-      let(:document) { {'a' => 'b'} }
+      let(:document) { document_type[:make_document].call({'a' => 'b'}) }
       it '#as_json' do
         assert_equal({'a' => 'b'}, node.as_json)
         assert_equal({'a' => 'b'}, node.as_json(this_option: 'what?'))

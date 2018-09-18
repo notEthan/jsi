@@ -1,9 +1,21 @@
 require_relative 'test_helper'
 
-begin
-  describe JSI::JSON::ArrayNode do
+document_types = [
+  {
+    make_document: -> (d) { d },
+    document: ['a', ['b', 'q'], {'c' => {'d' => 'e'}}],
+    type_desc: 'Array',
+  },
+  {
+    make_document: -> (d) { SortOfArray.new(d) },
+    document: SortOfArray.new(['a', SortOfArray.new(['b', 'q']), SortOfHash.new({'c' => SortOfHash.new({'d' => 'e'})})]),
+    type_desc: 'sort of Array-like',
+  },
+]
+document_types.each do |document_type|
+  describe "JSI::JSON::ArrayNode with #{document_type[:type_desc]}" do
     # document of the node being tested
-    let(:document) { ['a', ['b', 'q'], {'c' => {'d' => 'e'}}] }
+    let(:document) { document_type[:document] }
     # by default the node is the whole document
     let(:path) { [] }
     # the node being tested
@@ -43,7 +55,7 @@ begin
       end
     end
     describe '#as_json' do
-      let(:document) { ['a', 'b'] }
+      let(:document) { document_type[:make_document].call(['a', 'b']) }
       it '#as_json' do
         assert_equal(['a', 'b'], node.as_json)
         assert_equal(['a', 'b'], node.as_json(some_option: false))
@@ -117,7 +129,7 @@ begin
       it('#select')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.select { |e| e == 'a' }) }
       it('#compact') { assert_equal(node, node.compact) }
       describe 'at a depth' do
-        let(:document) { [['b', 'q'], {'c' => ['d', 'e']}] }
+        let(:document) { document_type[:make_document].call([['b', 'q'], {'c' => ['d', 'e']}]) }
         let(:path) { ['1', 'c'] }
         it('#select') do
           selected = node.select { |e| e == 'd' }
