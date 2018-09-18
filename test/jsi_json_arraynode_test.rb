@@ -13,7 +13,7 @@ describe JSI::JSON::ArrayNode do
       err = assert_raises(TypeError) do
         node[:x]
       end
-      assert_match(/^subscripting with :x \(Symbol\) from Array. self is: #\[<JSI::JSON::ArrayNode fragment="#">/, err.message)
+      assert_match(/^subscripting with :x \(Symbol\) from Array. content is: \[.*\]\z/m, err.message)
     end
   end
   describe '#each' do

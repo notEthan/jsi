@@ -81,7 +81,7 @@ module JSI
         begin
           subcontent = content[subscript]
         rescue TypeError => e
-          raise(e.class, e.message + "\nsubscripting with #{subscript.pretty_inspect.chomp} (#{subscript.class}) from #{content.class.inspect}. self is: #{pretty_inspect.chomp}", e.backtrace)
+          raise(e.class, e.message + "\nsubscripting with #{subscript.pretty_inspect.chomp} (#{subscript.class}) from #{content.class.inspect}. content is: #{content.pretty_inspect.chomp}", e.backtrace)
         end
         if subcontent.respond_to?(:to_hash)
           HashNode.new(node.document, node.path + [subscript])
