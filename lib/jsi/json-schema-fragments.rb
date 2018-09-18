@@ -84,24 +84,25 @@ module JSON
       # pointed to by this pointer.
       def evaluate(document)
         reference_tokens.inject(document) do |value, token|
-          if value.is_a?(Array)
+          if value.respond_to?(:to_ary)
             if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
               token = token.to_i
             end
             unless token.is_a?(Integer)
               raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
             end
-            unless (0...value.size).include?(token)
+            unless (0...(value.respond_to?(:size) ? value : value.to_ary).size).include?(token)
               raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid index of #{value.inspect}")
             end
-          elsif value.is_a?(Hash)
-            unless value.key?(token)
+            (value.respond_to?(:[]) ? value : value.to_ary)[token]
+          elsif value.respond_to?(:to_hash)
+            unless (value.respond_to?(:key?) ? value : value.to_hash).key?(token)
               raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid key of #{value.inspect}")
             end
+            (value.respond_to?(:[]) ? value : value.to_hash)[token]
           else
             raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} cannot be resolved in #{value.inspect}")
           end
-          value[token]
         end
       end
 

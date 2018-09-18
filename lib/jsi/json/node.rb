@@ -33,9 +33,9 @@ module JSI
       def self.new_by_type(document, path)
         node = Node.new(document, path)
         content = node.content
-        if content.is_a?(Hash)
+        if content.respond_to?(:to_hash)
           HashNode.new(document, path)
-        elsif content.is_a?(Array)
+        elsif content.respond_to?(:to_ary)
           ArrayNode.new(document, path)
         else
           node
@@ -74,9 +74,12 @@ module JSI
       def [](subscript)
         node = self
         content = node.content
-        if content.is_a?(Hash) && !content.key?(subscript)
+        if content.respond_to?(:to_hash) && !(content.respond_to?(:key?) ? content : content.to_hash).key?(subscript)
           node = node.deref
           content = node.content
+        end
+        unless content.respond_to?(:[])
+          raise(NoMethodError, "undefined method `[]`\nsubscripting with #{subscript.pretty_inspect.chomp} (#{subscript.class}) from #{content.class.inspect}. self is: #{pretty_inspect.chomp}", e.backtrace)
         end
         begin
           subcontent = content[subscript]
@@ -108,24 +111,27 @@ module JSI
       def deref
         content = self.content
 
-        return self unless content.is_a?(Hash) && content['$ref'].is_a?(String)
+        if content.respond_to?(:to_hash)
+          ref = (content.respond_to?(:[]) ? content : content.to_hash)['$ref']
+        end
+        return self unless ref.is_a?(String)
 
-        if content['$ref'][/\A#/]
-          return self.class.new_by_type(document, ::JSON::Schema::Pointer.parse_fragment(content['$ref'])).deref
+        if ref[/\A#/]
+          return self.class.new_by_type(document, ::JSON::Schema::Pointer.parse_fragment(ref)).deref
         end
 
         # HAX for how google does refs and ids
         if document_node['schemas'].respond_to?(:to_hash)
-          if document_node['schemas'][content['$ref']]
-            return document_node['schemas'][content['$ref']]
+          if document_node['schemas'][ref]
+            return document_node['schemas'][ref]
           end
-          _, deref_by_id = document_node['schemas'].detect { |_k, schema| schema['id'] == content['$ref'] }
+          _, deref_by_id = document_node['schemas'].detect { |_k, schema| schema['id'] == ref }
           if deref_by_id
             return deref_by_id
           end
         end
 
-        #raise(NotImplementedError, "cannot dereference #{content['$ref']}") # TODO
+        #raise(NotImplementedError, "cannot dereference #{ref}") # TODO
         return self
       end
 
@@ -177,11 +183,12 @@ module JSI
               car = subpath[0]
               cdr = subpath[1..-1]
               if subdocument.respond_to?(:to_hash)
-                car_object = rec.call(subdocument[car], cdr)
-                if car_object.object_id == subdocument[car].object_id
+                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_hash)[car]
+                car_object = rec.call(subdocument_car, cdr)
+                if car_object.object_id == subdocument_car.object_id
                   subdocument
                 else
-                  subdocument.merge({car => car_object})
+                  (subdocument.respond_to?(:merge) ? subdocument : subdocument.to_hash).merge({car => car_object})
                 end
               elsif subdocument.respond_to?(:to_ary)
                 if car.is_a?(String) && car =~ /\A\d+\z/
@@ -190,11 +197,12 @@ module JSI
                 unless car.is_a?(Integer)
                   raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect.chomp}")
                 end
-                car_object = rec.call(subdocument[car], cdr)
-                if car_object.object_id == subdocument[car].object_id
+                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_ary)[car]
+                car_object = rec.call(subdocument_car, cdr)
+                if car_object.object_id == subdocument_car.object_id
                   subdocument
                 else
-                  subdocument.dup.tap do |arr|
+                  (subdocument.respond_to?(:[]=) ? subdocument : subdocument.to_ary).dup.tap do |arr|
                     arr[car] = car_object
                   end
                 end
@@ -247,8 +255,8 @@ module JSI
     class ArrayNode < Node
       # iterates over each element in the same manner as Array#each
       def each
-        return to_enum(__method__) { content.size } unless block_given?
-        content.each_index { |i| yield self[i] }
+        return to_enum(__method__) { (content.respond_to?(:size) ? content : content.to_ary).size } unless block_given?
+        (content.respond_to?(:each_index) ? content : content.to_ary).each_index { |i| yield self[i] }
         self
       end
 
@@ -268,7 +276,7 @@ module JSI
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
       # we override these methods from Arraylike
       SAFE_INDEX_ONLY_METHODS.each do |method_name|
-        define_method(method_name) { |*a, &b| content.public_send(method_name, *a, &b) }
+        define_method(method_name) { |*a, &b| (content.respond_to?(method_name) ? content : content.to_ary).public_send(method_name, *a, &b) }
       end
     end
 
@@ -277,11 +285,11 @@ module JSI
     class HashNode < Node
       # iterates over each element in the same manner as Array#each
       def each(&block)
-        return to_enum(__method__) { content.size } unless block_given?
+        return to_enum(__method__) { content.respond_to?(:size) ? content.size : content.to_ary.size } unless block_given?
         if block.arity > 1
-          content.each_key { |k| yield k, self[k] }
+          (content.respond_to?(:each_key) ? content : content.to_hash).each_key { |k| yield k, self[k] }
         else
-          content.each_key { |k| yield [k, self[k]] }
+          (content.respond_to?(:each_key) ? content : content.to_hash).each_key { |k| yield [k, self[k]] }
         end
         self
       end
@@ -301,7 +309,7 @@ module JSI
 
       # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
       SAFE_KEY_ONLY_METHODS.each do |method_name|
-        define_method(method_name) { |*a, &b| content.public_send(method_name, *a, &b) }
+        define_method(method_name) { |*a, &b| (content.respond_to?(method_name) ? content : content.to_hash).public_send(method_name, *a, &b) }
       end
     end
   end
