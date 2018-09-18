@@ -24,13 +24,6 @@ module JSI
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end
-      if @schema_jsi
-        define_singleton_method(:instance) { schema_node } # aka schema_jsi.instance
-        define_singleton_method(:schema) { schema_jsi.schema }
-        extend BaseHash
-      else
-        define_singleton_method(:[]) { |*a, &b| schema_node.public_send(:[], *a, &b) }
-      end
     end
 
     # @return [JSI::JSON::Node] a JSI::JSON::Node for the schema
@@ -43,6 +36,12 @@ module JSI
     #   JSI::JSON::Node for the schema
     def schema_object
       @schema_jsi || @schema_node
+    end
+
+    # @return [JSI::Base, JSI::JSON::Node, Object] property value from the schema_object
+    # @param property_name [String, Object] property name to access from the schema_object
+    def [](property_name)
+      schema_object[property_name]
     end
 
     # @return [String] an absolute id for the schema, with a json pointer fragment
