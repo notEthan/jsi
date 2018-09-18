@@ -217,7 +217,7 @@ module JSI
 
       # meta-information about the object, outside the content. used by #inspect / #pretty_print
       def object_group_text
-        "fragment=#{fragment.inspect}"
+        "fragment=#{fragment.inspect}" + (content.respond_to?(:object_group_text) ? ' ' + content.object_group_text : '')
       end
 
       # a string representing this node
