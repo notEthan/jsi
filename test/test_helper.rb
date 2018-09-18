@@ -27,3 +27,31 @@ end
 
 # register this to be the base class for specs instead of Minitest::Spec
 Minitest::Spec.register_spec_type(//, JSISpec)
+
+# tests support of things that duck-type #to_hash
+class SortOfHash
+  def initialize(hash)
+    @hash = hash
+  end
+  def to_hash
+    @hash
+  end
+  include JSI::FingerprintHash
+  def fingerprint
+    {class: self.class, hash: @hash}
+  end
+end
+
+# tests support of things that duck-type #to_ary
+class SortOfArray
+  def initialize(ary)
+    @ary = ary
+  end
+  def to_ary
+    @ary
+  end
+  include JSI::FingerprintHash
+  def fingerprint
+    {class: self.class, ary: @ary}
+  end
+end
