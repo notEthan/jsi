@@ -2,7 +2,7 @@ module JSI
   module JSON
     # JSI::JSON::Node is an abstraction of a node within a JSON document.
     # it aims to act like the underlying data type of the node's content
-    # (Hash or Array, generally) in most cases.
+    # (generally Hash or Array-like) in most cases.
     #
     # the main advantage offered by using a Node over the underlying data
     # is in dereferencing. if a Node consists of a hash with a $ref property
@@ -10,8 +10,8 @@ module JSI
     # follow the ref and return the referenced data.
     #
     # in most other respects, a Node aims to act like a Hash when the content
-    # is a Hash, an Array when the content is an array. methods of Hash and
-    # Array are defined and delegated to the node's content.
+    # is Hash-like, an Array when the content is Array-like. methods of Hash
+    # and Array are defined and delegated to the node's content.
     #
     # however, destructive methods are for the most part not implemented.
     # at the moment only #[]= is implemented. since Node thinly wraps the
@@ -26,10 +26,10 @@ module JSI
         new_by_type(document, [])
       end
 
-      # if the content of the document at the given path is a Hash, returns
-      # a HashNode; if an Array, returns ArrayNode. otherwise returns a
-      # regular Node, though, for the most part this will be called with Hash
-      # or Array content.
+      # if the content of the document at the given path is Hash-like, returns
+      # a HashNode; if Array-like, returns ArrayNode. otherwise returns a
+      # regular Node, although Nodes are for the most part instantiated from
+      # Hash or Array-like content.
       def self.new_by_type(document, path)
         node = Node.new(document, path)
         content = node.content
@@ -66,8 +66,8 @@ module JSI
       #
       # if the content cannot be subscripted, raises TypeError.
       #
-      # if the subcontent is a hash, it is wrapped as a JSI::JSON::HashNode before being returned.
-      # if the subcontent is an array, it is wrapped as a JSI::JSON::ArrayNode before being returned.
+      # if the subcontent is Hash-like, it is wrapped as a JSI::JSON::HashNode before being returned.
+      # if the subcontent is Array-like, it is wrapped as a JSI::JSON::ArrayNode before being returned.
       #
       # if this node's content is a $ref - that is, a hash with a $ref attribute - and the subscript is
       # not a key of the hash, then the $ref is followed before returning the subcontent.
@@ -104,7 +104,7 @@ module JSI
         end
       end
 
-      # returns a Node, dereferencing a $ref attribute if possible. if this node is not a hash,
+      # returns a Node, dereferencing a $ref attribute if possible. if this node is not hash-like,
       # does not have a $ref, or if what its $ref cannot be found, this node is returned.
       #
       # currently only $refs pointing within the same document are followed.
