@@ -177,7 +177,7 @@ Now `user.contacts` will return an array of Contact instances, from the json typ
 
 ## Keying Hashes (JSON Objects)
 
-Unlike Ruby, JSON only supports string keys. JSI converts symbols to strings for its internal hash keys (much like ActiveSupport::HashWithIndifferentAccess). JSI accepts symbols to refer to its string hash keys for instantiation, but does not currently transform symbols to strings everywhere else, e.g. `bill[:name]` is `nil` whereas `bill['name']` is `"bill"`.
+Unlike Ruby, JSON only supports string keys. It is recommended to use strings as hash keys for all JSI instances, but JSI does not enforce this, nor does it do any key conversion. It should be possible to use ActiveSupport::HashWithIndifferentAccess as the instance of a JSI in order to gain the benefits that offers over a plain hash. This is not tested behavior, but JSI should behave correctly with any instance that responds to #to_hash.
 
 ## Contributing
 

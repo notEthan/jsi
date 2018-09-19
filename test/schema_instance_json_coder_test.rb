@@ -10,7 +10,7 @@ describe JSI::SchemaInstanceJSONCoder do
         assert_nil(schema_instance_json_coder.load(nil))
       end
       it 'loads a hash' do
-        assert_equal(schema_instance_class.new(foo: 'bar'), schema_instance_json_coder.load({"foo" => "bar"}))
+        assert_equal(schema_instance_class.new('foo' => 'bar'), schema_instance_json_coder.load({"foo" => "bar"}))
       end
       it 'loads something else' do
         assert_equal(schema_instance_class.new([[]]), schema_instance_json_coder.load([[]]))
@@ -19,7 +19,7 @@ describe JSI::SchemaInstanceJSONCoder do
         let(:options) { {array: true} }
         it 'loads an array of hashes' do
           data = [{"foo" => "bar"}, {"foo" => "baz"}]
-          assert_equal([schema_instance_class.new(foo: 'bar'), schema_instance_class.new(foo: 'baz')], schema_instance_json_coder.load(data))
+          assert_equal([schema_instance_class.new('foo' => 'bar'), schema_instance_class.new('foo' => 'baz')], schema_instance_json_coder.load(data))
         end
         it 'loads an empty array' do
           assert_equal([], schema_instance_json_coder.load([]))
@@ -65,7 +65,7 @@ describe JSI::SchemaInstanceJSONCoder do
         assert_nil(schema_instance_json_coder.load(nil))
       end
       it 'loads a hash' do
-        assert_equal(schema_instance_class.new(foo: 'bar'), schema_instance_json_coder.load('{"foo": "bar"}'))
+        assert_equal(schema_instance_class.new('foo' => 'bar'), schema_instance_json_coder.load('{"foo": "bar"}'))
       end
       it 'loads something else' do
         assert_equal(schema_instance_class.new([[]]), schema_instance_json_coder.load('[[]]'))
@@ -79,7 +79,7 @@ describe JSI::SchemaInstanceJSONCoder do
         let(:options) { {string: true, array: true} }
         it 'loads an array of hashes' do
           data = '[{"foo": "bar"}, {"foo": "baz"}]'
-          assert_equal([schema_instance_class.new(foo: 'bar'), schema_instance_class.new(foo: 'baz')], schema_instance_json_coder.load(data))
+          assert_equal([schema_instance_class.new('foo' => 'bar'), schema_instance_class.new('foo' => 'baz')], schema_instance_json_coder.load(data))
         end
         it 'loads an empty array' do
           assert_equal([], schema_instance_json_coder.load('[]'))

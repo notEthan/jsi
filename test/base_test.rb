@@ -168,8 +168,8 @@ describe JSI::Base do
     end
   end
   describe '#parents, #parent' do
-    let(:schema_content) { {properties: {foo: {properties: {bar: {properties: {baz: {}}}}}}} }
-    let(:document) { {foo: {bar: {baz: {}}}} }
+    let(:schema_content) { {'properties' => {'foo' => {'properties' => {'bar' => {'properties' => {'baz' => {}}}}}}} }
+    let(:document) { {'foo' => {'bar' => {'baz' => {}}}} }
     describe 'no parents' do
       it 'has none' do
         assert_equal([], subject.parents)

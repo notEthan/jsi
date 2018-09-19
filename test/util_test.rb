@@ -10,7 +10,7 @@ describe JSI::Util do
       expected = JSI::JSON::HashNode.new({'a' => 'b', 'c' => 'd', nil => 3}, [])
       assert_equal(expected, actual)
     end
-    it 'stringifies SchemaObjectBase hash keys' do
+    it 'stringifies JSI hash keys' do
       klass = JSI.class_for_schema(type: 'object')
       expected = JSI.stringify_symbol_keys(klass.new(JSI::JSON::HashNode.new({a: 'b', 'c' => 'd', nil => 3}, [])))
       actual = klass.new(JSI::JSON::HashNode.new({'a' => 'b', 'c' => 'd', nil => 3}, []))
@@ -52,10 +52,10 @@ describe JSI::Util do
       expected = JSI::JSON::HashNode.new({'a' => 'b', 'c' => {'d' => 0}, nil => 3}, [])
       assert_equal(expected, actual)
     end
-    it 'deep stringifies SchemaObjectBase instance on initialize' do
+    it 'deep stringifies JSI instance' do
       klass = JSI.class_for_schema(type: 'object')
-      expected = klass.new(JSI::JSON::HashNode.new({a: 'b', 'c' => {d: 0}, nil => 3}, []))
-      actual = klass.new(JSI::JSON::HashNode.new({'a' => 'b', 'c' => {'d' => 0}, nil => 3}, []))
+      actual = JSI.deep_stringify_symbol_keys(klass.new(JSI::JSON::HashNode.new({a: 'b', 'c' => {d: 0}, nil => 3}, [])))
+      expected = klass.new(JSI::JSON::HashNode.new({'a' => 'b', 'c' => {'d' => 0}, nil => 3}, []))
       assert_equal(expected, actual)
     end
   end
