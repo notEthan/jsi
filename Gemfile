@@ -6,3 +6,4 @@ gemspec
 gem 'byebug'
 gem 'coveralls_reborn', '~> 0.11'
 gem 'wwtd'
+gem 'rubocop'

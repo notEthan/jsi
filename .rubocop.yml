@@ -1,0 +1,160 @@
+#inherit_from: .rubocop_todo.yml
+
+Layout/SpaceInsideHashLiteralBraces:
+  EnforcedStyle: no_space
+Metrics/LineLength:
+  Max: 1110
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+Layout/IndentHash:
+  Enabled: false # what the fuck even is this
+Style/BracesAroundHashParameters:
+  Enabled: false # what the fuck?!
+Metrics/BlockLength:
+  Max: 65536 # yeah I am not particularly interested in your opinions on my block length. thanks though.
+Style/RegexpLiteral:
+  EnforcedStyle: mixed # why would you have the default style enforced be slashes? why do you think %r is even in the language if it shouldn't be used? why do you think developers shouldn't have preferences for when they care to use / and when to use %r? it's so arbitrary.
+  Enabled: false # EnforcedStyle: mixed doesn't even seem to work
+Style/PercentLiteralDelimiters:
+  Enabled: false # are you fucking kidding me
+Style/StringLiterals:
+  Enabled: false # no. just no. there is no reason for this.
+Style/ExpandPathArguments:
+  Enabled: false # it just doesn't make any difference. why do you care?
+Style/IfUnlessModifier:
+  Enabled: false # I'm sorry? I will write single-line if blocks if I god damn well please. it's more readable in many - even most - circumstances, and if you think I want a clunky, cluttered [expression of any complexity] unless foobar, you are terribly mistaken. just an awful thing to try to police. you're making code worse.
+Style/UnneededPercentQ:
+  Enabled: false # oh really, do kindly just fuck off
+Style/BarePercentLiterals:
+  Enabled: false # you know, I'm perfectly content with my %Q thanks. I've been writing this language long enough to have habits, and these habits harm nobody. take your bare percent literal fascism and shove it.
+Style/PercentQLiterals:
+  Enabled: false # hey, it's the reasons I turned off Style/BarePercentLiterals and Style/StringLiterals combined
+Style/WordArray:
+  Enabled: false # just no. I like %w and use it as much as anybody, but there are times when arrays of words are better expressed with [] and you should not thwart that when it is the better choice.
+Style/SymbolProc:
+  Enabled: false # I agree with you like 99% of the time, but I'm a big enough boy that if I think that in a particular instance it's more readable or better to use a written-out block, I know what I'm doing.
+Style/PreferredHashMethods:
+  # oh wow, one I actually agree with. wasn't expecting to see that, but there is no reason to use #has_key? instead of #key?. it only shows up in these tests because the library supports all the hash methods.
+  Exclude:
+    - 'test/base_hash_test.rb'
+    - 'test/jsi_json_hashnode_test.rb'
+Lint/UselessComparison:
+  # normally yes; if you're testing the operator itself then then this is of use.
+  Exclude:
+    - 'test/base_hash_test.rb'
+    - 'test/jsi_json_hashnode_test.rb'
+Style/InverseMethods:
+  Exclude:
+    - 'test/base_array_test.rb'
+    - 'test/jsi_json_arraynode_test.rb'
+Lint/UnusedBlockArgument:
+  # another one I agree with, but I have reason in tests to have have a block whose result i don't care about, so I just have it empty.
+  Exclude:
+    - 'test/base_hash_test.rb'
+    - 'test/jsi_json_hashnode_test.rb'
+Layout/SpaceInsideBlockBraces:
+  # related to Lint/UnusedBlockArgument
+  Exclude:
+    - 'lib/jsi/util.rb'
+    - 'test/base_test.rb' # :328
+    - 'test/jsi_json_arraynode_test.rb'
+    - 'test/jsi_json_hashnode_test.rb' # :29
+    - 'test/jsi_json_hashnode_test.rb' # :95
+Lint/Void:
+  # yeah yeah. same thing.
+  Exclude:
+    - 'test/base_test.rb'
+Lint/InheritException:
+  # generally yeah, but Bug really is a subclass of NotImplementedError
+  Exclude:
+    - 'lib/jsi.rb'
+Naming/UncommunicativeMethodParamName:
+  Enabled: false # I'd agree in the majority of cases, yeah, but if I do it I know what I'm about.
+Style/AccessModifierDeclarations:
+  Enabled: false # I'm not sure. I'm not sure I even know what you want out of modifiers, but I probably don't agree with it.
+Naming/VariableNumber:
+  Enabled: false # no I'm good thanks
+Style/GuardClause:
+  # uh
+  # no
+  # really, fuck off
+  Enabled: false
+Style/Alias:
+  Enabled: false # na
+Style/RedundantSelf:
+  Enabled: false # shh
+Metrics/PerceivedComplexity:
+  Max: 4294967296 # oh my. don't even get me started.
+Metrics/MethodLength:
+  Max: 64 # I'm coming down from 65536, but I'll go right back up if I need to. right along with BlockLength.
+Metrics/CyclomaticComplexity:
+  Max: 4294967296 # oh, do go on
+Metrics/AbcSize:
+  Max: 4294967296 # uh huh
+Style/BlockDelimiters:
+  Enabled: false # hush little baby, don't say a word
+Style/MethodDefParentheses:
+  # yeah obviously. this is copy/pasted/modified from minitest though so I'll leave that
+  Exclude:
+    - test/test_helper.rb #:22
+Style/MutableConstant:
+  # I agree, I just don't think it matters in typelike
+  Exclude:
+    - 'lib/jsi/typelike_modules.rb'
+Style/RedundantReturn:
+  Enabled: false # 'nother one where I agree the great majority but am comfortable with my ability to know when it feels right for conveying intent
+Layout/EmptyLinesAroundAccessModifier:
+  Enabled: false # ookay, again, not too inclined to get into whatever your opinions are on access modifiers. don't even want to know what they are. off with you.
+Style/CommentAnnotation:
+  Enabled: false # "Annotation keywords like TODO should be all upper case, followed by a colon, and a space, then a note describing the problem." are you seeing this shit?
+Style/EmptyElse:
+  Enabled: false # that's not an empty else, that's an else with a nil in it. explicit nils can be valuable even though it's what an empty (omitted) else would return anyway. look, tell me which one do you think is more readable, the one with the empty block, or the nil:
+  #   foo[bar] = nil
+  # OR:
+  #   foo[bar] = begin
+  #   end
+  # yeah, it's the nil.
+Style/IfInsideElse:
+  Enabled: false # nope. I know it's logically the same, but sometimes it makes more sense for consistency (for readability/maintainability, not for the formal logic) of how each branch of the if/then/else operates to have an if inside an else.
+Style/NegatedWhile:
+  Enabled: false # nah
+Metrics/ClassLength:
+  Max: 18446744073709551616 # I thought we'd been over this. my exponents are increasing exponentially, we can't keep this up much longer
+Layout/LeadingCommentSpace:
+  Enabled: false # I'm going to acronymify "usually, but I'm a big boy." ubiabb.
+Style/HashSyntax:
+  Enabled: false # I'm honestly shocked it took 2**7 lines (when this was first written) of .rubocop.yml before running into you, Style/HashSyntax. "Use the new Ruby 1.9 hash syntax." we may have to fight, Style/HashSyntax.
+Layout/SpaceAroundEqualsInParameterDefault:
+  # just in the monkey patch
+  Exclude:
+    - lib/jsi/json-schema-fragments.rb
+Style/EachWithObject:
+  what_the_fuck: "Use each_with_object instead of inject."
+  Enabled: false
+  wtf: are you FUCKING kidding me? you cannot be goddamned serious, are you out of your mind? why are you saying this? are you trying to ruin ruby? do you hate me personally?
+Style/ConditionalAssignment:
+  Enabled: false
+Performance/RangeInclude:
+  Enabled: false
+Performance/StartWith:
+  Enabled: false
+Style/Semicolon:
+  Enabled: false
+  # ubiabb. I'll break my silence to use my acronym. I can't believe you are telling people to use each_with_object instead of inject. that's fucked up.
+Style/SelfAssignment:
+  Enabled: false # I'm okay not using &&= if I feel like.
+Gemspec/OrderedDependencies:
+  Enabled: false # "Dependencies should be sorted in an alphabetical order" no ... they should be ordered in whatever way makes sense to the person writing the thing
+Bundler/OrderedGems:
+  Enabled: false
+Layout/MultilineOperationIndentation:
+  #Enabled: false # wrong
+  EnforcedStyle: indented # oh, you have the right way as an option
+Style/NumericPredicate:
+  Enabled: false # "Use i.zero? instead of i == 0." are you just messing with me at this point
+Style/Next:
+  Enabled: false # negatory
+Style/MultipleComparison:
+  Enabled: false
