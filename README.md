@@ -86,6 +86,8 @@ bad.phone.fully_validate
 # => ["The property '#/0/number' of type array did not match the following type: string in schema 1f97"]
 ```
 
+These validations are done by the [`json-schema` gem](https://github.com/ruby-json-schema/json-schema) - JSI does not do validations on its own.
+
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with #[] or, say, #transform_values:
 
 ```ruby
@@ -127,7 +129,7 @@ bill.name
 # => "bill esq."
 bill.name = 'rob esq.'
 # => "rob esq."
-bill.instance['name']
+bill['name']
 # => "rob"
 ```
 
