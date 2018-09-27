@@ -44,9 +44,14 @@ module JSI
 
       # a Node represents the content of a document at a given path.
       def initialize(document, path)
-        raise(ArgumentError, "path must be an array. got: #{path.pretty_inspect.chomp} (#{path.class})") unless path.is_a?(Array)
+        unless path.respond_to?(:to_ary)
+          raise(ArgumentError, "path must be an array. got: #{path.pretty_inspect.chomp} (#{path.class})")
+        end
+        if document.is_a?(JSI::JSON::Node)
+          raise(TypeError, "document of a Node should not be another JSI::JSON::Node: #{document.inspect}")
+        end
         @document = document
-        @path = path.dup.freeze
+        @path = path.to_ary.dup.freeze
         @pointer = ::JSON::Schema::Pointer.new(:reference_tokens, path)
       end
 

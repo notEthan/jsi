@@ -37,7 +37,7 @@ module JSI
         JSI::Typelike.modified_copy(object) do |hash|
           changed = false
           out = {}
-          hash.each do |k, v|
+          (hash.respond_to?(:each) ? hash : hash.to_hash).each do |k, v|
             if k.is_a?(Symbol)
               changed = true
               k = k.to_s
@@ -53,7 +53,7 @@ module JSI
       elsif object.respond_to?(:to_ary)
         JSI::Typelike.modified_copy(object) do |ary|
           changed = false
-          out = ary.map do |e|
+          out = (ary.respond_to?(:each) ? ary : ary.to_ary).map do |e|
             out_e = deep_stringify_symbol_keys(e)
             changed = true if out_e.object_id != e.object_id
             out_e

@@ -24,13 +24,6 @@ module JSI
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end
-      if @schema_jsi
-        define_singleton_method(:instance) { schema_node } # aka schema_jsi.instance
-        define_singleton_method(:schema) { schema_jsi.schema }
-        extend BaseHash
-      else
-        define_singleton_method(:[]) { |*a, &b| schema_node.public_send(:[], *a, &b) }
-      end
     end
 
     # @return [JSI::JSON::Node] a JSI::JSON::Node for the schema
@@ -43,6 +36,12 @@ module JSI
     #   JSI::JSON::Node for the schema
     def schema_object
       @schema_jsi || @schema_node
+    end
+
+    # @return [JSI::Base, JSI::JSON::Node, Object] property value from the schema_object
+    # @param property_name [String, Object] property name to access from the schema_object
+    def [](property_name)
+      schema_object[property_name]
     end
 
     # @return [String] an absolute id for the schema, with a json pointer fragment
@@ -205,12 +204,12 @@ module JSI
     # @return [Array<String>] array of schema validation error messages for
     #   the given instance against this schema
     def fully_validate(instance)
-      ::JSON::Validator.fully_validate(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.document), JSI::Typelike.as_json(instance), fragment: schema_node.fragment)
     end
 
     # @return [true, false] whether the given instance validates against this schema
     def validate(instance)
-      ::JSON::Validator.validate(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
+      ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.document), JSI::Typelike.as_json(instance), fragment: schema_node.fragment)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -218,19 +217,19 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors against this schema
     def validate!(instance)
-      ::JSON::Validator.validate!(schema_node.document, object_to_content(instance), fragment: schema_node.fragment)
+      ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.document), JSI::Typelike.as_json(instance), fragment: schema_node.fragment)
     end
 
     # @return [Array<String>] array of schema validation error messages for
     #   this schema, validated against its metaschema. a default metaschema
     #   is assumed if the schema does not specify a $schema.
     def fully_validate_schema
-      ::JSON::Validator.fully_validate(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.document), [], fragment: schema_node.fragment, validate_schema: true, list: true)
     end
 
     # @return [true, false] whether this schema validates against its metaschema
     def validate_schema
-      ::JSON::Validator.validate(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
+      ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.document), [], fragment: schema_node.fragment, validate_schema: true, list: true)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -238,7 +237,7 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if this schema has
     #   validation errors against its metaschema
     def validate_schema!
-      ::JSON::Validator.validate!(schema_node.document, [], fragment: schema_node.fragment, validate_schema: true, list: true)
+      ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.document), [], fragment: schema_node.fragment, validate_schema: true, list: true)
     end
 
     # @return [String] a string for #instance and #pretty_print including the schema_id
@@ -278,12 +277,5 @@ module JSI
       {class: self.class, schema_node: schema_node}
     end
     include FingerprintHash
-
-    private
-    def object_to_content(object)
-      object = object.instance if object.is_a?(JSI::Base)
-      object = object.content if object.is_a?(JSI::JSON::Node)
-      object
-    end
   end
 end

@@ -36,7 +36,7 @@ Contact = JSI.class_for_schema({"description" => "A Contact", "type" => "object"
 This definition gives you not just the Contact class, but classes for the whole nested structure. So, if we construct an instance like:
 
 ```ruby
-bill = Contact.new(name: 'bill', phone: [{location: 'home', number: '555'}], nickname: 'big b')
+bill = Contact.new('name' => 'bill', 'phone' => [{'location' => 'home', 'number' => '555'}], 'nickname' => 'big b')
 # => #{<Contact fragment="#">
 # #{<Contact fragment="#">
 #   "phone" => #[<JSI::SchemaClasses["1f97#/properties/phone"] fragment="#/phone">
@@ -45,6 +45,8 @@ bill = Contact.new(name: 'bill', phone: [{location: 'home', number: '555'}], nic
 #   "nickname" => "big b"
 # }
 ```
+
+Note that the keys are strings. JSI, being designed with JSON in mind, is geared toward string keys. Symbol keys will not match to schema properties, and so act the same as any other key not recognized from the schema.
 
 The nested classes can be seen as `JSI::SchemaClasses[schema_id]` where schema_id is a generated value.
 
@@ -72,7 +74,7 @@ bill.validate
 ... and validations on the nested schema instances (#phone here), showing in this example validation failure:
 
 ```ruby
-bad = Contact.new(phone: [{number: [5, 5, 5]}])
+bad = Contact.new('phone' => [{'number' => [5, 5, 5]}])
 # => #{<Contact fragment="#">
 #   "phone" => #[<JSI::SchemaClasses["1f97#/properties/phone"] fragment="#/phone">
 #     #{<JSI::SchemaClasses["1f97#/properties/phone/items"] fragment="#/phone/0">
@@ -83,6 +85,8 @@ bad = Contact.new(phone: [{number: [5, 5, 5]}])
 bad.phone.fully_validate
 # => ["The property '#/0/number' of type array did not match the following type: string in schema 1f97"]
 ```
+
+These validations are done by the [`json-schema` gem](https://github.com/ruby-json-schema/json-schema) - JSI does not do validations on its own.
 
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with #[] or, say, #transform_values:
 
@@ -125,7 +129,7 @@ bill.name
 # => "bill esq."
 bill.name = 'rob esq.'
 # => "rob esq."
-bill.instance['name']
+bill['name']
 # => "rob"
 ```
 
