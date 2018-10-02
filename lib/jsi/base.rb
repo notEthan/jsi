@@ -372,7 +372,15 @@ module JSI
           property_schema = schema.subschema_for_property(property_name)
           property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
 
-          if property_schema && instance[property_name].is_a?(JSON::Node)
+          if !instance.key?(property_name) && property_schema && property_schema.schema_object.key?('default')
+            # use the default value
+            default = property_schema.schema_object['default']
+            if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
+              JSI.class_for_schema(property_schema).new(default, ancestor: @ancestor)
+            else
+              default
+            end
+          elsif property_schema && (instance[property_name].respond_to?(:to_hash) || instance[property_name].respond_to?(:to_ary))
             JSI.class_for_schema(property_schema).new(instance[property_name], ancestor: @ancestor)
           else
             instance[property_name]

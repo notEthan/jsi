@@ -19,6 +19,65 @@ describe JSI::BaseHash do
   let(:class_for_schema) { JSI.class_for_schema(schema) }
   let(:subject) { class_for_schema.new(instance) }
 
+  describe '#[] with a default that is a basic type' do
+    let(:schema_content) do
+      {
+        'type' => 'object',
+        'properties' => {
+          'foo' => {'default' => 'foo'},
+        },
+      }
+    end
+    describe 'default value' do
+      let(:document) { {'bar' => 3} }
+      it 'returns the default value' do
+        assert_equal('foo', subject.foo)
+      end
+    end
+    describe 'nondefault value (basic type)' do
+      let(:document) { {'foo' => 'who'} }
+      it 'returns the nondefault value' do
+        assert_equal('who', subject.foo)
+      end
+    end
+    describe 'nondefault value (nonbasic type)' do
+      let(:document) { {'foo' => [2]} }
+      it 'returns the nondefault value' do
+        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_equal([2], subject.foo.as_json)
+      end
+    end
+  end
+  describe '#[] with a default that is a nonbasic type' do
+    let(:schema_content) do
+      {
+        'type' => 'object',
+        'properties' => {
+          'foo' => {'default' => {'foo' => 2}},
+        },
+      }
+    end
+    describe 'default value' do
+      let(:document) { {'bar' => 3} }
+      it 'returns the default value' do
+        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_equal({'foo' => 2}, subject.foo.as_json)
+      end
+    end
+    describe 'nondefault value (basic type)' do
+      let(:document) { {'foo' => 'who'} }
+      it 'returns the nondefault value' do
+        assert_equal('who', subject.foo)
+      end
+    end
+    describe 'nondefault value (nonbasic type)' do
+      let(:document) { {'foo' => [2]} }
+      it 'returns the nondefault value' do
+        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_equal([2], subject.foo.as_json)
+      end
+    end
+  end
   describe 'hashlike []=' do
     it 'sets a property' do
       orig_foo = subject['foo']
