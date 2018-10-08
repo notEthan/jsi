@@ -20,6 +20,61 @@ describe JSI::BaseArray do
   let(:class_for_schema) { JSI.class_for_schema(schema) }
   let(:subject) { class_for_schema.new(instance) }
 
+  describe '#[] with a default that is a basic type' do
+    let(:schema_content) do
+      {
+        'type' => 'array',
+        'items' => {'default' => 'foo'},
+      }
+    end
+    describe 'default value' do
+      let(:document) { [1] }
+      it 'returns the default value' do
+        assert_equal('foo', subject[2])
+      end
+    end
+    describe 'nondefault value (basic type)' do
+      let(:document) { ['who'] }
+      it 'returns the nondefault value' do
+        assert_equal('who', subject[0])
+      end
+    end
+    describe 'nondefault value (nonbasic type)' do
+      let(:document) { [[2]] }
+      it 'returns the nondefault value' do
+        assert_instance_of(JSI.class_for_schema(schema['items']), subject[0])
+        assert_equal([2], subject[0].as_json)
+      end
+    end
+  end
+  describe '#[] with a default that is a nonbasic type' do
+    let(:schema_content) do
+      {
+        'type' => 'array',
+        'items' => {'default' => {'foo' => 2}},
+      }
+    end
+    describe 'default value' do
+      let(:document) { [{'bar' => 3}] }
+      it 'returns the default value' do
+        assert_instance_of(JSI.class_for_schema(schema['items']), subject[1])
+        assert_equal({'foo' => 2}, subject[1].as_json)
+      end
+    end
+    describe 'nondefault value (basic type)' do
+      let(:document) { [true, 'who'] }
+      it 'returns the nondefault value' do
+        assert_equal('who', subject[1])
+      end
+    end
+    describe 'nondefault value (nonbasic type)' do
+      let(:document) { [true, [2]] }
+      it 'returns the nondefault value' do
+        assert_instance_of(JSI.class_for_schema(schema['items']), subject[1])
+        assert_equal([2], subject[1].as_json)
+      end
+    end
+  end
   describe 'arraylike []=' do
     it 'sets an index' do
       orig_2 = subject[2]

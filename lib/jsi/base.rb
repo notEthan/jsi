@@ -437,7 +437,15 @@ module JSI
           index_schema = schema.subschema_for_index(i)
           index_schema = index_schema && index_schema.match_to_instance(instance[i])
 
-          if index_schema && instance[i].is_a?(JSON::Node)
+          if !instance.each_index.to_a.include?(i) && index_schema && index_schema.schema_object.key?('default')
+            # use the default value
+            default = index_schema.schema_object['default']
+            if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
+              JSI.class_for_schema(index_schema).new(default, ancestor: @ancestor)
+            else
+              default
+            end
+          elsif index_schema && (instance[i].respond_to?(:to_hash) || instance[i].respond_to?(:to_ary))
             JSI.class_for_schema(index_schema).new(instance[i], ancestor: @ancestor)
           else
             instance[i]
