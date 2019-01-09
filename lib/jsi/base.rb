@@ -67,14 +67,14 @@ module JSI
     # a Node already).
     #
     # @param instance [Object] the JSON Schema instance being represented
-    # @param origin [JSI::Base] for internal use, specifies a parent
-    #   from which this JSI originated
-    def initialize(instance, origin: nil)
+    # @param ancestor [JSI::Base] for internal use, specifies an ancestor
+    #   from which this JSI originated to calculate #parents
+    def initialize(instance, ancestor: nil)
       unless respond_to?(:schema)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
       end
 
-      @origin = origin || self
+      @ancestor = ancestor || self
       self.instance = instance
 
       if @instance.is_a?(JSI::JSON::HashNode)
@@ -86,6 +86,9 @@ module JSI
 
     # the instance of the json-schema. this is a JSI::JSON::Node.
     attr_reader :instance
+
+    # a JSI which is an ancestor of this
+    attr_reader :ancestor
 
     # each is overridden by BaseHash or BaseArray when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
@@ -99,8 +102,8 @@ module JSI
     #
     # @return [Array<JSI::Base>]
     def parents
-      parent = @origin
-      (@origin.instance.path.size...self.instance.path.size).map do |i|
+      parent = @ancestor
+      (@ancestor.instance.path.size...self.instance.path.size).map do |i|
         parent.tap do
           parent = parent[self.instance.path[i]]
         end
@@ -123,7 +126,7 @@ module JSI
       if derefed.object_id == instance.object_id
         self
       else
-        self.class.new(derefed, origin: @origin)
+        self.class.new(derefed, ancestor: @ancestor)
       end
     end
 
@@ -136,7 +139,7 @@ module JSI
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def modified_copy(&block)
       modified_instance = instance.modified_copy(&block)
-      self.class.new(modified_instance, origin: @origin)
+      self.class.new(modified_instance, ancestor: @ancestor)
     end
 
     def fragment
@@ -370,7 +373,7 @@ module JSI
           property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
 
           if property_schema && instance[property_name].is_a?(JSON::Node)
-            JSI.class_for_schema(property_schema).new(instance[property_name], origin: @origin)
+            JSI.class_for_schema(property_schema).new(instance[property_name], ancestor: @ancestor)
           else
             instance[property_name]
           end
@@ -427,7 +430,7 @@ module JSI
           index_schema = index_schema && index_schema.match_to_instance(instance[i])
 
           if index_schema && instance[i].is_a?(JSON::Node)
-            JSI.class_for_schema(index_schema).new(instance[i], origin: @origin)
+            JSI.class_for_schema(index_schema).new(instance[i], ancestor: @ancestor)
           else
             instance[i]
           end
