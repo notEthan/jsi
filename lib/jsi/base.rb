@@ -231,6 +231,12 @@ module JSI
         instance[subscript] = value
       end
     end
+
+    # this is an instance method in order to allow subclasses of JSI classes to
+    # override it to point to other subclasses corresponding to other schemas.
+    def class_for_schema(schema)
+      JSI.class_for_schema(schema)
+    end
   end
 
   # this module is just a namespace for schema classes.
@@ -361,7 +367,7 @@ module JSI
           property_schema = property_schema && property_schema.match_to_instance(instance[property_name])
 
           if property_schema && instance[property_name].is_a?(JSON::Node)
-            JSI.class_for_schema(property_schema).new(instance[property_name], ancestor: @ancestor)
+            class_for_schema(property_schema).new(instance[property_name], ancestor: @ancestor)
           else
             instance[property_name]
           end
@@ -418,7 +424,7 @@ module JSI
           index_schema = index_schema && index_schema.match_to_instance(instance[i])
 
           if index_schema && instance[i].is_a?(JSON::Node)
-            JSI.class_for_schema(index_schema).new(instance[i], ancestor: @ancestor)
+            class_for_schema(index_schema).new(instance[i], ancestor: @ancestor)
           else
             instance[i]
           end
