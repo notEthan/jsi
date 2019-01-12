@@ -250,13 +250,7 @@ module JSI
 
   # see {JSI.class_for_schema}
   def SchemaClasses.class_for_schema(schema_object)
-    if schema_object.is_a?(JSI::Schema)
-      schema__ = schema_object
-    else
-      schema__ = JSI::Schema.new(schema_object)
-    end
-
-    memoize(:class_for_schema, schema__) do |schema_|
+    memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema_|
       begin
         begin
           Class.new(Base).instance_exec(schema_) do |schema|
@@ -287,13 +281,7 @@ module JSI
   # class will be defined. users should use #[] and #[]= to access properties
   # whose names conflict with existing methods.
   def SchemaClasses.module_for_schema(schema_object)
-    if schema_object.is_a?(JSI::Schema)
-      schema__ = schema_object
-    else
-      schema__ = JSI::Schema.new(schema_object)
-    end
-
-    memoize(:module_for_schema, schema__) do |schema_|
+    memoize(:module_for_schema, JSI::Schema.from_object(schema_object)) do |schema_|
       Module.new.tap do |m|
         m.instance_exec(schema_) do |schema|
           define_method(:schema) { schema }
