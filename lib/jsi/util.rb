@@ -79,6 +79,7 @@ module JSI
     end
     module_function :ycomb
   end
+  public
   extend Util
 
   module FingerprintHash

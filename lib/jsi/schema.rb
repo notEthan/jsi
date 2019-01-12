@@ -7,6 +7,16 @@ module JSI
   class Schema
     include Memoize
 
+    class << self
+      def from_object(schema_object)
+        if schema_object.is_a?(Schema)
+          schema_object
+        else
+          new(schema_object)
+        end
+      end
+    end
+
     # initializes a schema from a given JSI::Base, JSI::JSON::Node, or hash.
     # @param schema_object [JSI::Base, #to_hash] the schema
     def initialize(schema_object)

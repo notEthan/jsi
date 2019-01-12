@@ -231,6 +231,12 @@ module JSI
         instance[subscript] = value
       end
     end
+
+    # this is an instance method in order to allow subclasses of JSI classes to
+    # override it to point to other subclasses corresponding to other schemas.
+    def class_for_schema(schema)
+      JSI.class_for_schema(schema)
+    end
   end
 
   # this module is just a namespace for schema classes.
@@ -250,13 +256,7 @@ module JSI
 
   # see {JSI.class_for_schema}
   def SchemaClasses.class_for_schema(schema_object)
-    if schema_object.is_a?(JSI::Schema)
-      schema__ = schema_object
-    else
-      schema__ = JSI::Schema.new(schema_object)
-    end
-
-    memoize(:class_for_schema, schema__) do |schema_|
+    memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema_|
       begin
         begin
           Class.new(Base).instance_exec(schema_) do |schema|
@@ -287,13 +287,7 @@ module JSI
   # class will be defined. users should use #[] and #[]= to access properties
   # whose names conflict with existing methods.
   def SchemaClasses.module_for_schema(schema_object)
-    if schema_object.is_a?(JSI::Schema)
-      schema__ = schema_object
-    else
-      schema__ = JSI::Schema.new(schema_object)
-    end
-
-    memoize(:module_for_schema, schema__) do |schema_|
+    memoize(:module_for_schema, JSI::Schema.from_object(schema_object)) do |schema_|
       Module.new.tap do |m|
         m.instance_exec(schema_) do |schema|
           define_method(:schema) { schema }
@@ -376,12 +370,12 @@ module JSI
             # use the default value
             default = property_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              JSI.class_for_schema(property_schema).new(default, ancestor: @ancestor)
+              class_for_schema(property_schema).new(default, ancestor: @ancestor)
             else
               default
             end
           elsif property_schema && (instance[property_name].respond_to?(:to_hash) || instance[property_name].respond_to?(:to_ary))
-            JSI.class_for_schema(property_schema).new(instance[property_name], ancestor: @ancestor)
+            class_for_schema(property_schema).new(instance[property_name], ancestor: @ancestor)
           else
             instance[property_name]
           end
@@ -441,12 +435,12 @@ module JSI
             # use the default value
             default = index_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              JSI.class_for_schema(index_schema).new(default, ancestor: @ancestor)
+              class_for_schema(index_schema).new(default, ancestor: @ancestor)
             else
               default
             end
           elsif index_schema && (instance[i].respond_to?(:to_hash) || instance[i].respond_to?(:to_ary))
-            JSI.class_for_schema(index_schema).new(instance[i], ancestor: @ancestor)
+            class_for_schema(index_schema).new(instance[i], ancestor: @ancestor)
           else
             instance[i]
           end
