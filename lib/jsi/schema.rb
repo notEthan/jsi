@@ -128,6 +128,7 @@ module JSI
       # matching allOf is questionable. all of the schemas must be matched but we just return the first match.
       #   there isn't really a better answer with the current implementation. merging the schemas together
       #   is a thought but is not practical.
+      instance = instance.deref if instance.is_a?(JSI::JSON::Node)
       %w(oneOf allOf anyOf).select { |k| schema_node[k].respond_to?(:to_ary) }.each do |someof_key|
         schema_node[someof_key].map(&:deref).map do |someof_node|
           someof_schema = self.class.new(someof_node)
