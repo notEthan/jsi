@@ -198,7 +198,10 @@ module JSI
 
     # @return [Object] an opaque fingerprint of this JSI for FingerprintHash
     def fingerprint
-      {class: self.class, instance: instance}
+      {
+        class: self.class,
+        instance: instance.is_a?(JSON::Node) ? {class: JSON::Node, content: instance.content} : instance,
+      }
     end
     include FingerprintHash
 
