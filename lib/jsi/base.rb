@@ -55,7 +55,7 @@ module JSI
 
       # @return [String] a constant name of this class
       def name
-        unless super
+        unless super || SchemaClasses.const_defined?(schema_classes_const_name)
           SchemaClasses.const_set(schema_classes_const_name, self)
         end
         super
