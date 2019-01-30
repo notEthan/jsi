@@ -48,7 +48,7 @@ bill = Contact.new('name' => 'bill', 'phone' => [{'location' => 'home', 'number'
 
 Note that the keys are strings. JSI, being designed with JSON in mind, is geared toward string keys. Symbol keys will not match to schema properties, and so act the same as any other key not recognized from the schema.
 
-The nested classes can be seen as `JSI::SchemaClasses[schema_id]` where schema_id is a generated value.
+The nested classes can be seen in the #inspect output as `JSI::SchemaClasses[schema_id]` where schema_id is a generated value.
 
 We get accessors for the Contact:
 
