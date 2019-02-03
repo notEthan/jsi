@@ -64,7 +64,8 @@ module JSI
 
       # the raw content of this Node from the underlying document at this Node's path.
       def content
-        pointer.evaluate(document)
+        content = pointer.evaluate(document)
+        content
       end
 
       # returns content at the given subscript - call this the subcontent.
