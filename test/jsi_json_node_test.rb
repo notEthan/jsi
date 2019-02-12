@@ -30,8 +30,8 @@ describe JSI::JSON::Node do
     end
   end
   describe '#pointer' do
-    it 'is a ::JSON::Schema::Pointer' do
-      assert_instance_of(::JSON::Schema::Pointer, JSI::JSON::Node.new({}, []).pointer)
+    it 'is a JSI::JSON::Pointer' do
+      assert_instance_of(JSI::JSON::Pointer, JSI::JSON::Node.new({}, []).pointer)
     end
   end
   describe '#content' do
@@ -170,7 +170,7 @@ describe JSI::JSON::Node do
       assert_equal([], root_from_sub.path)
       assert_equal({'a' => {'b' => []}}, root_from_sub.content)
       assert_equal(node, root_from_sub)
-      err = assert_raises(::JSON::Schema::Pointer::ReferenceError) do
+      err = assert_raises(JSI::JSON::Pointer::ReferenceError) do
         root_from_sub.parent_node
       end
       assert_match(/\Acannot access parent of root node: #\{<JSI::JSON::HashNode/, err.message)

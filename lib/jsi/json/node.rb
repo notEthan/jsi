@@ -52,14 +52,14 @@ module JSI
         end
         @document = document
         @path = path.to_ary.dup.freeze
-        @pointer = ::JSON::Schema::Pointer.new(:reference_tokens, path)
+        @pointer = JSI::JSON::Pointer.new(:reference_tokens, path)
       end
 
       # the path of this Node within its document
       attr_reader :path
       # the document containing this Node at is path
       attr_reader :document
-      # ::JSON::Schema::Pointer representing the path to this node within its document
+      # JSI::JSON::Pointer representing the path to this node within its document
       attr_reader :pointer
 
       # the raw content of this Node from the underlying document at this Node's path.
@@ -129,7 +129,7 @@ module JSI
         return self unless ref.is_a?(String)
 
         if ref[/\A#/]
-          return self.class.new_by_type(document, ::JSON::Schema::Pointer.parse_fragment(ref)).deref
+          return self.class.new_by_type(document, JSI::JSON::Pointer.parse_fragment(ref)).deref
         end
 
         # HAX for how google does refs and ids
@@ -153,10 +153,10 @@ module JSI
       end
 
       # the parent of this node. if this node is the document root (its path is empty), raises
-      # ::JSON::Schema::Pointer::ReferenceError.
+      # JSI::JSON::Pointer::ReferenceError.
       def parent_node
         if path.empty?
-          raise(::JSON::Schema::Pointer::ReferenceError, "cannot access parent of root node: #{pretty_inspect.chomp}")
+          raise(JSI::JSON::Pointer::ReferenceError, "cannot access parent of root node: #{pretty_inspect.chomp}")
         else
           Node.new_by_type(document, path[0...-1])
         end
