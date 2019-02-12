@@ -70,33 +70,69 @@ module JSI
       end
     end
 
-    # initializes this JSI from the given instance. the instance will be
-    # wrapped as a {JSI::JSON::Node JSI::JSON::Node} (unless what you pass is
-    # a Node already).
+    # NOINSTANCE is a magic value passed to #initialize when instantiating a JSI
+    # from a document and path.
+    NOINSTANCE = Object.new.tap { |o| [:inspect, :to_s].each(&(-> (s, m) { o.define_singleton_method(m) { s } }.curry.([JSI::Base.name, 'NOINSTANCE'].join('::')))) }
+
+    # initializes this JSI from the given instance - instance is most commonly
+    # a parsed JSON document consisting of Hash, Array, or sometimes a basic
+    # type, but this is in no way enforced and a JSI may wrap any object.
     #
     # @param instance [Object] the JSON Schema instance being represented
+    # @param document [Object] for internal use. the instance may be specified
+    #   as a node in the `document` param, at the specified `path`. the param `instance`
+    #   MUST be `NOINSTANCE` to use the document + path form. `document` MUST NOT be passed
+    #   if `instance` is anything other than `NOINSTANCE`.
+    # @param path [#to_ary] for internal use. an array of tokens specifying the path of this instance in
+    #   the `document` param. `path` must be passed iff `document` is passed, i.e. when
+    #   `instance` is `NOINSTANCE`
     # @param ancestor_jsi [JSI::Base] for internal use, specifies an ancestor_jsi
     #   from which this JSI originated to calculate #parents
-    def initialize(instance, ancestor_jsi: nil)
+    def initialize(instance, document: (document_unset = true), path: (path_unset = true), ancestor_jsi: nil)
       unless respond_to?(:schema)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
       end
 
-      @ancestor_jsi = ancestor_jsi || self
-      self.instance = instance
+      if instance.is_a?(JSI::Base)
+        raise(TypeError, "assigning another JSI::Base instance to #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
+      elsif instance.is_a?(JSI::Schema)
+        raise(TypeError, "assigning a schema to #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
+      end
 
-      if @instance.respond_to?(:to_hash)
+      if instance == NOINSTANCE
+        if document_unset || path_unset
+          raise(ArgumentError, "params `document` and `path` must both be set when instance is NOINSTANCE")
+        end
+        self.document = document
+        self.path = path
+      else
+        unless document_unset && path_unset
+          raise(ArgumentError, "params `document` and `path` must not be set when instance is given")
+        end
+        self.document = instance
+        self.path = []
+      end
+      @ancestor_jsi = ancestor_jsi
+
+      if self.instance.respond_to?(:to_hash)
         extend BaseHash
-      elsif @instance.respond_to?(:to_ary)
+      elsif self.instance.respond_to?(:to_ary)
         extend BaseArray
       end
     end
 
-    # the instance of the json-schema. this is a JSI::JSON::Node.
-    attr_reader :instance
+    attr_reader :document
+
+    attr_reader :path
 
     # a JSI which is an ancestor_jsi of this
     attr_reader :ancestor_jsi
+
+    # the instance of the json-schema
+    def instance
+      instance = JSON::Pointer.new(@path).evaluate(@document)
+      instance
+    end
 
     # each is overridden by BaseHash or BaseArray when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
@@ -110,11 +146,12 @@ module JSI
     #
     # @return [Array<JSI::Base>]
     def parent_jsis
-      check_can_get_parents!
-      parent = @ancestor_jsi
-      (@ancestor_jsi.instance.pointer.reference_tokens.size...self.instance.pointer.reference_tokens.size).map do |i|
+      ancestor_jsi = @ancestor_jsi || self
+      parent = ancestor_jsi
+
+      (JSI::JSON::Pointer.new(ancestor_jsi.path).reference_tokens.size...JSI::JSON::Pointer.new(@path).reference_tokens.size).map do |i|
         parent.tap do
-          parent = parent[self.instance.pointer.reference_tokens[i]]
+          parent = parent[JSI::JSON::Pointer.new(@path).reference_tokens[i]]
         end
       end.reverse
     end
@@ -136,11 +173,11 @@ module JSI
     #
     # @return [JSI::Base, self]
     def deref
-      derefed = instance.respond_to?(:deref) ? instance.deref : instance
-      if derefed.object_id == instance.object_id
+      deref_node_path = JSI::JSON::Pointer.new(@path).deref(@document).reference_tokens
+      if deref_node_path == @path
         self
       else
-        self.class.new(derefed, ancestor_jsi: @ancestor_jsi)
+        self.class.new(Base::NOINSTANCE, document: @document, path: deref_node_path, ancestor_jsi: @ancestor_jsi)
       end
     end
 
@@ -152,12 +189,12 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def modified_copy(&block)
-      modified_instance = Typelike.modified_copy(instance, &block)
-      self.class.new(modified_instance, ancestor_jsi: @ancestor_jsi)
+      modified_document = JSON::Pointer.new(@path).modified_document_copy(@document, &block)
+      self.class.new(Base::NOINSTANCE, document: modified_document, path: @path, ancestor_jsi: @ancestor_jsi)
     end
 
     def fragment
-      instance.fragment
+      JSON::Pointer.new(@path).fragment
     end
 
     # @return [Array<String>] array of schema validation error messages for this instance
@@ -223,36 +260,41 @@ module JSI
 
     private
 
-    # assigns @instance to the given thing, raising if the thing is not appropriate for a JSI instance
-    # @param thing [Object] a JSON schema instance for this class's schema
-    def instance=(thing)
-      if instance_variable_defined?(:@instance)
-        raise(JSI::Bug, "overwriting instance is not supported")
+    # assigns @document
+    # @param document [Object]
+    # @raise [JSI::Bug] attempting to overwrite an already-set @document will raise
+    def document=(document)
+      if instance_variable_defined?(:@document)
+        raise(JSI::Bug, "overwriting document is not supported")
       end
-      if thing.is_a?(JSI::Base)
-        raise(TypeError, "assigning another JSI::Base instance to #{self.class.inspect} instance is incorrect. received: #{thing.pretty_inspect.chomp}")
-      elsif thing.is_a?(Schema)
-        raise(TypeError, "assigning a schema to #{self.class.inspect} instance is incorrect. received: #{thing.pretty_inspect.chomp}")
-      else
-        @instance = thing
-      end
+      @document = document
     end
 
-    # assigns a subscript, taking care of memoization and unwrapping a JSI if given.
+    # assigns @path
+    # @param path [Object] the path within @document of this JSI
+    # @raise [JSI::Bug] attempting to overwrite an already-set @path will raise
+    # @raise [TypeError]
+    def path=(path)
+      if instance_variable_defined?(:@path)
+        raise(JSI::Bug, "overwriting path is not supported")
+      end
+      # it'd be cute to check that path conforms to {'type' => 'array', 'items' => {'type' => 'string'}}
+      # but probably hard to bootstrap and not as efficient as simpler type checks
+      unless path.respond_to?(:to_ary)
+        raise(TypeError, "path must respond to #to_ary; got: #{path.inspect}")
+      end
+      @path = path.to_ary
+    end
+
+    # assigns a subscript, unwrapping a JSI if given.
     # @param subscript [Object] the bit between the [ and ]
     # @param value [JSI::Base, Object] the value to be assigned
     def subscript_assign(subscript, value)
-      clear_memo(:[], subscript)
+      clear_memo(:[])
       if value.is_a?(Base)
         instance[subscript] = value.instance
       else
         instance[subscript] = value
-      end
-    end
-
-    def check_can_get_parents!
-      unless @ancestor_jsi && @ancestor_jsi.instance.is_a?(JSI::JSON::Node)
-        raise(TypeError, "cannot get parents of JSI for instance that is not a JSI::JSON::Node. please wrap the root of the instance as a JSI::JSON::Node and instantiate from that in order to get parents. instance is: #{instance.pretty_inspect.chomp}")
       end
     end
 
@@ -308,24 +350,23 @@ module JSI
     #   key property_name_. if there is a subschema defined for that property
     #   on this JSI's schema, returns the instance's subscript as a JSI
     #   instiation of that subschema.
-    def [](property_name_)
-      memoize(:[], property_name_) do |property_name|
+    def [](property_name)
+      memoize(:[], property_name, jsi_instance_sub(property_name), jsi_instance_hash_pubsend(:key?, property_name)) do |property_name_, instance_property_value, instance_property_key|
         begin
-          instance_property_value = jsi_instance_sub(property_name)
-
-          property_schema = schema.subschema_for_property(property_name)
+          property_schema = schema.subschema_for_property(property_name_)
           property_schema = property_schema && property_schema.match_to_instance(instance_property_value)
+          subpath = @path + [property_name_]
 
-          if !jsi_instance_hash_pubsend(:key?, property_name) && property_schema && property_schema.schema_object.key?('default')
+          if !instance_property_key && property_schema && property_schema.schema_object.key?('default')
             # use the default value
             default = property_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              class_for_schema(property_schema).new(default, ancestor_jsi: @ancestor_jsi)
+              class_for_schema(property_schema).new(default, ancestor_jsi: @ancestor_jsi || self)
             else
               default
             end
           elsif property_schema && (instance_property_value.respond_to?(:to_hash) || instance_property_value.respond_to?(:to_ary))
-            class_for_schema(property_schema).new(instance_property_value, ancestor_jsi: @ancestor_jsi)
+            class_for_schema(property_schema).new(Base::NOINSTANCE, document: @document, path: subpath, ancestor_jsi: @ancestor_jsi || self)
           else
             instance_property_value
           end
@@ -396,24 +437,23 @@ module JSI
     # @return [JSI::Base, Object] the instance's subscript value at the given index
     #   i. if there is a subschema defined for that index on this JSI's schema,
     #   returns the instance's subscript as a JSI instiation of that subschema.
-    def [](i_)
-      memoize(:[], i_) do |i|
+    def [](i)
+      memoize(:[], i, jsi_instance_sub(i), jsi_instance_ary_pubsend(:each_index).to_a.include?(i)) do |i_, instance_idx_value, i_in_range|
         begin
-          instance_idx_value = jsi_instance_sub(i)
-
-          index_schema = schema.subschema_for_index(i)
+          index_schema = schema.subschema_for_index(i_)
           index_schema = index_schema && index_schema.match_to_instance(instance_idx_value)
+          subpath = @path + [i_]
 
-          if !jsi_instance_ary_pubsend(:each_index).to_a.include?(i) && index_schema && index_schema.schema_object.key?('default')
+          if !i_in_range && index_schema && index_schema.schema_object.key?('default')
             # use the default value
             default = index_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              class_for_schema(index_schema).new(default, ancestor_jsi: @ancestor_jsi)
+              class_for_schema(index_schema).new(default, ancestor_jsi: @ancestor_jsi || self)
             else
               default
             end
           elsif index_schema && (instance_idx_value.respond_to?(:to_hash) || instance_idx_value.respond_to?(:to_ary))
-            class_for_schema(index_schema).new(instance_idx_value, ancestor_jsi: @ancestor_jsi)
+            class_for_schema(index_schema).new(Base::NOINSTANCE, document: @document, path: subpath, ancestor_jsi: @ancestor_jsi || self)
           else
             instance_idx_value
           end
