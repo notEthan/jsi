@@ -83,7 +83,7 @@ module JSON
       # takes a root json document and evaluates this pointer through the document, returning the value
       # pointed to by this pointer.
       def evaluate(document)
-        reference_tokens.inject(document) do |value, token|
+        res = reference_tokens.inject(document) do |value, token|
           if value.respond_to?(:to_ary)
             if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
               token = token.to_i
@@ -104,6 +104,7 @@ module JSON
             raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} cannot be resolved in #{value.inspect}")
           end
         end
+        res
       end
 
       # the pointer string representation of this Pointer
