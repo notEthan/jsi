@@ -10,6 +10,7 @@ module JSI
   end
 
   autoload :JSON, 'jsi/json'
+  autoload :PathedNode, 'jsi/pathed_node'
   autoload :Typelike, 'jsi/typelike_modules'
   autoload :Hashlike, 'jsi/typelike_modules'
   autoload :Arraylike, 'jsi/typelike_modules'
