@@ -173,25 +173,31 @@ describe JSI::Base do
       end
     end
   end
-  describe '#parents, #parent' do
+  describe '#parent_jsis, #parent_jsi' do
     let(:schema_content) { {'properties' => {'foo' => {'properties' => {'bar' => {'properties' => {'baz' => {}}}}}}} }
     let(:document) { {'foo' => {'bar' => {'baz' => {}}}} }
-    describe 'no parents' do
+    describe 'no parent_jsis' do
       it 'has none' do
         assert_equal([], subject.parents)
+        assert_equal([], subject.parent_jsis.to_a)
         assert_equal(nil, subject.parent)
+        assert_equal(nil, subject.parent_jsi)
       end
     end
-    describe 'one parent' do
+    describe 'one parent_jsi' do
       it 'has one' do
         assert_equal([subject], subject.foo.parents)
+        assert_equal([subject], subject.foo.parent_jsis.to_a)
         assert_equal(subject, subject.foo.parent)
+        assert_equal(subject, subject.foo.parent_jsi)
       end
     end
-    describe 'more parents' do
+    describe 'more parent_jsis' do
       it 'has more' do
         assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.parents)
+        assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.parent_jsis.to_a)
         assert_equal(subject.foo.bar, subject.foo.bar.baz.parent)
+        assert_equal(subject.foo.bar, subject.foo.bar.baz.parent_jsi)
       end
     end
   end

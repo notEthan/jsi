@@ -109,7 +109,7 @@ module JSI
     # a document (e.g. a plain hash or array).
     #
     # @return [Array<JSI::Base>]
-    def parents
+    def parent_jsis
       check_can_get_parents!
       parent = @ancestor_jsi
       (@ancestor_jsi.instance.pointer.reference_tokens.size...self.instance.pointer.reference_tokens.size).map do |i|
@@ -119,12 +119,17 @@ module JSI
       end.reverse
     end
 
-    # the immediate parent of this JSI. nil if no parent(s) are known.
+    # the immediate parent of this JSI. nil if there is no parent.
     #
     # @return [JSI::Base, nil]
-    def parent
-      parents.first
+    def parent_jsi
+      parent_jsis.first
     end
+
+    # @deprecated
+    alias_method :parents, :parent_jsis
+    # @deprecated
+    alias_method :parent, :parent_jsi
 
     # if this JSI is a $ref then the $ref is followed. otherwise this JSI
     # is returned.
