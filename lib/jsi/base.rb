@@ -1,14 +1,14 @@
 # frozen_string_literal: true
 
 module JSI
-  # the base class for representing and instantiating a JSON Schema.
+  # JSI::Base is the class from which JSI schema classes inherit. a JSON schema instance is represented as a
+  # ruby instance of such a subclass of JSI::Base.
   #
-  # a class inheriting from JSI::Base represents a JSON Schema. an instance of
-  # that class represents a JSON schema instance.
+  # instances are described by a set of one or more JSON schemas. JSI dynamically creates a subclass of
+  # JSI::Base for each set of JSON schemas which describe a schema instance that is to be instantiated.
+  # a JSI instance of such a subclass represents a JSON schema instance described by that set of schemas.
   #
-  # as such, JSI::Base itself is not intended to be instantiated - subclasses
-  # are dynamically created for schemas using {JSI.class_for_schema}, and these
-  # are what are used to instantiate and represent JSON schema instances.
+  # the JSI::Base class itself is not intended to be instantiated.
   class Base
     include Util::Memoize
     include Enumerable
@@ -32,8 +32,8 @@ module JSI
         @in_schema_classes
       end
 
-      # @return [String] a string representing the class, indicating the schemas represented by their module
-      #   name or a URI
+      # @return [String] a string indicating a class name if one is defined, as well as the schema module name
+      #   and/or schema URI of each schema the class represents.
       def inspect
         if !respond_to?(:jsi_class_schemas)
           super
@@ -112,7 +112,7 @@ module JSI
     # a parsed JSON document consisting of Hash, Array, or sometimes a basic
     # type, but this is in no way enforced and a JSI may wrap any object.
     #
-    # @param instance [Object] the JSON Schema instance being represented
+    # @param instance [Object] the JSON Schema instance to be represented as a JSI
     # @param jsi_document [Object] for internal use. the instance may be specified as a
     #   node in the `jsi_document` param, pointed to by `jsi_ptr`. the param `instance`
     #   MUST be `NOINSTANCE` to use the jsi_document + jsi_ptr form. `jsi_document` MUST

@@ -128,7 +128,7 @@ module JSI
       JSI::SchemaClasses.module_for_schema(self)
     end
 
-    # @return [Class < JSI::Base] a JSI class for this one schema
+    # @return [Class subclassing JSI::Base] a JSI class (subclass of JSI::Base) representing this schema.
     def jsi_schema_class
       JSI.class_for_schemas(Set[self])
     end
@@ -138,8 +138,9 @@ module JSI
     #
     # any parameters are passed to JSI::Base#initialize, but none are normally used.
     #
-    # @return [JSI::Base] a JSI whose instance is the given instance and whose schemas are matched from this
-    #   schema.
+    # @param instance [Object] the JSON Schema instance to be represented as a JSI
+    # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are matched
+    #   from this schema.
     def new_jsi(instance, *a, &b)
       JSI.class_for_schemas(match_to_instance(instance)).new(instance, *a, &b)
     end
