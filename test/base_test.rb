@@ -408,15 +408,6 @@ describe JSI::Base do
       assert_equal(['a'], JSI.class_for_schema({}).new(['a']).as_json(some_option: true))
     end
   end
-  describe 'overwrite schema instance with instance=' do
-    # this error message indicates an internal bug (hence Bug class), so there isn't an intended way to
-    # trigger it using JSI::Base properly. we use it improperly just to test that code path. this
-    # is definitely not defined behavior.
-    it 'errors' do
-      err = assert_raises(JSI::Bug) { subject.send(:instance=, {'foo' => 'bar'}) }
-      assert_match(%r(\Aoverwriting instance is not supported\z), err.message)
-    end
-  end
   describe 'equality between different classes of JSI::Base subclasses' do
     let(:subject_subclass) { Class.new(JSI.class_for_schema(schema)).new(instance) }
 
