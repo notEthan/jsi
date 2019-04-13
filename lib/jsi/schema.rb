@@ -5,7 +5,10 @@ module JSI
   # object, JSI::Schema is a relatively simple class to abstract useful methods
   # applied to a JSON Schema.
   class Schema
+    autoload :DescribeInstances, 'jsi/schema/describe_instances'
+
     include Memoize
+    extend DescribeInstances
 
     class << self
       def from_object(schema_object)
