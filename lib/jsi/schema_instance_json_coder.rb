@@ -23,6 +23,11 @@ module JSI
     class DumpError < Error
     end
 
+    # @param loaded_class [Class] the class to instantiate with database column data
+    # @param string [Boolean] whether the column data is a string
+    # @param array [Boolean] whether the column data represents one instance of loaded_class, or an array of them
+    # @param next_coder [nil, #load and #dump] the loaded data may be passed through a subsequent
+    #   serializer if desired
     def initialize(loaded_class, string: false, array: false, next_coder: nil)
       @loaded_class = loaded_class
       # this notes the order of the keys as they were in the json, used by dump_object to generate
@@ -34,6 +39,11 @@ module JSI
       @next_coder = next_coder
     end
 
+    # loads the database column to instances of #loaded_class
+    #
+    # @param column_data [String, Object] the raw column data. a String if #string is true (for a 
+    #   string column); if the column is json, the json data.
+    # @return [loaded_class instance, Array<loaded_class instance>]
     def load(column_data)
       return nil if column_data.nil?
       data = @string ? ::JSON.parse(column_data) : column_data
@@ -49,6 +59,8 @@ module JSI
       object
     end
 
+    # @param object[loaded_class instance, Array<loaded class instance>] data to be serialized to
+    # @return [String, Object] data to write directly to the column
     def dump(object)
       object = @next_coder.dump(object) if @next_coder
       return nil if object.nil?
@@ -67,15 +79,20 @@ module JSI
       @string ? ::JSON.generate(jsonifiable) : jsonifiable
     end
   end
+
   # this is a ActiveRecord serialization class intended to store JSON in the
   # database column and expose a given JSI::Base subclass once loaded
-  # on a model instance.
+  # on a model instance. see {JSI::ObjectJSONCoder} for more information.
   class SchemaInstanceJSONCoder < ObjectJSONCoder
     private
+    # @param data [Object]
+    # @return [loaded_class]
     def load_object(data)
       @loaded_class.new(data)
     end
 
+    # @param object [loaded_class]
+    # @return [Object]
     def dump_object(object)
       JSI::Typelike.as_json(object)
     end
