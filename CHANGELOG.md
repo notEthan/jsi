@@ -1,3 +1,7 @@
+# v0.0.4
+
+- minor bugfixes / improvements
+
 # v0.0.3
 
 - JSI::Base returns an instance of the default value for the schema if applicable
