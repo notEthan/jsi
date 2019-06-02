@@ -13,6 +13,7 @@ module JSI
   class Base
     include Memoize
     include Enumerable
+    include PathedNode
 
     class << self
       # is the constant JSI::SchemaClasses::{self.schema_classes_const_name} defined?
@@ -143,13 +144,12 @@ module JSI
     # a JSI which is an ancestor_jsi of this
     attr_reader :ancestor_jsi
 
-    # the instance of the json-schema
-    def jsi_instance
-      instance = @jsi_ptr.evaluate(@jsi_document)
-      instance
-    end
+    alias_method :node_document, :jsi_document
+    alias_method :node_ptr, :jsi_ptr
 
-    alias_method :instance, :jsi_instance
+    # the instance of the json-schema
+    alias_method :jsi_instance, :node_content
+    alias_method :instance, :node_content
 
     # each is overridden by BaseHash or BaseArray when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
@@ -229,7 +229,7 @@ module JSI
     #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
     # @return [JSI::Base, self]
     def deref(&block)
-      @jsi_ptr.deref(@jsi_document) do |deref_ptr|
+      node_ptr_deref do |deref_ptr|
         jsi_from_root = deref_ptr.evaluate(document_root_node)
         if jsi_from_root.is_a?(JSI::Base)
           return jsi_from_root.tap(&(block || Util::NOOP))
