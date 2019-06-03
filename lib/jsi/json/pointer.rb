@@ -130,6 +130,14 @@ module JSI
         end
       end
 
+      # appends the given token to this Pointer's reference tokens and returns the result
+      #
+      # @param token [Object]
+      # @return [JSI::JSON::Pointer] pointer to a child node of this pointer with the given token
+      def [](token)
+        Pointer.new(reference_tokens + [token], type: @type)
+      end
+
       # @return [String] string representation of this Pointer
       def inspect
         "#<#{self.class.inspect} #{representation_s}>"
