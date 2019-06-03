@@ -182,52 +182,8 @@ module JSI
 
       # takes a block. the block is yielded the content of this node. the block MUST return a modified
       # copy of that content (and NOT modify the object it is given).
-      def modified_copy
-        # we need to preserve the rest of the document, but modify the content at our path.
-        #
-        # this is actually a bit tricky. we can't modify the original document, obviously.
-        # we could do a deep copy, but that's expensive. instead, we make a copy of each array
-        # or hash in the path above this node. this node's content is modified by the caller, and
-        # that is recursively merged up to the document root. the recursion is done with a
-        # y combinator, for no other reason than that was a fun way to implement it.
-        modified_document = JSI::Util.ycomb do |rec|
-          proc do |subdocument, subpath|
-            if subpath == []
-              yield(subdocument)
-            else
-              car = subpath[0]
-              cdr = subpath[1..-1]
-              if subdocument.respond_to?(:to_hash)
-                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_hash)[car]
-                car_object = rec.call(subdocument_car, cdr)
-                if car_object.object_id == subdocument_car.object_id
-                  subdocument
-                else
-                  (subdocument.respond_to?(:merge) ? subdocument : subdocument.to_hash).merge({car => car_object})
-                end
-              elsif subdocument.respond_to?(:to_ary)
-                if car.is_a?(String) && car =~ /\A\d+\z/
-                  car = car.to_i
-                end
-                unless car.is_a?(Integer)
-                  raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect.chomp}")
-                end
-                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_ary)[car]
-                car_object = rec.call(subdocument_car, cdr)
-                if car_object.object_id == subdocument_car.object_id
-                  subdocument
-                else
-                  (subdocument.respond_to?(:[]=) ? subdocument : subdocument.to_ary).dup.tap do |arr|
-                    arr[car] = car_object
-                  end
-                end
-              else
-                raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect.chomp}")
-              end
-            end
-          end
-        end.call(document, pointer.reference_tokens)
-        Node.new_by_type(modified_document, pointer)
+      def modified_copy(&block)
+        Node.new_by_type(pointer.modified_document_copy(document, &block), pointer)
       end
 
       # meta-information about the object, outside the content. used by #inspect / #pretty_print

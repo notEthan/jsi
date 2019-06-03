@@ -143,6 +143,65 @@ module JSI
         Pointer.new(reference_tokens + [token], type: @type)
       end
 
+      # takes a document and a block. the block is yielded the content of the given document at this
+      # pointer's location. the block must result a modified copy of that content (and MUST NOT modify
+      # the object it is given). this modified copy of that content is incorporated into a modified copy
+      # of the given document, which is then returned. the structure and contents of the document outside
+      # the path pointed to by this pointer is not modified.
+      #
+      # @param document [Object] the document to apply this pointer to
+      # @yield [Object] the content this pointer applies to in the given document
+      #   the block must result in the new content which will be placed in the modified document copy.
+      # @return [Object] a copy of the given document, with the content this pointer applies to
+      #   replaced by the result of the block
+      def modified_document_copy(document, &block)
+        # we need to preserve the rest of the document, but modify the content at our path.
+        #
+        # this is actually a bit tricky. we can't modify the original document, obviously.
+        # we could do a deep copy, but that's expensive. instead, we make a copy of each array
+        # or hash in the path above this node. this node's content is modified by the caller, and
+        # that is recursively merged up to the document root. the recursion is done with a
+        # y combinator, for no other reason than that was a fun way to implement it.
+        modified_document = JSI::Util.ycomb do |rec|
+          proc do |subdocument, subpath|
+            if subpath == []
+              Typelike.modified_copy(subdocument, &block)
+            else
+              car = subpath[0]
+              cdr = subpath[1..-1]
+              if subdocument.respond_to?(:to_hash)
+                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_hash)[car]
+                car_object = rec.call(subdocument_car, cdr)
+                if car_object.object_id == subdocument_car.object_id
+                  subdocument
+                else
+                  (subdocument.respond_to?(:merge) ? subdocument : subdocument.to_hash).merge({car => car_object})
+                end
+              elsif subdocument.respond_to?(:to_ary)
+                if car.is_a?(String) && car =~ /\A\d+\z/
+                  car = car.to_i
+                end
+                unless car.is_a?(Integer)
+                  raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect.chomp}")
+                end
+                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_ary)[car]
+                car_object = rec.call(subdocument_car, cdr)
+                if car_object.object_id == subdocument_car.object_id
+                  subdocument
+                else
+                  (subdocument.respond_to?(:[]=) ? subdocument : subdocument.to_ary).dup.tap do |arr|
+                    arr[car] = car_object
+                  end
+                end
+              else
+                raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect.chomp}")
+              end
+            end
+          end
+        end.call(document, reference_tokens)
+        modified_document
+      end
+
       # @return [String] string representation of this Pointer
       def inspect
         "#<#{self.class.inspect} #{representation_s}>"
