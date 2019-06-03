@@ -122,31 +122,15 @@ module JSI
       # does not have a $ref, or if what its $ref cannot be found, this node is returned.
       #
       # currently only $refs pointing within the same document are followed.
+      #
+      # @return [JSI::JSON::Node] dereferenced node, or this node
       def deref
-        content = self.content
-
-        if content.respond_to?(:to_hash)
-          ref = (content.respond_to?(:[]) ? content : content.to_hash)['$ref']
+        deref_ptr = pointer.deref(document)
+        if deref_ptr == pointer
+          self
+        else
+          Node.new_by_type(document, deref_ptr)
         end
-        return self unless ref.is_a?(String)
-
-        if ref[/\A#/]
-          return self.class.new_by_type(document, JSI::JSON::Pointer.from_fragment(ref)).deref
-        end
-
-        # HAX for how google does refs and ids
-        if document_node['schemas'].respond_to?(:to_hash)
-          if document_node['schemas'][ref]
-            return document_node['schemas'][ref]
-          end
-          _, deref_by_id = document_node['schemas'].detect { |_k, schema| schema['id'] == ref }
-          if deref_by_id
-            return deref_by_id
-          end
-        end
-
-        #raise(NotImplementedError, "cannot dereference #{ref}") # TODO
-        return self
       end
 
       # a Node at the root of the document

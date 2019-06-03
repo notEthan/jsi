@@ -202,6 +202,44 @@ module JSI
         modified_document
       end
 
+      # if this Pointer points at a $ref node within the given document, #deref attempts
+      # to follow that $ref and return a Pointer to the referenced location. otherwise,
+      # this Pointer is returned.
+      #
+      # if the content this Pointer points to in the document is not hash-like, does not
+      # have a $ref property, its $ref cannot be found, or its $ref points outside the document,
+      # this pointer is returned.
+      #
+      # @param document [Object] the document this pointer applies to
+      # @return [Pointer] dereferenced pointer, or this pointer
+      def deref(document)
+        content = evaluate(document)
+
+        if content.respond_to?(:to_hash)
+          ref = (content.respond_to?(:[]) ? content : content.to_hash)['$ref']
+        end
+        return self unless ref.is_a?(String)
+
+        if ref[/\A#/]
+          return Pointer.from_fragment(ref)
+        end
+
+        # HAX for how google does refs and ids
+        if document['schemas'].respond_to?(:to_hash)
+          if document['schemas'][ref]
+            return Pointer.new(['schemas', ref], type: 'hax')
+          end
+          document['schemas'].each do |k, schema|
+            if schema['id'] == ref
+              return Pointer.new(['schemas', k], type: 'hax')
+            end
+          end
+        end
+
+        #raise(NotImplementedError, "cannot dereference #{ref}") # TODO
+        return self
+      end
+
       # @return [String] string representation of this Pointer
       def inspect
         "#<#{self.class.inspect} #{representation_s}>"
