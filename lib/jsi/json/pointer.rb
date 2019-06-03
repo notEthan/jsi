@@ -11,66 +11,70 @@ module JSI
       class ReferenceError < Error
       end
 
-      # parse a fragment to an array of reference tokens
+      # parse a URI-escaped fragment and instantiate as a JSI::JSON::Pointer
       #
-      # #/foo/bar
+      #     ptr = JSI::JSON::Pointer.from_fragment('#/foo/bar')
+      #     => #<JSI::JSON::Pointer fragment: #/foo/bar>
+      #     ptr.reference_tokens
+      #     => ["foo", "bar"]
       #
-      # => ['foo', 'bar']
+      # with URI escaping:
       #
-      # #/foo%20bar
+      #     ptr = JSI::JSON::Pointer.from_fragment('#/foo%20bar')
+      #     => #<JSI::JSON::Pointer fragment: #/foo%20bar>
+      #     ptr.reference_tokens
+      #     => ["foo bar"]
       #
-      # => ['foo bar']
-      def self.parse_fragment(fragment)
+      # @param fragment [String] a fragment containing a pointer (starting with #)
+      # @return [JSI::JSON::Pointer]
+      def self.from_fragment(fragment)
         fragment = Addressable::URI.unescape(fragment)
         match = fragment.match(/\A#/)
         if match
-          parse_pointer(match.post_match)
+          from_pointer(match.post_match, type: 'fragment')
         else
           raise(PointerSyntaxError, "Invalid fragment syntax in #{fragment.inspect}: fragment must begin with #")
         end
       end
 
-      # parse a pointer to an array of reference tokens
+      # parse a pointer string and instantiate as a JSI::JSON::Pointer
       #
-      # /foo
+      #     ptr1 = JSI::JSON::Pointer.from_pointer('/foo')
+      #     => #<JSI::JSON::Pointer pointer: /foo>
+      #     ptr1.reference_tokens
+      #     => ["foo"]
       #
-      # => ['foo']
+      #     ptr2 = JSI::JSON::Pointer.from_pointer('/foo~0bar/baz~1qux')
+      #     => #<JSI::JSON::Pointer pointer: /foo~0bar/baz~1qux>
+      #     ptr2.reference_tokens
+      #     => ["foo~bar", "baz/qux"]
       #
-      # /foo~0bar/baz~1qux
-      #
-      # => ['foo~bar', 'baz/qux']
-      def self.parse_pointer(pointer_string)
+      # @param pointer_string [String] a pointer string
+      # @param type (for internal use) indicates the original representation of the pointer
+      # @return [JSI::JSON::Pointer]
+      def self.from_pointer(pointer_string, type: 'pointer')
         tokens = pointer_string.split('/', -1).map! do |piece|
           piece.gsub('~1', '/').gsub('~0', '~')
         end
         if tokens[0] == ''
-          tokens[1..-1]
+          new(tokens[1..-1], type: type)
         elsif tokens.empty?
-          tokens
+          new(tokens, type: type)
         else
           raise(PointerSyntaxError, "Invalid pointer syntax in #{pointer_string.inspect}: pointer must begin with /")
         end
       end
 
-      # initializes a JSI::JSON::Pointer from the given representation.
+      # initializes a JSI::JSON::Pointer from the given reference_tokens.
       #
-      # type may be one of:
-      #
-      # - :fragment - the representation is a fragment containing a pointer (starting with #)
-      # - :pointer - the representation is a pointer (starting with /)
-      # - :reference_tokens - the representation is an array of tokens referencing a path in a document
-      def initialize(type, representation)
-        @type = type
-        if type == :reference_tokens
-          reference_tokens = representation
-        elsif type == :fragment
-          reference_tokens = self.class.parse_fragment(representation)
-        elsif type == :pointer
-          reference_tokens = self.class.parse_pointer(representation)
-        else
-          raise ArgumentError, "invalid initialization type: #{type.inspect} with representation #{representation.inspect}"
+      # @param reference_tokens [Array<Object>]
+      # @param type [String, Symbol] one of 'pointer' or 'fragment'
+      def initialize(reference_tokens, type: nil)
+        unless reference_tokens.respond_to?(:to_ary)
+          raise(TypeError, "reference_tokens must be an array. got: #{reference_tokens.inspect}")
         end
-        @reference_tokens = reference_tokens.map(&:freeze).freeze
+        @reference_tokens = reference_tokens.to_ary.map(&:freeze).freeze
+        @type = type.is_a?(Symbol) ? type.to_s : type
       end
 
       attr_reader :reference_tokens
@@ -106,29 +110,36 @@ module JSI
         res
       end
 
-      # the pointer string representation of this Pointer
+      # @return [String] the pointer string representation of this Pointer
       def pointer
         reference_tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('')
       end
 
-      # the fragment string representation of this Pointer
+      # @return [String] the fragment string representation of this Pointer
       def fragment
         '#' + Addressable::URI.escape(pointer)
       end
 
+      # @return [String] string representation of this Pointer
+      def inspect
+        "#<#{self.class.inspect} #{representation_s}>"
+      end
+
+      # @return [String] string representation of this Pointer
       def to_s
-        "#<#{self.class.inspect} #{@type} = #{representation_s}>"
+        inspect
       end
 
       private
 
+      # @return [String] a representation of this pointer based on @type
       def representation_s
-        if @type == :fragment
-          fragment
-        elsif @type == :pointer
-          pointer
+        if @type == 'fragment'
+          "fragment: #{fragment}"
+        elsif @type == 'pointer'
+          "pointer: #{pointer}"
         else
-          reference_tokens.inspect
+          "reference_tokens: #{reference_tokens.inspect}"
         end
       end
     end

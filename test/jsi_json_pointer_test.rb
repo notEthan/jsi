@@ -35,13 +35,13 @@ describe JSI::JSON::Pointer do
         "/m~0n" ,     8,
       ]
       evaluations.each_slice(2) do |pointer, value|
-        assert_equal(value, JSI::JSON::Pointer.new(:pointer, pointer).evaluate(document))
+        assert_equal(value, JSI::JSON::Pointer.from_pointer(pointer).evaluate(document))
       end
     end
 
     it 'raises for invalid syntax' do
       err = assert_raises(JSI::JSON::Pointer::PointerSyntaxError) do
-        JSI::JSON::Pointer.new(:pointer, "this does not begin with slash").evaluate(document)
+        JSI::JSON::Pointer.from_pointer("this does not begin with slash").evaluate(document)
       end
       assert_equal("Invalid pointer syntax in \"this does not begin with slash\": pointer must begin with /", err.message)
     end
@@ -80,19 +80,27 @@ describe JSI::JSON::Pointer do
         '#/m~0n',       8,
       ]
       evaluations.each_slice(2) do |fragment, value|
-        assert_equal(value, JSI::JSON::Pointer.new(:fragment, fragment).evaluate(document))
+        assert_equal(value, JSI::JSON::Pointer.from_fragment(fragment).evaluate(document))
       end
     end
 
     it 'raises for invalid syntax' do
       err = assert_raises(JSI::JSON::Pointer::PointerSyntaxError) do
-        JSI::JSON::Pointer.new(:fragment, "this does not begin with #").evaluate(document)
+        JSI::JSON::Pointer.from_fragment("this does not begin with #").evaluate(document)
       end
       assert_equal("Invalid fragment syntax in \"this does not begin with #\": fragment must begin with #", err.message)
       err = assert_raises(JSI::JSON::Pointer::PointerSyntaxError) do
-        JSI::JSON::Pointer.new(:fragment, "#this does not begin with slash").evaluate(document)
+        JSI::JSON::Pointer.from_fragment("#this does not begin with slash").evaluate(document)
       end
       assert_equal("Invalid pointer syntax in \"this does not begin with slash\": pointer must begin with /", err.message)
+    end
+  end
+  describe 'initialize' do
+    describe 'invalid reference_tokens' do
+      it 'raises' do
+        err = assert_raises(TypeError) { JSI::JSON::Pointer.new({}) }
+        assert_equal("reference_tokens must be an array. got: {}", err.message)
+      end
     end
   end
 end

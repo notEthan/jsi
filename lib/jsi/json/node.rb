@@ -52,7 +52,7 @@ module JSI
         end
         @document = document
         @path = path.to_ary.dup.freeze
-        @pointer = JSI::JSON::Pointer.new(:reference_tokens, path)
+        @pointer = JSI::JSON::Pointer.new(path)
       end
 
       # the path of this Node within its document
@@ -129,7 +129,7 @@ module JSI
         return self unless ref.is_a?(String)
 
         if ref[/\A#/]
-          return self.class.new_by_type(document, JSI::JSON::Pointer.parse_fragment(ref)).deref
+          return self.class.new_by_type(document, JSI::JSON::Pointer.from_fragment(ref).reference_tokens).deref
         end
 
         # HAX for how google does refs and ids
