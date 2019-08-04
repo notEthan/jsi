@@ -1,9 +1,9 @@
 require_relative 'test_helper'
 
-describe JSI::SchemaInstanceJSONCoder do
+describe JSI::JSICoder do
   let(:schema_instance_class) { JSI.class_for_schema(properties: {foo: {}, bar: {}}) }
   let(:options) { {} }
-  let(:schema_instance_json_coder) { JSI::SchemaInstanceJSONCoder.new(schema_instance_class, options) }
+  let(:schema_instance_json_coder) { JSI::JSICoder.new(schema_instance_class, options) }
   describe 'json' do
     describe 'load' do
       it 'loads nil' do

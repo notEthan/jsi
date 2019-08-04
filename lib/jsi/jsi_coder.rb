@@ -1,6 +1,7 @@
 module JSI
   # this is a ActiveRecord serialization class intended to store JSON in the
-  # database column and expose a ruby class once loaded on a model instance.
+  # database column and expose a given JSI::Base subclass once loaded
+  # on a model instance.
   # this allows for better ruby idioms to access to properties, and definition
   # of related methods on the loaded class.
   #
@@ -15,7 +16,7 @@ module JSI
   # the column behind the attribute may be an actual JSON column (postgres json
   # or jsonb - hstore should work too if you only have string attributes) or a
   # serialized string, indicated by the keyword argument `string`.
-  class ObjectJSONCoder
+  class JSICoder
     class Error < StandardError
     end
     class LoadError < Error
@@ -78,12 +79,7 @@ module JSI
       end
       @string ? ::JSON.generate(jsonifiable) : jsonifiable
     end
-  end
 
-  # this is a ActiveRecord serialization class intended to store JSON in the
-  # database column and expose a given JSI::Base subclass once loaded
-  # on a model instance. see {JSI::ObjectJSONCoder} for more information.
-  class SchemaInstanceJSONCoder < ObjectJSONCoder
     private
     # @param data [Object]
     # @return [loaded_class]
