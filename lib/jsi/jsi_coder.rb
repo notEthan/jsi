@@ -25,26 +25,22 @@ module JSI
     end
 
     # @param loaded_class [Class] the class to instantiate with database column data
-    # @param string [Boolean] whether the column data is a string
     # @param array [Boolean] whether the column data represents one instance of loaded_class, or an array of them
-    def initialize(loaded_class, string: false, array: false)
+    def initialize(loaded_class, array: false)
       @loaded_class = loaded_class
       # this notes the order of the keys as they were in the json, used by dump_object to generate
       # json that is equivalent to the json/jsonifiable that came in, so that AR's #changed_attributes
       # can tell whether the attribute has been changed.
       @loaded_class.send(:attr_accessor, :object_json_coder_keys_order)
-      @string = string
       @array = array
     end
 
     # loads the database column to instances of #loaded_class
     #
-    # @param column_data [String, Object] the raw column data. a String if #string is true (for a 
-    #   string column); if the column is json, the json data.
+    # @param data [Object] the raw json column data.
     # @return [loaded_class instance, Array<loaded_class instance>]
-    def load(column_data)
-      return nil if column_data.nil?
-      data = @string ? ::JSON.parse(column_data) : column_data
+    def load(data)
+      return nil if data.nil?
       object = if @array
         unless data.respond_to?(:to_ary)
           raise TypeError, "expected array-like column data; got: #{data.class}: #{data.inspect}"
@@ -57,7 +53,7 @@ module JSI
     end
 
     # @param object[loaded_class instance, Array<loaded class instance>] data to be serialized to
-    # @return [String, Object] data to write directly to the column
+    # @return [Object] data to write directly to the column
     def dump(object)
       return nil if object.nil?
       jsonifiable = begin
@@ -72,7 +68,7 @@ module JSI
           dump_object(object)
         end
       end
-      @string ? ::JSON.generate(jsonifiable) : jsonifiable
+      jsonifiable
     end
 
     private
