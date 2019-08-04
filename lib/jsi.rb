@@ -19,7 +19,6 @@ module JSI
   autoload :BaseHash, 'jsi/base'
   autoload :SchemaClasses, 'jsi/base'
   autoload :ObjectJSONCoder, 'jsi/schema_instance_json_coder'
-  autoload :StructJSONCoder, 'jsi/struct_json_coder'
   autoload :SchemaInstanceJSONCoder, 'jsi/schema_instance_json_coder'
 
   # @return [Class subclassing JSI::Base] a JSI class which represents the
