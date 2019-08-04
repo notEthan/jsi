@@ -28,10 +28,6 @@ module JSI
     # @param array [Boolean] whether the column data represents one instance of loaded_class, or an array of them
     def initialize(loaded_class, array: false)
       @loaded_class = loaded_class
-      # this notes the order of the keys as they were in the json, used by dump_object to generate
-      # json that is equivalent to the json/jsonifiable that came in, so that AR's #changed_attributes
-      # can tell whether the attribute has been changed.
-      @loaded_class.send(:attr_accessor, :object_json_coder_keys_order)
       @array = array
     end
 
