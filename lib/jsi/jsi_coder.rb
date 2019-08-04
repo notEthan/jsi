@@ -27,9 +27,7 @@ module JSI
     # @param loaded_class [Class] the class to instantiate with database column data
     # @param string [Boolean] whether the column data is a string
     # @param array [Boolean] whether the column data represents one instance of loaded_class, or an array of them
-    # @param next_coder [nil, #load and #dump] the loaded data may be passed through a subsequent
-    #   serializer if desired
-    def initialize(loaded_class, string: false, array: false, next_coder: nil)
+    def initialize(loaded_class, string: false, array: false)
       @loaded_class = loaded_class
       # this notes the order of the keys as they were in the json, used by dump_object to generate
       # json that is equivalent to the json/jsonifiable that came in, so that AR's #changed_attributes
@@ -37,7 +35,6 @@ module JSI
       @loaded_class.send(:attr_accessor, :object_json_coder_keys_order)
       @string = string
       @array = array
-      @next_coder = next_coder
     end
 
     # loads the database column to instances of #loaded_class
@@ -56,14 +53,12 @@ module JSI
       else
         load_object(data)
       end
-      object = @next_coder.load(object) if @next_coder
       object
     end
 
     # @param object[loaded_class instance, Array<loaded class instance>] data to be serialized to
     # @return [String, Object] data to write directly to the column
     def dump(object)
-      object = @next_coder.dump(object) if @next_coder
       return nil if object.nil?
       jsonifiable = begin
         if @array
