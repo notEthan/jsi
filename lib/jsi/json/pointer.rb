@@ -77,6 +77,10 @@ module JSI
 
       # takes a root json document and evaluates this pointer through the document, returning the value
       # pointed to by this pointer.
+      #
+      # @param document [#to_ary, #to_hash] the document against which we will evaluate this pointer
+      # @return [Object] the content of the document pointed to by this pointer
+      # @raise [JSI::JSON::Pointer::ReferenceError] the document does not contain the path this pointer references
       def evaluate(document)
         res = reference_tokens.inject(document) do |value, token|
           if value.respond_to?(:to_ary)
