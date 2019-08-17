@@ -1,24 +1,32 @@
 module JSI
-  # this is a ActiveRecord serialization class intended to store JSON in the
-  # database column and expose a given JSI::Base subclass once loaded
-  # on a model instance.
-  # this allows for better ruby idioms to access to properties, and definition
-  # of related methods on the loaded class.
+  # this is an ActiveRecord serialization coder intended to serialize between
+  # JSON-compatible objects on the database side, and a JSI instance loaded on
+  # the model attribute.
   #
-  # the first argument, `loaded_class`, is the class which will be used to
-  # instantiate the column data. properties of the loaded class will correspond
-  # to keys of the json object in the database.
+  # on its own this coder is useful with a JSON database column. in order to
+  # serialize further to a string of JSON, or to YAML, the gem `arms` allows
+  # coders to be chained together. for example, for a table `foos` and a column
+  # `preferences_json` which is an actual json column, and `preferences_txt`
+  # which is a string:
+  #
+  #     Preferences = JSI.class_for_schema(preferences_json_schema)
+  #     class Foo < ActiveRecord::Base
+  #       # as a single serializer, loads a Preferences instance from a json column
+  #       serialize 'preferences', JSI::JSICoder.new(Preferences)
+  #
+  #       # for a text column, arms_serialize will go from JSI to JSON-compatible
+  #       # objects to a string. the symbol `:jsi` is a shortcut for JSI::JSICoder.
+  #       arms_serialize 'preferences', [:jsi, Preferences], :json
+  #     end
   #
   # the column data may be either a single instance of the loaded class
   # (represented as one json object) or an array of them (represented as a json
   # array of json objects), indicated by the keyword argument `array`.
-  #
-  # the column behind the attribute may be an actual JSON column (postgres json
-  # or jsonb - hstore should work too if you only have string attributes) or a
-  # serialized string, indicated by the keyword argument `string`.
   class JSICoder
-    # @param loaded_class [Class] the class to instantiate with database column data
-    # @param array [Boolean] whether the column data represents one instance of loaded_class, or an array of them
+    # @param loaded_class [Class] the JSI::Base subclass which #load will instantiate
+    # @param array [Boolean] whether the dumped data represent one instance of loaded_class,
+    #   or an array of them. note that it may be preferable to have loaded_class simply be
+    #   an array schema class.
     def initialize(loaded_class, array: false)
       @loaded_class = loaded_class
       @array = array
@@ -26,8 +34,9 @@ module JSI
 
     # loads the database column to instances of #loaded_class
     #
-    # @param data [Object] the raw json column data.
-    # @return [loaded_class instance, Array<loaded_class instance>]
+    # @param data [Object, Array, nil] the dumped schema instance(s) of the JSI(s)
+    # @return [loaded_class instance, Array<loaded_class instance>, nil] the JSI or JSIs
+    #   containing the schema instance(s), or nil if data is nil
     def load(data)
       return nil if data.nil?
       object = if @array
@@ -41,8 +50,9 @@ module JSI
       object
     end
 
-    # @param object[loaded_class instance, Array<loaded class instance>] data to be serialized to
-    # @return [Object] data to write directly to the column
+    # @param object [loaded_class instance, Array<loaded_class instance>, nil] the JSI or array
+    #   of JSIs containing the schema instance(s)
+    # @return [Object, Array, nil] the schema instance(s) of the JSI(s), or nil if object is nil
     def dump(object)
       return nil if object.nil?
       jsonifiable = begin
