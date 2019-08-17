@@ -17,13 +17,6 @@ module JSI
   # or jsonb - hstore should work too if you only have string attributes) or a
   # serialized string, indicated by the keyword argument `string`.
   class JSICoder
-    class Error < StandardError
-    end
-    class LoadError < Error
-    end
-    class DumpError < Error
-    end
-
     # @param loaded_class [Class] the class to instantiate with database column data
     # @param array [Boolean] whether the column data represents one instance of loaded_class, or an array of them
     def initialize(loaded_class, array: false)
@@ -55,7 +48,7 @@ module JSI
       jsonifiable = begin
         if @array
           unless object.respond_to?(:to_ary)
-            raise DumpError, "expected array-like attribute; got: #{object.class}: #{object.inspect}"
+            raise(TypeError, "expected array-like attribute; got: #{object.class}: #{object.inspect}")
           end
           object.map do |el|
             dump_object(el)
