@@ -1,7 +1,10 @@
 require_relative 'test_helper'
 
 describe JSI::JSICoder do
-  let(:schema_instance_class) { JSI.class_for_schema(properties: {foo: {}, bar: {}}) }
+  let(:schema) do
+    {properties: {foo: {}, bar: {}}}
+  end
+  let(:schema_instance_class) { JSI.class_for_schema(schema) }
   let(:options) { {} }
   let(:schema_instance_json_coder) { JSI::JSICoder.new(schema_instance_class, options) }
   describe 'json' do
@@ -30,6 +33,20 @@ describe JSI::JSICoder do
           end
         end
       end
+      describe 'array schema' do
+        let(:schema) { {items: {properties: {foo: {}, bar: {}}}} }
+        it 'loads an array of hashes' do
+          data = [{"foo" => "bar"}, {"foo" => "baz"}]
+          assert_equal(schema_instance_class.new([{'foo' => 'bar'}, {'foo' => 'baz'}]), schema_instance_json_coder.load(data))
+        end
+        it 'loads an empty array' do
+          assert_equal(schema_instance_class.new([]), schema_instance_json_coder.load([]))
+        end
+        it 'loads a not an array' do
+          instance = Object.new
+          assert_equal(schema_instance_class.new(instance), schema_instance_json_coder.load(instance))
+        end
+      end
     end
     describe 'dump' do
       it 'dumps nil' do
@@ -53,6 +70,13 @@ describe JSI::JSICoder do
         let(:options) { {array: true} }
         it 'dumps an array of schema_instances' do
           schema_instances = [schema_instance_class.new(foo: 'x', bar: 'y'), schema_instance_class.new(foo: 'z', bar: 'q')]
+          assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], schema_instance_json_coder.dump(schema_instances))
+        end
+      end
+      describe 'array schema' do
+        let(:schema) { {items: {properties: {foo: {}, bar: {}}}} }
+        it 'dumps a schema_instance array' do
+          schema_instances = schema_instance_class.new([{foo: 'x', bar: 'y'}, {foo: 'z', bar: 'q'}])
           assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], schema_instance_json_coder.dump(schema_instances))
         end
       end
