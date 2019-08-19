@@ -1,3 +1,10 @@
+# v0.1.0
+
+- JSI::JSON::Pointer replaces monkey-patched-in ::JSON::Schema::Pointer
+- JSI::JSICoder replaces JSI::SchemaInstanceJSONCoder / ObjectJSONCoder
+- remove JSI::StructJSONCoder
+- misc improvements to code, doc, tests
+
 # v0.0.4
 
 - minor bugfixes / improvements
