@@ -257,7 +257,7 @@ module JSI
       # documents at equal paths. note that this means two nodes with the same content may not be
       # considered equal.
       def fingerprint
-        {is_node: self.is_a?(JSI::JSON::Node), document: document, path: path}
+        {class: JSI::JSON::Node, document: document, path: path}
       end
       include FingerprintHash
     end

@@ -392,4 +392,15 @@ describe JSI::Base do
       assert_match(%r(\Aoverwriting instance is not supported\z), err.message)
     end
   end
+  describe 'equality between different classes of JSI::Base subclasses' do
+    let(:subject_subclass) { Class.new(JSI.class_for_schema(schema)).new(instance) }
+
+    it 'considers a Base subclass (class_for_schema) and subsubclass to be equal with the same instance' do
+      assert_equal(subject.hash, subject_subclass.hash)
+      assert(subject == subject_subclass)
+      assert(subject_subclass == subject)
+      assert(subject.eql?(subject_subclass))
+      assert(subject_subclass.eql?(subject))
+    end
+  end
 end

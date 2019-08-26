@@ -202,9 +202,10 @@ module JSI
       Typelike.as_json(instance, *opt)
     end
 
-    # @return [Object] an opaque fingerprint of this JSI for FingerprintHash
+    # @return [Object] an opaque fingerprint of this JSI for FingerprintHash. JSIs are equal
+    #   if their instances are equal, and if the JSIs are of the same JSI class or subclass.
     def fingerprint
-      {class: self.class, instance: instance}
+      {class: jsi_class, instance: instance}
     end
     include FingerprintHash
 
@@ -268,6 +269,9 @@ module JSI
           Class.new(Base).instance_exec(schema_) do |schema|
             begin
               include(JSI::SchemaClasses.module_for_schema(schema))
+
+              jsi_class = self
+              define_method(:jsi_class) { jsi_class }
 
               SchemaClasses.instance_exec(self) { |klass| @classes_by_id[klass.schema_id] = klass }
 
