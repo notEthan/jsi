@@ -83,7 +83,7 @@ module JSI
           if parent_id || node_for_id.root_node?
             done = true
           else
-            path_from_id_node.unshift(node_for_id.path.last)
+            path_from_id_node.unshift(node_for_id.pointer.reference_tokens.last)
             node_for_id = node_for_id.parent_node
           end
         end
