@@ -153,6 +153,12 @@ module JSI
         inspect
       end
 
+      # pointers are equal if the reference_tokens are equal, regardless of @type
+      def fingerprint
+        {class: JSI::JSON::Pointer, reference_tokens: reference_tokens}
+      end
+      include FingerprintHash
+
       private
 
       # @return [String] a representation of this pointer based on @type
