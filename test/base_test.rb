@@ -5,7 +5,8 @@ NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/te
 describe JSI::Base do
   let(:document) { {} }
   let(:path) { [] }
-  let(:instance) { JSI::JSON::Node.new_by_type(document, path) }
+  let(:pointer) { JSI::JSON::Pointer.new(path) }
+  let(:instance) { JSI::JSON::Node.new_by_type(document, pointer) }
   let(:schema_content) { {} }
   let(:schema) { JSI::Schema.new(schema_content) }
   let(:subject) { JSI.class_for_schema(schema).new(instance) }
@@ -133,7 +134,7 @@ describe JSI::Base do
       let(:document) { {'foo' => 'bar'} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal(JSI::JSON::HashNode.new({'foo' => 'bar'}, []), subject.instance)
+        assert_equal(JSI::JSON::HashNode.new({'foo' => 'bar'}, JSI::JSON::Pointer.new([])), subject.instance)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -151,7 +152,7 @@ describe JSI::Base do
       let(:document) { ['foo'] }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(JSI::JSON::ArrayNode.new(['foo'], []), subject.instance)
+        assert_equal(JSI::JSON::ArrayNode.new(['foo'], JSI::JSON::Pointer.new([])), subject.instance)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -163,7 +164,7 @@ describe JSI::Base do
         assert_output(nil, /assigning instance to a Base instance is incorrect. received: #\{<JSI::SchemaClasses\["[^"]+#"\][^>]*>[^}]+}/) do
           subject
         end
-        assert_equal(JSI::JSON::HashNode.new({'foo' => 'bar'}, []), subject.instance)
+        assert_equal(JSI::JSON::HashNode.new_doc({'foo' => 'bar'}), subject.instance)
       end
     end
   end

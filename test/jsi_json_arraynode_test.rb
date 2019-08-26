@@ -18,8 +18,9 @@ document_types.each do |document_type|
     let(:document) { document_type[:document] }
     # by default the node is the whole document
     let(:path) { [] }
+    let(:pointer) { JSI::JSON::Pointer.new(path) }
     # the node being tested
-    let(:node) { JSI::JSON::Node.new_by_type(document, path) }
+    let(:node) { JSI::JSON::Node.new_by_type(document, pointer) }
 
     describe '#[] bad index' do
       it 'improves TypeError for Array subsript' do
@@ -135,7 +136,7 @@ document_types.each do |document_type|
         let(:path) { ['1', 'c'] }
         it('#select') do
           selected = node.select { |e| e == 'd' }
-          equivalent = JSI::JSON::Node.new_by_type([['b', 'q'], {'c' => ['d']}], ['1', 'c'])
+          equivalent = JSI::JSON::Node.new_by_type([['b', 'q'], {'c' => ['d']}], pointer)
           assert_equal(equivalent, selected)
         end
       end
