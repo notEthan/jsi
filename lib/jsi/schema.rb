@@ -69,7 +69,7 @@ module JSI
           # look at 'id' if node_for_id is a schema, or the document root.
           # decide whether to look at '$id' for all parent nodes or also just schemas.
           if node_for_id.respond_to?(:to_hash)
-            if node_for_id.path.empty? || node_for_id.object_id == schema_node.object_id
+            if node_for_id.root_node? || node_for_id.object_id == schema_node.object_id
               # I'm only looking at 'id' for the document root and the schema node
               # until I track what parents are schemas.
               parent_id = node_for_id['$id'] || node_for_id['id']
@@ -80,7 +80,7 @@ module JSI
             end
           end
 
-          if parent_id || node_for_id.path.empty?
+          if parent_id || node_for_id.root_node?
             done = true
           else
             path_from_id_node.unshift(node_for_id.path.last)

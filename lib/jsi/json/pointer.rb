@@ -120,10 +120,15 @@ module JSI
         '#' + Addressable::URI.escape(pointer)
       end
 
+      # @return [Boolean] whether this pointer points to the root (has an empty array of reference_tokens)
+      def root?
+        reference_tokens.empty?
+      end
+
       # @return [JSI::JSON::Pointer] pointer to the parent of where this pointer points
       # @raise [JSI::JSON::Pointer::ReferenceError] if this pointer has no parent (points to the root)
       def parent
-        if reference_tokens.empty?
+        if root?
           raise(ReferenceError, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
         else
           Pointer.new(reference_tokens[0...-1], type: @type)

@@ -152,6 +152,11 @@ module JSI
         Node.new_doc(document)
       end
 
+      # @return [Boolean] whether this node is the root of its document
+      def root_node?
+        pointer.root?
+      end
+
       # the parent of this node. if this node is the document root (its path is empty), raises
       # JSI::JSON::Pointer::ReferenceError.
       def parent_node
