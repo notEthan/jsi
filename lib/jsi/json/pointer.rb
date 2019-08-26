@@ -120,6 +120,16 @@ module JSI
         '#' + Addressable::URI.escape(pointer)
       end
 
+      # @return [JSI::JSON::Pointer] pointer to the parent of where this pointer points
+      # @raise [JSI::JSON::Pointer::ReferenceError] if this pointer has no parent (points to the root)
+      def parent
+        if reference_tokens.empty?
+          raise(ReferenceError, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
+        else
+          Pointer.new(reference_tokens[0...-1], type: @type)
+        end
+      end
+
       # @return [String] string representation of this Pointer
       def inspect
         "#<#{self.class.inspect} #{representation_s}>"
