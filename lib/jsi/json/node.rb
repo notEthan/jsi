@@ -59,6 +59,11 @@ module JSI
       # JSI::JSON::Pointer pointing to this node within its document
       attr_reader :pointer
 
+      # @return [Array<Object>] the path of this node; an array of reference_tokens of the pointer
+      def path
+        pointer.reference_tokens
+      end
+
       # the raw content of this Node from the underlying document at this Node's pointer.
       def content
         content = pointer.evaluate(document)
