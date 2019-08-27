@@ -211,8 +211,13 @@ module JSI
       # this pointer is returned.
       #
       # @param document [Object] the document this pointer applies to
+      # @yield [Pointer] if a block is given (optional), this will yield a deref'd pointer. if this
+      #   pointer does not point to a $ref object in the given document, the block is not called.
+      #   if we point to a $ref which cannot be followed (e.g. a $ref to an external
+      #   document, which is not yet supported), the block is not called.
       # @return [Pointer] dereferenced pointer, or this pointer
-      def deref(document)
+      def deref(document, &block)
+        block ||= Util::NOOP
         content = evaluate(document)
 
         if content.respond_to?(:to_hash)
@@ -221,17 +226,17 @@ module JSI
         return self unless ref.is_a?(String)
 
         if ref[/\A#/]
-          return Pointer.from_fragment(ref)
+          return Pointer.from_fragment(ref).tap(&block)
         end
 
         # HAX for how google does refs and ids
         if document['schemas'].respond_to?(:to_hash)
           if document['schemas'][ref]
-            return Pointer.new(['schemas', ref], type: 'hax')
+            return Pointer.new(['schemas', ref], type: 'hax').tap(&block)
           end
           document['schemas'].each do |k, schema|
             if schema['id'] == ref
-              return Pointer.new(['schemas', k], type: 'hax')
+              return Pointer.new(['schemas', k], type: 'hax').tap(&block)
             end
           end
         end

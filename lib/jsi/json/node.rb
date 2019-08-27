@@ -123,14 +123,15 @@ module JSI
       #
       # currently only $refs pointing within the same document are followed.
       #
+      # @yield [Node] if a block is given (optional), this will yield a deref'd node. if this
+      #   node is not a $ref object, the block is not called. if we are a $ref which cannot be followed
+      #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
       # @return [JSI::JSON::Node] dereferenced node, or this node
-      def deref
-        deref_ptr = pointer.deref(document)
-        if deref_ptr == pointer
-          self
-        else
-          Node.new_by_type(document, deref_ptr)
+      def deref(&block)
+        pointer.deref(document) do |deref_ptr|
+          return Node.new_by_type(document, deref_ptr).tap(&(block || Util::NOOP))
         end
+        return self
       end
 
       # a Node at the root of the document
