@@ -80,11 +80,13 @@ module JSI
       # if this node's content is a $ref - that is, a hash with a $ref attribute - and the subscript is
       # not a key of the hash, then the $ref is followed before returning the subcontent.
       def [](subscript)
-        node = self
-        content = node.content
+        ptr = self.pointer
+        content = self.content
         if content.respond_to?(:to_hash) && !(content.respond_to?(:key?) ? content : content.to_hash).key?(subscript)
-          node = node.deref
-          content = node.content
+          pointer.deref(document) do |deref_ptr|
+            ptr = deref_ptr
+            content = ptr.evaluate(document)
+          end
         end
         unless content.respond_to?(:[])
           if content.respond_to?(:to_hash)
@@ -101,9 +103,9 @@ module JSI
           raise(e.class, e.message + "\nsubscripting with #{subscript.pretty_inspect.chomp} (#{subscript.class}) from #{content.class.inspect}. content is: #{content.pretty_inspect.chomp}", e.backtrace)
         end
         if subcontent.respond_to?(:to_hash)
-          HashNode.new(node.document, node.pointer[subscript])
+          HashNode.new(document, ptr[subscript])
         elsif subcontent.respond_to?(:to_ary)
-          ArrayNode.new(node.document, node.pointer[subscript])
+          ArrayNode.new(document, ptr[subscript])
         else
           subcontent
         end
