@@ -180,14 +180,27 @@ module JSI
     # if this JSI is a $ref then the $ref is followed. otherwise this JSI
     # is returned.
     #
+    # @yield [JSI::Base] if a block is given (optional), this will yield a deref'd JSI. if this
+    #   JSI is not a $ref object, the block is not called. if we are a $ref which cannot be followed
+    #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
     # @return [JSI::Base, self]
-    def deref
-      jsi_ptr_deref = @jsi_ptr.deref(@jsi_document)
-      if jsi_ptr_deref == @jsi_ptr
-        self
-      else
-        self.class.new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: jsi_ptr_deref, ancestor_jsi: @ancestor_jsi)
+    def deref(&block)
+      @jsi_ptr.deref(@jsi_document) do |deref_ptr|
+        jsi_from_root = deref_ptr.evaluate(document_root_node)
+        if jsi_from_root.is_a?(JSI::Base)
+          return jsi_from_root.tap(&(block || Util::NOOP))
+        else
+          # TODO I want to get rid of this ... just return jsi_from_root whatever it is
+          # NOTE when I get rid of this, simplify #parent_jsis too
+          if @ancestor_jsi && @ancestor_jsi.jsi_ptr.contains?(deref_ptr)
+            derefed = self.class.new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: deref_ptr, ancestor_jsi: @ancestor_jsi)
+          else
+            derefed = self.class.new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: deref_ptr)
+          end
+          return derefed.tap(&(block || Util::NOOP))
+        end
       end
+      return self
     end
 
     # yields the content of the underlying instance. the block must result in
