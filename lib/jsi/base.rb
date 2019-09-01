@@ -365,7 +365,14 @@ module JSI
     #   on this JSI's schema, returns the instance's subscript as a JSI
     #   instiation of that subschema.
     def [](property_name)
-      memoize(:[], property_name, jsi_instance_sub(property_name), jsi_instance_hash_pubsend(:key?, property_name)) do |property_name_, instance_property_value, instance_property_key|
+      instance_property_key_ = jsi_instance_hash_pubsend(:key?, property_name)
+      if !instance_property_key_
+        deref do |deref_jsi|
+          return deref_jsi[property_name]
+        end
+      end
+      instance_property_value_ = jsi_instance_sub(property_name)
+      memoize(:[], property_name, instance_property_value_, instance_property_key_) do |property_name_, instance_property_value, instance_property_key|
         begin
           property_schema = schema.subschema_for_property(property_name_)
           property_schema = property_schema && property_schema.match_to_instance(instance_property_value)
