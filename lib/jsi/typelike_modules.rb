@@ -105,6 +105,10 @@ module JSI
       end
     end
 
+    def dup
+      Typelike.modified_copy(self, &:dup)
+    end
+
     # @return [String] basically the same #inspect as Hash, but has the
     #   class name and, if responsive, self's #object_group_text
     def inspect
@@ -184,6 +188,10 @@ module JSI
           end
         end
       end
+    end
+
+    def dup
+      Typelike.modified_copy(self, &:dup)
     end
 
     # @return [String] basically the same #inspect as Array, but has the
