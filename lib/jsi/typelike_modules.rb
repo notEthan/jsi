@@ -78,7 +78,7 @@ module JSI
     SAFE_KEY_VALUE_METHODS = %w(< <= > >= any? assoc compact dig each_pair each_value fetch fetch_values has_value? invert key merge rassoc reject select to_h to_proc transform_values value? values values_at)
     DESTRUCTIVE_METHODS = %w(clear delete delete_if keep_if reject! replace select! shift)
     # these return a modified copy
-    safe_modified_copy_methods = %w(compact merge)
+    safe_modified_copy_methods = %w(compact)
     # select and reject will return a modified copy but need the yielded block variable value from #[]
     safe_kv_block_modified_copy_methods = %w(select reject)
     SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
@@ -103,6 +103,38 @@ module JSI
           end
         end
       end
+    end
+
+    # the same as Hash#update
+    # @param other [#to_hash] the other hash to update this hash from
+    # @yield [key, oldval, newval] for entries with duplicate keys, the value of each duplicate key
+    #   is determined by calling the block with the key, its value in hsh and its value in other_hash.
+    # @return self, updated with other
+    # @raise [TypeError] when `other` does not respond to #to_hash
+    def update(other, &block)
+      unless other.respond_to?(:to_hash)
+        raise(TypeError, "cannot update with argument that does not respond to #to_hash: #{other.pretty_inspect.chomp}")
+      end
+      self_respondingto_key = self.respond_to?(:key?) ? self : to_hash
+      other.to_hash.each_pair do |key, value|
+        if block_given? && self_respondingto_key.key?(key)
+          value = yield(key, self[key], value)
+        end
+        self[key] = value
+      end
+      self
+    end
+
+    alias_method :merge!, :update
+
+    # the same as Hash#merge
+    # @param other [#to_hash] the other hash to merge into this
+    # @yield [key, oldval, newval] for entries with duplicate keys, the value of each duplicate key
+    #   is determined by calling the block with the key, its value in hsh and its value in other_hash.
+    # @return duplicate of this hash with the other hash merged in
+    # @raise [TypeError] when `other` does not respond to #to_hash
+    def merge(other, &block)
+      dup.update(other, &block)
     end
 
     def dup
