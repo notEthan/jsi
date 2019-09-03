@@ -107,24 +107,24 @@ document_types.each do |document_type|
       # for this reason, rassoc is NOT defined on Arraylike. it's here with as_json.
       #
       # I've never even seen anybody use rassoc. of all the methods to put into the standard library ...
-      it('#rassoc')               { assert_equal(['b', 'q'], node.as_json.rassoc('q')) }
+      it('#rassoc')              { assert_equal(['b', 'q'], node.as_json.rassoc('q')) }
       it('#repeated_combination') { assert_equal([[]], node.repeated_combination(0).to_a) }
       it('#repeated_permutation') { assert_equal([[]], node.repeated_permutation(0).to_a) }
-      it('#reverse')              { assert_equal([node[2], node[1], 'a'], node.reverse) }
-      it('#reverse_each')         { assert_equal([node[2], node[1], 'a'], node.reverse_each.to_a) }
-      it('#rindex')               { assert_equal(0, node.rindex('a')) }
-      it('#rotate')               { assert_equal([node[1], node[2], 'a'], node.rotate) }
-      it('#sample')               { assert_equal('a', JSI::JSON::Node.new_doc(['a']).sample) }
-      it('#shelljoin')            { assert_equal('a', JSI::JSON::Node.new_doc(['a']).shelljoin) } if [].respond_to?(:shelljoin)
-      it('#shuffle')              { assert_equal(3, node.shuffle.size) }
-      it('#slice')                { assert_equal(['a'], node.slice(0, 1)) }
-      it('#sort')                 { assert_equal(['a'], JSI::JSON::Node.new_doc(['a']).sort) }
-      it('#take')                 { assert_equal(['a'], node.take(1)) }
-      it('#take_while')           { assert_equal([], node.take_while { false }) }
-      it('#transpose')            { assert_equal([], JSI::JSON::Node.new_doc([]).transpose) }
-      it('#uniq')                 { assert_equal(node.to_a, node.uniq) }
-      it('#values_at')            { assert_equal(['a'], node.values_at(0)) }
-      it('#zip')                  { assert_equal([['a', 'a'], [node[1], node[1]], [node[2], node[2]]], node.zip(node)) }
+      it('#reverse')             { assert_equal([node[2], node[1], 'a'], node.reverse) }
+      it('#reverse_each')       { assert_equal([node[2], node[1], 'a'], node.reverse_each.to_a) }
+      it('#rindex')            { assert_equal(0, node.rindex('a')) }
+      it('#rotate')           { assert_equal([node[1], node[2], 'a'], node.rotate) }
+      it('#sample')          { assert_equal('a', JSI::JSON::Node.new_doc(['a']).sample) }
+      it('#shelljoin')      { assert_equal('a', JSI::JSON::Node.new_doc(['a']).shelljoin) } if [].respond_to?(:shelljoin)
+      it('#shuffle')       { assert_equal(3, node.shuffle.size) }
+      it('#slice')        { assert_equal(['a'], node.slice(0, 1)) }
+      it('#sort')        { assert_equal(['a'], JSI::JSON::Node.new_doc(['a']).sort) }
+      it('#take')       { assert_equal(['a'], node.take(1)) }
+      it('#take_while') { assert_equal([], node.take_while { false }) }
+      it('#transpose') { assert_equal([], JSI::JSON::Node.new_doc([]).transpose) }
+      it('#uniq')     { assert_equal(node.to_a, node.uniq) }
+      it('#values_at') { assert_equal(['a'], node.values_at(0)) }
+      it('#zip')      { assert_equal([['a', 'a'], [node[1], node[1]], [node[2], node[2]]], node.zip(node)) }
     end
     describe 'modified copy methods' do
       it('#reject')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.reject { |e| e != 'a' }) }

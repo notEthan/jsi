@@ -137,41 +137,41 @@ describe JSI::BaseHash do
     it('#empty?')   { assert_equal(false, subject.empty?) }
     it('#has_key?') { assert_equal(true, subject.has_key?('bar')) }
     it('#include?') { assert_equal(false, subject.include?('q')) }
-    it('#key?')     { assert_equal(true, subject.key?('baz')) }
-    it('#keys')     { assert_equal(['foo', 'bar', 'baz'], subject.keys) }
-    it('#length')   { assert_equal(3, subject.length) }
-    it('#member?')  { assert_equal(false, subject.member?(0)) }
-    it('#size')     { assert_equal(3, subject.size) }
+    it('#key?')    { assert_equal(true, subject.key?('baz')) }
+    it('#keys')   { assert_equal(['foo', 'bar', 'baz'], subject.keys) }
+    it('#length') { assert_equal(3, subject.length) }
+    it('#member?') { assert_equal(false, subject.member?(0)) }
+    it('#size')   { assert_equal(3, subject.size) }
   end
   describe 'key + value methods' do
-    it('#<')            { assert_equal(true, subject < {'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => true, 'x' => 'y'}) } if {}.respond_to?(:<)
-    it('#<=')           { assert_equal(true, subject <= subject) } if {}.respond_to?(:<=)
-    it('#>')            { assert_equal(true, subject > {}) } if {}.respond_to?(:>)
-    it('#>=')           { assert_equal(false, subject >= {'foo' => 'bar'}) } if {}.respond_to?(:>=)
-    it('#any?')         { assert_equal(false, subject.any? { |k, v| v == 3 }) }
-    it('#assoc')        { assert_equal(['foo', subject['foo']], subject.assoc('foo')) }
-    it('#dig')          { assert_equal(9, subject.dig('bar', 0)) } if {}.respond_to?(:dig)
-    it('#each_pair')    { assert_equal([['foo', subject['foo']], ['bar', subject['bar']], ['baz', true]], subject.each_pair.to_a) }
-    it('#each_value')   { assert_equal([subject['foo'], subject['bar'], true], subject.each_value.to_a) }
-    it('#fetch')        { assert_equal(true, subject.fetch('baz')) }
+    it('#<')  { assert_equal(true, subject < {'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => true, 'x' => 'y'}) } if {}.respond_to?(:<)
+    it('#<=')  { assert_equal(true, subject <= subject) } if {}.respond_to?(:<=)
+    it('#>')    { assert_equal(true, subject > {}) } if {}.respond_to?(:>)
+    it('#>=')    { assert_equal(false, subject >= {'foo' => 'bar'}) } if {}.respond_to?(:>=)
+    it('#any?')   { assert_equal(false, subject.any? { |k, v| v == 3 }) }
+    it('#assoc')   { assert_equal(['foo', subject['foo']], subject.assoc('foo')) }
+    it('#dig')      { assert_equal(9, subject.dig('bar', 0)) } if {}.respond_to?(:dig)
+    it('#each_pair') { assert_equal([['foo', subject['foo']], ['bar', subject['bar']], ['baz', true]], subject.each_pair.to_a) }
+    it('#each_value') { assert_equal([subject['foo'], subject['bar'], true], subject.each_value.to_a) }
+    it('#fetch')       { assert_equal(true, subject.fetch('baz')) }
     it('#fetch_values') { assert_equal([true], subject.fetch_values('baz')) } if {}.respond_to?(:fetch_values)
-    it('#has_value?')   { assert_equal(true, subject.has_value?(true)) }
-    it('#invert')       { assert_equal({subject['foo'] => 'foo', subject['bar'] => 'bar', true => 'baz'}, subject.invert) }
-    it('#key')          { assert_equal('baz', subject.key(true)) }
-    it('#rassoc')       { assert_equal(['baz', true], subject.rassoc(true)) }
-    it('#to_h')         { assert_equal({'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => true}, subject.to_h) }
-    it('#to_proc')      { assert_equal(true, subject.to_proc.call('baz')) } if {}.respond_to?(:to_proc)
+    it('#has_value?')  { assert_equal(true, subject.has_value?(true)) }
+    it('#invert')     { assert_equal({subject['foo'] => 'foo', subject['bar'] => 'bar', true => 'baz'}, subject.invert) }
+    it('#key')       { assert_equal('baz', subject.key(true)) }
+    it('#rassoc')   { assert_equal(['baz', true], subject.rassoc(true)) }
+    it('#to_h')    { assert_equal({'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => true}, subject.to_h) }
+    it('#to_proc') { assert_equal(true, subject.to_proc.call('baz')) } if {}.respond_to?(:to_proc)
     if {}.respond_to?(:transform_values)
       it('#transform_values') { assert_equal({'foo' => nil, 'bar' => nil, 'baz' => nil}, subject.transform_values { |_| nil }) }
     end
-    it('#value?')       { assert_equal(false, subject.value?('0')) }
-    it('#values')       { assert_equal([subject['foo'], subject['bar'], true], subject.values) }
-    it('#values_at')    { assert_equal([true], subject.values_at('baz')) }
+    it('#value?')  { assert_equal(false, subject.value?('0')) }
+    it('#values')   { assert_equal([subject['foo'], subject['bar'], true], subject.values) }
+    it('#values_at') { assert_equal([true], subject.values_at('baz')) }
   end
   describe 'modified copy methods' do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
-    it('#merge')  { assert_equal(subject, subject.merge({})) }
+    it('#merge') { assert_equal(subject, subject.merge({})) }
     it('#reject') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.reject { true }) }
     it('#select') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.select { false }) }
     describe '#select' do
