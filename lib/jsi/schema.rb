@@ -29,7 +29,11 @@ module JSI
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
       elsif schema_object.is_a?(JSI::Base)
         @schema_jsi = JSI.deep_stringify_symbol_keys(schema_object.deref)
-        @schema_node = @schema_jsi.instance
+        if @schema_jsi.instance.is_a?(JSI::PathedNode)
+          @schema_node = @schema_jsi.instance
+        else
+          @schema_node = JSI::JSON::Node.new_doc(JSI.deep_stringify_symbol_keys(@schema_jsi.instance))
+        end
       elsif schema_object.is_a?(JSI::PathedNode)
         @schema_jsi = nil
         @schema_node = JSI.deep_stringify_symbol_keys(schema_object.deref)
