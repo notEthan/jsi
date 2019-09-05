@@ -114,7 +114,7 @@ document_types.each do |document_type|
     describe 'modified copy methods' do
       # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
       # tests of all the modified copy methods here
-      it('#merge') { assert_equal(JSI::JSON::Node.new_doc(node.content.to_hash), node.merge({})) }
+      it('#merge') { assert_equal(JSI::JSON::Node.new_doc(node.content), node.merge({})) }
       it('#reject') { assert_equal(JSI::JSON::Node.new_doc({}), node.reject { true }) }
       it('#select') { assert_equal(JSI::JSON::Node.new_doc({}), node.select { false }) }
       # Hash#compact only available as of ruby 2.5.0
