@@ -17,7 +17,7 @@ describe JSI::Schema do
     it 'initializes from a JSI' do
       schema_jsi = SomeMetaschema.new('type' => 'object')
       schema = JSI::Schema.new(schema_jsi)
-      assert_equal(JSI::JSON::Node.new_doc(schema_jsi.instance), schema.schema_node)
+      assert_equal(schema_jsi, schema.schema_node)
       assert_equal(schema_jsi, schema.schema_object)
     end
     it 'cannot instantiate from some unknown object' do

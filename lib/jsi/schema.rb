@@ -27,18 +27,9 @@ module JSI
     def initialize(schema_object)
       if schema_object.is_a?(JSI::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
-      elsif schema_object.is_a?(JSI::Base)
-        @schema_jsi = JSI.deep_stringify_symbol_keys(schema_object.deref)
-        if @schema_jsi.instance.is_a?(JSI::PathedNode)
-          @schema_node = @schema_jsi.instance
-        else
-          @schema_node = JSI::JSON::Node.new_doc(JSI.deep_stringify_symbol_keys(@schema_jsi.instance))
-        end
       elsif schema_object.is_a?(JSI::PathedNode)
-        @schema_jsi = nil
         @schema_node = JSI.deep_stringify_symbol_keys(schema_object.deref)
       elsif schema_object.respond_to?(:to_hash)
-        @schema_jsi = nil
         @schema_node = JSI::JSON::Node.new_doc(JSI.deep_stringify_symbol_keys(schema_object))
       elsif schema_object == true
         @schema_node = JSI::JSON::Node.new_doc({})
@@ -49,17 +40,10 @@ module JSI
       end
     end
 
-    # @return [JSI::JSON::Node] a JSI::JSON::Node for the schema
+    # @return [JSI::PathedNode] a JSI::PathedNode (JSI::JSON::Node or JSI::Base) for the schema
     attr_reader :schema_node
 
-    # @return [JSI::Base, nil] a JSI for this schema, if a metaschema is known; otherwise nil
-    attr_reader :schema_jsi
-
-    # @return [JSI::Base, JSI::JSON::Node] either a JSI::Base subclass or a
-    #   JSI::JSON::Node for the schema
-    def schema_object
-      @schema_jsi || @schema_node
-    end
+    alias_method :schema_object, :schema_node
 
     # @return [JSI::Base, JSI::JSON::Node, Object] property value from the schema_object
     # @param property_name [String, Object] property name to access from the schema_object
