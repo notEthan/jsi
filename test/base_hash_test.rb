@@ -5,7 +5,8 @@ describe JSI::BaseHash do
     {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}
   end
   let(:path) { [] }
-  let(:instance) { JSI::JSON::Node.new_by_type(document, path) }
+  let(:pointer) { JSI::JSON::Pointer.new(path) }
+  let(:instance) { JSI::JSON::Node.new_by_type(document, pointer) }
   let(:schema_content) do
     {
       'type' => 'object',
@@ -172,8 +173,8 @@ describe JSI::BaseHash do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
     it('#merge') { assert_equal(subject, subject.merge({})) }
-    it('#reject') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.reject { true }) }
-    it('#select') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, [])), subject.select { false }) }
+    it('#reject') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, pointer)), subject.reject { true }) }
+    it('#select') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, pointer)), subject.select { false }) }
     describe '#select' do
       it 'yields properly too' do
         subject.select do |k, v|

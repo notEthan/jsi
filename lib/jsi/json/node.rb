@@ -23,46 +23,48 @@ module JSI
     # the original node's document and content are untouched.
     class Node
       def self.new_doc(document)
-        new_by_type(document, [])
+        new_by_type(document, JSI::JSON::Pointer.new([]))
       end
 
-      # if the content of the document at the given path is Hash-like, returns
+      # if the content of the document at the given pointer is Hash-like, returns
       # a HashNode; if Array-like, returns ArrayNode. otherwise returns a
       # regular Node, although Nodes are for the most part instantiated from
       # Hash or Array-like content.
-      def self.new_by_type(document, path)
-        node = Node.new(document, path)
-        content = node.content
+      def self.new_by_type(document, pointer)
+        content = pointer.evaluate(document)
         if content.respond_to?(:to_hash)
-          HashNode.new(document, path)
+          HashNode.new(document, pointer)
         elsif content.respond_to?(:to_ary)
-          ArrayNode.new(document, path)
+          ArrayNode.new(document, pointer)
         else
-          node
+          Node.new(document, pointer)
         end
       end
 
-      # a Node represents the content of a document at a given path.
-      def initialize(document, path)
-        unless path.respond_to?(:to_ary)
-          raise(ArgumentError, "path must be an array. got: #{path.pretty_inspect.chomp} (#{path.class})")
+      # a Node represents the content of a document at a given pointer.
+      def initialize(document, pointer)
+        unless pointer.is_a?(JSI::JSON::Pointer)
+          raise(TypeError, "pointer must be a JSI::JSON::Pointer. got: #{pointer.pretty_inspect.chomp} (#{pointer.class})")
         end
         if document.is_a?(JSI::JSON::Node)
           raise(TypeError, "document of a Node should not be another JSI::JSON::Node: #{document.inspect}")
         end
         @document = document
-        @path = path.to_ary.dup.freeze
-        @pointer = JSI::JSON::Pointer.new(:reference_tokens, path)
+        @pointer = pointer
       end
 
-      # the path of this Node within its document
-      attr_reader :path
-      # the document containing this Node at is path
+      # the document containing this Node at our pointer
       attr_reader :document
-      # JSI::JSON::Pointer representing the path to this node within its document
+
+      # JSI::JSON::Pointer pointing to this node within its document
       attr_reader :pointer
 
-      # the raw content of this Node from the underlying document at this Node's path.
+      # @return [Array<Object>] the path of this node; an array of reference_tokens of the pointer
+      def path
+        pointer.reference_tokens
+      end
+
+      # the raw content of this Node from the underlying document at this Node's pointer.
       def content
         content = pointer.evaluate(document)
         content
@@ -78,11 +80,13 @@ module JSI
       # if this node's content is a $ref - that is, a hash with a $ref attribute - and the subscript is
       # not a key of the hash, then the $ref is followed before returning the subcontent.
       def [](subscript)
-        node = self
-        content = node.content
+        ptr = self.pointer
+        content = self.content
         if content.respond_to?(:to_hash) && !(content.respond_to?(:key?) ? content : content.to_hash).key?(subscript)
-          node = node.deref
-          content = node.content
+          pointer.deref(document) do |deref_ptr|
+            ptr = deref_ptr
+            content = ptr.evaluate(document)
+          end
         end
         unless content.respond_to?(:[])
           if content.respond_to?(:to_hash)
@@ -99,9 +103,9 @@ module JSI
           raise(e.class, e.message + "\nsubscripting with #{subscript.pretty_inspect.chomp} (#{subscript.class}) from #{content.class.inspect}. content is: #{content.pretty_inspect.chomp}", e.backtrace)
         end
         if subcontent.respond_to?(:to_hash)
-          HashNode.new(node.document, node.path + [subscript])
+          HashNode.new(document, ptr[subscript])
         elsif subcontent.respond_to?(:to_ary)
-          ArrayNode.new(node.document, node.path + [subscript])
+          ArrayNode.new(document, ptr[subscript])
         else
           subcontent
         end
@@ -120,30 +124,15 @@ module JSI
       # does not have a $ref, or if what its $ref cannot be found, this node is returned.
       #
       # currently only $refs pointing within the same document are followed.
-      def deref
-        content = self.content
-
-        if content.respond_to?(:to_hash)
-          ref = (content.respond_to?(:[]) ? content : content.to_hash)['$ref']
+      #
+      # @yield [Node] if a block is given (optional), this will yield a deref'd node. if this
+      #   node is not a $ref object, the block is not called. if we are a $ref which cannot be followed
+      #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
+      # @return [JSI::JSON::Node] dereferenced node, or this node
+      def deref(&block)
+        pointer.deref(document) do |deref_ptr|
+          return Node.new_by_type(document, deref_ptr).tap(&(block || Util::NOOP))
         end
-        return self unless ref.is_a?(String)
-
-        if ref[/\A#/]
-          return self.class.new_by_type(document, JSI::JSON::Pointer.parse_fragment(ref)).deref
-        end
-
-        # HAX for how google does refs and ids
-        if document_node['schemas'].respond_to?(:to_hash)
-          if document_node['schemas'][ref]
-            return document_node['schemas'][ref]
-          end
-          _, deref_by_id = document_node['schemas'].detect { |_k, schema| schema['id'] == ref }
-          if deref_by_id
-            return deref_by_id
-          end
-        end
-
-        #raise(NotImplementedError, "cannot dereference #{ref}") # TODO
         return self
       end
 
@@ -152,14 +141,15 @@ module JSI
         Node.new_doc(document)
       end
 
-      # the parent of this node. if this node is the document root (its path is empty), raises
+      # @return [Boolean] whether this node is the root of its document
+      def root_node?
+        pointer.root?
+      end
+
+      # the parent of this node. if this node is the document root, raises
       # JSI::JSON::Pointer::ReferenceError.
       def parent_node
-        if path.empty?
-          raise(JSI::JSON::Pointer::ReferenceError, "cannot access parent of root node: #{pretty_inspect.chomp}")
-        else
-          Node.new_by_type(document, path[0...-1])
-        end
+        Node.new_by_type(document, pointer.parent)
       end
 
       # the pointer path to this node within the document, per RFC 6901 https://tools.ietf.org/html/rfc6901
@@ -179,52 +169,8 @@ module JSI
 
       # takes a block. the block is yielded the content of this node. the block MUST return a modified
       # copy of that content (and NOT modify the object it is given).
-      def modified_copy
-        # we need to preserve the rest of the document, but modify the content at our path.
-        #
-        # this is actually a bit tricky. we can't modify the original document, obviously.
-        # we could do a deep copy, but that's expensive. instead, we make a copy of each array
-        # or hash in the path above this node. this node's content is modified by the caller, and
-        # that is recursively merged up to the document root. the recursion is done with a
-        # y combinator, for no other reason than that was a fun way to implement it.
-        modified_document = JSI::Util.ycomb do |rec|
-          proc do |subdocument, subpath|
-            if subpath == []
-              yield(subdocument)
-            else
-              car = subpath[0]
-              cdr = subpath[1..-1]
-              if subdocument.respond_to?(:to_hash)
-                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_hash)[car]
-                car_object = rec.call(subdocument_car, cdr)
-                if car_object.object_id == subdocument_car.object_id
-                  subdocument
-                else
-                  (subdocument.respond_to?(:merge) ? subdocument : subdocument.to_hash).merge({car => car_object})
-                end
-              elsif subdocument.respond_to?(:to_ary)
-                if car.is_a?(String) && car =~ /\A\d+\z/
-                  car = car.to_i
-                end
-                unless car.is_a?(Integer)
-                  raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect.chomp}")
-                end
-                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_ary)[car]
-                car_object = rec.call(subdocument_car, cdr)
-                if car_object.object_id == subdocument_car.object_id
-                  subdocument
-                else
-                  (subdocument.respond_to?(:[]=) ? subdocument : subdocument.to_ary).dup.tap do |arr|
-                    arr[car] = car_object
-                  end
-                end
-              else
-                raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect.chomp}")
-              end
-            end
-          end
-        end.call(document, path)
-        Node.new_by_type(modified_document, path)
+      def modified_copy(&block)
+        Node.new_by_type(pointer.modified_document_copy(document, &block), pointer)
       end
 
       # meta-information about the object, outside the content. used by #inspect / #pretty_print
@@ -254,10 +200,10 @@ module JSI
 
       # fingerprint for equality (see FingerprintHash). two nodes are equal if they are both nodes
       # (regardless of type, e.g. one may be a Node and the other may be a HashNode) within equal
-      # documents at equal paths. note that this means two nodes with the same content may not be
+      # documents at equal pointers. note that this means two nodes with the same content may not be
       # considered equal.
       def fingerprint
-        {class: JSI::JSON::Node, document: document, path: path}
+        {class: JSI::JSON::Node, document: document, pointer: pointer}
       end
       include FingerprintHash
     end

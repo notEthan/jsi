@@ -2,13 +2,22 @@ require_relative 'test_helper'
 
 describe JSI::JSON::Node do
   let(:path) { [] }
-  let(:node) { JSI::JSON::Node.new(document, path) }
+  let(:pointer) { JSI::JSON::Pointer.new(path) }
+  let(:node) { JSI::JSON::Node.new(document, pointer) }
 
   describe 'initialization' do
     it 'initializes' do
-      node = JSI::JSON::Node.new({'a' => 'b'}, [])
+      node = JSI::JSON::Node.new({'a' => 'b'}, pointer)
       assert_equal({'a' => 'b'}, node.document)
-      assert_equal([], node.path)
+      assert_equal(JSI::JSON::Pointer.new([]), node.pointer)
+    end
+    it 'initializes, pointer is not pointer' do
+      err = assert_raises(TypeError) { JSI::JSON::Node.new({'a' => 'b'}, []) }
+      assert_equal('pointer must be a JSI::JSON::Pointer. got: [] (Array)', err.message)
+    end
+    it 'initializes, document is another Node' do
+      err = assert_raises(TypeError) { JSI::JSON::Node.new(JSI::JSON::Node.new({'a' => 'b'}, pointer), pointer) }
+      assert_equal("document of a Node should not be another JSI::JSON::Node: #<JSI::JSON::Node fragment=\"#\" {\"a\"=>\"b\"}>", err.message)
     end
   end
   describe 'initialization by .new_by_type' do
@@ -31,15 +40,20 @@ describe JSI::JSON::Node do
   end
   describe '#pointer' do
     it 'is a JSI::JSON::Pointer' do
-      assert_instance_of(JSI::JSON::Pointer, JSI::JSON::Node.new({}, []).pointer)
+      assert_instance_of(JSI::JSON::Pointer, JSI::JSON::Node.new({}, pointer).pointer)
+    end
+  end
+  describe '#path' do
+    it 'is an array of reference tokens' do
+      assert_equal(['a'], JSI::JSON::Node.new({}, JSI::JSON::Pointer.new(['a'])).path)
     end
   end
   describe '#content' do
     it 'returns the content at the root' do
-      assert_equal({'a' => 'b'}, JSI::JSON::Node.new({'a' => 'b'}, []).content)
+      assert_equal({'a' => 'b'}, JSI::JSON::Node.new({'a' => 'b'}, pointer).content)
     end
     it 'returns the content from the deep' do
-      assert_equal('b', JSI::JSON::Node.new([0, {'x' => [{'a' => ['b']}]}], [1, 'x', 0, 'a', 0]).content)
+      assert_equal('b', JSI::JSON::Node.new([0, {'x' => [{'a' => ['b']}]}], JSI::JSON::Pointer.new([1, 'x', 0, 'a', 0])).content)
     end
   end
   describe '#deref' do
@@ -65,7 +79,7 @@ describe JSI::JSON::Node do
       it 'subscripts a node consisting of a $ref WITHOUT following' do
         subscripted = node['a']
         assert_equal({'$ref' => 'bar', 'foo' => 'bar'}, subscripted.content)
-        assert_equal(['a'], subscripted.path)
+        assert_equal(JSI::JSON::Pointer.new(['a']), subscripted.pointer)
       end
       it 'looks for a node in #/schemas with the name of the $ref' do
         assert_equal({'description' => ['baz']}, node['a'].deref.content)
@@ -73,7 +87,7 @@ describe JSI::JSON::Node do
       it 'follows a $ref when subscripting past it' do
         subscripted = node['a']['description']
         assert_equal(['baz'], subscripted.content)
-        assert_equal(['schemas', 'bar', 'description'], subscripted.path)
+        assert_equal(JSI::JSON::Pointer.new(['schemas', 'bar', 'description']), subscripted.pointer)
       end
       it 'does not follow a $ref when subscripting a key that is present' do
         subscripted = node['a']['foo']
@@ -103,13 +117,20 @@ describe JSI::JSON::Node do
         subscripted = node[1]['x']
         assert_instance_of(JSI::JSON::ArrayNode, subscripted)
         assert_equal([{'a' => ['b']}], subscripted.content)
-        assert_equal([1, 'x'], subscripted.path)
+        assert_equal(JSI::JSON::Pointer.new([1, 'x']), subscripted.pointer)
       end
       it 'returns HashNode for a Hash' do
         subscripted = node[1]
         assert_instance_of(JSI::JSON::HashNode, subscripted)
         assert_equal({'x' => [{'a' => ['b']}]}, subscripted.content)
-        assert_equal([1], subscripted.path)
+        assert_equal(JSI::JSON::Pointer.new([1]), subscripted.pointer)
+      end
+      describe 'content does not respond to []' do
+        let(:document) { Object.new }
+        it 'cannot subscript' do
+          err = assert_raises(NoMethodError) { node['x'] }
+          assert_equal("undefined method `[]`\nsubscripting with \"x\" (String) from Object. content is: #{document.pretty_inspect.chomp}", err.message)
+        end
       end
     end
     describe 'with dereferencing' do
@@ -122,12 +143,12 @@ describe JSI::JSON::Node do
       it 'subscripts a node consisting of a $ref WITHOUT following' do
         subscripted = node['a']
         assert_equal({'$ref' => '#/foo', 'description' => 'hi'}, subscripted.content)
-        assert_equal(['a'], subscripted.path)
+        assert_equal(JSI::JSON::Pointer.new(['a']), subscripted.pointer)
       end
       it 'follows a $ref when subscripting past it' do
         subscripted = node['a']['bar']
         assert_equal(['baz'], subscripted.content)
-        assert_equal(['foo', 'bar'], subscripted.path)
+        assert_equal(JSI::JSON::Pointer.new(['foo', 'bar']), subscripted.pointer)
       end
       it 'does not follow a $ref when subscripting a key that is present' do
         subscripted = node['a']['description']
@@ -140,7 +161,7 @@ describe JSI::JSON::Node do
     it 'assigns' do
       node[0] = 'abcdefg'
       assert_equal(['abcdefg', {'x' => [{'a' => ['b']}]}], document)
-      string_node = JSI::JSON::Node.new(document, [0])
+      string_node = JSI::JSON::Node.new(document, JSI::JSON::Pointer.new([0]))
       string_node[0..2] = '0'
       assert_equal(['0defg', {'x' => [{'a' => ['b']}]}], document)
       node[0] = node[1]
@@ -161,19 +182,19 @@ describe JSI::JSON::Node do
     let(:document) { {'a' => {'b' => []}} }
     it 'finds a parent' do
       sub = node['a']['b']
-      assert_equal(['a', 'b'], sub.path)
+      assert_equal(JSI::JSON::Pointer.new(['a', 'b']), sub.pointer)
       parent = sub.parent_node
-      assert_equal(['a'], parent.path)
+      assert_equal(JSI::JSON::Pointer.new(['a']), parent.pointer)
       assert_equal({'b' => []}, parent.content)
       assert_equal(node['a'], parent)
       root_from_sub = sub.parent_node.parent_node
-      assert_equal([], root_from_sub.path)
+      assert_equal(JSI::JSON::Pointer.new([]), root_from_sub.pointer)
       assert_equal({'a' => {'b' => []}}, root_from_sub.content)
       assert_equal(node, root_from_sub)
       err = assert_raises(JSI::JSON::Pointer::ReferenceError) do
         root_from_sub.parent_node
       end
-      assert_match(/\Acannot access parent of root node: #\{<JSI::JSON::HashNode/, err.message)
+      assert_match(/\Acannot access parent of root pointer: #<JSI::JSON::Pointer/, err.message)
     end
   end
   describe '#pointer_path' do
@@ -234,11 +255,11 @@ describe JSI::JSON::Node do
       assert_equal(node.document_node[0].content.object_id, unmodified_dup.document_node[0].content.object_id)
     end
     it 'raises subscripting string from array' do
-      err = assert_raises(TypeError) { JSI::JSON::Node.new(document, ['x']).modified_copy(&:dup) }
+      err = assert_raises(TypeError) { JSI::JSON::Node.new(document, JSI::JSON::Pointer.new(['x'])).modified_copy(&:dup) }
       assert_match(%r(\Abad subscript "x" with remaining subpath: \[\] for array: \[.*\]\z)m, err.message)
     end
     it 'raises subscripting from invalid subpath' do
-      err = assert_raises(TypeError) { JSI::JSON::Node.new(document, [0, 0, 'what']).modified_copy(&:dup) }
+      err = assert_raises(TypeError) { JSI::JSON::Node.new(document, JSI::JSON::Pointer.new([0, 0, 'what'])).modified_copy(&:dup) }
       assert_match(%r(bad subscript: "what" with remaining subpath: \[\] for content: "b"\z)m, err.message)
     end
   end
@@ -257,23 +278,24 @@ describe JSI::JSON::Node do
     end
   end
   describe '#fingerprint' do
+    let(:pointer) { JSI::JSON::Pointer.new([]) }
     it 'hashes consistently' do
-      assert_equal('x', {JSI::JSON::Node.new([0], []) => 'x'}[JSI::JSON::Node.new([0], [])])
+      assert_equal('x', {JSI::JSON::Node.new([0], pointer) => 'x'}[JSI::JSON::Node.new([0], pointer)])
     end
     it 'hashes consistently regardless of the Node being decorated as a subclass' do
-      assert_equal('x', {JSI::JSON::Node.new_doc([0]) => 'x'}[JSI::JSON::Node.new([0], [])])
-      assert_equal('x', {JSI::JSON::Node.new([0], []) => 'x'}[JSI::JSON::Node.new_doc([0])])
+      assert_equal('x', {JSI::JSON::Node.new_doc([0]) => 'x'}[JSI::JSON::Node.new([0], pointer)])
+      assert_equal('x', {JSI::JSON::Node.new([0], pointer) => 'x'}[JSI::JSON::Node.new_doc([0])])
     end
     it '==' do
-      assert_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new([0], []))
-      assert_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new([0], []))
-      assert_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new_doc([0]))
+      assert_equal(JSI::JSON::Node.new([0], pointer), JSI::JSON::Node.new([0], pointer))
+      assert_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new([0], pointer))
+      assert_equal(JSI::JSON::Node.new([0], pointer), JSI::JSON::Node.new_doc([0]))
       assert_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new_doc([0]))
     end
     it '!=' do
-      refute_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new({}, []))
-      refute_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new({}, []))
-      refute_equal(JSI::JSON::Node.new([0], []), JSI::JSON::Node.new_doc({}))
+      refute_equal(JSI::JSON::Node.new([0], pointer), JSI::JSON::Node.new({}, pointer))
+      refute_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new({}, pointer))
+      refute_equal(JSI::JSON::Node.new([0], pointer), JSI::JSON::Node.new_doc({}))
       refute_equal(JSI::JSON::Node.new_doc([0]), JSI::JSON::Node.new_doc({}))
       refute_equal({}, JSI::JSON::Node.new_doc({}))
       refute_equal(JSI::JSON::Node.new_doc({}), {})

@@ -1,5 +1,8 @@
 module JSI
   module Util
+    # a proc which does nothing
+    NOOP = -> (*_) { }
+
     # returns a version of the given hash, in which any symbol keys are
     # converted to strings. behavior on collisions is undefined (but in the
     # future could take a block like

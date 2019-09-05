@@ -11,66 +11,70 @@ module JSI
       class ReferenceError < Error
       end
 
-      # parse a fragment to an array of reference tokens
+      # parse a URI-escaped fragment and instantiate as a JSI::JSON::Pointer
       #
-      # #/foo/bar
+      #     ptr = JSI::JSON::Pointer.from_fragment('#/foo/bar')
+      #     => #<JSI::JSON::Pointer fragment: #/foo/bar>
+      #     ptr.reference_tokens
+      #     => ["foo", "bar"]
       #
-      # => ['foo', 'bar']
+      # with URI escaping:
       #
-      # #/foo%20bar
+      #     ptr = JSI::JSON::Pointer.from_fragment('#/foo%20bar')
+      #     => #<JSI::JSON::Pointer fragment: #/foo%20bar>
+      #     ptr.reference_tokens
+      #     => ["foo bar"]
       #
-      # => ['foo bar']
-      def self.parse_fragment(fragment)
+      # @param fragment [String] a fragment containing a pointer (starting with #)
+      # @return [JSI::JSON::Pointer]
+      def self.from_fragment(fragment)
         fragment = Addressable::URI.unescape(fragment)
         match = fragment.match(/\A#/)
         if match
-          parse_pointer(match.post_match)
+          from_pointer(match.post_match, type: 'fragment')
         else
           raise(PointerSyntaxError, "Invalid fragment syntax in #{fragment.inspect}: fragment must begin with #")
         end
       end
 
-      # parse a pointer to an array of reference tokens
+      # parse a pointer string and instantiate as a JSI::JSON::Pointer
       #
-      # /foo
+      #     ptr1 = JSI::JSON::Pointer.from_pointer('/foo')
+      #     => #<JSI::JSON::Pointer pointer: /foo>
+      #     ptr1.reference_tokens
+      #     => ["foo"]
       #
-      # => ['foo']
+      #     ptr2 = JSI::JSON::Pointer.from_pointer('/foo~0bar/baz~1qux')
+      #     => #<JSI::JSON::Pointer pointer: /foo~0bar/baz~1qux>
+      #     ptr2.reference_tokens
+      #     => ["foo~bar", "baz/qux"]
       #
-      # /foo~0bar/baz~1qux
-      #
-      # => ['foo~bar', 'baz/qux']
-      def self.parse_pointer(pointer_string)
+      # @param pointer_string [String] a pointer string
+      # @param type (for internal use) indicates the original representation of the pointer
+      # @return [JSI::JSON::Pointer]
+      def self.from_pointer(pointer_string, type: 'pointer')
         tokens = pointer_string.split('/', -1).map! do |piece|
           piece.gsub('~1', '/').gsub('~0', '~')
         end
         if tokens[0] == ''
-          tokens[1..-1]
+          new(tokens[1..-1], type: type)
         elsif tokens.empty?
-          tokens
+          new(tokens, type: type)
         else
           raise(PointerSyntaxError, "Invalid pointer syntax in #{pointer_string.inspect}: pointer must begin with /")
         end
       end
 
-      # initializes a JSI::JSON::Pointer from the given representation.
+      # initializes a JSI::JSON::Pointer from the given reference_tokens.
       #
-      # type may be one of:
-      #
-      # - :fragment - the representation is a fragment containing a pointer (starting with #)
-      # - :pointer - the representation is a pointer (starting with /)
-      # - :reference_tokens - the representation is an array of tokens referencing a path in a document
-      def initialize(type, representation)
-        @type = type
-        if type == :reference_tokens
-          reference_tokens = representation
-        elsif type == :fragment
-          reference_tokens = self.class.parse_fragment(representation)
-        elsif type == :pointer
-          reference_tokens = self.class.parse_pointer(representation)
-        else
-          raise ArgumentError, "invalid initialization type: #{type.inspect} with representation #{representation.inspect}"
+      # @param reference_tokens [Array<Object>]
+      # @param type [String, Symbol] one of 'pointer' or 'fragment'
+      def initialize(reference_tokens, type: nil)
+        unless reference_tokens.respond_to?(:to_ary)
+          raise(TypeError, "reference_tokens must be an array. got: #{reference_tokens.inspect}")
         end
-        @reference_tokens = reference_tokens.map(&:freeze).freeze
+        @reference_tokens = reference_tokens.to_ary.map(&:freeze).freeze
+        @type = type.is_a?(Symbol) ? type.to_s : type
       end
 
       attr_reader :reference_tokens
@@ -106,29 +110,167 @@ module JSI
         res
       end
 
-      # the pointer string representation of this Pointer
+      # @return [String] the pointer string representation of this Pointer
       def pointer
         reference_tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('')
       end
 
-      # the fragment string representation of this Pointer
+      # @return [String] the fragment string representation of this Pointer
       def fragment
         '#' + Addressable::URI.escape(pointer)
       end
 
-      def to_s
-        "#<#{self.class.inspect} #{@type} = #{representation_s}>"
+      # @return [Boolean] whether this pointer points to the root (has an empty array of reference_tokens)
+      def root?
+        reference_tokens.empty?
       end
+
+      # @return [JSI::JSON::Pointer] pointer to the parent of where this pointer points
+      # @raise [JSI::JSON::Pointer::ReferenceError] if this pointer has no parent (points to the root)
+      def parent
+        if root?
+          raise(ReferenceError, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
+        else
+          Pointer.new(reference_tokens[0...-1], type: @type)
+        end
+      end
+
+      # appends the given token to this Pointer's reference tokens and returns the result
+      #
+      # @param token [Object]
+      # @return [JSI::JSON::Pointer] pointer to a child node of this pointer with the given token
+      def [](token)
+        Pointer.new(reference_tokens + [token], type: @type)
+      end
+
+      # takes a document and a block. the block is yielded the content of the given document at this
+      # pointer's location. the block must result a modified copy of that content (and MUST NOT modify
+      # the object it is given). this modified copy of that content is incorporated into a modified copy
+      # of the given document, which is then returned. the structure and contents of the document outside
+      # the path pointed to by this pointer is not modified.
+      #
+      # @param document [Object] the document to apply this pointer to
+      # @yield [Object] the content this pointer applies to in the given document
+      #   the block must result in the new content which will be placed in the modified document copy.
+      # @return [Object] a copy of the given document, with the content this pointer applies to
+      #   replaced by the result of the block
+      def modified_document_copy(document, &block)
+        # we need to preserve the rest of the document, but modify the content at our path.
+        #
+        # this is actually a bit tricky. we can't modify the original document, obviously.
+        # we could do a deep copy, but that's expensive. instead, we make a copy of each array
+        # or hash in the path above this node. this node's content is modified by the caller, and
+        # that is recursively merged up to the document root. the recursion is done with a
+        # y combinator, for no other reason than that was a fun way to implement it.
+        modified_document = JSI::Util.ycomb do |rec|
+          proc do |subdocument, subpath|
+            if subpath == []
+              Typelike.modified_copy(subdocument, &block)
+            else
+              car = subpath[0]
+              cdr = subpath[1..-1]
+              if subdocument.respond_to?(:to_hash)
+                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_hash)[car]
+                car_object = rec.call(subdocument_car, cdr)
+                if car_object.object_id == subdocument_car.object_id
+                  subdocument
+                else
+                  (subdocument.respond_to?(:merge) ? subdocument : subdocument.to_hash).merge({car => car_object})
+                end
+              elsif subdocument.respond_to?(:to_ary)
+                if car.is_a?(String) && car =~ /\A\d+\z/
+                  car = car.to_i
+                end
+                unless car.is_a?(Integer)
+                  raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect.chomp}")
+                end
+                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_ary)[car]
+                car_object = rec.call(subdocument_car, cdr)
+                if car_object.object_id == subdocument_car.object_id
+                  subdocument
+                else
+                  (subdocument.respond_to?(:[]=) ? subdocument : subdocument.to_ary).dup.tap do |arr|
+                    arr[car] = car_object
+                  end
+                end
+              else
+                raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect.chomp}")
+              end
+            end
+          end
+        end.call(document, reference_tokens)
+        modified_document
+      end
+
+      # if this Pointer points at a $ref node within the given document, #deref attempts
+      # to follow that $ref and return a Pointer to the referenced location. otherwise,
+      # this Pointer is returned.
+      #
+      # if the content this Pointer points to in the document is not hash-like, does not
+      # have a $ref property, its $ref cannot be found, or its $ref points outside the document,
+      # this pointer is returned.
+      #
+      # @param document [Object] the document this pointer applies to
+      # @yield [Pointer] if a block is given (optional), this will yield a deref'd pointer. if this
+      #   pointer does not point to a $ref object in the given document, the block is not called.
+      #   if we point to a $ref which cannot be followed (e.g. a $ref to an external
+      #   document, which is not yet supported), the block is not called.
+      # @return [Pointer] dereferenced pointer, or this pointer
+      def deref(document, &block)
+        block ||= Util::NOOP
+        content = evaluate(document)
+
+        if content.respond_to?(:to_hash)
+          ref = (content.respond_to?(:[]) ? content : content.to_hash)['$ref']
+        end
+        return self unless ref.is_a?(String)
+
+        if ref[/\A#/]
+          return Pointer.from_fragment(ref).tap(&block)
+        end
+
+        # HAX for how google does refs and ids
+        if document['schemas'].respond_to?(:to_hash)
+          if document['schemas'][ref]
+            return Pointer.new(['schemas', ref], type: 'hax').tap(&block)
+          end
+          document['schemas'].each do |k, schema|
+            if schema['id'] == ref
+              return Pointer.new(['schemas', k], type: 'hax').tap(&block)
+            end
+          end
+        end
+
+        #raise(NotImplementedError, "cannot dereference #{ref}") # TODO
+        return self
+      end
+
+      # @return [String] string representation of this Pointer
+      def inspect
+        "#<#{self.class.inspect} #{representation_s}>"
+      end
+
+      # @return [String] string representation of this Pointer
+      def to_s
+        inspect
+      end
+
+      # pointers are equal if the reference_tokens are equal, regardless of @type
+      def fingerprint
+        {class: JSI::JSON::Pointer, reference_tokens: reference_tokens}
+      end
+      include FingerprintHash
 
       private
 
+      # @return [String] a representation of this pointer based on @type
       def representation_s
-        if @type == :fragment
-          fragment
-        elsif @type == :pointer
-          pointer
+        if @type == 'fragment'
+          "fragment: #{fragment}"
+        elsif @type == 'pointer'
+          "pointer: #{pointer}"
         else
-          reference_tokens.inspect
+          "reference_tokens: #{reference_tokens.inspect}"
         end
       end
     end

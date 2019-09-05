@@ -109,9 +109,9 @@ module JSI
     # @return [Array<JSI::Base>]
     def parents
       parent = @ancestor
-      (@ancestor.instance.path.size...self.instance.path.size).map do |i|
+      (@ancestor.instance.pointer.reference_tokens.size...self.instance.pointer.reference_tokens.size).map do |i|
         parent.tap do
-          parent = parent[self.instance.path[i]]
+          parent = parent[self.instance.pointer.reference_tokens[i]]
         end
       end.reverse
     end

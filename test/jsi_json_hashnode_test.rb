@@ -18,8 +18,9 @@ document_types.each do |document_type|
     let(:document) { document_type[:document] }
     # by default the node is the whole document
     let(:path) { [] }
+    let(:pointer) { JSI::JSON::Pointer.new(path) }
     # the node being tested
-    let(:node) { JSI::JSON::Node.new_by_type(document, path) }
+    let(:node) { JSI::JSON::Node.new_by_type(document, pointer) }
 
     describe '#each' do
       it 'iterates, one argument' do
