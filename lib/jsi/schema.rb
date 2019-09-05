@@ -25,7 +25,7 @@ module JSI
       elsif schema_object.is_a?(JSI::Base)
         @schema_jsi = JSI.deep_stringify_symbol_keys(schema_object.deref)
         @schema_node = @schema_jsi.instance
-      elsif schema_object.is_a?(JSI::JSON::HashNode)
+      elsif schema_object.is_a?(JSI::PathedNode)
         @schema_jsi = nil
         @schema_node = JSI.deep_stringify_symbol_keys(schema_object.deref)
       elsif schema_object.respond_to?(:to_hash)
@@ -69,7 +69,7 @@ module JSI
           # look at 'id' if node_for_id is a schema, or the document root.
           # decide whether to look at '$id' for all parent nodes or also just schemas.
           if node_for_id.respond_to?(:to_hash)
-            if node_for_id.root_node? || node_for_id.object_id == schema_node.object_id
+            if node_for_id.node_ptr.root? || node_for_id.object_id == schema_node.object_id
               # I'm only looking at 'id' for the document root and the schema node
               # until I track what parents are schemas.
               parent_id = node_for_id['$id'] || node_for_id['id']
@@ -80,18 +80,18 @@ module JSI
             end
           end
 
-          if parent_id || node_for_id.root_node?
+          if parent_id || node_for_id.node_ptr.root?
             done = true
           else
-            path_from_id_node.unshift(node_for_id.pointer.reference_tokens.last)
+            path_from_id_node.unshift(node_for_id.node_ptr.reference_tokens.last)
             node_for_id = node_for_id.parent_node
           end
         end
         if parent_id
           parent_auri = Addressable::URI.parse(parent_id)
         else
-          node_for_id = schema_node.document_node
-          validator = ::JSON::Validator.new(node_for_id.content, nil)
+          node_for_id = schema_node.document_root_node
+          validator = ::JSON::Validator.new(Typelike.as_json(node_for_id), nil)
           # TODO not good instance_exec'ing into another library's ivars
           parent_auri = validator.instance_exec { @base_schema }.uri
         end
@@ -228,12 +228,12 @@ module JSI
     # @return [Array<String>] array of schema validation error messages for
     #   the given instance against this schema
     def fully_validate(instance)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.document), JSI::Typelike.as_json(instance), fragment: schema_node.fragment)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
     end
 
     # @return [true, false] whether the given instance validates against this schema
     def validate(instance)
-      ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.document), JSI::Typelike.as_json(instance), fragment: schema_node.fragment)
+      ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -241,19 +241,19 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors against this schema
     def validate!(instance)
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.document), JSI::Typelike.as_json(instance), fragment: schema_node.fragment)
+      ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
     end
 
     # @return [Array<String>] array of schema validation error messages for
     #   this schema, validated against its metaschema. a default metaschema
     #   is assumed if the schema does not specify a $schema.
     def fully_validate_schema
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.document), [], fragment: schema_node.fragment, validate_schema: true, list: true)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.node_document), [], fragment: schema_node.node_ptr.fragment, validate_schema: true, list: true)
     end
 
     # @return [true, false] whether this schema validates against its metaschema
     def validate_schema
-      ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.document), [], fragment: schema_node.fragment, validate_schema: true, list: true)
+      ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.node_document), [], fragment: schema_node.node_ptr.fragment, validate_schema: true, list: true)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -261,7 +261,7 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if this schema has
     #   validation errors against its metaschema
     def validate_schema!
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.document), [], fragment: schema_node.fragment, validate_schema: true, list: true)
+      ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.node_document), [], fragment: schema_node.node_ptr.fragment, validate_schema: true, list: true)
     end
 
     # @return [String] a string for #instance and #pretty_print including the schema_id
