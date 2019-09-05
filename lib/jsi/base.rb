@@ -179,6 +179,20 @@ module JSI
       parent_jsis.first
     end
 
+    # @return [JSI::PathedNode] a pathed node at the root of the document. this is generally a JSI::Base
+    #   but may be a JSI::JSON::Node in unusual circumstances.
+    def document_root_node
+      if @jsi_ptr.root?
+        self
+      elsif @ancestor_jsi
+        @ancestor_jsi.document_root_node
+      elsif instance.is_a?(PathedNode)
+        instance.document_root_node
+      else
+        JSI::JSON::Node.new_doc(@jsi_document)
+      end
+    end
+
     # @return [JSI::PathedNode]
     def parent_node
       if @jsi_ptr.root?
