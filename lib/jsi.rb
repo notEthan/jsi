@@ -18,6 +18,7 @@ module JSI
   autoload :BaseArray, 'jsi/base'
   autoload :BaseHash, 'jsi/base'
   autoload :SchemaClasses, 'jsi/base'
+  autoload :SimpleWrap, 'jsi/simple_wrap'
   autoload :JSICoder, 'jsi/jsi_coder'
 
   # @return [Class subclassing JSI::Base] a JSI class which represents the
