@@ -107,8 +107,15 @@ module JSI
         @jsi_ptr = jsi_ptr
       else
         raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || ancestor_jsi
-        @jsi_document = instance
-        @jsi_ptr = JSI::JSON::Pointer.new([])
+        if instance.is_a?(PathedNode)
+          @jsi_document = instance.document_root_node
+          # this can result in the unusual situation where ancestor_jsi is nil, though jsi_ptr is not root.
+          # #document_root_node will then return a JSI::JSON::Pointer instead of a root JSI.
+          @jsi_ptr = instance.node_ptr
+        else
+          @jsi_document = instance
+          @jsi_ptr = JSI::JSON::Pointer.new([])
+        end
       end
       if ancestor_jsi
         if !ancestor_jsi.is_a?(JSI::Base)
