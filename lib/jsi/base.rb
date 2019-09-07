@@ -179,6 +179,22 @@ module JSI
       parent_jsis.first
     end
 
+    # @return [JSI::PathedNode]
+    def parent_node
+      if @jsi_ptr.root?
+        nil
+      elsif @ancestor_jsi
+        parent_jsis.first.tap do |parent_node|
+          raise(Bug, 'is @ancestor_jsi == self? it should not be') if parent_node.nil?
+          raise(Bug, "parent_node not PathedNode: #{parent_node.pretty_inspect.chomp}") unless parent_node.is_a?(JSI::PathedNode)
+        end
+      elsif instance.is_a?(PathedNode)
+        instance.parent_node
+      else
+        JSI::JSON::Node.new_by_type(@jsi_document, @jsi_ptr.parent)
+      end
+    end
+
     # @deprecated
     alias_method :parents, :parent_jsis
     # @deprecated
