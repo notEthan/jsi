@@ -304,7 +304,7 @@ module JSI
 
     # @return [Object] an opaque fingerprint of this Schema for FingerprintHash
     def fingerprint
-      {class: self.class, schema_node: schema_node}
+      {class: self.class, schema_ptr: schema_node.node_ptr, schema_document: JSI::Typelike.as_json(schema_node.node_document)}
     end
     include FingerprintHash
   end
