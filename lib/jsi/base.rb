@@ -356,7 +356,7 @@ module JSI
     # @return [Hash] a hash in which each key is a key of the instance hash and
     #   each value is the result of self[key] (see #[]).
     def to_hash
-      inject({}) { |h, (k, v)| h[k] = v; h }
+      {}.tap { |h| each_key { |k| h[k] = self[k] } }
     end
 
     include Hashlike
