@@ -88,7 +88,7 @@ module JSI
     #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
     # @param ancestor_jsi [JSI::Base] for internal use, specifies an ancestor_jsi
     #   from which this JSI originated to calculate #parents
-    def initialize(instance, jsi_document: (document_unset = true), jsi_ptr: (ptr_unset = true), ancestor_jsi: nil)
+    def initialize(instance, jsi_document: nil, jsi_ptr: nil, ancestor_jsi: nil)
       unless respond_to?(:schema)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
       end
@@ -100,20 +100,23 @@ module JSI
       end
 
       if instance == NOINSTANCE
-        if document_unset || ptr_unset
-          raise(ArgumentError, "params `jsi_document` and `jsi_ptr` must both be set when instance is NOINSTANCE")
-        end
         @jsi_document = jsi_document
         unless jsi_ptr.is_a?(JSI::JSON::Pointer)
           raise(TypeError, "jsi_ptr must be a JSI::JSON::Pointer; got: #{jsi_ptr.inspect}")
         end
         @jsi_ptr = jsi_ptr
       else
-        unless document_unset && ptr_unset
-          raise(ArgumentError, "params `jsi_document` and `jsi_ptr` must not be set when instance is given")
-        end
+        raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || ancestor_jsi
         @jsi_document = instance
         @jsi_ptr = JSI::JSON::Pointer.new([])
+      end
+      if ancestor_jsi
+        if !ancestor_jsi.is_a?(JSI::Base)
+          raise(TypeError, "ancestor_jsi must be a JSI::Base; got: #{ancestor_jsi.inspect}")
+        end
+        if !ancestor_jsi.jsi_ptr.contains?(@jsi_ptr)
+          raise(Bug, "ancestor_jsi ptr #{ancestor_jsi.jsi_ptr.inspect} is not ancestor of #{@jsi_ptr.inspect}")
+        end
       end
       @ancestor_jsi = ancestor_jsi
 
