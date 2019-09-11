@@ -198,8 +198,18 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def modified_copy(&block)
-      modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-      self.class.new(Base::NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr, ancestor_jsi: @ancestor_jsi)
+      if @ancestor_jsi
+        raise(Bug, 'bad @ancestor_jsi') if @ancestor_jsi.object_id == self.object_id
+
+        modified_ancestor = @ancestor_jsi.modified_copy do |anc|
+          mod_anc = @jsi_ptr.ptr_relative_to(@ancestor_jsi.jsi_ptr).modified_document_copy(anc, &block)
+          mod_anc
+        end
+        self.class.new(Base::NOINSTANCE, jsi_document: modified_ancestor.jsi_document, jsi_ptr: @jsi_ptr, ancestor_jsi: modified_ancestor)
+      else
+        modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
+        self.class.new(Base::NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr)
+      end
     end
 
     # @return [String] the fragment representation of a pointer to this JSI's instance within its document
