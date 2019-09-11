@@ -374,7 +374,9 @@ module JSI
             # use the default value
             default = property_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              class_for_schema(property_schema).new(default, ancestor_jsi: @ancestor_jsi || self)
+              # we are using #dup so that we get a modified copy of self, in which we set dup[property_name_]=default.
+              # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
+              dup.tap { |o| o[property_name_] = default }[property_name_]
             else
               default
             end
@@ -460,7 +462,9 @@ module JSI
             # use the default value
             default = index_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              class_for_schema(index_schema).new(default, ancestor_jsi: @ancestor_jsi || self)
+              # we are using #dup so that we get a modified copy of self, in which we set dup[i]=default.
+              # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
+              dup.tap { |o| o[i_] = default }[i_]
             else
               default
             end
