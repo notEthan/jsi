@@ -17,8 +17,10 @@ module JSI
       end
     end
 
-    # initializes a schema from a given JSI::Base, JSI::JSON::Node, or hash.
-    # @param schema_object [JSI::Base, #to_hash] the schema
+    # initializes a schema from a given JSI::Base, JSI::JSON::Node, or hash. Boolean schemas are
+    # instantiated as their equivalent hash ({} for true and {"not" => {}} for false).
+    #
+    # @param schema_object [JSI::Base, #to_hash, Boolean] the schema
     def initialize(schema_object)
       if schema_object.is_a?(JSI::Schema)
         raise(TypeError, "will not instantiate Schema from another Schema: #{schema_object.pretty_inspect.chomp}")
@@ -31,6 +33,10 @@ module JSI
       elsif schema_object.respond_to?(:to_hash)
         @schema_jsi = nil
         @schema_node = JSI::JSON::Node.new_doc(JSI.deep_stringify_symbol_keys(schema_object))
+      elsif schema_object == true
+        @schema_node = JSI::JSON::Node.new_doc({})
+      elsif schema_object == false
+        @schema_node = JSI::JSON::Node.new_doc({"not" => {}})
       else
         raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
       end
