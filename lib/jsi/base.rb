@@ -306,8 +306,10 @@ module JSI
     def [](property_name_)
       memoize(:[], property_name_) do |property_name|
         begin
+          instance_property_value = jsi_instance_sub(property_name)
+
           property_schema = schema.subschema_for_property(property_name)
-          property_schema = property_schema && property_schema.match_to_instance(jsi_instance_sub(property_name))
+          property_schema = property_schema && property_schema.match_to_instance(instance_property_value)
 
           if !jsi_instance_hash_pubsend(:key?, property_name) && property_schema && property_schema.schema_object.key?('default')
             # use the default value
@@ -317,10 +319,10 @@ module JSI
             else
               default
             end
-          elsif property_schema && (jsi_instance_sub(property_name).respond_to?(:to_hash) || jsi_instance_sub(property_name).respond_to?(:to_ary))
-            class_for_schema(property_schema).new(jsi_instance_sub(property_name), ancestor: @ancestor)
+          elsif property_schema && (instance_property_value.respond_to?(:to_hash) || instance_property_value.respond_to?(:to_ary))
+            class_for_schema(property_schema).new(instance_property_value, ancestor: @ancestor)
           else
-            jsi_instance_sub(property_name)
+            instance_property_value
           end
         end
       end
@@ -392,8 +394,10 @@ module JSI
     def [](i_)
       memoize(:[], i_) do |i|
         begin
+          instance_idx_value = jsi_instance_sub(i)
+
           index_schema = schema.subschema_for_index(i)
-          index_schema = index_schema && index_schema.match_to_instance(jsi_instance_sub(i))
+          index_schema = index_schema && index_schema.match_to_instance(instance_idx_value)
 
           if !jsi_instance_ary_pubsend(:each_index).to_a.include?(i) && index_schema && index_schema.schema_object.key?('default')
             # use the default value
@@ -403,10 +407,10 @@ module JSI
             else
               default
             end
-          elsif index_schema && (jsi_instance_sub(i).respond_to?(:to_hash) || jsi_instance_sub(i).respond_to?(:to_ary))
-            class_for_schema(index_schema).new(jsi_instance_sub(i), ancestor: @ancestor)
+          elsif index_schema && (instance_idx_value.respond_to?(:to_hash) || instance_idx_value.respond_to?(:to_ary))
+            class_for_schema(index_schema).new(instance_idx_value, ancestor: @ancestor)
           else
-            jsi_instance_sub(i)
+            instance_idx_value
           end
         end
       end
