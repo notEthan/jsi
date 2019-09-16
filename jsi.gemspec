@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name    = "jsi"
   spec.version = JSI::VERSION
   spec.authors = ["Ethan"]
-  spec.email   = ["ethan@unth"]
+  spec.email   = ["ethan@unth.net"]
 
   spec.summary     = "JSI: JSON-Schema instantiation"
   spec.description = "JSI represents json-schemas as ruby classes and json-schema instances as instances of those classes"
