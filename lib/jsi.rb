@@ -48,6 +48,7 @@ module JSI
 
   autoload :JSONSchemaOrgDraft04, 'schemas/json-schema.org/draft-04/schema'
   autoload :JSONSchemaOrgDraft06, 'schemas/json-schema.org/draft-06/schema'
+  autoload :JSONSchemaOrgDraft07, 'schemas/json-schema.org/draft-07/schema'
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
@@ -87,3 +88,4 @@ end
 
 JSI.schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
 JSI.schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaOrgDraft06.schema }
+JSI.schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaOrgDraft07.schema }
