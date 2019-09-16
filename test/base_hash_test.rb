@@ -1,12 +1,7 @@
 require_relative 'test_helper'
 
 describe JSI::BaseHash do
-  let(:document) do
-    {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}
-  end
-  let(:path) { [] }
-  let(:pointer) { JSI::JSON::Pointer.new(path) }
-  let(:instance) { JSI::JSON::Node.new_by_type(document, pointer) }
+  let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true} }
   let(:schema_content) do
     {
       'type' => 'object',
@@ -30,19 +25,19 @@ describe JSI::BaseHash do
       }
     end
     describe 'default value' do
-      let(:document) { {'bar' => 3} }
+      let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
         assert_equal('foo', subject.foo)
       end
     end
     describe 'nondefault value (basic type)' do
-      let(:document) { {'foo' => 'who'} }
+      let(:instance) { {'foo' => 'who'} }
       it 'returns the nondefault value' do
         assert_equal('who', subject.foo)
       end
     end
     describe 'nondefault value (nonbasic type)' do
-      let(:document) { {'foo' => [2]} }
+      let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
         assert_equal([2], subject.foo.as_json)
@@ -59,20 +54,20 @@ describe JSI::BaseHash do
       }
     end
     describe 'default value' do
-      let(:document) { {'bar' => 3} }
+      let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
         assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
         assert_equal({'foo' => 2}, subject.foo.as_json)
       end
     end
     describe 'nondefault value (basic type)' do
-      let(:document) { {'foo' => 'who'} }
+      let(:instance) { {'foo' => 'who'} }
       it 'returns the nondefault value' do
         assert_equal('who', subject.foo)
       end
     end
     describe 'nondefault value (nonbasic type)' do
-      let(:document) { {'foo' => [2]} }
+      let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
         assert_equal([2], subject.foo.as_json)
@@ -101,7 +96,7 @@ describe JSI::BaseHash do
       assert_instance_of(JSI.class_for_schema(schema['properties']['bar']), subject['bar'])
     end
     it 'sets a property to a schema instance with the same schema' do
-      other_subject = class_for_schema.new(JSI::JSON::Node.new_doc({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}))
+      other_subject = class_for_schema.new({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true})
       # Given
       assert_equal(other_subject, subject)
 
@@ -120,8 +115,8 @@ describe JSI::BaseHash do
       subject['foo'] = {'y' => 'z'}
 
       assert_equal(orig_instance, subject.instance)
-      assert_equal({'y' => 'z'}, orig_instance['foo'].as_json)
-      assert_equal({'y' => 'z'}, subject.instance['foo'].as_json)
+      assert_equal({'y' => 'z'}, orig_instance['foo'])
+      assert_equal({'y' => 'z'}, subject.instance['foo'])
       assert_equal(orig_instance.class, subject.instance.class)
     end
     describe 'when the instance is not hashlike' do
@@ -182,8 +177,8 @@ describe JSI::BaseHash do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
     it('#merge') { assert_equal(subject, subject.merge({})) }
-    it('#reject') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, pointer)), subject.reject { true }) }
-    it('#select') { assert_equal(class_for_schema.new(JSI::JSON::HashNode.new({}, pointer)), subject.select { false }) }
+    it('#reject') { assert_equal(class_for_schema.new({}), subject.reject { true }) }
+    it('#select') { assert_equal(class_for_schema.new({}), subject.select { false }) }
     describe '#select' do
       it 'yields properly too' do
         subject.select do |k, v|

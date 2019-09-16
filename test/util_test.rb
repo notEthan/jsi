@@ -12,8 +12,8 @@ describe JSI::Util do
     end
     it 'stringifies JSI hash keys' do
       klass = JSI.class_for_schema(type: 'object')
-      expected = JSI.stringify_symbol_keys(klass.new(JSI::JSON::Node.new_doc({a: 'b', 'c' => 'd', nil => 3})))
-      actual = klass.new(JSI::JSON::Node.new_doc({'a' => 'b', 'c' => 'd', nil => 3}))
+      expected = JSI.stringify_symbol_keys(klass.new({a: 'b', 'c' => 'd', nil => 3}))
+      actual = klass.new({'a' => 'b', 'c' => 'd', nil => 3})
       assert_equal(expected, actual)
     end
     describe 'non-hash-like argument' do
@@ -22,8 +22,8 @@ describe JSI::Util do
         assert_equal("expected argument to be a hash; got NilClass: nil", err.message)
         err = assert_raises(ArgumentError) { JSI.stringify_symbol_keys(JSI::JSON::Node.new_doc(3)) }
         assert_equal("expected argument to be a hash; got JSI::JSON::Node: #<JSI::JSON::Node fragment=\"#\" 3>", err.message)
-        err = assert_raises(ArgumentError) { JSI.stringify_symbol_keys(JSI.class_for_schema({}).new(JSI::JSON::Node.new_doc(3))) }
-        assert_match(%r(\Aexpected argument to be a hash; got JSI::SchemaClasses\["[^"]+#"\]: #<JSI::SchemaClasses\["[^"]+#"\]\n  #<JSI::JSON::Node fragment="#" 3>\n>\z)m, err.message)
+        err = assert_raises(ArgumentError) { JSI.stringify_symbol_keys(JSI.class_for_schema({}).new(3)) }
+        assert_match(%r(\Aexpected argument to be a hash; got JSI::SchemaClasses\["[^"]+#"\]: #<JSI::SchemaClasses\["[^"]+#"\] 3>\z)m, err.message)
       end
     end
   end

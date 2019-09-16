@@ -3,12 +3,9 @@ require_relative 'test_helper'
 NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema'})
 
 describe JSI::Base do
-  let(:document) { {} }
-  let(:path) { [] }
-  let(:pointer) { JSI::JSON::Pointer.new(path) }
-  let(:instance) { JSI::JSON::Node.new_by_type(document, pointer) }
   let(:schema_content) { {} }
   let(:schema) { JSI::Schema.new(schema_content) }
+  let(:instance) { {} }
   let(:subject) { JSI.class_for_schema(schema).new(instance) }
   describe 'class .inspect + .to_s' do
     it 'is the same as Class#inspect on the base' do
@@ -118,8 +115,8 @@ describe JSI::Base do
         assert(subject.respond_to?(:to_hash))
       end
     end
-    describe 'JSI::JSON::Hashnode' do
-      let(:document) { {'foo' => 'bar'} }
+    describe 'JSI::JSON::HashNode' do
+      let(:instance) { JSI::JSON::HashNode.new({'foo' => 'bar'}, JSI::JSON::Pointer.new([])) }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
         assert_equal(JSI::JSON::HashNode.new({'foo' => 'bar'}, JSI::JSON::Pointer.new([])), subject.instance)
@@ -136,8 +133,8 @@ describe JSI::Base do
         assert(!subject.respond_to?(:to_hash))
       end
     end
-    describe 'JSI::JSON::Arraynode' do
-      let(:document) { ['foo'] }
+    describe 'JSI::JSON::ArrayNode' do
+      let(:instance) { JSI::JSON::ArrayNode.new(['foo'], JSI::JSON::Pointer.new([])) }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
         assert_equal(JSI::JSON::ArrayNode.new(['foo'], JSI::JSON::Pointer.new([])), subject.instance)
@@ -163,7 +160,7 @@ describe JSI::Base do
   end
   describe '#parent_jsis, #parent_jsi' do
     let(:schema_content) { {'properties' => {'foo' => {'properties' => {'bar' => {'properties' => {'baz' => {}}}}}}} }
-    let(:document) { {'foo' => {'bar' => {'baz' => {}}}} }
+    let(:instance) { {'foo' => {'bar' => {'baz' => {}}}} }
     describe 'no parent_jsis' do
       it 'has none' do
         assert_equal([], subject.parents)
@@ -190,7 +187,7 @@ describe JSI::Base do
     end
   end
   describe '#each, Enumerable methods' do
-    let(:document) { 'a string' }
+    let(:instance) { 'a string' }
     it "raises NoMethodError calling each or Enumerable methods" do
       assert_raises(NoMethodError) { subject.each { nil } }
       assert_raises(NoMethodError) { subject.map { nil } }
@@ -216,8 +213,8 @@ describe JSI::Base do
           assert_equal({}, o)
           {'a' => 'b'}
         end
-        assert_equal({'a' => 'b'}, modified.instance.node_content)
-        assert_equal({}, subject.instance.node_content)
+        assert_equal({'a' => 'b'}, modified.instance)
+        assert_equal({}, subject.instance)
         refute_equal(instance, modified)
       end
     end
@@ -225,7 +222,7 @@ describe JSI::Base do
       it 'yields the instance to modify' do
         modified = subject.modified_copy { |o| o }
         # this doesn't really need to be tested but ... whatever
-        assert_equal(subject.instance.node_content.object_id, modified.instance.node_content.object_id)
+        assert_equal(subject.instance.object_id, modified.instance.object_id)
         assert_equal(subject, modified)
         refute_equal(subject.object_id, modified.object_id)
       end
@@ -237,14 +234,12 @@ describe JSI::Base do
         modified = subject.modified_copy do |o|
           o.to_s
         end
-        assert_equal('{}', modified.instance.node_content)
-        assert_equal({}, subject.instance.node_content)
+        assert_equal('{}', modified.instance)
+        assert_equal({}, subject.instance)
         refute_equal(instance, modified)
         # interesting side effect
         assert(subject.respond_to?(:to_hash))
         assert(!modified.respond_to?(:to_hash))
-        assert_equal(JSI::JSON::HashNode, subject.instance.class)
-        assert_equal(JSI::JSON::Node, modified.instance.class)
       end
     end
   end
@@ -273,7 +268,7 @@ describe JSI::Base do
         },
       }
     end
-    let(:document) do
+    let(:instance) do
       {'foo' => {'x' => 'y'}, 'bar' => [3.14159], 'baz' => true, 'qux' => []}
     end
     describe 'readers' do
@@ -315,7 +310,7 @@ describe JSI::Base do
             },
           }
         end
-        let(:document) do
+        let(:instance) do
           {
             'foo' => 'bar',
             'initialize' => 'hi',
@@ -337,7 +332,7 @@ describe JSI::Base do
           assert_match(%r(\A#\{<JSI::SchemaClasses\[".*#"\].*}\z)m, subject.inspect)
           assert_equal('hi', subject['inspect'])
           assert_match(%r(\A#\{<JSI::SchemaClasses\[".*#"\].*}\Z)m, subject.pretty_inspect)
-          assert_equal(document, subject.as_json)
+          assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.instance)
@@ -361,8 +356,8 @@ describe JSI::Base do
         subject.foo = {'y' => 'z'}
 
         assert_equal(orig_instance, subject.instance)
-        assert_equal({'y' => 'z'}, orig_instance['foo'].as_json)
-        assert_equal({'y' => 'z'}, subject.instance['foo'].as_json)
+        assert_equal({'y' => 'z'}, orig_instance['foo'])
+        assert_equal({'y' => 'z'}, subject.instance['foo'])
         assert_equal(orig_instance.class, subject.instance.class)
       end
       describe 'when the instance is not hashlike' do
@@ -376,20 +371,21 @@ describe JSI::Base do
   end
   describe '#inspect' do
     # if the instance is hash-like, #inspect gets overridden
-    let(:document) { Object.new }
+    let(:instance) { Object.new }
     it 'inspects' do
-      assert_match(%r(\A#<JSI::SchemaClasses\["[^"]+#"\] #<JSI::JSON::Node fragment="#" #<Object:[^<>]*>>>\z), subject.inspect)
+      assert_match(%r(\A#<JSI::SchemaClasses\["[^"]+#"\] #<Object:[^<>]*>>\z), subject.inspect)
     end
   end
   describe '#pretty_print' do
     # if the instance is hash-like, #pretty_print gets overridden
-    let(:document) { Object.new }
+    let(:instance) { Object.new }
     it 'pretty_prints' do
-      assert_match(%r(\A#<JSI::SchemaClasses\["[^"]+#"\]\n  #<JSI::JSON::Node fragment="#" #<Object:[^<>]*>>\n>\z), subject.pretty_inspect.chomp)
+      assert_match(%r(\A#<JSI::SchemaClasses\["[^"]+#"\]\n  #<Object:[^<>]*>\n>\z), subject.pretty_inspect.chomp)
     end
   end
   describe '#as_json' do
     it '#as_json' do
+      assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new({'a' => 'b'}).as_json)
       assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
       assert_equal({'a' => 'b'}, JSI.class_for_schema({'type' => 'object'}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
       assert_equal(['a', 'b'], JSI.class_for_schema({'type' => 'array'}).new(JSI::JSON::Node.new_doc(['a', 'b'])).as_json)

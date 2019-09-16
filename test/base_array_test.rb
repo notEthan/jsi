@@ -1,12 +1,7 @@
 require_relative 'test_helper'
 
 describe JSI::BaseArray do
-  let(:document) do
-    ['foo', {'lamp' => [3]}, ['q', 'r']]
-  end
-  let(:path) { [] }
-  let(:pointer) { JSI::JSON::Pointer.new(path) }
-  let(:instance) { JSI::JSON::Node.new_by_type(document, pointer) }
+  let(:instance) { ['foo', {'lamp' => [3]}, ['q', 'r']] }
   let(:schema_content) do
     {
       'type' => 'array',
@@ -29,19 +24,19 @@ describe JSI::BaseArray do
       }
     end
     describe 'default value' do
-      let(:document) { [1] }
+      let(:instance) { [1] }
       it 'returns the default value' do
         assert_equal('foo', subject[2])
       end
     end
     describe 'nondefault value (basic type)' do
-      let(:document) { ['who'] }
+      let(:instance) { ['who'] }
       it 'returns the nondefault value' do
         assert_equal('who', subject[0])
       end
     end
     describe 'nondefault value (nonbasic type)' do
-      let(:document) { [[2]] }
+      let(:instance) { [[2]] }
       it 'returns the nondefault value' do
         assert_instance_of(JSI.class_for_schema(schema['items']), subject[0])
         assert_equal([2], subject[0].as_json)
@@ -56,20 +51,20 @@ describe JSI::BaseArray do
       }
     end
     describe 'default value' do
-      let(:document) { [{'bar' => 3}] }
+      let(:instance) { [{'bar' => 3}] }
       it 'returns the default value' do
         assert_instance_of(JSI.class_for_schema(schema['items']), subject[1])
         assert_equal({'foo' => 2}, subject[1].as_json)
       end
     end
     describe 'nondefault value (basic type)' do
-      let(:document) { [true, 'who'] }
+      let(:instance) { [true, 'who'] }
       it 'returns the nondefault value' do
         assert_equal('who', subject[1])
       end
     end
     describe 'nondefault value (nonbasic type)' do
-      let(:document) { [true, [2]] }
+      let(:instance) { [true, [2]] }
       it 'returns the nondefault value' do
         assert_instance_of(JSI.class_for_schema(schema['items']), subject[1])
         assert_equal([2], subject[1].as_json)
@@ -92,8 +87,8 @@ describe JSI::BaseArray do
       subject[2] = {'y' => 'z'}
 
       assert_equal(orig_instance, subject.instance)
-      assert_equal({'y' => 'z'}, orig_instance[2].as_json)
-      assert_equal({'y' => 'z'}, subject.instance[2].as_json)
+      assert_equal({'y' => 'z'}, orig_instance[2])
+      assert_equal({'y' => 'z'}, subject.instance[2])
       assert_equal(orig_instance.class, subject.instance.class)
     end
     describe 'when the instance is not arraylike' do
@@ -147,8 +142,8 @@ describe JSI::BaseArray do
     # compare:
     # assoc:  https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3780-L3813
     # rassoc: https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3815-L3847
-    # for this reason, rassoc is NOT defined on Arraylike and #node_content must be called.
-    it('#rassoc')              { assert_equal(['q', 'r'], subject.instance.node_content.rassoc('r')) }
+    # for this reason, rassoc is NOT defined on Arraylike and we call #instance to use it.
+    it('#rassoc')              { assert_equal(['q', 'r'], subject.instance.rassoc('r')) }
     it('#repeated_combination') { assert_equal([[]], subject.repeated_combination(0).to_a) }
     it('#repeated_permutation') { assert_equal([[]], subject.repeated_permutation(0).to_a) }
     it('#reverse')             { assert_equal([subject[2], subject[1], 'foo'], subject.reverse) }
@@ -179,25 +174,22 @@ describe JSI::BaseArray do
     end
   end
   describe 'modified copy methods' do
-    it('#reject') { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], pointer)), subject.reject { |e| e != 'foo' }) }
+    it('#reject') { assert_equal(class_for_schema.new(['foo']), subject.reject { |e| e != 'foo' }) }
     it('#reject block var') do
       subj_a = subject.to_a
       subject.reject { |e| assert_equal(e, subj_a.shift) }
     end
-    it('#select') { assert_equal(class_for_schema.new(JSI::JSON::ArrayNode.new(['foo'], pointer)), subject.select { |e| e == 'foo' }) }
+    it('#select') { assert_equal(class_for_schema.new(['foo']), subject.select { |e| e == 'foo' }) }
     it('#select block var') do
       subj_a = subject.to_a
       subject.select { |e| assert_equal(e, subj_a.shift) }
     end
     it('#compact') { assert_equal(subject, subject.compact) }
     describe 'at a depth' do
-      let(:document) { [['b', 'q'], {'c' => ['d', 'e']}] }
-      let(:path) { ['1', 'c'] }
       it('#select') do
-        selected = subject.select { |e| e == 'd' }
-        equivalent_node = JSI::JSON::ArrayNode.new([['b', 'q'], {'c' => ['d']}], pointer)
-        equivalent = class_for_schema.new(equivalent_node)
-        assert_equal(equivalent, selected)
+        expected = class_for_schema.new(['foo', {'lamp' => [3]}, ['r']])[2]
+        actual = subject[2].select { |e| e == 'r' }
+        assert_equal(expected, actual)
       end
     end
   end
