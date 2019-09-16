@@ -65,6 +65,7 @@ end
         [
           JSI::JSONSchemaOrgDraft04.schema,
           JSI::JSONSchemaOrgDraft06.schema,
+          JSI::JSONSchemaOrgDraft07.schema,
           JSI::JSONSchemaOrgDraft201909.schema,
         ]
       end
