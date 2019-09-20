@@ -36,12 +36,8 @@ module JSI
     # @raise [TypeError] when the object (or an object nested with a hash or
     #   array of object) cannot be expressed as json
     def self.as_json(object, *opt)
-      if object.is_a?(JSI::Schema)
-        as_json(object.schema_object, *opt)
-      elsif object.is_a?(JSI::Base)
-        as_json(object.instance, *opt)
-      elsif object.is_a?(JSI::JSON::Node)
-        as_json(object.content, *opt)
+      if object.is_a?(JSI::PathedNode)
+        as_json(object.node_content, *opt)
       elsif object.respond_to?(:to_hash)
         (object.respond_to?(:map) ? object : object.to_hash).map do |k, v|
           unless k.is_a?(Symbol) || k.respond_to?(:to_str)
