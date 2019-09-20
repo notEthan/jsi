@@ -130,6 +130,9 @@ module JSI
       elsif self.jsi_instance.respond_to?(:to_ary)
         extend BaseArray
       end
+      if self.schema.describes_schema?
+        extend JSI::Schema
+      end
     end
 
     # document containing the instance of this JSI
@@ -377,9 +380,9 @@ module JSI
           property_schema = schema.subschema_for_property(property_name_)
           property_schema = property_schema && property_schema.match_to_instance(instance_property_value)
 
-          if !instance_property_key && property_schema && property_schema.schema_object.key?('default')
+          if !instance_property_key && property_schema && property_schema.key?('default')
             # use the default value
-            default = property_schema.schema_object['default']
+            default = property_schema['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
               # we are using #dup so that we get a modified copy of self, in which we set dup[property_name_]=default.
               # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
@@ -431,9 +434,9 @@ module JSI
           index_schema = schema.subschema_for_index(i_)
           index_schema = index_schema && index_schema.match_to_instance(instance_idx_value)
 
-          if !i_in_range && index_schema && index_schema.schema_object.key?('default')
+          if !i_in_range && index_schema && index_schema.key?('default')
             # use the default value
-            default = index_schema.schema_object['default']
+            default = index_schema['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
               # we are using #dup so that we get a modified copy of self, in which we set dup[i]=default.
               # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.

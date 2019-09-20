@@ -69,6 +69,15 @@ module JSI
         nil
       end
 
+      if schema_ptr
+        if schema_ptr == metaschema_root_ptr
+          extend JSI::Schema
+        end
+        if schema_ptr == node_ptr
+          extend Metaschema
+        end
+      end
+
       if @schema
         extend(JSI::SchemaClasses.module_for_schema(@schema, conflicting_modules: [Metaschema, Schema, MetaschemaNode, PathedArrayNode, PathedHashNode]))
       end
