@@ -45,6 +45,29 @@ module JSI
       elsif node_content.respond_to?(:to_ary)
         extend PathedArrayNode
       end
+
+      instance_for_schema = node_document
+      schema_ptr = node_ptr.reference_tokens.inject(root_schema_ptr) do |ptr0, tok|
+        if instance_for_schema.respond_to?(:to_ary)
+          ptr1 = ptr0 && ptr0.schema_subschema_ptr_for_index(node_document, tok)
+        else
+          ptr1 = ptr0 && ptr0.schema_subschema_ptr_for_property_name(node_document, tok)
+        end
+        instance_for_schema = instance_for_schema[tok]
+        ptr2 = ptr1 && ptr1.deref(node_document)
+        ptr3 = ptr2 && ptr2.schema_match_ptr_to_instance(node_document, instance_for_schema)
+        ptr3 # only God may judge my variable names
+      end
+
+      @schema = if schema_ptr
+        if schema_ptr == node_ptr
+          self
+        else
+          new_node(node_ptr: schema_ptr)
+        end
+      else
+        nil
+      end
     end
 
     # document containing the metaschema. see PathedNode#node_document.
@@ -55,6 +78,8 @@ module JSI
     attr_reader :metaschema_root_ptr
     # ptr to the schema of the root of the node_document
     attr_reader :root_schema_ptr
+    # a JSI::Schema describing this MetaschemaNode
+    attr_reader :schema
 
     # @return [MetaschemaNode] document root MetaschemaNode
     def document_root_node
