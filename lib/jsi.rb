@@ -19,6 +19,7 @@ module JSI
   autoload :Base, 'jsi/base'
   autoload :BaseArray, 'jsi/base'
   autoload :BaseHash, 'jsi/base'
+  autoload :MetaschemaNode, 'jsi/metaschema_node'
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :JSICoder, 'jsi/jsi_coder'
 
