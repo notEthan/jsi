@@ -1,6 +1,8 @@
 module JSI
   # a MetaschemaNode is a PathedNode whose node_document contains a metaschema.
   # as with any PathedNode the node_ptr points to the content of a node.
+  # the root of the metaschema is pointed to by metaschema_root_ptr.
+  # the schema of the root of the document is pointed to by root_schema_ptr.
   #
   # like JSI::Base, this class represents an instance of a schema, an instance
   # which may itself be a schema. unlike JSI::Base, the document containing the
@@ -28,9 +30,13 @@ module JSI
 
     # @param node_document the document containing the metaschema
     # @param node_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in node_document
-    def initialize(node_document, node_ptr: JSI::JSON::Pointer[])
+    # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in node_document
+    # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema of the root of the node_document
+    def initialize(node_document, node_ptr: JSI::JSON::Pointer[], metaschema_root_ptr: JSI::JSON::Pointer[], root_schema_ptr: JSI::JSON::Pointer[])
       @node_document = node_document
       @node_ptr = node_ptr
+      @metaschema_root_ptr = metaschema_root_ptr
+      @root_schema_ptr = root_schema_ptr
 
       node_content = self.node_content
 
@@ -45,6 +51,10 @@ module JSI
     attr_reader :node_document
     # ptr to this metaschema node. see PathedNode#node_ptr.
     attr_reader :node_ptr
+    # ptr to the root of the metaschema in the node_document
+    attr_reader :metaschema_root_ptr
+    # ptr to the schema of the root of the node_document
+    attr_reader :root_schema_ptr
 
     # @return [MetaschemaNode] document root MetaschemaNode
     def document_root_node
@@ -126,7 +136,7 @@ module JSI
     private
 
     def our_initialize_params
-      {node_ptr: node_ptr}
+      {node_ptr: node_ptr, metaschema_root_ptr: metaschema_root_ptr, root_schema_ptr: root_schema_ptr}
     end
 
     def new_node(params)
