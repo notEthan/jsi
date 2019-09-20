@@ -117,9 +117,11 @@ module JSI
     end
 
     # @return [Class subclassing JSI::Base] shortcut for JSI.class_for_schema(schema)
-    def schema_class
+    def jsi_schema_class
       JSI.class_for_schema(self)
     end
+
+    alias_method :schema_class, :jsi_schema_class
 
     # if this schema is a oneOf, allOf, anyOf schema, #match_to_instance finds
     # one of the subschemas that matches the given instance and returns it. if
