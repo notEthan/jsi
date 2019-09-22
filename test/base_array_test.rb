@@ -208,18 +208,6 @@ describe 'JSI::Base array' do
         assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#) SortOfArray>\n  \"foo\",\n  \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)>\n    \"lamp\" => [3]\n  },\n  #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)>\n    \"q\",\n    \"r\"\n  ],\n  {\"four\"=>4}\n]\n", subject.pretty_inspect)
       end
     end
-    describe '#inspect Node' do
-      let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
-      it 'inspects' do
-        assert_equal("#[<JSI JSI::JSON::ArrayNode #> \"foo\", \#{<JSI JSI::JSON::HashNode #/1> \"lamp\" => #[<JSI::JSON::ArrayNode #/1/lamp> 3]}, #[<JSI JSI::JSON::ArrayNode #/2> \"q\", \"r\"], \#{<JSI::JSON::HashNode #/3> \"four\" => 4}]", subject.inspect)
-      end
-    end
-    describe '#pretty_print Node' do
-      let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
-      it 'pretty_prints' do
-        assert_equal("#[<JSI JSI::JSON::ArrayNode #>\n  \"foo\",\n  \#{<JSI JSI::JSON::HashNode #/1>\n    \"lamp\" => #[<JSI::JSON::ArrayNode #/1/lamp> 3]\n  },\n  #[<JSI JSI::JSON::ArrayNode #/2> \"q\", \"r\"],\n  \#{<JSI::JSON::HashNode #/3> \"four\" => 4}\n]\n", subject.pretty_inspect)
-      end
-    end
   end
   # these methods just delegate to Array so not going to test excessively
   describe 'index only methods' do

@@ -109,11 +109,11 @@ describe JSI::Base do
         assert(subject.respond_to?(:to_hash))
       end
     end
-    describe 'JSI::JSON::HashNode' do
-      let(:instance) { JSI::JSON::HashNode.new({'foo' => 'bar'}, JSI::JSON::Pointer.new([])) }
+    describe 'SortOfHash' do
+      let(:instance) { SortOfHash.new({'foo' => 'bar'}) }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal(JSI::JSON::HashNode.new({'foo' => 'bar'}, JSI::JSON::Pointer.new([])), subject.jsi_instance)
+        assert_equal(SortOfHash.new({'foo' => 'bar'}), subject.jsi_instance)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -127,11 +127,11 @@ describe JSI::Base do
         assert(!subject.respond_to?(:to_hash))
       end
     end
-    describe 'JSI::JSON::ArrayNode' do
-      let(:instance) { JSI::JSON::ArrayNode.new(['foo'], JSI::JSON::Pointer.new([])) }
+    describe 'SortOfArray' do
+      let(:instance) { SortOfArray.new(['foo']) }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(JSI::JSON::ArrayNode.new(['foo'], JSI::JSON::Pointer.new([])), subject.jsi_instance)
+        assert_equal(SortOfArray.new(['foo']), subject.jsi_instance)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -459,10 +459,8 @@ describe JSI::Base do
   end
   describe '#as_json' do
     it '#as_json' do
-      assert_equal({'a' => 'b'}, JSI::Schema.new({}).new_jsi({'a' => 'b'}).as_json)
-      assert_equal({'a' => 'b'}, JSI::Schema.new({}).new_jsi(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
-      assert_equal({'a' => 'b'}, JSI::Schema.new({'type' => 'object'}).new_jsi(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
-      assert_equal(['a', 'b'], JSI::Schema.new({'type' => 'array'}).new_jsi(JSI::JSON::Node.new_doc(['a', 'b'])).as_json)
+      assert_equal({'a' => 'b'}, JSI::Schema.new({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
+      assert_equal(['a', 'b'], JSI::Schema.new({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
       assert_equal(['a'], JSI::Schema.new({}).new_jsi(['a']).as_json(some_option: true))
     end
   end

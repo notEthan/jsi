@@ -252,16 +252,18 @@ describe 'JSI::Base hash' do
         assert_equal("\#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#) SortOfHash>\n  \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/foo)>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/bar)>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
-    describe '#inspect Node' do
-      let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
+    describe '#inspect jsi_object_group_text' do
+      let(:instance_class) { Class.new(SortOfHash) { define_method(:jsi_object_group_text) { ['☺'] } } }
+      let(:subject) { schema.new_jsi(instance_class.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<JSI JSI::JSON::HashNode #> \"foo\" => \#{<JSI JSI::JSON::HashNode #/foo> \"x\" => \"y\"}, \"bar\" => #[<JSI JSI::JSON::ArrayNode #/bar> 9], \"baz\" => #[<JSI::JSON::ArrayNode #/baz> true]}", subject.inspect)
+        assert_equal("\#{<JSI ☺> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
-    describe '#pretty_print Node' do
-      let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
+    describe '#pretty_print jsi_object_group_text' do
+      let(:instance_class) { Class.new(SortOfHash) { define_method(:jsi_object_group_text) { ['☺'] } } }
+      let(:subject) { schema.new_jsi(instance_class.new(instance)) }
       it 'pretty_prints' do
-        assert_equal("\#{<JSI JSI::JSON::HashNode #>\n  \"foo\" => \#{<JSI JSI::JSON::HashNode #/foo> \"x\" => \"y\"},\n  \"bar\" => #[<JSI JSI::JSON::ArrayNode #/bar> 9],\n  \"baz\" => #[<JSI::JSON::ArrayNode #/baz> true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<JSI ☺> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}\n", subject.pretty_inspect)
       end
     end
   end

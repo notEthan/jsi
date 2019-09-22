@@ -5,11 +5,6 @@ describe JSI::Util do
     it 'stringifies symbol hash keys' do
       assert_equal({'a' => 'b', 'c' => 'd', nil => 3}, JSI.stringify_symbol_keys({a: 'b', 'c' => 'd', nil => 3}))
     end
-    it 'stringifies HashNode keys' do
-      actual = JSI.stringify_symbol_keys(JSI::JSON::Node.new_doc({a: 'b', 'c' => 'd', nil => 3}))
-      expected = JSI::JSON::Node.new_doc({'a' => 'b', 'c' => 'd', nil => 3})
-      assert_equal(expected, actual)
-    end
     it 'stringifies JSI hash keys' do
       schema = JSI::Schema.new({type: 'object'})
       expected = JSI.stringify_symbol_keys(schema.new_jsi({a: 'b', 'c' => 'd', nil => 3}))
@@ -20,8 +15,6 @@ describe JSI::Util do
       it 'errors' do
         err = assert_raises(ArgumentError) { JSI.stringify_symbol_keys(nil) }
         assert_equal("expected argument to be a hash; got NilClass: nil", err.message)
-        err = assert_raises(ArgumentError) { JSI.stringify_symbol_keys(JSI::JSON::Node.new_doc(3)) }
-        assert_equal("expected argument to be a hash; got JSI::JSON::Node: #<JSI::JSON::Node # 3>", err.message)
         err = assert_raises(ArgumentError) { JSI.stringify_symbol_keys(JSI::Schema.new({}).new_jsi(3)) }
         assert_equal("expected argument to be a hash; got (JSI Schema Class: #): #<JSI 3>", err.message)
       end
@@ -47,15 +40,15 @@ describe JSI::Util do
       }
       assert_equal(expected, actual)
     end
-    it 'deep stringifies HashNode keys' do
-      actual = JSI.deep_stringify_symbol_keys(JSI::JSON::Node.new_doc({a: 'b', 'c' => {d: 0}, nil => 3}))
-      expected = JSI::JSON::Node.new_doc({'a' => 'b', 'c' => {'d' => 0}, nil => 3})
+    it 'deep stringifies Hash keys' do
+      actual = JSI.deep_stringify_symbol_keys({a: 'b', 'c' => {d: 0}, nil => 3})
+      expected = {'a' => 'b', 'c' => {'d' => 0}, nil => 3}
       assert_equal(expected, actual)
     end
     it 'deep stringifies JSI instance' do
       schema = JSI::Schema.new(type: 'object')
-      actual = JSI.deep_stringify_symbol_keys(schema.new_jsi(JSI::JSON::Node.new_doc({a: 'b', 'c' => {d: 0}, nil => 3})))
-      expected = schema.new_jsi(JSI::JSON::Node.new_doc({'a' => 'b', 'c' => {'d' => 0}, nil => 3}))
+      actual = JSI.deep_stringify_symbol_keys(schema.new_jsi({a: 'b', 'c' => {d: 0}, nil => 3}))
+      expected = schema.new_jsi({'a' => 'b', 'c' => {'d' => 0}, nil => 3})
       assert_equal(expected, actual)
     end
   end

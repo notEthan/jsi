@@ -38,9 +38,6 @@ describe JSI::Typelike do
       # JSI
       assert_equal(['a'], JSI::Typelike.as_json(schema.new_jsi(['a'])))
 
-      # JSON::Node
-      assert_equal(['a'], JSI::Typelike.as_json(JSI::JSON::Node.new_doc(['a'])))
-
       # #as_json
       assert_equal(['a'], JSI::Typelike.as_json(JSONifiable.new(['a'])))
 
