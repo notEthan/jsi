@@ -83,8 +83,8 @@ describe JSI::BaseArray do
       subject[2] = {'y' => 'z'}
 
       assert_equal({'y' => 'z'}, subject[2].as_json)
-      assert_instance_of(JSI.class_for_schema(schema.schema_node['items'][2]), orig_2)
-      assert_instance_of(JSI.class_for_schema(schema.schema_node['items'][2]), subject[2])
+      assert_instance_of(JSI.class_for_schema(schema['items'][2]), orig_2)
+      assert_instance_of(JSI.class_for_schema(schema['items'][2]), subject[2])
     end
     it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.instance

@@ -1,44 +1,29 @@
 require_relative 'test_helper'
 
-SomeMetaschema = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/somemetaschema', type: 'object'})
-
 describe JSI::Schema do
   describe 'new' do
     it 'initializes from a hash' do
       schema = JSI::Schema.new({'type' => 'object'})
-      assert_equal(JSI::JSON::Node.new_doc({'type' => 'object'}), schema.schema_node)
+      assert_equal({'type' => 'object'}, schema.instance)
     end
     it 'initializes from a Node' do
       schema_node = JSI::JSON::Node.new_doc({'type' => 'object'})
       schema = JSI::Schema.new(schema_node)
-      assert_equal(schema_node, schema.schema_node)
-      assert_equal(schema_node, schema.schema_object)
-    end
-    it 'initializes from a JSI' do
-      schema_jsi = SomeMetaschema.new('type' => 'object')
-      schema = JSI::Schema.new(schema_jsi)
-      assert_equal(schema_jsi, schema.schema_node)
-      assert_equal(schema_jsi, schema.schema_object)
+      assert_equal(schema_node, schema.instance)
     end
     it 'cannot instantiate from some unknown object' do
       err = assert_raises(TypeError) { JSI::Schema.new(Object.new) }
       assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
     end
-    it 'makes no sense to instantiate schema from schema' do
-      err = assert_raises(TypeError) { JSI::Schema.new(JSI::Schema.new({})) }
-      assert_match(/\Awill not instantiate Schema from another Schema: #<JSI::Schema schema_id=.*>\z/m, err.message)
+    it 'instantiating a schema from schema returns that schema' do
+      # this is kinda dumb, but Schema.new now just aliases Schema.from_object, so this is the behavior
+      assert_equal(JSI::Schema.new({}), JSI::Schema.new(JSI::Schema.new({})))
     end
   end
   describe 'as an instance of metaschema' do
-    let(:default_metaschema) do
-      validator = ::JSON::Validator.default_validator
-      metaschema_file = validator.metaschema
-      JSI::Schema.new(::JSON.parse(File.read(metaschema_file)))
-    end
-    let(:metaschema_jsi_class) { JSI.class_for_schema(default_metaschema) }
+    let(:metaschema_jsi_class) { JSI::JSONSchemaOrgDraft04 }
     let(:schema_object) { {'type' => 'array', 'items' => {'description' => 'items!'}} }
-    let(:schema_jsi) { metaschema_jsi_class.new(schema_object) }
-    let(:schema) { JSI::Schema.new(schema_jsi) }
+    let(:schema) { metaschema_jsi_class.new(schema_object) }
     it '#[]' do
       schema_items = schema['items']
       assert_instance_of(metaschema_jsi_class, schema_items)
@@ -58,26 +43,26 @@ describe JSI::Schema do
       assert_equal('https://schemas.jsi.unth.net/test/given_id#', schema.schema_id)
     end
     it 'uses a pointer in the fragment' do
-      schema_node = JSI::JSON::Node.new_doc({
+      schema = JSI::Schema.new({
         'id' => 'https://schemas.jsi.unth.net/test/given_id#',
         'properties' => {'foo' => {'type' => 'object'}},
       })
-      schema = JSI::Schema.new(schema_node['properties']['foo'])
-      assert_equal('https://schemas.jsi.unth.net/test/given_id#/properties/foo', schema.schema_id)
+      subschema = schema['properties']['foo']
+      assert_equal('https://schemas.jsi.unth.net/test/given_id#/properties/foo', subschema.schema_id)
     end
     it 'uses a pointer in the fragment relative to the fragment of the root' do
-      schema_node = JSI::JSON::Node.new_doc({
+      schema = JSI::Schema.new({
         'id' => 'https://schemas.jsi.unth.net/test/given_id#/notroot',
         'properties' => {'foo' => {'type' => 'object'}},
       })
-      schema = JSI::Schema.new(schema_node['properties']['foo'])
-      assert_equal('https://schemas.jsi.unth.net/test/given_id#/notroot/properties/foo', schema.schema_id)
+      subschema = schema['properties']['foo']
+      assert_equal('https://schemas.jsi.unth.net/test/given_id#/notroot/properties/foo', subschema.schema_id)
     end
   end
   describe '#schema_class' do
     it 'returns the class for the schema' do
-      schema_node = JSI::JSON::Node.new_doc({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
-      assert_equal(JSI.class_for_schema(schema_node), JSI::Schema.new(schema_node).schema_class)
+      schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
+      assert_equal(JSI.class_for_schema(schema), schema.schema_class)
     end
   end
   describe '#subschema_for_property' do
@@ -93,17 +78,17 @@ describe JSI::Schema do
     end
     it 'has a subschema by property' do
       subschema = schema.subschema_for_property('foo')
-      assert_instance_of(JSI::Schema, subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, subschema)
       assert_equal('foo', subschema['description'])
     end
     it 'has a subschema by pattern property' do
       subschema = schema.subschema_for_property('bar')
-      assert_instance_of(JSI::Schema, subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, subschema)
       assert_equal('ba*', subschema['description'])
     end
     it 'has a subschema by additional properties' do
       subschema = schema.subschema_for_property('anything')
-      assert_instance_of(JSI::Schema, subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, subschema)
       assert_equal('whatever', subschema['description'])
     end
   end
@@ -116,10 +101,10 @@ describe JSI::Schema do
         items: {description: 'items!'}
       })
       first_subschema = schema.subschema_for_index(0)
-      assert_instance_of(JSI::Schema, first_subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, first_subschema)
       assert_equal('items!', first_subschema['description'])
       last_subschema = schema.subschema_for_index(1)
-      assert_instance_of(JSI::Schema, last_subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, last_subschema)
       assert_equal('items!', last_subschema['description'])
     end
     it 'has a subschema for each item by index' do
@@ -127,10 +112,10 @@ describe JSI::Schema do
         items: [{description: 'item one'}, {description: 'item two'}]
       })
       first_subschema = schema.subschema_for_index(0)
-      assert_instance_of(JSI::Schema, first_subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, first_subschema)
       assert_equal('item one', first_subschema['description'])
       last_subschema = schema.subschema_for_index(1)
-      assert_instance_of(JSI::Schema, last_subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, last_subschema)
       assert_equal('item two', last_subschema['description'])
     end
     it 'has a subschema by additional items' do
@@ -139,10 +124,10 @@ describe JSI::Schema do
         additionalItems: {description: "mo' crap"},
       })
       first_subschema = schema.subschema_for_index(0)
-      assert_instance_of(JSI::Schema, first_subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, first_subschema)
       assert_equal('item one', first_subschema['description'])
       last_subschema = schema.subschema_for_index(1)
-      assert_instance_of(JSI::Schema, last_subschema)
+      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, last_subschema)
       assert_equal("mo' crap", last_subschema['description'])
     end
   end

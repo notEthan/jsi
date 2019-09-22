@@ -73,13 +73,7 @@ describe JSI::Base do
       assert_operator(class_for_schema, :<, JSI::Base)
     end
     it 'returns a class from a hash' do
-      assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema.schema_node.node_content))
-    end
-    it 'returns a class from a schema node' do
-      assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema.schema_node))
-    end
-    it 'returns a class from a Base' do
-      assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(JSI.class_for_schema({}).new(schema.schema_node)))
+      assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema_content))
     end
   end
   describe 'JSI::SchemaClasses.module_for_schema' do
@@ -89,13 +83,7 @@ describe JSI::Base do
       assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
     end
     it 'returns a module from a hash' do
-      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.schema_node.node_content))
-    end
-    it 'returns a module from a schema node' do
-      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.schema_node))
-    end
-    it 'returns a module from a Base' do
-      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(JSI.class_for_schema({}).new(schema.schema_node)))
+      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.instance))
     end
   end
   describe 'initialization' do
@@ -291,11 +279,11 @@ describe JSI::Base do
     describe 'readers' do
       it 'reads attributes described as properties' do
         assert_equal({'x' => 'y'}, subject.foo.as_json)
-        assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), subject.foo)
+        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
         assert_respond_to(subject.foo, :to_hash)
         refute_respond_to(subject.foo, :to_ary)
         assert_equal([3.14159], subject.bar.as_json)
-        assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['bar']), subject.bar)
+        assert_instance_of(JSI.class_for_schema(schema['properties']['bar']), subject.bar)
         refute_respond_to(subject.bar, :to_hash)
         assert_respond_to(subject.bar, :to_ary)
         assert_equal(true, subject.baz)
@@ -364,8 +352,8 @@ describe JSI::Base do
         subject.foo = {'y' => 'z'}
 
         assert_equal({'y' => 'z'}, subject.foo.as_json)
-        assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
-        assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), subject.foo)
+        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), orig_foo)
+        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
       end
       it 'modifies the instance, visible to other references to the same instance' do
         orig_instance = subject.instance

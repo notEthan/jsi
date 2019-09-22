@@ -86,8 +86,8 @@ describe JSI::BaseHash do
       subject['foo'] = {'y' => 'z'}
 
       assert_equal({'y' => 'z'}, subject['foo'].as_json)
-      assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), orig_foo)
-      assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
+      assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), orig_foo)
+      assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject['foo'])
     end
     it 'sets a property to a schema instance with a different schema' do
       assert(subject['foo'])
@@ -97,8 +97,8 @@ describe JSI::BaseHash do
       # the content of the subscripts' instances is the same but the subscripts' classes are different
       assert_equal([9], subject['foo'].as_json)
       assert_equal([9], subject['bar'].as_json)
-      assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['foo']), subject['foo'])
-      assert_instance_of(JSI.class_for_schema(schema.schema_node['properties']['bar']), subject['bar'])
+      assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject['foo'])
+      assert_instance_of(JSI.class_for_schema(schema['properties']['bar']), subject['bar'])
     end
     it 'sets a property to a schema instance with the same schema' do
       other_subject = class_for_schema.new(JSI::JSON::Node.new_doc({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true}))
