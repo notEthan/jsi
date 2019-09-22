@@ -24,6 +24,10 @@ module JSI
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :JSICoder, 'jsi/jsi_coder'
 
+  autoload :JSONSchemaOrgDraft04Schema, 'schemas/json-schema.org/draft-04/schema'
+  autoload :JSONSchemaOrgDraft04,       'schemas/json-schema.org/draft-04/schema'
+  autoload :JSONSchemaOrgDraft06Schema, 'schemas/json-schema.org/draft-06/schema'
+  autoload :JSONSchemaOrgDraft06,       'schemas/json-schema.org/draft-06/schema'
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
   # @return [Class subclassing JSI::Base] a JSI class which represents the
