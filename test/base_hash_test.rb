@@ -139,112 +139,112 @@ describe JSI::BaseHash do
     end
     describe '#inspect' do
       it 'inspects' do
-        assert_equal("\#{<(JSI Schema Class) Hash> \"foo\" => \#{<(JSI Schema Class) Hash> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class) Array> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print' do
       it 'pretty_prints' do
-        assert_equal("\#{<(JSI Schema Class) Hash>\n  \"foo\" => \#{<(JSI Schema Class) Hash> \"x\" => \"y\"},\n  \"bar\" => #[<(JSI Schema Class) Array> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<JSI> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect SortOfHash' do
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<(JSI Schema Class) SortOfHash> \"foo\" => \#{<(JSI Schema Class) Hash> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class) Array> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print SortOfHash' do
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
       it 'pretty_prints' do
-        assert_equal("\#{<(JSI Schema Class) SortOfHash>\n  \"foo\" => \#{<(JSI Schema Class) Hash> \"x\" => \"y\"},\n  \"bar\" => #[<(JSI Schema Class) Array> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<JSI SortOfHash>\n  \"foo\" => \#{<JSI> \"x\" => \"y\"},\n  \"bar\" => #[<JSI> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect named' do
       let(:subject) { NamedHashInstance.new(instance) }
       it 'inspects' do
-        assert_equal("\#{<NamedHashInstance Hash> \"foo\" => \#{<(JSI Schema Class) Hash> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class) Array> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedHashInstance> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named' do
       let(:subject) { NamedHashInstance.new(instance) }
       it 'inspects' do
-        assert_equal("\#{<NamedHashInstance Hash>\n  \"foo\" => \#{<(JSI Schema Class) Hash> \"x\" => \"y\"},\n  \"bar\" => #[<(JSI Schema Class) Array> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<NamedHashInstance>\n  \"foo\" => \#{<JSI> \"x\" => \"y\"},\n  \"bar\" => #[<JSI> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect named SortOfHash' do
       let(:subject) { NamedHashInstance.new(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<NamedHashInstance SortOfHash> \"foo\" => \#{<(JSI Schema Class) Hash> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class) Array> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedHashInstance SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named SortOfHash' do
       let(:subject) { NamedHashInstance.new(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<NamedHashInstance SortOfHash>\n  \"foo\" => \#{<(JSI Schema Class) Hash> \"x\" => \"y\"},\n  \"bar\" => #[<(JSI Schema Class) Array> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<NamedHashInstance SortOfHash>\n  \"foo\" => \#{<JSI> \"x\" => \"y\"},\n  \"bar\" => #[<JSI> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect named with id' do
       let(:subject) { NamedIdHashInstance.new(instance) }
       it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance Hash> \"foo\" => \#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo) Hash> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar) Array> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedIdHashInstance> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named with id' do
       let(:subject) { NamedIdHashInstance.new(instance) }
       it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance Hash>\n  \"foo\" => \#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo) Hash>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar) Array>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<NamedIdHashInstance>\n  \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect named SortOfHash with id' do
       let(:subject) { NamedIdHashInstance.new(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance SortOfHash> \"foo\" => \#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo) Hash> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar) Array> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedIdHashInstance SortOfHash> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named with id SortOfHash' do
       let(:subject) { NamedIdHashInstance.new(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance SortOfHash>\n  \"foo\" => \#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo) Hash>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar) Array>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<NamedIdHashInstance SortOfHash>\n  \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect with id' do
       let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("\#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#) Hash> \"foo\" => \#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#/properties/foo) Hash> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#/properties/bar) Array> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI (https://schemas.jsi.unth.net/test/withid#)> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/withid#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
       let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("\#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#) Hash>\n  \"foo\" => \#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#/properties/foo) Hash>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#/properties/bar) Array>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<JSI (https://schemas.jsi.unth.net/test/withid#)>\n  \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/withid#/properties/foo)>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/withid#/properties/bar)> 9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect with id SortOfHash' do
       let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#) SortOfHash> \"foo\" => \#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#/properties/foo) Hash> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#/properties/bar) Array> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI (https://schemas.jsi.unth.net/test/withid#) SortOfHash> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/withid#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfHash' do
       let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#) SortOfHash>\n  \"foo\" => \#{<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#/properties/foo) Hash>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<(JSI Schema Class: https://schemas.jsi.unth.net/test/withid#/properties/bar) Array>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<JSI (https://schemas.jsi.unth.net/test/withid#) SortOfHash>\n  \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/withid#/properties/foo)>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/withid#/properties/bar)> 9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect Node' do
       let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
       it 'inspects' do
-        assert_equal("\#{<(JSI Schema Class) fragment=\"#\"> \"foo\" => \#{<(JSI Schema Class) fragment=\"#/foo\"> \"x\" => \"y\"}, \"bar\" => #[<(JSI Schema Class) fragment=\"#/bar\"> 9], \"baz\" => #[<JSI::JSON::ArrayNode fragment=\"#/baz\"> true]}", subject.inspect)
+        assert_equal("\#{<JSI JSI::JSON::HashNode fragment=\"#\"> \"foo\" => \#{<JSI JSI::JSON::HashNode fragment=\"#/foo\"> \"x\" => \"y\"}, \"bar\" => #[<JSI JSI::JSON::ArrayNode fragment=\"#/bar\"> 9], \"baz\" => #[<JSI::JSON::ArrayNode fragment=\"#/baz\"> true]}", subject.inspect)
       end
     end
     describe '#pretty_print Node' do
       let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
       it 'pretty_prints' do
-        assert_equal("\#{<(JSI Schema Class) fragment=\"#\">\n  \"foo\" => \#{<(JSI Schema Class) fragment=\"#/foo\"> \"x\" => \"y\"},\n  \"bar\" => #[<(JSI Schema Class) fragment=\"#/bar\"> 9],\n  \"baz\" => #[<JSI::JSON::ArrayNode fragment=\"#/baz\"> true]\n}\n", subject.pretty_inspect)
+        assert_equal("\#{<JSI JSI::JSON::HashNode fragment=\"#\">\n  \"foo\" => \#{<JSI JSI::JSON::HashNode fragment=\"#/foo\"> \"x\" => \"y\"},\n  \"bar\" => #[<JSI JSI::JSON::ArrayNode fragment=\"#/bar\"> 9],\n  \"baz\" => #[<JSI::JSON::ArrayNode fragment=\"#/baz\"> true]\n}\n", subject.pretty_inspect)
       end
     end
   end

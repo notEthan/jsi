@@ -23,7 +23,7 @@ describe JSI::Util do
         err = assert_raises(ArgumentError) { JSI.stringify_symbol_keys(JSI::JSON::Node.new_doc(3)) }
         assert_equal("expected argument to be a hash; got JSI::JSON::Node: #<JSI::JSON::Node fragment=\"#\" 3>", err.message)
         err = assert_raises(ArgumentError) { JSI.stringify_symbol_keys(JSI::Schema.new({}).new_jsi(3)) }
-        assert_equal("expected argument to be a hash; got (JSI Schema Class: #): #<(JSI Schema Class) 3>", err.message)
+        assert_equal("expected argument to be a hash; got (JSI Schema Class: #): #<JSI 3>", err.message)
       end
     end
   end

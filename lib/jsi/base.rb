@@ -381,14 +381,15 @@ module JSI
     # @return [String] a string representing this JSI, indicating its class
     #   and inspecting its instance
     def inspect
-      "\#<#{self.class.to_s} #{instance.inspect}>"
+      "\#<#{object_group_text.join(' ')} #{instance.inspect}>"
     end
 
     # pretty-prints a representation this JSI to the given printer
     # @return [void]
     def pretty_print(q)
       q.instance_exec(self) do |obj|
-        text "\#<#{obj.class.to_s}"
+        text '#<'
+        text obj.object_group_text.join(' ')
         group_sub {
           nest(2) {
             breakable ' '
@@ -402,7 +403,41 @@ module JSI
 
     # @return [Array<String>]
     def object_group_text
-      instance.respond_to?(:object_group_text) ? instance.object_group_text : [instance.class.inspect]
+      class_name = self.class.name unless self.class.in_schema_classes
+      class_txt = begin
+        if class_name
+          # ignore ID
+          schema_name = schema.jsi_schema_module.name
+          if !schema_name
+            class_name
+          else
+            "#{class_name} (#{schema_name})"
+          end
+        else
+          schema_name = schema.jsi_schema_module.name || schema.schema_id
+          if !schema_name
+            "JSI"
+          else
+            "JSI (#{schema_name})"
+          end
+        end
+      end
+
+      if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(node_content.class)
+        if node_content.respond_to?(:object_group_text)
+          node_content_txt = node_content.object_group_text
+        else
+          node_content_txt = [node_content.class.to_s]
+        end
+      else
+        node_content_txt = []
+      end
+
+      [
+        class_txt,
+        is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
+        *node_content_txt,
+      ].compact
     end
 
     # @return [Object] a jsonifiable representation of the instance

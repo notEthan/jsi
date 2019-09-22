@@ -68,12 +68,6 @@ module JSI
       end
     end
 
-    # @param object_group_text [Array<String>]
-    # @return [String]
-    def object_group_str(object_group_text)
-      object_group_text.compact.map { |t| " #{t}" }.join('')
-    end
-
     # this is the Y-combinator, which allows anonymous recursive functions. for a simple example,
     # to define a recursive function to return the length of an array:
     #

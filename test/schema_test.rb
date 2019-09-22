@@ -143,10 +143,10 @@ describe JSI::Schema do
     end
 
     it '#inspect' do
-      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Hash> \"id\" => \"https://schemas.jsi.unth.net/test/stringification\", \"type\" => \"object\"}", schema.inspect)
+      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Schema> \"id\" => \"https://schemas.jsi.unth.net/test/stringification\", \"type\" => \"object\"}", schema.inspect)
     end
     it '#pretty_print' do
-      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Hash>
+      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Schema>
         \"id\" => \"https://schemas.jsi.unth.net/test/stringification\",
         \"type\" => \"object\"
       }".gsub(/^      /, ''), schema.pretty_inspect.chomp)

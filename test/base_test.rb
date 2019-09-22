@@ -148,14 +148,14 @@ describe JSI::Base do
       let(:instance) { schema.new_jsi({'foo' => 'bar'}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal("assigning another JSI::Base instance to (JSI Schema Class: #) instance is incorrect. received: \#{<(JSI Schema Class) Hash> \"foo\" => \"bar\"}", err.message)
+        assert_equal("assigning another JSI::Base instance to (JSI Schema Class: #) instance is incorrect. received: \#{<JSI> \"foo\" => \"bar\"}", err.message)
       end
     end
     describe 'Schema invalid' do
       let(:instance) { JSI::Schema.new({}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal("assigning a schema to (JSI Schema Class: #) instance is incorrect. received: \#{<JSI::JSONSchemaOrgDraft06 Hash>}", err.message)
+        assert_equal("assigning a schema to (JSI Schema Class: #) instance is incorrect. received: \#{<JSI::JSONSchemaOrgDraft06 Schema>}", err.message)
       end
     end
   end
@@ -329,9 +329,9 @@ describe JSI::Base do
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
-          assert_equal(%q(#{<(JSI Schema Class) Hash> "foo" => "bar", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "instance" => "hi", "schema" => "hi"}), subject.inspect)
+          assert_equal(%q(#{<JSI> "foo" => "bar", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "instance" => "hi", "schema" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
-          assert_equal(%Q(\#{<(JSI Schema Class) Hash>\n  "foo" => "bar",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "instance" => "hi",\n  "schema" => "hi"\n}\n), subject.pretty_inspect)
+          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "instance" => "hi",\n  "schema" => "hi"\n}\n), subject.pretty_inspect)
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
@@ -373,14 +373,14 @@ describe JSI::Base do
     # if the instance is hash-like, #inspect gets overridden
     let(:instance) { Object.new }
     it 'inspects' do
-      assert_match(%r(\A\#<\(JSI Schema Class\)\ \#<Object:[^<>]*>>\z), subject.inspect)
+      assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.inspect)
     end
   end
   describe '#pretty_print' do
     # if the instance is hash-like, #pretty_print gets overridden
     let(:instance) { Object.new }
     it 'pretty_prints' do
-      assert_match(%r(\A\#<\(JSI Schema Class\)\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
+      assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
     end
   end
   describe '#as_json' do

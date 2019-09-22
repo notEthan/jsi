@@ -162,13 +162,13 @@ module JSI
 
     # @return [String]
     def inspect
-      "\#<#{self.class} #{node_content.inspect}>"
+      "\#<#{object_group_text.join(' ')} #{node_content.inspect}>"
     end
 
     def pretty_print(q)
       q.instance_exec(self) do |obj|
         text '#<'
-        text obj.class.to_s
+        text obj.object_group_text.join(' ')
         group_sub {
           nest(2) {
             breakable ' '
@@ -182,7 +182,16 @@ module JSI
 
     # @return [Array<String>]
     def object_group_text
-      []
+      if schema
+        class_n_schema = "#{self.class} (#{schema.node_ptr.fragment})"
+      else
+        class_n_schema = self.class.to_s
+      end
+      [
+        class_n_schema,
+        is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
+        *(node_content.respond_to?(:object_group_text) ? node_content.object_group_text : []),
+      ].compact
     end
 
     # @return [Object] an opaque fingerprint of this MetaschemaNode for FingerprintHash

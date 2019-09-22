@@ -157,19 +157,21 @@ module JSI
       # @return [Array<String>]
       def object_group_text
         [
+          self.class.inspect,
           "fragment=#{node_ptr.fragment.inspect}",
         ] + (node_content.respond_to?(:object_group_text) ? node_content.object_group_text : [])
       end
 
       # a string representing this node
       def inspect
-        "\#<#{self.class.inspect}#{JSI.object_group_str(object_group_text)} #{node_content.inspect}>"
+        "\#<#{object_group_text.join(' ')} #{node_content.inspect}>"
       end
 
       # pretty-prints a representation this node to the given printer
       def pretty_print(q)
         q.instance_exec(self) do |obj|
-          text "\#<#{obj.class.inspect}#{JSI.object_group_str(obj.object_group_text)}"
+          text '#<'
+          text obj.object_group_text.join(' ')
           group_sub {
             nest(2) {
               breakable ' '
