@@ -24,6 +24,19 @@ module JSI
     end
 
     class << self
+      # @return [JSI::Schema] the default metaschema
+      def default_metaschema
+        JSI::JSONSchemaOrgDraft06Schema
+      end
+
+      # @return [Array<JSI::Schema>] supported metaschemas
+      def supported_metaschemas
+        [
+          JSI::JSONSchemaOrgDraft04Schema,
+          JSI::JSONSchemaOrgDraft06Schema,
+        ]
+      end
+
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a schema, it is returned as-is.
       # @return [JSI::Schema]
