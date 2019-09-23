@@ -261,6 +261,38 @@ module JSI
         end
       end
 
+      # given this Pointer points to a schema in the given document, this matches
+      # any oneOf or anyOf subschema of the schema which the given instance validates
+      # against. if a subschema is matched, a pointer to that schema is returned; if not,
+      # self is returned.
+      #
+      # @param document [#to_hash, #to_ary, Object] document containing the schema
+      #   this pointer points to
+      # @param instance [Object] the instance to which to attempt to match *Of subschemas
+      # @return [JSI::JSON::Pointer] either a pointer to a *Of subschema in the document,
+      #   or self if no other subschema was matched
+      def schema_match_ptr_to_instance(document, instance)
+        ptr = self
+        schema = ptr.evaluate(document)
+        if schema.respond_to?(:to_hash)
+          # matching oneOf is good here. one schema for one instance.
+          # matching anyOf is fine. there could be more than one schema matched but it's usually just
+          #   one. if more than one is a match, you just get the first one.
+          someof_token = %w(oneOf anyOf).detect { |k| schema[k].respond_to?(:to_ary) }
+          if someof_token
+            someof_ptr = ptr[someof_token].deref(document)
+            someof_ptr.evaluate(document).each_index do |i|
+              someof_schema_ptr = someof_ptr[i].deref(document)
+              valid = ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: someof_schema_ptr.fragment)
+              if valid
+                return someof_schema_ptr.schema_match_ptr_to_instance(document, instance)
+              end
+            end
+          end
+        end
+        return ptr
+      end
+
       # takes a document and a block. the block is yielded the content of the given document at this
       # pointer's location. the block must result a modified copy of that content (and MUST NOT modify
       # the object it is given). this modified copy of that content is incorporated into a modified copy
