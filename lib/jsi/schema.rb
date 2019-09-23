@@ -151,7 +151,7 @@ module JSI
       %w(oneOf anyOf).select { |k| schema_node[k].respond_to?(:to_ary) }.each do |someof_key|
         schema_node[someof_key].map(&:deref).map do |someof_node|
           someof_schema = self.class.new(someof_node)
-          if someof_schema.validate(instance)
+          if someof_schema.validate_instance(instance)
             return someof_schema.match_to_instance(instance)
           end
         end
@@ -249,12 +249,12 @@ module JSI
 
     # @return [Array<String>] array of schema validation error messages for
     #   the given instance against this schema
-    def fully_validate(instance)
+    def fully_validate_instance(instance)
       ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
     end
 
     # @return [true, false] whether the given instance validates against this schema
-    def validate(instance)
+    def validate_instance(instance)
       ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
     end
 
@@ -262,7 +262,7 @@ module JSI
     #   indicate the instance is valid against this schema
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors against this schema
-    def validate!(instance)
+    def validate_instance!(instance)
       ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
     end
 

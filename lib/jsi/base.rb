@@ -162,12 +162,12 @@ module JSI
 
     # @return [Array<String>] array of schema validation error messages for this instance
     def fully_validate
-      schema.fully_validate(instance)
+      schema.fully_validate_instance(instance)
     end
 
     # @return [true, false] whether the instance validates against its schema
     def validate
-      schema.validate(instance)
+      schema.validate_instance(instance)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -175,7 +175,7 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors
     def validate!
-      schema.validate!(instance)
+      schema.validate_instance!(instance)
     end
 
     def dup
