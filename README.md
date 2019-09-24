@@ -103,6 +103,8 @@ These validations are done by the [`json-schema` gem](https://github.com/ruby-js
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with #[] or, say, #transform_values:
 
 ```ruby
+# note that #size here is actually referring to multiple different methods; for name and nickname
+# it is String#size but for phone it is Array#size.
 bill.transform_values(&:size)
 # => {"name" => 4, "phone" => 1, "nickname" => 5}
 bill['nickname']
@@ -122,12 +124,12 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 ## JSI classes
 
-A JSI class (that is, subclass of JSI::Base) is a starting point but obviously you want your own methods, so you reopen the class as you would any other. referring back to the Example section above, we reopen the Contact class:
+A JSI class (that is, subclass of JSI::Base) is a starting point. But, since the major point of object-oriented programming is applying methods to your objects, obviously you want to be able to define your own methods. To do this we reopen the JSI class (as you would any other class). Referring back to the Example section above, we reopen the `Contact` class:
 
 ```ruby
 class Contact
-  def full_address
-    address.values.join(", ")
+  def phone_numbers
+    phone.map(&:number)
   end
   def name
     super + ' esq.'
@@ -145,7 +147,7 @@ bill['name']
 # => "rob"
 ```
 
-Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers (these accessor methods are defined on an included module instead of the JSI class for this reason). You can also use [] and []=, of course, with the same effect.
+Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers (these accessor methods are defined on an included module instead of the JSI class for this reason). You can also use `[]` and `[]=`, of course, with the same effect.
 
 If you want to add methods to a subschema, get the class_for_schema for that schema and open up that class. You can leave the class anonymous, as in this example:
 
@@ -185,11 +187,11 @@ A self-descriptive metaschema - most commonly one of the JSON schema draft metas
 
 A really excellent place to use JSI is when dealing with serialized columns in ActiveRecord.
 
-Let's say you're sticking to json types in the database - you have to do so if you're using json columns, or json serialization, and if you have dealt with arbitrary yaml- or marshal-serialized objects in ruby, you have probably found that approach has its shortcomings when the implementation of your classes changes.
+Let's say you're sticking to JSON types in the database - you have to do so if you're using JSON columns, or JSON serialization, and if you have dealt with arbitrary yaml- or marshal-serialized objects in ruby, you have probably found that approach has its shortcomings when the implementation of your classes changes.
 
-But if your database contains json, then your deserialized objects in ruby are likewise Hash / Array / basic types. You have to use subscripts instead of accessors, and you don't have any way to add methods to your data types.
+But if your database contains JSON, then your deserialized objects in ruby are likewise Hash / Array / basic types. You have to use subscripts instead of accessors, and you don't have any way to add methods to your data types.
 
-JSI gives you the best of both with JSICoder. This coder dumps objects which are simple json types, and loads instances of a specified JSI class. Here's an example:
+JSI gives you the best of both with JSICoder. This coder dumps objects which are simple JSON types, and loads instances of a specified JSI class. Here's an example:
 
 ```ruby
 class User < ActiveRecord::Base
@@ -197,7 +199,7 @@ class User < ActiveRecord::Base
 end
 ```
 
-Now `user.contacts` will return an array of Contact instances, from the json type in the database, with Contact's accessors, validations, and user-defined instance methods.
+Now `user.contacts` will return an array of Contact instances, from the JSON type in the database, with Contact's accessors, validations, and user-defined instance methods.
 
 See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize the dumped JSON-compatible objects further as text.
 
