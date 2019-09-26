@@ -152,17 +152,18 @@ module JSI
     # @param other_instance [Object] the instance to which to attempt to match *Of subschemas
     # @return [JSI::Schema] a matched subschema, or this schema (self)
     def match_to_instance(other_instance)
-      # matching oneOf is good here. one schema for one instance.
-      # matching anyOf is okay. there could be more than one schema matched. it's often just one. if more
-      #   than one is a match, you just get the first one.
-      %w(oneOf anyOf).select { |k| self[k].respond_to?(:to_ary) }.each do |someof_key|
-        self[someof_key].map(&:deref).map do |someof_schema|
-          if someof_schema.validate_instance(other_instance)
-            return someof_schema.match_to_instance(other_instance)
+      ptr = node_ptr
+      ptr = ptr.deref(node_document)
+      ptr = ptr.schema_match_ptr_to_instance(node_document, other_instance)
+      if ptr
+        ptr.evaluate(document_root_node).tap do |subschema|
+          unless subschema.is_a?(JSI::Schema)
+            raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
           end
         end
+      else
+        self
       end
-      return self
     end
 
     # @param property_name [String] the property name for which to find a subschema
