@@ -165,47 +165,42 @@ module JSI
       return self
     end
 
-    # @param property_name_ [String] the property for which to find a subschema
-    # @return [JSI::Schema, nil] a subschema from `properties`,
-    #   `patternProperties`, or `additionalProperties` for the given
-    #    property_name
-    def subschema_for_property(property_name_)
-      memoize(:subschema_for_property, property_name_) do |property_name|
-        if self['properties'].respond_to?(:to_hash) && self['properties'].key?(property_name)
-          self['properties'][property_name]
+    # @param property_name [String] the property name for which to find a subschema
+    # @return [JSI::Schema, nil] a subschema from `properties`, `patternProperties`, or `additionalProperties` for the given token
+    def subschema_for_property(property_name)
+      memoize(:subschema_for_property, property_name) do |property_name_|
+        ptr = node_ptr
+        ptr = ptr.deref(node_document)
+        ptr = ptr.schema_subschema_ptr_for_property_name(node_document, property_name_)
+        if ptr
+          ptr = ptr.deref(node_document)
+          ptr.evaluate(document_root_node).tap do |subschema|
+            unless subschema.is_a?(JSI::Schema)
+              raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
+            end
+          end
         else
-          if self['patternProperties'].respond_to?(:to_hash)
-            pattern_schema_token = self['patternProperties'].keys.detect do |pattern|
-              property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
-            end
-          end
-          if pattern_schema_token
-            self['patternProperties'][pattern_schema_token]
-          else
-            if key?('additionalProperties')
-              self['additionalProperties']
-            else
-              nil
-            end
-          end
+          nil
         end
       end
     end
 
-    # @param index_ [Integer] the index for which to find a subschema
-    # @return [JSI::Schema, nil] a subschema from `items` or
-    #   `additionalItems` for the given index
-    def subschema_for_index(index_)
-      memoize(:subschema_for_index, index_) do |index|
-        items = key?('items') ? self['items'].deref : nil
-        if items.respond_to?(:to_ary)
-          if index < items.size
-            self['items'][index]
-          elsif key?('additionalItems')
-            self['additionalItems']
+    # @param index [Integer] the array index for which to find a subschema
+    # @return [JSI::Schema, nil] a subschema from `items` or `additionalItems` for the given token
+    def subschema_for_index(index)
+      memoize(:subschema_for_index, index) do |index_|
+        ptr = node_ptr
+        ptr = ptr.deref(node_document)
+        ptr = ptr.schema_subschema_ptr_for_index(node_document, index_)
+        if ptr
+          ptr = ptr.deref(node_document)
+          ptr.evaluate(document_root_node).tap do |subschema|
+            unless subschema.is_a?(JSI::Schema)
+              raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
+            end
           end
         else
-          self['items']
+          nil
         end
       end
     end
