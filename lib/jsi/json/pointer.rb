@@ -195,6 +195,72 @@ module JSI
         Pointer.new(reference_tokens + [token], type: @type)
       end
 
+      # given this Pointer points to a schema in the given document, returns a pointer
+      # to a subschema of that schema for the given property name.
+      #
+      # @param document [#to_hash, #to_ary, Object] document containing the schema this pointer points to
+      # @param property_name [Object] the property name for which to find a subschema
+      # @return [JSI::JSON::Pointer, nil] a pointer to a subschema in the document for the property_name, or nil
+      def schema_subschema_ptr_for_property_name(document, property_name)
+        ptr = self
+        schema = ptr.evaluate(document)
+        if !schema.respond_to?(:to_hash)
+          nil
+        else
+          if schema.key?('properties') && schema['properties'].respond_to?(:to_hash) && schema['properties'].key?(property_name)
+            ptr['properties'][property_name]
+          else
+            # TODO this is rather incorrect handling of patternProperties and additionalProperties
+            if schema['patternProperties'].respond_to?(:to_hash)
+              pattern_schema_name = schema['patternProperties'].keys.detect do |pattern|
+                property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+              end
+            end
+            if pattern_schema_name
+              ptr['patternProperties'][pattern_schema_name]
+            else
+              if schema.key?('additionalProperties')
+                ptr['additionalProperties']
+              else
+                nil
+              end
+            end
+          end
+        end
+      end
+
+      # given this Pointer points to a schema in the given document, returns a pointer
+      # to a subschema of that schema for the given array index.
+      #
+      # @param document [#to_hash, #to_ary, Object] document containing the schema this pointer points to
+      # @param idx [Object] the array index for which to find a subschema
+      # @return [JSI::JSON::Pointer, nil] a pointer to a subschema in the document for array index idx, or nil
+      def schema_subschema_ptr_for_index(document, idx)
+        ptr = self
+        schema = ptr.evaluate(document)
+        if !schema.respond_to?(:to_hash)
+          nil
+        else
+          if schema.key?('items') || schema.key?('additionalItems')
+            if schema['items'].respond_to?(:to_ary)
+              if schema['items'].each_index.to_a.include?(idx)
+                ptr['items'][idx]
+              elsif schema.key?('additionalItems')
+                ptr['additionalItems']
+              else
+                nil
+              end
+            elsif schema.key?('items')
+              ptr['items']
+            else
+              nil
+            end
+          else
+            nil
+          end
+        end
+      end
+
       # takes a document and a block. the block is yielded the content of the given document at this
       # pointer's location. the block must result a modified copy of that content (and MUST NOT modify
       # the object it is given). this modified copy of that content is incorporated into a modified copy
