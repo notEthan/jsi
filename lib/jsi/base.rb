@@ -339,7 +339,7 @@ module JSI
     end
   end
 
-  # module extending a {JSI::Base} object when its schema instance is Hash-like (responds to #to_hash)
+  # module extending a {JSI::Base} object when its instance is Hash-like (responds to #to_hash)
   module BaseHash
     # yields each key and value of this JSI.
     # each yielded key is the same as a key of the instance, and each yielded
@@ -404,7 +404,7 @@ module JSI
     end
   end
 
-  # module extending a {JSI::Base} object when its schema instance is Array-like (responds to #to_ary)
+  # module extending a {JSI::Base} object when its instance is Array-like (responds to #to_ary)
   module BaseArray
     # yields each element. each yielded element is the result of self[index]
     # for each index of the instance (see #[]).
