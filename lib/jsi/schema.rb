@@ -8,6 +8,9 @@ module JSI
     include Memoize
 
     class << self
+      # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
+      #   if it's already a schema, it is returned as-is.
+      # @return [JSI::Schema]
       def from_object(schema_object)
         if schema_object.is_a?(Schema)
           schema_object
