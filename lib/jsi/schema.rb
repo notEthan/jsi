@@ -88,19 +88,10 @@ module JSI
         done = false
 
         while !done
-          # TODO: track what parents are schemas. somehow.
-          # look at 'id' if node_for_id is a schema, or the document root.
-          # decide whether to look at '$id' for all parent nodes or also just schemas.
-          if node_for_id.respond_to?(:to_hash)
-            if node_for_id.node_ptr.root? || node_for_id.object_id == self.object_id
-              # I'm only looking at 'id' for the document root and the schema node
-              # until I track what parents are schemas.
-              parent_id = node_for_id.key?('$id') && node_for_id['$id'].is_a?(String) ? node_for_id['$id'] : node_for_id.key?('id') && node_for_id['id'].is_a?(String) ? node_for_id['id'] : nil
-            else
-              # will look at '$id' everywhere since it is less likely to show up outside schemas than
-              # 'id', but it will be better to only look at parents that are schemas for this too.
-              parent_id = node_for_id.key?('$id') && node_for_id['$id'].is_a?(String) ? node_for_id['$id'] : nil
-            end
+          node_content_for_id = node_for_id.node_content
+          if node_for_id.is_a?(JSI::Schema) && node_content_for_id.respond_to?(:to_hash)
+            parent_id = node_content_for_id.key?('$id') && node_content_for_id['$id'].respond_to?(:to_str) ? node_content_for_id['$id'].to_str :
+              node_content_for_id.key?('id') && node_content_for_id['id'].respond_to?(:to_str) ? node_content_for_id['id'].to_str : nil
           end
 
           if parent_id || node_for_id.node_ptr.root?
