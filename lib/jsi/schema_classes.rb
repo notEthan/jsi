@@ -62,6 +62,10 @@ module JSI
               extend SchemaModule
 
               include JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [JSI::Base, JSI::BaseArray, JSI::BaseHash])
+
+              @possibly_schema_node = schema
+              extend(SchemaModulePossibly)
+              extend(JSI::SchemaClasses.accessor_module_for_schema(schema.schema, conflicting_modules: [Module, SchemaModule, SchemaModulePossibly]))
             end
           end
         end
@@ -94,5 +98,54 @@ module JSI
         end
       end
     end
+  end
+
+  # a JSI::Schema module and a JSI::NotASchemaModule are both a SchemaModulePossibly.
+  # this module provides a #[] method.
+  module SchemaModulePossibly
+    attr_reader :possibly_schema_node
+
+    # subscripting a JSI schema module or a NotASchemaModule will subscript the node, and
+    # if the result is a JSI::Schema, return a JSI::Schema class; if it is a PathedNode,
+    # return a NotASchemaModule; or if it is another value (a basic type), return that value.
+    #
+    # @param token [Object]
+    # @return [Class, NotASchemaModule, Object]
+    def [](token)
+      sub = @possibly_schema_node[token]
+      if sub.is_a?(JSI::Schema)
+        sub.jsi_schema_module
+      elsif sub.is_a?(JSI::PathedNode)
+        NotASchemaModule.new(sub)
+      else
+        sub
+      end
+    end
+  end
+
+  # a schema module is a module which represents a schema. a NotASchemaModule represents
+  # a node in a schema's document which is not a schema, such as the 'properties'
+  # node (which contains schemas but is not a schema).
+  #
+  # a NotASchemaModule is extended with the module_for_schema of the node's schema.
+  #
+  # NotASchemaModule holds a node which is not a schema. when subscripted, it subscripts
+  # its node. if the value is a JSI::Schema, its schema module is returned. if the value
+  # is another node, a NotASchemaModule for that node is returned. otherwise - when the
+  # value is a basic type - that value itself is returned.
+  class NotASchemaModule
+    # @param node [JSI::PathedNode]
+    def initialize(node)
+      unless node.is_a?(JSI::PathedNode)
+        raise(TypeError, "not JSI::PathedNode: #{node.pretty_inspect.chomp}")
+      end
+      if node.is_a?(JSI::Schema)
+        raise(TypeError, "cannot instantiate NotASchemaModule for a JSI::Schema node: #{node.pretty_inspect.chomp}")
+      end
+      @possibly_schema_node = node
+      extend(JSI::SchemaClasses.accessor_module_for_schema(node.schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly]))
+    end
+
+    include SchemaModulePossibly
   end
 end
