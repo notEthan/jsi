@@ -11,6 +11,24 @@ module JSI
       class ReferenceError < Error
       end
 
+      # instantiates a Pointer from any given reference tokens.
+      #
+      #     >> JSI::JSON::Pointer[]
+      #     => #<JSI::JSON::Pointer reference_tokens: []>
+      #     >> JSI::JSON::Pointer['a', 'b']
+      #     => #<JSI::JSON::Pointer reference_tokens: ["a", "b"]>
+      #     >> JSI::JSON::Pointer['a']['b']
+      #     => #<JSI::JSON::Pointer reference_tokens: ["a", "b"]>
+      #
+      # note in the last example that you can conveniently chain the class .[] method
+      # with the instance #[] method.
+      #
+      # @param *reference_tokens any number of reference tokens
+      # @return [JSI::JSON::Pointer]
+      def self.[](*reference_tokens)
+        new(reference_tokens)
+      end
+
       # parse a URI-escaped fragment and instantiate as a JSI::JSON::Pointer
       #
       #     ptr = JSI::JSON::Pointer.from_fragment('#/foo/bar')
