@@ -53,7 +53,7 @@ module JSI
       #   schema_id. only used if the class is not assigned to another constant.
       def schema_classes_const_name
         name = schema.schema_id.gsub(/[^\w]/, '_')
-        name = 'X' + name unless name[/\A[a-zA-Z_]/]
+        name = 'X' + name unless name[/\A[a-zA-Z]/]
         name = name[0].upcase + name[1..-1]
         name
       end
