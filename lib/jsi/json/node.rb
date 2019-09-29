@@ -173,6 +173,10 @@ module JSI
         Node.new_by_type(pointer.modified_document_copy(document, &block), pointer)
       end
 
+      def dup
+        modified_copy(&:dup)
+      end
+
       # meta-information about the object, outside the content. used by #inspect / #pretty_print
       def object_group_text
         "fragment=#{fragment.inspect}" + (content.respond_to?(:object_group_text) ? ' ' + content.object_group_text : '')

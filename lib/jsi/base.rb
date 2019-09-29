@@ -170,6 +170,10 @@ module JSI
       schema.validate!(instance)
     end
 
+    def dup
+      modified_copy(&:dup)
+    end
+
     # @return [String] a string representing this JSI, indicating its class
     #   and inspecting its instance
     def inspect
