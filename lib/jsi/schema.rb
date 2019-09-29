@@ -123,6 +123,14 @@ module JSI
 
     alias_method :schema_class, :jsi_schema_class
 
+    # calls #new on the class for this schema with the given arguments. for parameters,
+    # see JSI::Base#initialize documentation.
+    #
+    # @return [JSI::Base] a JSI whose schema is this schema and whose instance is the given instance
+    def new_jsi(other_instance, *a, &b)
+      jsi_schema_class.new(other_instance, *a, &b)
+    end
+
     # if this schema is a oneOf, allOf, anyOf schema, #match_to_instance finds
     # one of the subschemas that matches the given instance and returns it. if
     # there are no matching *Of schemas, this schema is returned.
