@@ -68,6 +68,10 @@ module JSI
       else
         nil
       end
+
+      if @schema
+        extend(JSI::SchemaClasses.module_for_schema(@schema, conflicting_modules: [Metaschema, Schema, MetaschemaNode, PathedArrayNode, PathedHashNode]))
+      end
     end
 
     # document containing the metaschema. see PathedNode#node_document.
