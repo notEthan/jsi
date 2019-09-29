@@ -66,14 +66,14 @@ module JSI
                   if respond_to?(:[])
                     self[property_name]
                   else
-                    raise(NoMethodError, "instance does not respond to []; cannot call reader `#{property_name}' for: #{pretty_inspect.chomp}")
+                    raise(NoMethodError, "schema instance of class #{self.class} does not respond to []; cannot call reader '#{property_name}'. instance is #{instance.pretty_inspect.chomp}")
                   end
                 end
                 define_method("#{property_name}=") do |value|
                   if respond_to?(:[]=)
                     self[property_name] = value
                   else
-                    raise(NoMethodError, "instance does not respond to []=; cannot call writer `#{property_name}=' for: #{pretty_inspect.chomp}")
+                    raise(NoMethodError, "schema instance of class #{self.class} does not respond to []=; cannot call writer '#{property_name}='. instance is #{instance.pretty_inspect.chomp}")
                   end
                 end
               end
