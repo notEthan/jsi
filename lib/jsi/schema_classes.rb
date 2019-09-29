@@ -18,7 +18,9 @@ module JSI
       def class_for_schema(schema_object)
         memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema_|
           Class.new(Base).instance_exec(schema_) do |schema|
-            include(JSI::SchemaClasses.module_for_schema(schema))
+            define_singleton_method(:schema) { schema }
+            define_method(:schema) { schema }
+            include(JSI::SchemaClasses.module_for_schema(schema, conflicting_modules: [Base, BaseArray, BaseHash]))
 
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
@@ -31,9 +33,8 @@ module JSI
       end
 
       # a module for the given schema, with accessor methods for any object
-      # property names the schema identifies. also has class and instance
-      # methods called #schema to access the {JSI::Schema} this module
-      # represents.
+      # property names the schema identifies. also has a singleton method
+      # called #schema to access the {JSI::Schema} this module represents.
       #
       # accessor methods are defined on these modules so that methods can be
       # defined on {JSI.class_for_schema} classes without method redefinition
@@ -43,16 +44,12 @@ module JSI
       # no property names that are the same as existing method names on the JSI
       # class will be defined. users should use #[] and #[]= to access properties
       # whose names conflict with existing methods.
-      def module_for_schema(schema_object)
-        memoize(:module_for_schema, JSI::Schema.from_object(schema_object)) do |schema_|
+      def SchemaClasses.module_for_schema(schema_object, conflicting_modules: [])
+        schema__ = JSI::Schema.from_object(schema_object)
+        memoize(:module_for_schema, schema__, conflicting_modules) do |schema_, conflicting_modules_|
           Module.new.tap do |m|
             m.instance_exec(schema_) do |schema|
-              define_method(:schema) { schema }
               define_singleton_method(:schema) { schema }
-              define_singleton_method(:included) do |includer|
-                includer.send(:define_singleton_method, :schema) { schema }
-              end
-
               define_singleton_method(:schema_id) do
                 schema.schema_id
               end
@@ -60,11 +57,10 @@ module JSI
                 %Q(#<Module for Schema: #{schema_id}>)
               end
 
-              instance_method_modules = [m, Base, BaseArray, BaseHash]
-              instance_methods = instance_method_modules.map do |mod|
+              conflicting_instance_methods = (conflicting_modules_ + [m]).map do |mod|
                 mod.instance_methods + mod.private_instance_methods
               end.inject(Set.new, &:|)
-              accessors_to_define = schema.described_object_property_names.map(&:to_s) - instance_methods.map(&:to_s)
+              accessors_to_define = schema.described_object_property_names.map(&:to_s) - conflicting_instance_methods.map(&:to_s)
               accessors_to_define.each do |property_name|
                 define_method(property_name) do
                   if respond_to?(:[])
