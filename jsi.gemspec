@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
 
   # we are monkey patching json-schema with a fix that has not been merged in a timely fashion.
   spec.add_dependency "json-schema", "~> 2.8"
-  spec.add_development_dependency "rake", "~> 10.0"
+  spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "minitest", "~> 5.0"
   spec.add_development_dependency "minitest-around"
   spec.add_development_dependency "minitest-reporters"
