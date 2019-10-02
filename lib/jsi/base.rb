@@ -431,7 +431,7 @@ module JSI
       define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
     end
 
-    # @return [Object] returns the instance's subscript value at the given index
+    # @return [JSI::Base, Object] returns the instance's subscript value at the given index
     #   i_. if there is a subschema defined for that index on this JSI's schema,
     #   returns the instance's subscript as a JSI instiation of that subschema.
     # @param i_ the array index to subscript
