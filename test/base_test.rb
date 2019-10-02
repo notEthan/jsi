@@ -290,7 +290,7 @@ describe JSI::Base do
         let(:instance) { nil }
         it 'errors' do
           err = assert_raises(NoMethodError) { subject.foo }
-          assert_match(%r(\Aschema instance of class .* does not respond to \[\]; cannot call reader 'foo'. instance is )m, err.message)
+          assert_equal(%q(cannot subcript (using token: "foo") from instance: nil), err.message)
         end
       end
       describe 'properties with the same names as instance methods' do
@@ -364,7 +364,7 @@ describe JSI::Base do
         let(:instance) { nil }
         it 'errors' do
           err = assert_raises(NoMethodError) { subject.foo = 0 }
-          assert_match(%r(\Aschema instance of class .* does not respond to \[\]=; cannot call writer 'foo='. instance is )m, err.message)
+          assert_equal('cannot assign subcript (using token: "foo") to instance: nil', err.message)
         end
       end
     end

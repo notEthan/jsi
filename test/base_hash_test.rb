@@ -123,7 +123,7 @@ describe JSI::BaseHash do
       let(:instance) { nil }
       it 'errors' do
         err = assert_raises(NoMethodError) { subject['foo'] = 0 }
-        assert_match(%r(\Aundefined method `\[\]=' for #<JSI::SchemaClasses::.*>\z), err.message)
+        assert_equal('cannot assign subcript (using token: "foo") to instance: nil', err.message)
       end
     end
   end

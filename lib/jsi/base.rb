@@ -221,6 +221,75 @@ module JSI
     # @deprecated
     alias_method :parent, :parent_jsi
 
+    # @param token [String, Integer, Object] the token to subscript
+    # @return [JSI::Base, Object] the instance's subscript value at the given token.
+    #   if there is a subschema defined for that token on this JSI's schema,
+    #   returns that value as a JSI instantiation of that subschema.
+    def [](token)
+      if respond_to?(:to_hash)
+        token_is_ours_ = node_content_hash_pubsend(:key?, token)
+        value_ = node_content_hash_pubsend(:[], token)
+      elsif respond_to?(:to_ary)
+        token_is_ours_ = node_content_ary_pubsend(:each_index).include?(token)
+        value_ = node_content_ary_pubsend(:[], token)
+      else
+        raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
+      end
+
+      if !token_is_ours_
+        deref do |deref_jsi|
+          return deref_jsi[token]
+        end
+      end
+
+      memoize(:[], token, value_, token_is_ours_) do |token_, value, token_is_ours|
+        if respond_to?(:to_ary)
+          token_schema = schema.subschema_for_index(token_)
+        else
+          token_schema = schema.subschema_for_property(token_)
+        end
+        token_schema = token_schema && token_schema.match_to_instance(value)
+        if !token_is_ours && token_schema && token_schema.key?('default')
+          # use the default value
+          default = token_schema['default']
+          if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
+            # we are using #dup so that we get a modified copy of self, in which we set dup[token_]=default.
+            # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
+            dup.tap { |o| o[token_] = default }[token_]
+          else
+            default
+          end
+        elsif token_schema && (token_schema.describes_schema? || value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+          class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token_], ancestor_jsi: @ancestor_jsi || self)
+        elsif token_is_ours
+          value
+        else
+          # I kind of want to just return nil here. the preferred mechanism for
+          # a JSI's default value should be its schema. but returning nil ignores
+          # any value returned by Hash#default/#default_proc. there's no compelling
+          # reason not to support both, so I'll return that.
+          value
+        end
+      end
+    end
+
+    # assigns the subscript of the instance identified by the given token to the given value.
+    # if the value is a JSI, its instance is assigned instead of the JSI value itself.
+    #
+    # @param token [String, Integer, Object] token identifying the subscript to assign
+    # @param value [JSI::Base, Object] the value to be assigned
+    def []=(token, value)
+      unless respond_to?(:to_hash) || respond_to?(:to_ary)
+        raise(NoMethodError, "cannot assign subcript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
+      end
+      clear_memo(:[])
+      if value.is_a?(Base)
+        instance[token] = value.instance
+      else
+        instance[token] = value
+      end
+    end
+
     # if this JSI is a $ref then the $ref is followed. otherwise this JSI
     # is returned.
     #
@@ -337,18 +406,6 @@ module JSI
 
     private
 
-    # assigns a subscript, unwrapping a JSI if given.
-    # @param subscript [Object] the bit between the [ and ]
-    # @param value [JSI::Base, Object] the value to be assigned
-    def subscript_assign(subscript, value)
-      clear_memo(:[])
-      if value.is_a?(Base)
-        instance[subscript] = value.instance
-      else
-        instance[subscript] = value
-      end
-    end
-
     # this is an instance method in order to allow subclasses of JSI classes to
     # override it to point to other subclasses corresponding to other schemas.
     def class_for_schema(schema)
@@ -359,114 +416,10 @@ module JSI
   # module extending a {JSI::Base} object when its instance is Hash-like (responds to #to_hash)
   module BaseHash
     include PathedHashNode
-
-    alias_method :jsi_instance_hash_pubsend, :node_content_hash_pubsend
-
-    # @param property_name [String, Object] the property name to subscript
-    # @return [JSI::Base, Object] the instance's subscript value at the given
-    #   key property_name_. if there is a subschema defined for that property
-    #   on this JSI's schema, returns the instance's subscript as a JSI
-    #   instiation of that subschema.
-    def [](property_name)
-      instance_property_key_ = jsi_instance_hash_pubsend(:key?, property_name)
-      if !instance_property_key_
-        deref do |deref_jsi|
-          return deref_jsi[property_name]
-        end
-      end
-      instance_property_value_ = jsi_instance_sub(property_name)
-      memoize(:[], property_name, instance_property_value_, instance_property_key_) do |property_name_, instance_property_value, instance_property_key|
-        begin
-          property_schema = schema.subschema_for_property(property_name_)
-          property_schema = property_schema && property_schema.match_to_instance(instance_property_value)
-
-          if !instance_property_key && property_schema && property_schema.key?('default')
-            # use the default value
-            default = property_schema['default']
-            if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              # we are using #dup so that we get a modified copy of self, in which we set dup[property_name_]=default.
-              # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
-              dup.tap { |o| o[property_name_] = default }[property_name_]
-            else
-              default
-            end
-          elsif property_schema && (property_schema.describes_schema? || instance_property_value.respond_to?(:to_hash) || instance_property_value.respond_to?(:to_ary))
-            class_for_schema(property_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[property_name_], ancestor_jsi: @ancestor_jsi || self)
-          else
-            instance_property_value
-          end
-        end
-      end
-    end
-
-    # assigns the given property name of the instance to the given value.
-    # if the value is a JSI, its instance is assigned.
-    # @param property_name [Object] this should generally be a String, but JSI
-    #   does not enforce any constraint on it.
-    # @param value [Object] the value to be assigned to the given subscript
-    #   property_name
-    def []=(property_name, value)
-      subscript_assign(property_name, value)
-    end
-
-    private
-
-    # @param token [String, Object]
-    # @return [Object]
-    def jsi_instance_sub(token)
-      jsi_instance_hash_pubsend(:[], token)
-    end
   end
 
   # module extending a {JSI::Base} object when its instance is Array-like (responds to #to_ary)
   module BaseArray
     include PathedArrayNode
-
-    alias_method :jsi_instance_ary_pubsend, :node_content_ary_pubsend
-
-    # @param i [Integer] the array index to subscript
-    # @return [JSI::Base, Object] the instance's subscript value at the given index
-    #   i. if there is a subschema defined for that index on this JSI's schema,
-    #   returns the instance's subscript as a JSI instiation of that subschema.
-    def [](i)
-      memoize(:[], i, jsi_instance_sub(i), jsi_instance_ary_pubsend(:each_index).to_a.include?(i)) do |i_, instance_idx_value, i_in_range|
-        begin
-          index_schema = schema.subschema_for_index(i_)
-          index_schema = index_schema && index_schema.match_to_instance(instance_idx_value)
-
-          if !i_in_range && index_schema && index_schema.key?('default')
-            # use the default value
-            default = index_schema['default']
-            if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              # we are using #dup so that we get a modified copy of self, in which we set dup[i]=default.
-              # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
-              dup.tap { |o| o[i_] = default }[i_]
-            else
-              default
-            end
-          elsif index_schema && (index_schema.describes_schema? || instance_idx_value.respond_to?(:to_hash) || instance_idx_value.respond_to?(:to_ary))
-            class_for_schema(index_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[i_], ancestor_jsi: @ancestor_jsi || self)
-          else
-            instance_idx_value
-          end
-        end
-      end
-    end
-
-    # assigns the given index of the instance to the given value.
-    # if the value is a JSI, its instance is assigned.
-    # @param i [Object] the array index to assign
-    # @param value [Object] the value to be assigned to the given subscript i
-    def []=(i, value)
-      subscript_assign(i, value)
-    end
-
-    private
-
-    # @param token [Integer]
-    # @return [Object]
-    def jsi_instance_sub(token)
-      jsi_instance_ary_pubsend(:[], token)
-    end
   end
 end

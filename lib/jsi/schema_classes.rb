@@ -63,18 +63,10 @@ module JSI
               accessors_to_define = schema.described_object_property_names.map(&:to_s) - conflicting_instance_methods.map(&:to_s)
               accessors_to_define.each do |property_name|
                 define_method(property_name) do
-                  if respond_to?(:[])
-                    self[property_name]
-                  else
-                    raise(NoMethodError, "schema instance of class #{self.class} does not respond to []; cannot call reader '#{property_name}'. instance is #{instance.pretty_inspect.chomp}")
-                  end
+                  self[property_name]
                 end
                 define_method("#{property_name}=") do |value|
-                  if respond_to?(:[]=)
-                    self[property_name] = value
-                  else
-                    raise(NoMethodError, "schema instance of class #{self.class} does not respond to []=; cannot call writer '#{property_name}='. instance is #{instance.pretty_inspect.chomp}")
-                  end
+                  self[property_name] = value
                 end
               end
             end
