@@ -366,6 +366,7 @@ module JSI
       define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
     end
 
+    # @param property_name [String, Object] the property name to subscript
     # @return [JSI::Base, Object] the instance's subscript value at the given
     #   key property_name_. if there is a subschema defined for that property
     #   on this JSI's schema, returns the instance's subscript as a JSI
@@ -431,10 +432,10 @@ module JSI
       define_method(method_name) { |*a, &b| instance.public_send(method_name, *a, &b) }
     end
 
-    # @return [JSI::Base, Object] returns the instance's subscript value at the given index
-    #   i_. if there is a subschema defined for that index on this JSI's schema,
+    # @param i [Integer] the array index to subscript
+    # @return [JSI::Base, Object] the instance's subscript value at the given index
+    #   i. if there is a subschema defined for that index on this JSI's schema,
     #   returns the instance's subscript as a JSI instiation of that subschema.
-    # @param i_ the array index to subscript
     def [](i_)
       memoize(:[], i_) do |i|
         begin
