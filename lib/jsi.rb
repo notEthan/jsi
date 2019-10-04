@@ -10,6 +10,7 @@ module JSI
   end
 
   autoload :JSON, 'jsi/json'
+  autoload :PathedNode, 'jsi/pathed_node'
   autoload :Typelike, 'jsi/typelike_modules'
   autoload :Hashlike, 'jsi/typelike_modules'
   autoload :Arraylike, 'jsi/typelike_modules'
@@ -18,8 +19,9 @@ module JSI
   autoload :BaseArray, 'jsi/base'
   autoload :BaseHash, 'jsi/base'
   autoload :SchemaClasses, 'jsi/base'
-  autoload :SimpleWrap, 'jsi/simple_wrap'
   autoload :JSICoder, 'jsi/jsi_coder'
+
+  autoload :SimpleWrap, 'jsi/simple_wrap'
 
   # @return [Class subclassing JSI::Base] a JSI class which represents the
   #   given schema. instances of the class represent JSON Schema instances

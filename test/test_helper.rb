@@ -2,8 +2,10 @@ require 'coveralls'
 if Coveralls.will_run?
   Coveralls.wear!
 end
-
 require 'simplecov'
+
+require 'byebug'
+
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
 
@@ -15,8 +17,6 @@ require 'minitest/around/spec'
 require 'minitest/reporters'
 
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
-
-require 'byebug'
 
 class JSISpec < Minitest::Spec
   if ENV['JSI_TEST_ALPHA']

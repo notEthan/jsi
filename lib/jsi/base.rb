@@ -53,7 +53,7 @@ module JSI
       #   schema_id. only used if the class is not assigned to another constant.
       def schema_classes_const_name
         name = schema.schema_id.gsub(/[^\w]/, '_')
-        name = 'X' + name unless name[/\A[a-zA-Z_]/]
+        name = 'X' + name unless name[/\A[a-zA-Z]/]
         name = name[0].upcase + name[1..-1]
         name
       end
@@ -168,6 +168,10 @@ module JSI
     #   validation errors
     def validate!
       schema.validate!(instance)
+    end
+
+    def dup
+      modified_copy(&:dup)
     end
 
     # @return [String] a string representing this JSI, indicating its class
@@ -356,7 +360,7 @@ module JSI
     # @return [Hash] a hash in which each key is a key of the instance hash and
     #   each value is the result of self[key] (see #[]).
     def to_hash
-      inject({}) { |h, (k, v)| h[k] = v; h }
+      {}.tap { |h| each_key { |k| h[k] = self[k] } }
     end
 
     include Hashlike

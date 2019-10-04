@@ -22,6 +22,8 @@ module JSI
     # return a copy of the document with the content of the node modified.
     # the original node's document and content are untouched.
     class Node
+      include PathedNode
+
       def self.new_doc(document)
         new_by_type(document, JSI::JSON::Pointer.new([]))
       end
@@ -64,11 +66,11 @@ module JSI
         pointer.reference_tokens
       end
 
+      alias_method :node_document, :document
+      alias_method :node_ptr, :pointer
+
       # the raw content of this Node from the underlying document at this Node's pointer.
-      def content
-        content = pointer.evaluate(document)
-        content
-      end
+      alias_method :content, :node_content
 
       # returns content at the given subscript - call this the subcontent.
       #
@@ -141,6 +143,8 @@ module JSI
         Node.new_doc(document)
       end
 
+      alias_method :document_root_node, :document_node
+
       # @return [Boolean] whether this node is the root of its document
       def root_node?
         pointer.root?
@@ -171,6 +175,10 @@ module JSI
       # copy of that content (and NOT modify the object it is given).
       def modified_copy(&block)
         Node.new_by_type(pointer.modified_document_copy(document, &block), pointer)
+      end
+
+      def dup
+        modified_copy(&:dup)
       end
 
       # meta-information about the object, outside the content. used by #inspect / #pretty_print
