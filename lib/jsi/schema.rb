@@ -14,6 +14,15 @@ module JSI
 
     include Memoize
 
+    # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
+    # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema
+    # are themselves also schemas.
+    #
+    # examples of a schema which describes a schema include the draft JSON Schema metaschemas and
+    # the OpenAPI schema definition which describes "A deterministic version of a JSON Schema object."
+    module DescribesSchema
+    end
+
     class << self
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a schema, it is returned as-is.
@@ -127,6 +136,11 @@ module JSI
     # @return [JSI::Base] a JSI whose schema is this schema and whose instance is the given instance
     def new_jsi(other_instance, *a, &b)
       jsi_schema_class.new(other_instance, *a, &b)
+    end
+
+    # @return [Boolean] does this schema itself describe a schema?
+    def describes_schema?
+      is_a?(JSI::Schema::DescribesSchema)
     end
 
     # if this schema is a oneOf, allOf, anyOf schema, #match_to_instance finds
