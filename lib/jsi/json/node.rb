@@ -219,63 +219,24 @@ module JSI
     # a JSI::JSON::Node whose content is Array-like (responds to #to_ary)
     # and includes Array methods from Arraylike
     class ArrayNode < Node
-      # iterates over each element in the same manner as Array#each
-      def each
-        return to_enum(__method__) { (content.respond_to?(:size) ? content : content.to_ary).size } unless block_given?
-        (content.respond_to?(:each_index) ? content : content.to_ary).each_index { |i| yield self[i] }
-        self
-      end
-
-      # the content of this ArrayNode, as an Array
-      def to_ary
-        to_a
-      end
-
       include Enumerable
-      include Arraylike
+      include PathedArrayNode
 
       # returns a jsonifiable representation of this node's content
       def as_json(*opt) # needs redefined after including Enumerable
         Typelike.as_json(content, *opt)
-      end
-
-      # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
-      # we override these methods from Arraylike
-      SAFE_INDEX_ONLY_METHODS.each do |method_name|
-        define_method(method_name) { |*a, &b| (content.respond_to?(method_name) ? content : content.to_ary).public_send(method_name, *a, &b) }
       end
     end
 
     # a JSI::JSON::Node whose content is Hash-like (responds to #to_hash)
     # and includes Hash methods from Hashlike
     class HashNode < Node
-      # iterates over each element in the same manner as Array#each
-      def each(&block)
-        return to_enum(__method__) { content.respond_to?(:size) ? content.size : content.to_ary.size } unless block_given?
-        if block.arity > 1
-          (content.respond_to?(:each_key) ? content : content.to_hash).each_key { |k| yield k, self[k] }
-        else
-          (content.respond_to?(:each_key) ? content : content.to_hash).each_key { |k| yield [k, self[k]] }
-        end
-        self
-      end
-
-      # the content of this HashNode, as a Hash
-      def to_hash
-        inject({}) { |h, (k, v)| h[k] = v; h }
-      end
-
       include Enumerable
-      include Hashlike
+      include PathedHashNode
 
       # returns a jsonifiable representation of this node's content
       def as_json(*opt) # needs redefined after including Enumerable
         Typelike.as_json(content, *opt)
-      end
-
-      # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
-      SAFE_KEY_ONLY_METHODS.each do |method_name|
-        define_method(method_name) { |*a, &b| (content.respond_to?(method_name) ? content : content.to_hash).public_send(method_name, *a, &b) }
       end
     end
   end
