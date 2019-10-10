@@ -73,7 +73,7 @@ describe JSI::Base do
       assert_operator(class_for_schema, :<, JSI::Base)
     end
     it 'returns a class from a hash' do
-      assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema.schema_node.content))
+      assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema.schema_node.node_content))
     end
     it 'returns a class from a schema node' do
       assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema.schema_node))
@@ -89,7 +89,7 @@ describe JSI::Base do
       assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
     end
     it 'returns a module from a hash' do
-      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.schema_node.content))
+      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.schema_node.node_content))
     end
     it 'returns a module from a schema node' do
       assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.schema_node))
@@ -228,8 +228,8 @@ describe JSI::Base do
           assert_equal({}, o)
           {'a' => 'b'}
         end
-        assert_equal({'a' => 'b'}, modified.instance.content)
-        assert_equal({}, subject.instance.content)
+        assert_equal({'a' => 'b'}, modified.instance.node_content)
+        assert_equal({}, subject.instance.node_content)
         refute_equal(instance, modified)
       end
     end
@@ -237,7 +237,7 @@ describe JSI::Base do
       it 'yields the instance to modify' do
         modified = subject.modified_copy { |o| o }
         # this doesn't really need to be tested but ... whatever
-        assert_equal(subject.instance.content.object_id, modified.instance.content.object_id)
+        assert_equal(subject.instance.node_content.object_id, modified.instance.node_content.object_id)
         assert_equal(subject, modified)
         refute_equal(subject.object_id, modified.object_id)
       end
@@ -249,8 +249,8 @@ describe JSI::Base do
         modified = subject.modified_copy do |o|
           o.to_s
         end
-        assert_equal('{}', modified.instance.content)
-        assert_equal({}, subject.instance.content)
+        assert_equal('{}', modified.instance.node_content)
+        assert_equal({}, subject.instance.node_content)
         refute_equal(instance, modified)
         # interesting side effect
         assert(subject.respond_to?(:to_hash))

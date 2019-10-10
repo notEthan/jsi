@@ -22,55 +22,45 @@ module JSI
     # return a copy of the document with the content of the node modified.
     # the original node's document and content are untouched.
     class Node
+      include Enumerable
       include PathedNode
 
-      def self.new_doc(document)
-        new_by_type(document, JSI::JSON::Pointer.new([]))
+      def self.new_doc(node_document)
+        new_by_type(node_document, JSI::JSON::Pointer.new([]))
       end
 
       # if the content of the document at the given pointer is Hash-like, returns
       # a HashNode; if Array-like, returns ArrayNode. otherwise returns a
       # regular Node, although Nodes are for the most part instantiated from
       # Hash or Array-like content.
-      def self.new_by_type(document, pointer)
-        content = pointer.evaluate(document)
+      def self.new_by_type(node_document, node_ptr)
+        content = node_ptr.evaluate(node_document)
         if content.respond_to?(:to_hash)
-          HashNode.new(document, pointer)
+          HashNode.new(node_document, node_ptr)
         elsif content.respond_to?(:to_ary)
-          ArrayNode.new(document, pointer)
+          ArrayNode.new(node_document, node_ptr)
         else
-          Node.new(document, pointer)
+          Node.new(node_document, node_ptr)
         end
       end
 
       # a Node represents the content of a document at a given pointer.
-      def initialize(document, pointer)
-        unless pointer.is_a?(JSI::JSON::Pointer)
-          raise(TypeError, "pointer must be a JSI::JSON::Pointer. got: #{pointer.pretty_inspect.chomp} (#{pointer.class})")
+      def initialize(node_document, node_ptr)
+        unless node_ptr.is_a?(JSI::JSON::Pointer)
+          raise(TypeError, "node_ptr must be a JSI::JSON::Pointer. got: #{node_ptr.pretty_inspect.chomp} (#{node_ptr.class})")
         end
-        if document.is_a?(JSI::JSON::Node)
-          raise(TypeError, "document of a Node should not be another JSI::JSON::Node: #{document.inspect}")
+        if node_document.is_a?(JSI::JSON::Node)
+          raise(TypeError, "node_document of a Node should not be another JSI::JSON::Node: #{node_document.inspect}")
         end
-        @document = document
-        @pointer = pointer
+        @node_document = node_document
+        @node_ptr = node_ptr
       end
 
       # the document containing this Node at our pointer
-      attr_reader :document
+      attr_reader :node_document
 
       # JSI::JSON::Pointer pointing to this node within its document
-      attr_reader :pointer
-
-      # @return [Array<Object>] the path of this node; an array of reference_tokens of the pointer
-      def path
-        pointer.reference_tokens
-      end
-
-      alias_method :node_document, :document
-      alias_method :node_ptr, :pointer
-
-      # the raw content of this Node from the underlying document at this Node's pointer.
-      alias_method :content, :node_content
+      attr_reader :node_ptr
 
       # returns content at the given subscript - call this the subcontent.
       #
@@ -82,12 +72,11 @@ module JSI
       # if this node's content is a $ref - that is, a hash with a $ref attribute - and the subscript is
       # not a key of the hash, then the $ref is followed before returning the subcontent.
       def [](subscript)
-        ptr = self.pointer
-        content = self.content
+        ptr = self.node_ptr
+        content = self.node_content
         if content.respond_to?(:to_hash) && !(content.respond_to?(:key?) ? content : content.to_hash).key?(subscript)
-          pointer.deref(document) do |deref_ptr|
-            ptr = deref_ptr
-            content = ptr.evaluate(document)
+          deref do |deref_node|
+            return deref_node[subscript]
           end
         end
         unless content.respond_to?(:[])
@@ -105,9 +94,9 @@ module JSI
           raise(e.class, e.message + "\nsubscripting with #{subscript.pretty_inspect.chomp} (#{subscript.class}) from #{content.class.inspect}. content is: #{content.pretty_inspect.chomp}", e.backtrace)
         end
         if subcontent.respond_to?(:to_hash)
-          HashNode.new(document, ptr[subscript])
+          HashNode.new(node_document, ptr[subscript])
         elsif subcontent.respond_to?(:to_ary)
-          ArrayNode.new(document, ptr[subscript])
+          ArrayNode.new(node_document, ptr[subscript])
         else
           subcontent
         end
@@ -116,9 +105,9 @@ module JSI
       # assigns the given subscript of the content to the given value. the document is modified in place.
       def []=(subscript, value)
         if value.is_a?(Node)
-          content[subscript] = value.content
+          node_content[subscript] = value.node_content
         else
-          content[subscript] = value
+          node_content[subscript] = value
         end
       end
 
@@ -132,49 +121,32 @@ module JSI
       #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
       # @return [JSI::JSON::Node] dereferenced node, or this node
       def deref(&block)
-        pointer.deref(document) do |deref_ptr|
-          return Node.new_by_type(document, deref_ptr).tap(&(block || Util::NOOP))
+        node_ptr_deref do |deref_ptr|
+          return Node.new_by_type(node_document, deref_ptr).tap(&(block || Util::NOOP))
         end
         return self
       end
 
       # a Node at the root of the document
-      def document_node
-        Node.new_doc(document)
-      end
-
-      alias_method :document_root_node, :document_node
-
-      # @return [Boolean] whether this node is the root of its document
-      def root_node?
-        pointer.root?
+      def document_root_node
+        Node.new_doc(node_document)
       end
 
       # the parent of this node. if this node is the document root, raises
       # JSI::JSON::Pointer::ReferenceError.
       def parent_node
-        Node.new_by_type(document, pointer.parent)
-      end
-
-      # the pointer path to this node within the document, per RFC 6901 https://tools.ietf.org/html/rfc6901
-      def pointer_path
-        pointer.pointer
-      end
-
-      # the pointer fragment to this node within the document, per RFC 6901 https://tools.ietf.org/html/rfc6901
-      def fragment
-        pointer.fragment
+        Node.new_by_type(node_document, node_ptr.parent)
       end
 
       # returns a jsonifiable representation of this node's content
       def as_json(*opt)
-        Typelike.as_json(content, *opt)
+        Typelike.as_json(node_content, *opt)
       end
 
       # takes a block. the block is yielded the content of this node. the block MUST return a modified
       # copy of that content (and NOT modify the object it is given).
       def modified_copy(&block)
-        Node.new_by_type(pointer.modified_document_copy(document, &block), pointer)
+        Node.new_by_type(node_ptr.modified_document_copy(node_document, &block), node_ptr)
       end
 
       def dup
@@ -201,7 +173,7 @@ module JSI
           group_sub {
             nest(2) {
               breakable ' '
-              pp obj.content
+              pp obj.node_content
             }
           }
           breakable ''
@@ -214,7 +186,7 @@ module JSI
       # documents at equal pointers. note that this means two nodes with the same content may not be
       # considered equal.
       def fingerprint
-        {class: JSI::JSON::Node, document: document, pointer: pointer}
+        {class: JSI::JSON::Node, node_document: node_document, node_ptr: node_ptr}
       end
       include FingerprintHash
     end
@@ -222,25 +194,13 @@ module JSI
     # a JSI::JSON::Node whose content is Array-like (responds to #to_ary)
     # and includes Array methods from Arraylike
     class ArrayNode < Node
-      include Enumerable
       include PathedArrayNode
-
-      # returns a jsonifiable representation of this node's content
-      def as_json(*opt) # needs redefined after including Enumerable
-        Typelike.as_json(content, *opt)
-      end
     end
 
     # a JSI::JSON::Node whose content is Hash-like (responds to #to_hash)
     # and includes Hash methods from Hashlike
     class HashNode < Node
-      include Enumerable
       include PathedHashNode
-
-      # returns a jsonifiable representation of this node's content
-      def as_json(*opt) # needs redefined after including Enumerable
-        Typelike.as_json(content, *opt)
-      end
     end
   end
 end

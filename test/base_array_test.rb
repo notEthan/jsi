@@ -147,8 +147,8 @@ describe JSI::BaseArray do
     # compare:
     # assoc:  https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3780-L3813
     # rassoc: https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3815-L3847
-    # for this reason, rassoc is NOT defined on Arraylike and #content must be called.
-    it('#rassoc')              { assert_equal(['q', 'r'], subject.instance.content.rassoc('r')) }
+    # for this reason, rassoc is NOT defined on Arraylike and #node_content must be called.
+    it('#rassoc')              { assert_equal(['q', 'r'], subject.instance.node_content.rassoc('r')) }
     it('#repeated_combination') { assert_equal([[]], subject.repeated_combination(0).to_a) }
     it('#repeated_permutation') { assert_equal([[]], subject.repeated_permutation(0).to_a) }
     it('#reverse')             { assert_equal([subject[2], subject[1], 'foo'], subject.reverse) }

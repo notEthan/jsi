@@ -3,24 +3,24 @@ require_relative 'test_helper'
 document_types = [
   {
     make_document: -> (d) { d },
-    document: {'a' => 'b', 'c' => {'d' => 'e'}},
+    node_document: {'a' => 'b', 'c' => {'d' => 'e'}},
     type_desc: 'Hash',
   },
   {
     make_document: -> (d) { SortOfHash.new(d) },
-    document: SortOfHash.new({'a' => 'b', 'c' => SortOfHash.new({'d' => 'e'})}),
+    node_document: SortOfHash.new({'a' => 'b', 'c' => SortOfHash.new({'d' => 'e'})}),
     type_desc: 'sort of Hash-like',
   },
 ]
 document_types.each do |document_type|
   describe "JSI::JSON::HashNode with #{document_type[:type_desc]}" do
-    # document of the node being tested
-    let(:document) { document_type[:document] }
+    # node_document of the node being tested
+    let(:node_document) { document_type[:node_document] }
     # by default the node is the whole document
     let(:path) { [] }
-    let(:pointer) { JSI::JSON::Pointer.new(path) }
+    let(:node_ptr) { JSI::JSON::Pointer.new(path) }
     # the node being tested
-    let(:node) { JSI::JSON::Node.new_by_type(document, pointer) }
+    let(:node) { JSI::JSON::Node.new_by_type(node_document, node_ptr) }
 
     describe '#each' do
       it 'iterates, one argument' do
@@ -55,21 +55,21 @@ document_types.each do |document_type|
       end
     end
     describe '#merge' do
-      let(:document) { document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}) }
+      let(:node_document) { document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}) }
       # testing the node at 'c' here, merging a hash at a path within a document.
       let(:path) { ['c'] }
       it 'merges' do
         merged = node.merge('x' => 'y')
-        # check the content at 'c' was merged with the remainder of the document intact (at 'a')
-        assert_equal({'a' => {'b' => 0}, 'c' => {'d' => 'e', 'x' => 'y'}}, merged.document)
+        # check the node_content at 'c' was merged with the remainder of the document intact (at 'a')
+        assert_equal({'a' => {'b' => 0}, 'c' => {'d' => 'e', 'x' => 'y'}}, merged.node_document)
         # check the original node retains its original document
-        assert_equal(document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}), node.document)
+        assert_equal(document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}), node.node_document)
         # check that unnecessary copies of unaffected parts of the document were not made
-        assert_equal(node.document.to_hash['a'].object_id, merged.document['a'].object_id)
+        assert_equal(node.node_document.to_hash['a'].object_id, merged.node_document['a'].object_id)
       end
     end
     describe '#as_json' do
-      let(:document) { document_type[:make_document].call({'a' => 'b'}) }
+      let(:node_document) { document_type[:make_document].call({'a' => 'b'}) }
       it '#as_json' do
         assert_equal({'a' => 'b'}, node.as_json)
         assert_equal({'a' => 'b'}, node.as_json(this_option: 'what?'))
@@ -115,12 +115,12 @@ document_types.each do |document_type|
     describe 'modified copy methods' do
       # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
       # tests of all the modified copy methods here
-      it('#merge') { assert_equal(JSI::JSON::Node.new_doc(node.content), node.merge({})) }
+      it('#merge') { assert_equal(JSI::JSON::Node.new_doc(node.node_content), node.merge({})) }
       it('#reject') { assert_equal(JSI::JSON::Node.new_doc({}), node.reject { true }) }
       it('#select') { assert_equal(JSI::JSON::Node.new_doc({}), node.select { false }) }
       # Hash#compact only available as of ruby 2.5.0
       if {}.respond_to?(:compact)
-        it('#compact') { assert_equal(JSI::JSON::Node.new_doc({"a" => "b", "c" => node.content.to_hash["c"]}), node.compact) }
+        it('#compact') { assert_equal(JSI::JSON::Node.new_doc({"a" => "b", "c" => node.node_content.to_hash["c"]}), node.compact) }
       end
     end
     JSI::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
