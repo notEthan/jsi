@@ -31,9 +31,13 @@ module JSI
     #
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator]
-    def each
+    def each(&block)
       return to_enum(__method__) { node_content_hash_pubsend(:size) } unless block_given?
-      node_content_hash_pubsend(:each_key) { |k| yield(k, self[k]) }
+      if block.arity > 1
+        node_content_hash_pubsend(:each_key) { |k| yield k, self[k] }
+      else
+        node_content_hash_pubsend(:each_key) { |k| yield [k, self[k]] }
+      end
       self
     end
 
