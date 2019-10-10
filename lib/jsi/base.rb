@@ -358,43 +358,9 @@ module JSI
 
   # module extending a {JSI::Base} object when its instance is Hash-like (responds to #to_hash)
   module BaseHash
-    # yields each key and value of this JSI.
-    # each yielded key is the same as a key of the instance, and each yielded
-    # value is the result of self[key] (see #[]).
-    # returns an Enumerator if no block is given.
-    # @yield [Object, Object] each key and value of this JSI hash
-    # @return [self, Enumerator]
-    def each
-      return to_enum(__method__) { instance.size } unless block_given?
-      jsi_instance_hash_pubsend(:each_key) { |k| yield(k, self[k]) }
-      self
-    end
+    include PathedHashNode
 
-    # @return [Hash] a hash in which each key is a key of the instance hash and
-    #   each value is the result of self[key] (see #[]).
-    def to_hash
-      {}.tap { |h| each_key { |k| h[k] = self[k] } }
-    end
-
-    include Hashlike
-
-    # @param method_name [String, Symbol]
-    # @param *a, &b are passed to the invocation of method_name
-    # @return [Object] the result of calling method method_name on the instance or its #to_hash
-    def jsi_instance_hash_pubsend(method_name, *a, &b)
-      if instance.respond_to?(method_name)
-        instance.public_send(method_name, *a, &b)
-      else
-        instance.to_hash.public_send(method_name, *a, &b)
-      end
-    end
-
-    # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
-    SAFE_KEY_ONLY_METHODS.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        jsi_instance_hash_pubsend(method_name, *a, &b)
-      end
-    end
+    alias_method :jsi_instance_hash_pubsend, :node_content_hash_pubsend
 
     # @param property_name [String, Object] the property name to subscript
     # @return [JSI::Base, Object] the instance's subscript value at the given
@@ -454,43 +420,9 @@ module JSI
 
   # module extending a {JSI::Base} object when its instance is Array-like (responds to #to_ary)
   module BaseArray
-    # yields each element. each yielded element is the result of self[index]
-    # for each index of the instance (see #[]).
-    # returns an Enumerator if no block is given.
-    # @yield [Object] each element of this JSI array
-    # @return [self, Enumerator]
-    def each
-      return to_enum(__method__) { instance.size } unless block_given?
-      jsi_instance_ary_pubsend(:each_index) { |i| yield(self[i]) }
-      self
-    end
+    include PathedArrayNode
 
-    # @return [Array] an array, the same size as the instance, in which the
-    #   element at each index is the result of self[index] (see #[])
-    def to_ary
-      to_a
-    end
-
-    include Arraylike
-
-    # @param method_name [String, Symbol]
-    # @param *a, &b are passed to the invocation of method_name
-    # @return [Object] the result of calling method method_name on the instance or its #to_ary
-    def jsi_instance_ary_pubsend(method_name, *a, &b)
-      if instance.respond_to?(method_name)
-        instance.public_send(method_name, *a, &b)
-      else
-        instance.to_ary.public_send(method_name, *a, &b)
-      end
-    end
-
-    # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
-    # we override these methods from Arraylike
-    SAFE_INDEX_ONLY_METHODS.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        jsi_instance_ary_pubsend(method_name, *a, &b)
-      end
-    end
+    alias_method :jsi_instance_ary_pubsend, :node_content_ary_pubsend
 
     # @param i [Integer] the array index to subscript
     # @return [JSI::Base, Object] the instance's subscript value at the given index
