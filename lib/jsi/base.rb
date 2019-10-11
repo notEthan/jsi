@@ -15,6 +15,8 @@ module JSI
     include Enumerable
 
     class << self
+      # is the constant JSI::SchemaClasses::{self.schema_classes_const_name} defined?
+      # (if so, we will prefer to use something more human-readable than that ugly mess.)
       attr_accessor :in_schema_classes
 
       # @return [String] absolute schema_id of the schema this class represents.
