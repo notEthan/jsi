@@ -88,7 +88,7 @@ module JSI
     end
     safe_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        JSI::Typelike.modified_copy(self) do |object_to_modify|
+        modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
           responsive_object.public_send(method_name, *a, &b)
         end
@@ -96,7 +96,7 @@ module JSI
     end
     safe_kv_block_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        JSI::Typelike.modified_copy(self) do |object_to_modify|
+        modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
           responsive_object.public_send(method_name, *a) do |k, _v|
             b.call(k, self[k])
@@ -200,7 +200,7 @@ module JSI
     end
     safe_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        JSI::Typelike.modified_copy(self) do |object_to_modify|
+        modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
           responsive_object.public_send(method_name, *a, &b)
         end
@@ -208,7 +208,7 @@ module JSI
     end
     safe_el_block_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        JSI::Typelike.modified_copy(self) do |object_to_modify|
+        modified_copy do |object_to_modify|
           i = 0
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
           responsive_object.public_send(method_name, *a) do |_e|
