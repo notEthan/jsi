@@ -137,15 +137,13 @@ describe JSI::Schema do
     end
 
     it '#inspect' do
-      assert_equal(%q(#<JSI::Schema schema_id=https://schemas.jsi.unth.net/test/stringification# #{<JSI::JSON::HashNode fragment="#"> "id" => "https://schemas.jsi.unth.net/test/stringification", "type" => "object"}>), schema.inspect)
+      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Hash> \"id\" => \"https://schemas.jsi.unth.net/test/stringification\", \"type\" => \"object\"}", schema.inspect)
     end
     it '#pretty_print' do
-      assert_equal(%q(#<JSI::Schema schema_id=https://schemas.jsi.unth.net/test/stringification#
-        #{<JSI::JSON::HashNode fragment="#">
-          "id" => "https://schemas.jsi.unth.net/test/stringification",
-          "type" => "object"
-        }
-      >).gsub(/^      /, ''), schema.pretty_inspect.chomp)
+      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Hash>
+        \"id\" => \"https://schemas.jsi.unth.net/test/stringification\",
+        \"type\" => \"object\"
+      }".gsub(/^      /, ''), schema.pretty_inspect.chomp)
     end
   end
   describe 'validation' do

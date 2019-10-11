@@ -157,7 +157,7 @@ describe JSI::Base do
       let(:instance) { JSI::Schema.new({}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_match(%r(\Aassigning a schema to JSI::SchemaClasses\[\".*#\"\] instance is incorrect. received: #<JSI::Schema schema_id=.*>\z)m, err.message)
+        assert_match(%r(\Aassigning a schema to JSI::SchemaClasses\[\".*#\"\] instance is incorrect. received: #\{<JSI::JSONSchemaOrgDraft06 Hash>\}\z)m, err.message)
       end
     end
   end
