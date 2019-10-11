@@ -127,6 +127,13 @@ module JSI
       return self
     end
 
+    # @yield [Object] the node content of the instance. the block should result
+    #   in a (nondestructively) modified copy of this.
+    # @return [MetaschemaNode] modified copy of self
+    def modified_copy(&block)
+      MetaschemaNode.new(node_ptr.modified_document_copy(node_document, &block), our_initialize_params)
+    end
+
     # @return [String]
     def inspect
       "\#<#{self.class} #{node_content.inspect}>"
