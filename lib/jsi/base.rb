@@ -318,9 +318,9 @@ module JSI
       end
     end
 
-    # @return [String] the instance's object_group_text
+    # @return [Array<String>]
     def object_group_text
-      instance.respond_to?(:object_group_text) ? instance.object_group_text : instance.class.inspect
+      instance.respond_to?(:object_group_text) ? instance.object_group_text : [instance.class.inspect]
     end
 
     # @return [Object] a jsonifiable representation of the instance

@@ -136,8 +136,8 @@ module JSI
     # @return [String] basically the same #inspect as Hash, but has the
     #   class name and, if responsive, self's #object_group_text
     def inspect
-      object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
-      "\#{<#{self.class}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
+      object_group_str = JSI.object_group_str(respond_to?(:object_group_text) ? self.object_group_text : [])
+      "\#{<#{self.class}#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
     end
 
     # @return [String] see #inspect
@@ -149,8 +149,8 @@ module JSI
     # @return [void]
     def pretty_print(q)
       q.instance_exec(self) do |obj|
-        object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
-        text "\#{<#{obj.class}#{object_group_text}>"
+        object_group_str = JSI.object_group_str(obj.respond_to?(:object_group_text) ? obj.object_group_text : [])
+        text "\#{<#{obj.class}#{object_group_str}>"
         group_sub {
           nest(2) {
             breakable(obj.any? { true } ? ' ' : '')
@@ -217,8 +217,8 @@ module JSI
     # @return [String] basically the same #inspect as Array, but has the
     #   class name and, if responsive, self's #object_group_text
     def inspect
-      object_group_text = respond_to?(:object_group_text) ? ' ' + self.object_group_text : ''
-      "\#[<#{self.class}#{object_group_text}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
+      object_group_str = JSI.object_group_str(respond_to?(:object_group_text) ? object_group_text : [])
+      "\#[<#{self.class}#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
     end
 
     # @return [String] see #inspect
@@ -230,8 +230,8 @@ module JSI
     # @return [void]
     def pretty_print(q)
       q.instance_exec(self) do |obj|
-        object_group_text = obj.respond_to?(:object_group_text) ? ' ' + obj.object_group_text : ''
-        text "\#[<#{obj.class}#{object_group_text}>"
+        object_group_str = JSI.object_group_str(obj.respond_to?(:object_group_text) ? obj.object_group_text : [])
+        text "\#[<#{obj.class}#{object_group_str}>"
         group_sub {
           nest(2) {
             breakable(obj.any? { true } ? ' ' : '')

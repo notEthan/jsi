@@ -182,19 +182,22 @@ module JSI
       end
 
       # meta-information about the object, outside the content. used by #inspect / #pretty_print
+      # @return [Array<String>]
       def object_group_text
-        "fragment=#{fragment.inspect}" + (content.respond_to?(:object_group_text) ? ' ' + content.object_group_text : '')
+        [
+          "fragment=#{node_ptr.fragment.inspect}",
+        ] + (node_content.respond_to?(:object_group_text) ? node_content.object_group_text : [])
       end
 
       # a string representing this node
       def inspect
-        "\#<#{self.class.inspect} #{object_group_text} #{content.inspect}>"
+        "\#<#{self.class.inspect}#{JSI.object_group_str(object_group_text)} #{node_content.inspect}>"
       end
 
       # pretty-prints a representation this node to the given printer
       def pretty_print(q)
         q.instance_exec(self) do |obj|
-          text "\#<#{obj.class.inspect} #{obj.object_group_text}"
+          text "\#<#{obj.class.inspect}#{JSI.object_group_str(obj.object_group_text)}"
           group_sub {
             nest(2) {
               breakable ' '
