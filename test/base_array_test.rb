@@ -121,7 +121,7 @@ describe JSI::BaseArray do
     it('#<=>')      { assert_equal(-1, [] <=> subject) }
     require 'abbrev'
     it('#abbrev')    { assert_equal({'a' => 'a'}, class_for_schema.new(['a']).abbrev) }
-    it('#assoc')      { assert_equal(['q', 'r'], subject.instance.assoc('q')) }
+    it('#assoc')      { assert_equal(['q', 'r'], subject.assoc('q')) }
     it('#at')          { assert_equal('foo', subject.at(0)) }
     it('#bsearch')      { assert_equal(nil, subject.bsearch { false }) }
     it('#bsearch_index') { assert_equal(nil, subject.bsearch_index { false }) } if [].respond_to?(:bsearch_index)

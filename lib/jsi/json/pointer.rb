@@ -11,6 +11,24 @@ module JSI
       class ReferenceError < Error
       end
 
+      # instantiates a Pointer from any given reference tokens.
+      #
+      #     >> JSI::JSON::Pointer[]
+      #     => #<JSI::JSON::Pointer reference_tokens: []>
+      #     >> JSI::JSON::Pointer['a', 'b']
+      #     => #<JSI::JSON::Pointer reference_tokens: ["a", "b"]>
+      #     >> JSI::JSON::Pointer['a']['b']
+      #     => #<JSI::JSON::Pointer reference_tokens: ["a", "b"]>
+      #
+      # note in the last example that you can conveniently chain the class .[] method
+      # with the instance #[] method.
+      #
+      # @param *reference_tokens any number of reference tokens
+      # @return [JSI::JSON::Pointer]
+      def self.[](*reference_tokens)
+        new(reference_tokens)
+      end
+
       # parse a URI-escaped fragment and instantiate as a JSI::JSON::Pointer
       #
       #     ptr = JSI::JSON::Pointer.from_fragment('#/foo/bar')
@@ -133,6 +151,21 @@ module JSI
         else
           Pointer.new(reference_tokens[0...-1], type: @type)
         end
+      end
+
+      # @return [Boolean] does this pointer contain the other_ptr - that is, is this pointer an
+      #   ancestor of other_ptr, a child pointer. contains? is inclusive; a pointer does contain itself.
+      def contains?(other_ptr)
+        self.reference_tokens == other_ptr.reference_tokens[0...self.reference_tokens.size]
+      end
+
+      # @return [JSI::JSON::Pointer] returns this pointer relative to the given ancestor_ptr
+      # @raise [JSI::JSON::Pointer::ReferenceError] if the given ancestor_ptr is not an ancestor of this pointer
+      def ptr_relative_to(ancestor_ptr)
+        unless ancestor_ptr.contains?(self)
+          raise(ReferenceError, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
+        end
+        Pointer.new(reference_tokens[ancestor_ptr.reference_tokens.size..-1], type: @type)
       end
 
       # appends the given token to this Pointer's reference tokens and returns the result

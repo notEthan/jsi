@@ -301,7 +301,7 @@ describe JSI::Base do
         let(:instance) { nil }
         it 'errors' do
           err = assert_raises(NoMethodError) { subject.foo }
-          assert_match(%r(\Ainstance does not respond to \[\]; cannot call reader `foo' for: #<JSI::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
+          assert_match(%r(\Aschema instance of class .* does not respond to \[\]; cannot call reader 'foo'. instance is )m, err.message)
         end
       end
       describe 'properties with the same names as instance methods' do
@@ -336,7 +336,7 @@ describe JSI::Base do
         end
         it 'does not define readers' do
           assert_equal('bar', subject.foo)
-          assert_equal(JSI::SchemaClasses.module_for_schema(subject.schema), subject.method(:foo).owner)
+          assert_equal(JSI::SchemaClasses.module_for_schema(subject.schema, conflicting_modules: [JSI::Base, JSI::BaseArray, JSI::BaseHash]), subject.method(:foo).owner)
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
@@ -375,7 +375,7 @@ describe JSI::Base do
         let(:instance) { nil }
         it 'errors' do
           err = assert_raises(NoMethodError) { subject.foo = 0 }
-          assert_match(%r(\Ainstance does not respond to \[\]=; cannot call writer `foo=' for: #<JSI::SchemaClasses\["[^"]+#"\].*nil.*>\z)m, err.message)
+          assert_match(%r(\Aschema instance of class .* does not respond to \[\]=; cannot call writer 'foo='. instance is )m, err.message)
         end
       end
     end

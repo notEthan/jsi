@@ -18,7 +18,7 @@ module JSI
   autoload :Base, 'jsi/base'
   autoload :BaseArray, 'jsi/base'
   autoload :BaseHash, 'jsi/base'
-  autoload :SchemaClasses, 'jsi/base'
+  autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :JSICoder, 'jsi/jsi_coder'
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
