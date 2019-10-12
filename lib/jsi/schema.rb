@@ -142,17 +142,17 @@ module JSI
     # one of the subschemas that matches the given instance and returns it. if
     # there are no matching *Of schemas, this schema is returned.
     #
-    # @param instance [Object] the instance to which to attempt to match *Of subschemas
+    # @param other_instance [Object] the instance to which to attempt to match *Of subschemas
     # @return [JSI::Schema] a matched subschema, or this schema (self)
-    def match_to_instance(instance)
+    def match_to_instance(other_instance)
       # matching oneOf is good here. one schema for one instance.
       # matching anyOf is okay. there could be more than one schema matched. it's often just one. if more
       #   than one is a match, you just get the first one.
       %w(oneOf anyOf).select { |k| schema_node[k].respond_to?(:to_ary) }.each do |someof_key|
         schema_node[someof_key].map(&:deref).map do |someof_node|
           someof_schema = self.class.new(someof_node)
-          if someof_schema.validate(instance)
-            return someof_schema.match_to_instance(instance)
+          if someof_schema.validate_instance(other_instance)
+            return someof_schema.match_to_instance(other_instance)
           end
         end
       end
@@ -249,21 +249,21 @@ module JSI
 
     # @return [Array<String>] array of schema validation error messages for
     #   the given instance against this schema
-    def fully_validate(instance)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
+    def fully_validate_instance(other_instance)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(other_instance), fragment: schema_node.node_ptr.fragment)
     end
 
     # @return [true, false] whether the given instance validates against this schema
-    def validate(instance)
-      ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
+    def validate_instance(other_instance)
+      ::JSON::Validator.validate(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(other_instance), fragment: schema_node.node_ptr.fragment)
     end
 
     # @return [true] if this method does not raise, it returns true to
     #   indicate the instance is valid against this schema
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors against this schema
-    def validate!(instance)
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(instance), fragment: schema_node.node_ptr.fragment)
+    def validate_instance!(other_instance)
+      ::JSON::Validator.validate!(JSI::Typelike.as_json(schema_node.node_document), JSI::Typelike.as_json(other_instance), fragment: schema_node.node_ptr.fragment)
     end
 
     # @return [Array<String>] array of schema validation error messages for

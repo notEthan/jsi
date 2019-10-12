@@ -75,14 +75,14 @@ module JSI
     # a Node already).
     #
     # @param instance [Object] the JSON Schema instance being represented
-    # @param ancestor [JSI::Base] for internal use, specifies an ancestor
+    # @param ancestor_jsi [JSI::Base] for internal use, specifies an ancestor_jsi
     #   from which this JSI originated to calculate #parents
-    def initialize(instance, ancestor: nil)
+    def initialize(instance, ancestor_jsi: nil)
       unless respond_to?(:schema)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
       end
 
-      @ancestor = ancestor || self
+      @ancestor_jsi = ancestor_jsi || self
       self.instance = instance
 
       if @instance.respond_to?(:to_hash)
@@ -95,8 +95,8 @@ module JSI
     # the instance of the json-schema. this is a JSI::JSON::Node.
     attr_reader :instance
 
-    # a JSI which is an ancestor of this
-    attr_reader :ancestor
+    # a JSI which is an ancestor_jsi of this
+    attr_reader :ancestor_jsi
 
     # each is overridden by BaseHash or BaseArray when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
@@ -109,22 +109,27 @@ module JSI
     # a document (e.g. a plain hash or array).
     #
     # @return [Array<JSI::Base>]
-    def parents
+    def parent_jsis
       check_can_get_parents!
-      parent = @ancestor
-      (@ancestor.instance.pointer.reference_tokens.size...self.instance.pointer.reference_tokens.size).map do |i|
+      parent = @ancestor_jsi
+      (@ancestor_jsi.instance.pointer.reference_tokens.size...self.instance.pointer.reference_tokens.size).map do |i|
         parent.tap do
           parent = parent[self.instance.pointer.reference_tokens[i]]
         end
       end.reverse
     end
 
-    # the immediate parent of this JSI. nil if no parent(s) are known.
+    # the immediate parent of this JSI. nil if there is no parent.
     #
     # @return [JSI::Base, nil]
-    def parent
-      parents.first
+    def parent_jsi
+      parent_jsis.first
     end
+
+    # @deprecated
+    alias_method :parents, :parent_jsis
+    # @deprecated
+    alias_method :parent, :parent_jsi
 
     # if this JSI is a $ref then the $ref is followed. otherwise this JSI
     # is returned.
@@ -135,7 +140,7 @@ module JSI
       if derefed.object_id == instance.object_id
         self
       else
-        self.class.new(derefed, ancestor: @ancestor)
+        self.class.new(derefed, ancestor_jsi: @ancestor_jsi)
       end
     end
 
@@ -148,7 +153,7 @@ module JSI
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def modified_copy(&block)
       modified_instance = Typelike.modified_copy(instance, &block)
-      self.class.new(modified_instance, ancestor: @ancestor)
+      self.class.new(modified_instance, ancestor_jsi: @ancestor_jsi)
     end
 
     def fragment
@@ -157,12 +162,12 @@ module JSI
 
     # @return [Array<String>] array of schema validation error messages for this instance
     def fully_validate
-      schema.fully_validate(instance)
+      schema.fully_validate_instance(instance)
     end
 
     # @return [true, false] whether the instance validates against its schema
     def validate
-      schema.validate(instance)
+      schema.validate_instance(instance)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -170,7 +175,7 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors
     def validate!
-      schema.validate!(instance)
+      schema.validate_instance!(instance)
     end
 
     def dup
@@ -246,7 +251,7 @@ module JSI
     end
 
     def check_can_get_parents!
-      unless @ancestor && @ancestor.instance.is_a?(JSI::JSON::Node)
+      unless @ancestor_jsi && @ancestor_jsi.instance.is_a?(JSI::JSON::Node)
         raise(TypeError, "cannot get parents of JSI for instance that is not a JSI::JSON::Node. please wrap the root of the instance as a JSI::JSON::Node and instantiate from that in order to get parents. instance is: #{instance.pretty_inspect.chomp}")
       end
     end
@@ -306,21 +311,23 @@ module JSI
     def [](property_name_)
       memoize(:[], property_name_) do |property_name|
         begin
+          instance_property_value = jsi_instance_sub(property_name)
+
           property_schema = schema.subschema_for_property(property_name)
-          property_schema = property_schema && property_schema.match_to_instance(jsi_instance_sub(property_name))
+          property_schema = property_schema && property_schema.match_to_instance(instance_property_value)
 
           if !jsi_instance_hash_pubsend(:key?, property_name) && property_schema && property_schema.schema_object.key?('default')
             # use the default value
             default = property_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              class_for_schema(property_schema).new(default, ancestor: @ancestor)
+              class_for_schema(property_schema).new(default, ancestor_jsi: @ancestor_jsi)
             else
               default
             end
-          elsif property_schema && (jsi_instance_sub(property_name).respond_to?(:to_hash) || jsi_instance_sub(property_name).respond_to?(:to_ary))
-            class_for_schema(property_schema).new(jsi_instance_sub(property_name), ancestor: @ancestor)
+          elsif property_schema && (instance_property_value.respond_to?(:to_hash) || instance_property_value.respond_to?(:to_ary))
+            class_for_schema(property_schema).new(instance_property_value, ancestor_jsi: @ancestor_jsi)
           else
-            jsi_instance_sub(property_name)
+            instance_property_value
           end
         end
       end
@@ -392,21 +399,23 @@ module JSI
     def [](i_)
       memoize(:[], i_) do |i|
         begin
+          instance_idx_value = jsi_instance_sub(i)
+
           index_schema = schema.subschema_for_index(i)
-          index_schema = index_schema && index_schema.match_to_instance(jsi_instance_sub(i))
+          index_schema = index_schema && index_schema.match_to_instance(instance_idx_value)
 
           if !jsi_instance_ary_pubsend(:each_index).to_a.include?(i) && index_schema && index_schema.schema_object.key?('default')
             # use the default value
             default = index_schema.schema_object['default']
             if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-              class_for_schema(index_schema).new(default, ancestor: @ancestor)
+              class_for_schema(index_schema).new(default, ancestor_jsi: @ancestor_jsi)
             else
               default
             end
-          elsif index_schema && (jsi_instance_sub(i).respond_to?(:to_hash) || jsi_instance_sub(i).respond_to?(:to_ary))
-            class_for_schema(index_schema).new(jsi_instance_sub(i), ancestor: @ancestor)
+          elsif index_schema && (instance_idx_value.respond_to?(:to_hash) || instance_idx_value.respond_to?(:to_ary))
+            class_for_schema(index_schema).new(instance_idx_value, ancestor_jsi: @ancestor_jsi)
           else
-            jsi_instance_sub(i)
+            instance_idx_value
           end
         end
       end
