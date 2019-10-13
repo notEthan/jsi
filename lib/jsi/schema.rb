@@ -92,45 +92,30 @@ module JSI
     # @return [String, nil] an absolute id for the schema, with a json pointer fragment. nil if
     #   no parent of this schema defines an id.
     def schema_id
-      return @schema_id if instance_variable_defined?(:@schema_id)
-      @schema_id = begin
-        # start from self and ascend parents looking for an 'id' property.
-        # append a fragment to that id (appending to an existing fragment if there
-        # is one) consisting of the path from that parent to our schema_node.
-        node_for_id = self
-        path_from_id_node = []
-        done = false
+      schema_ids.first
+    end
 
-        while !done
-          content_for_id = node_for_id.jsi_node_content
-          if node_for_id.is_a?(JSI::Schema) && content_for_id.respond_to?(:to_hash)
-            parent_id = content_for_id.key?('$id') && content_for_id['$id'].respond_to?(:to_str) ? content_for_id['$id'].to_str :
-              content_for_id.key?('id') && content_for_id['id'].respond_to?(:to_str) ? content_for_id['id'].to_str : nil
-          end
+    def schema_ids
+      jsi_memoize(:schema_ids) do
+        parent_schemas = jsi_parent_nodes(include_self: true).select { |node| node.is_a?(Schema) && node.id }
 
-          if parent_id || node_for_id.jsi_ptr.root?
-            done = true
-          else
-            path_from_id_node.unshift(node_for_id.jsi_ptr.reference_tokens.last)
-            node_for_id = node_for_id.jsi_parent_node
-          end
-        end
-        if parent_id
-          parent_auri = Addressable::URI.parse(parent_id)
+        schema_ids = parent_schemas.map do |parent_schema|
+          parent_auri = Addressable::URI.parse(parent_schema.id)
+
+          relative_ptr = self.jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
+
           if parent_auri.fragment
-            # add onto the fragment
-            parent_id_path = JSI::JSON::Pointer.from_fragment(parent_auri.fragment).reference_tokens
-            path_from_id_node = parent_id_path + path_from_id_node
+            # this is not valid (unless the fragment is empty).
+            # per the spec: "$id" MUST NOT contain a non-empty fragment, and SHOULD NOT contain an empty fragment.
+            # we could (should?) throw an error, but for the moment I'll just add onto the existing $id fragment.
+            parent_ptr = JSI::JSON::Pointer.from_fragment(parent_auri.fragment)
+            relative_ptr = parent_ptr + relative_ptr
             parent_auri.fragment = nil
-          #else: no fragment so parent_id good as is
           end
 
-          schema_id = parent_auri.merge(fragment: JSI::JSON::Pointer.new(path_from_id_node).fragment).to_s
-
-          schema_id
-        else
-          nil
-        end
+          parent_auri.merge(fragment: relative_ptr.fragment).to_s
+        end.compact
+        schema_ids
       end
     end
 

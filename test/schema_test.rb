@@ -59,6 +59,24 @@ describe JSI::Schema do
       assert_equal('https://schemas.jsi.unth.net/test/given_id#/notroot/properties/foo', subschema.schema_id)
     end
   end
+  describe '#schema_ids' do
+    let(:schema_object) do
+      {
+        "$id": "https://example.com/foo",
+        "items": {
+          "$id": "https://example.com/bar",
+          "additionalProperties": { }
+        }
+      }
+    end
+    let(:schema) { JSI::Schema.new(schema_object) }
+    it 'has both ids' do
+      assert_equal([
+        "https://example.com/bar#",
+        "https://example.com/foo#/items"
+      ], schema.items.schema_ids)
+    end
+  end
   describe '#jsi_schema_module' do
     it 'returns the module for the schema' do
       schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module'})
