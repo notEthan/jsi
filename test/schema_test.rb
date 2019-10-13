@@ -31,8 +31,8 @@ describe JSI::Schema do
     end
   end
   describe '#schema_id' do
-    it 'generates one' do
-      assert_match(/\A[0-9a-f\-]+#\z/, JSI::Schema.new({}).schema_id)
+    it "hasn't got one" do
+      assert_nil(JSI::Schema.new({}).schema_id)
     end
     it 'uses a given id with a fragment' do
       schema = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/given_id#'})

@@ -30,41 +30,46 @@ module JSI
         schema.schema_id
       end
 
-      # @return [String] a string representing the class, with schema_id
+      # @return [String] a string representing the class, with schema_id or schema ptr fragment
       def inspect
         if !respond_to?(:schema)
           super
-        elsif in_schema_classes
-          %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
-        elsif !name
-          %Q(#<Class for Schema: #{schema_id}>)
         else
-          %Q(#{name} (#{schema_id}))
+          idfrag = schema_id || schema.node_ptr.fragment
+          if name && !in_schema_classes
+            "#{name} (#{idfrag})"
+          else
+            "(JSI Schema Class: #{idfrag})"
+          end
         end
       end
 
       # @return [String] a string representing the class - a class name if one
-      #   was explicitly defined, otherwise a reference to JSI::SchemaClasses
+      #   was explicitly defined, otherwise a string indicating what this is
       def to_s
         if !respond_to?(:schema)
           super
-        elsif !name || name =~ /\AJSI::SchemaClasses::/
-          %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
-        else
+        elsif name && !in_schema_classes
           name
+        elsif schema_id
+          "(JSI Schema Class: #{schema_id})"
+        else
+          "(JSI Schema Class)"
         end
       end
 
       # @return [String] a name for a constant for this class, generated from the
       #   schema_id. only used if the class is not assigned to another constant.
       def schema_classes_const_name
-        'X' + schema.schema_id.gsub(/[^\w]/, '_')
+        if schema_id
+          'X' + schema_id.gsub(/[^\w]/, '_')
+        end
       end
 
       # @return [String] a constant name of this class
       def name
         unless instance_variable_defined?(:@in_schema_classes)
-          if super || SchemaClasses.const_defined?(schema_classes_const_name)
+          if super || !schema_id || SchemaClasses.const_defined?(schema_classes_const_name)
             @in_schema_classes = false
           else
             SchemaClasses.const_set(schema_classes_const_name, self)
