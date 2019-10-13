@@ -53,6 +53,26 @@ describe JSI::Schema do
       assert_equal('https://schemas.jsi.unth.net/test/id_has_pointer#/notroot/properties/foo', subschema.schema_id)
     end
   end
+  describe '#schema_uris' do
+    let(:schema) { JSI.new_schema(schema_content) }
+    describe 'two ids' do
+      let(:schema_content) do
+        {
+          "$id": "https://example.com/foo",
+          "items": {
+            "$id": "https://example.com/bar",
+            "additionalProperties": { }
+          }
+        }
+      end
+      it 'has both ids' do
+        assert_equal([
+          Addressable::URI.parse("https://example.com/bar#"),
+          Addressable::URI.parse("https://example.com/foo#/items"),
+        ], schema.items.schema_uris)
+      end
+    end
+  end
   describe '#schema_absolute_uri, #anchor' do
     describe 'draft 4' do
       let(:metaschema) { JSI::JSONSchemaOrgDraft04 }
