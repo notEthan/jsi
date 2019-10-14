@@ -168,6 +168,16 @@ module JSI
         Pointer.new(reference_tokens[ancestor_ptr.reference_tokens.size..-1], type: @type)
       end
 
+      # @param n [Integer]
+      # @return [JSI::JSON::Pointer] a Pointer consisting of the first n of our reference_tokens
+      # @raise [ArgumentError] if n is not between 0 and the size of our reference_tokens
+      def take(n)
+        unless (0..reference_tokens.size).include?(n)
+          raise(ArgumentError, "n not in range (0..#{reference_tokens.size}): #{n.inspect}")
+        end
+        Pointer.new(reference_tokens.take(n), type: @type)
+      end
+
       # appends the given token to this Pointer's reference tokens and returns the result
       #
       # @param token [Object]
