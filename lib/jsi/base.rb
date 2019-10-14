@@ -159,8 +159,15 @@ module JSI
       parent = ancestor_jsi
 
       (ancestor_jsi.jsi_ptr.reference_tokens.size...self.jsi_ptr.reference_tokens.size).map do |i|
-        parent.tap do
-          parent = parent[self.jsi_ptr.reference_tokens[i]]
+        current = parent
+        parent = parent[self.jsi_ptr.reference_tokens[i]]
+        if current.is_a?(JSI::Base)
+          current
+        else
+          # sometimes after a deref, we may end up with parents whose schema we do not know.
+          # TODO this is kinda crap; hopefully we can remove it along with deref instantiating
+          # a deref ptr as the same JSI class it is
+          SimpleWrap.new(NOINSTANCE, jsi_document: jsi_document, jsi_ptr: jsi_ptr.take(i), ancestor_jsi: @ancestor_jsi)
         end
       end.reverse
     end
