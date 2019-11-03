@@ -34,11 +34,13 @@ module JSI
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
     # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in jsi_document
     # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema of the root of the jsi_document
-    def initialize(jsi_document, jsi_ptr: JSI::JSON::Pointer[], metaschema_root_ptr: JSI::JSON::Pointer[], root_schema_ptr: JSI::SchemaPointer[])
+    # @param schema_documents [Array<Object>]
+    def initialize(jsi_document, jsi_ptr: JSI::JSON::Pointer[], metaschema_root_ptr: JSI::JSON::Pointer[], root_schema_ptr: JSI::SchemaPointer[], schema_documents: nil)
       @jsi_document = jsi_document
       @jsi_ptr = jsi_ptr
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
+      @schema_documents = schema_documents
 
       jsi_node_content = self.jsi_node_content
 
@@ -49,32 +51,57 @@ module JSI
       end
 
       instance_for_schema = jsi_document
-      schema_ptrs = jsi_ptr.reference_tokens.inject(Set.new << root_schema_ptr) do |ptrs, tok|
+      schema_doc_ptr_init = Set.new << {doc: jsi_document, ptr: root_schema_ptr}
+      schema_doc_ptrs = jsi_ptr.reference_tokens.inject(schema_doc_ptr_init) do |doc_ptrs, tok|
         if instance_for_schema.respond_to?(:to_ary)
-          subschema_ptrs_for_token = ptrs.map do |ptr|
-            ptr.schema_subschema_ptrs_for_index(jsi_document, tok)
+          subschema_doc_ptrs_for_token = doc_ptrs.map do |doc_ptr|
+            doc, ptr = doc_ptr[:doc], doc_ptr[:ptr]
+            if ptr == @metaschema_root_ptr && schema_documents # I don't think this is necessary. the metaschema root would not be an array.
+              schema_documents.map do |schema_document|
+                ptr.schema_subschema_ptrs_for_index(schema_document, tok).map do |subschema_ptr|
+                  {doc: schema_document, ptr: subschema_ptr}
+                end
+              end.inject(Set.new, &:|)
+            else
+              ptr.schema_subschema_ptrs_for_index(doc, tok).map do |subschema_ptr|
+                {doc: doc, ptr: subschema_ptr}
+              end
+            end
           end.inject(Set.new, &:|)
         else
-          subschema_ptrs_for_token = ptrs.map do |ptr|
-            ptr.schema_subschema_ptrs_for_property_name(jsi_document, tok)
+          subschema_doc_ptrs_for_token = doc_ptrs.map do |doc_ptr|
+            doc, ptr = doc_ptr[:doc], doc_ptr[:ptr]
+            if ptr == @metaschema_root_ptr && schema_documents
+              schema_documents.map do |schema_document|
+                ptr.schema_subschema_ptrs_for_property_name(schema_document, tok).map do |subschema_ptr|
+                  {doc: schema_document, ptr: subschema_ptr}
+                end
+              end.inject(Set.new, &:|)
+            else
+              ptr.schema_subschema_ptrs_for_property_name(doc, tok).map do |subschema_ptr|
+                {doc: doc, ptr: subschema_ptr}
+              end
+            end
           end.inject(Set.new, &:|)
         end
         instance_for_schema = instance_for_schema[tok]
-        ptrs_for_instance = subschema_ptrs_for_token.map do |ptr|
-          ptr.schema_match_ptrs_to_instance(jsi_document, instance_for_schema)
+        doc_ptrs_for_instance = subschema_doc_ptrs_for_token.map do |doc_ptr|
+          doc_ptr[:ptr].schema_match_ptrs_to_instance(doc_ptr[:doc], instance_for_schema).map do |ptr|
+            {doc: doc_ptr[:doc], ptr: ptr}
+          end
         end.inject(Set.new, &:|)
-        ptrs_for_instance
+        doc_ptrs_for_instance
       end
 
       if schema_ptrs.include?(metaschema_root_ptr)
         @jsi_ptr = jsi_ptr.as(JSI::SchemaPointer)
       end
 
-      @jsi_schemas = schema_ptrs.map do |schema_ptr|
-        if schema_ptr == jsi_ptr
+      @jsi_schemas = schema_doc_ptrs.map do |schema_doc_ptr|
+        if schema_doc_ptr[:ptr] == jsi_ptr && schema_doc_ptr[:doc] == jsi_document
           self
         else
-          new_node(jsi_ptr: schema_ptr)
+          MetaschemaNode.new(schema_doc_ptr[:doc], our_initialize_params.merge(jsi_ptr: schema_doc_ptr[:ptr]))
         end
       end
 
@@ -112,6 +139,8 @@ module JSI
     attr_reader :root_schema_ptr
     # JSI::Schemas describing this MetaschemaNode
     attr_reader :jsi_schemas
+    # documents containing the metaschema, or nil if the metaschema is contained only in jsi_document
+    attr_reader :schema_documents
 
     # @return [MetaschemaNode] document root MetaschemaNode
     def jsi_root_node
@@ -222,7 +251,7 @@ module JSI
     private
 
     def our_initialize_params
-      {jsi_ptr: jsi_ptr, metaschema_root_ptr: metaschema_root_ptr, root_schema_ptr: root_schema_ptr}
+      {jsi_ptr: jsi_ptr, metaschema_root_ptr: metaschema_root_ptr, root_schema_ptr: root_schema_ptr, schema_documents: schema_documents}
     end
 
     def new_node(params)
