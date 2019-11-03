@@ -129,6 +129,19 @@ module JSI
     # documents containing the metaschema, or nil if the metaschema is contained only in jsi_document
     attr_reader :schema_documents
 
+    # @return [Array<MetaschemaNode>] an array of MetaschemaNode instances, one at the root of each of
+    #   our schema_documents. if schema_documents is not set, returns one MetaschemaNode at the root of our
+    #   node_document.
+    def metaschema_root_nodes
+      (schema_documents || node_document).map do |schema_document|
+        if node_document == schema_document && node_ptr == metaschema_root_ptr
+          self
+        else
+          MetaschemaNode.new(schema_document, our_initialize_params.merge(node_ptr: metaschema_root_ptr))
+        end
+      end
+    end
+
     # @return [MetaschemaNode] document root MetaschemaNode
     def jsi_root_node
       new_node(jsi_ptr: JSI::JSON::Pointer[])
