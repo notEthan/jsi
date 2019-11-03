@@ -48,12 +48,12 @@ module JSI
 
     # @return [MetaschemaNode] document root MetaschemaNode
     def document_root_node
-      MetaschemaNode.new(node_document, node_ptr: JSI::JSON::Pointer[])
+      new_node(node_ptr: JSI::JSON::Pointer[])
     end
 
     # @return [MetaschemaNode] parent MetaschemaNode
     def parent_node
-      MetaschemaNode.new(node_document, node_ptr: node_ptr.parent)
+      new_node(node_ptr: node_ptr.parent)
     end
 
     # @param token [String, Integer, Object] the token to subscript
@@ -73,7 +73,7 @@ module JSI
 
       memoize(:[], token, value_, token_is_ours_) do |token_, value, token_is_ours|
         if value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
-          MetaschemaNode.new(node_document, node_ptr: node_ptr[token_])
+          new_node(node_ptr: node_ptr[token_])
         elsif token_is_ours
           value
         else
@@ -87,7 +87,7 @@ module JSI
     # @return [MetaschemaNode]
     def deref(&block)
       node_ptr_deref do |deref_ptr|
-        return MetaschemaNode.new(node_document, node_ptr: deref_ptr).tap(&(block || Util::NOOP))
+        return new_node(node_ptr: deref_ptr).tap(&(block || Util::NOOP))
       end
       return self
     end
@@ -119,8 +119,18 @@ module JSI
 
     # @return [Object] an opaque fingerprint of this MetaschemaNode for FingerprintHash
     def fingerprint
-      {class: self.class, node_document: node_document, node_ptr: node_ptr}
+      {class: self.class, node_document: node_document}.merge(our_initialize_params)
     end
     include FingerprintHash
+
+    private
+
+    def our_initialize_params
+      {node_ptr: node_ptr}
+    end
+
+    def new_node(params)
+      MetaschemaNode.new(node_document, our_initialize_params.merge(params))
+    end
   end
 end
