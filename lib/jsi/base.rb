@@ -234,26 +234,26 @@ module JSI
     #   returns that value as a JSI instantiation of that subschema.
     def [](token)
       if respond_to?(:to_hash)
-        token_is_ours_ = node_content_hash_pubsend(:key?, token)
-        value_ = node_content_hash_pubsend(:[], token)
+        token_is_ours = node_content_hash_pubsend(:key?, token)
+        value = node_content_hash_pubsend(:[], token)
       elsif respond_to?(:to_ary)
-        token_is_ours_ = node_content_ary_pubsend(:each_index).include?(token)
-        value_ = node_content_ary_pubsend(:[], token)
+        token_is_ours = node_content_ary_pubsend(:each_index).include?(token)
+        value = node_content_ary_pubsend(:[], token)
       else
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      if !token_is_ours_
+      if !token_is_ours
         deref do |deref_jsi|
           return deref_jsi[token]
         end
       end
 
-      memoize(:[], token, value_, token_is_ours_) do |token_, value, token_is_ours|
+      memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
         if respond_to?(:to_ary)
-          token_schema = schema.subschema_for_index(token_)
+          token_schema = schema.subschema_for_index(token)
         else
-          token_schema = schema.subschema_for_property(token_)
+          token_schema = schema.subschema_for_property(token)
         end
         token_schema = token_schema && token_schema.match_to_instance(value)
 
@@ -270,11 +270,11 @@ module JSI
 
         if use_default
           # use the default value
-          # we are using #dup so that we get a modified copy of self, in which we set dup[token_]=default.
+          # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
           # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
-          dup.tap { |o| o[token_] = default }[token_]
+          dup.tap { |o| o[token] = default }[token]
         elsif token_schema && (token_schema.describes_schema? || value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-          class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token_], ancestor_jsi: @ancestor_jsi || self)
+          class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], ancestor_jsi: @ancestor_jsi || self)
         elsif token_is_ours
           value
         else

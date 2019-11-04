@@ -123,18 +123,18 @@ module JSI
     #   returns that value as a MetaschemaNode instantiation of that subschema.
     def [](token)
       if respond_to?(:to_hash)
-        token_is_ours_ = node_content_hash_pubsend(:key?, token)
-        value_ = node_content_hash_pubsend(:[], token)
+        token_is_ours = node_content_hash_pubsend(:key?, token)
+        value = node_content_hash_pubsend(:[], token)
       elsif respond_to?(:to_ary)
-        token_is_ours_ = node_content_ary_pubsend(:each_index).include?(token)
-        value_ = node_content_ary_pubsend(:[], token)
+        token_is_ours = node_content_ary_pubsend(:each_index).include?(token)
+        value = node_content_ary_pubsend(:[], token)
       else
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{node_content.pretty_inspect.chomp}")
       end
 
-      memoize(:[], token, value_, token_is_ours_) do |token_, value, token_is_ours|
+      memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
         if value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
-          new_node(node_ptr: node_ptr[token_])
+          new_node(node_ptr: node_ptr[token])
         elsif token_is_ours
           value
         else
