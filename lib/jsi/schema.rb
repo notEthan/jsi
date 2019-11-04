@@ -136,6 +136,16 @@ module JSI
       JSI.class_for_schemas([self])
     end
 
+    # @return [Enumerable<JSI::Schema>] a collection of JSI::PathedNode JSI::Schema instances
+    #   representing this schema
+    def jsi_schema_nodes
+      if is_a?(Metaschema) && schema_documents && node_ptr == @metaschema_root_ptr
+        metaschema_root_nodes
+      else
+        [self]
+      end
+    end
+
     # instantiates the given other_instance as a JSI::Base class for schemas matched from this schema to the
     # other_instance.
     #
@@ -168,9 +178,11 @@ module JSI
     #   `properties`, `patternProperties`, and `additionalProperties`
     def subschemas_for_property(property_name)
       jsi_memoize(:subschemas_for_property, property_name) do |property_name|
-        jsi_ptr.schema_subschema_ptrs_for_property_name(jsi_document, property_name).map do |ptr|
-          ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
-        end
+        jsi_schema_nodes.map do |schema_node|
+          schema_node.jsi_ptr.schema_subschema_ptrs_for_property_name(schema_node.jsi_document, property_name).map do |ptr|
+            ptr.evaluate(schema_node.jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+          end
+        end.inject(Array.new, &:|)
       end
     end
 
@@ -179,9 +191,11 @@ module JSI
     #   `items` and `additionalItems`
     def subschemas_for_index(index)
       jsi_memoize(:subschemas_for_index, index) do |index|
-        jsi_ptr.schema_subschema_ptrs_for_index(jsi_document, index).map do |ptr|
-          ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
-        end
+        jsi_schema_nodes.map do |schema_node|
+          schema_node.jsi_ptr.schema_subschema_ptrs_for_index(schema_node.jsi_document, index).map do |ptr|
+            ptr.evaluate(schema_node.jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+          end
+        end.inject(Array.new, &:|)
       end
     end
 
@@ -191,11 +205,19 @@ module JSI
     def described_object_property_names
       jsi_memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
-          if jsi_node_content.respond_to?(:to_hash) && jsi_node_content['properties'].respond_to?(:to_hash)
-            property_names.merge(jsi_node_content['properties'].keys)
+          schema_contents = if is_a?(Metaschema) && schema_documents && node_ptr == metaschema_root_ptr
+            schema_documents.map { |doc| metaschema_root_ptr.evaluate(doc) }
+          else
+            [jsi_node_content]
           end
-          if jsi_node_content.respond_to?(:to_hash) && jsi_node_content['required'].respond_to?(:to_ary)
-            property_names.merge(jsi_node_content['required'].to_ary)
+
+          schema_contents.each do |schema_content|
+            if schema_content.respond_to?(:to_hash) && schema_content['properties'].respond_to?(:to_hash)
+              property_names.merge(schema_content['properties'].keys)
+            end
+            if schema_content.respond_to?(:to_hash) && schema_content['required'].respond_to?(:to_ary)
+              property_names.merge(schema_content['required'].to_ary)
+            end
           end
         end
       end
