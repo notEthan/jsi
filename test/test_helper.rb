@@ -15,6 +15,10 @@ require 'jsi'
 
 require 'yaml'
 
+module JSI
+  TEST_RESOURCES_PATH = RESOURCES_PATH.join('test')
+end
+
 # NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
 
