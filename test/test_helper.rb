@@ -11,6 +11,10 @@ require 'byebug'
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
 
+module JSI
+  TEST_RESOURCES_PATH = ROOT_PATH.join('test/resources')
+end
+
 # NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
 
