@@ -101,12 +101,12 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 ## Terminology and Concepts
 
-- JSI::Base is the base class from which other classes representing JSON-Schemas inherit.
-- a JSI class refers to a class representing a schema, a subclass of JSI::Base.
+- `JSI::Base` is the base class for each JSI class representing a JSON Schema.
+- a "JSI class" is a subclass of `JSI::Base` representing a JSON schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
-  - a schema instance refers broadly to a data structure that is described by a json-schema.
+  - a schema instance refers broadly to a data structure that is described by a JSON schema.
   - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI class. it has a method #instance which contains the underlying data.
-- a schema refers to a json-schema. a JSI::Schema represents such a json-schema. a JSI class allows instantiation of such a schema.
+- a schema refers to a JSON schema. a `JSI::Schema` represents such a schema. a JSI class allows instantiation of a schema as a JSI instance.
 
 ## JSI classes
 
