@@ -3,9 +3,11 @@
 [![Build Status](https://travis-ci.org/notEthan/jsi.svg?branch=master)](https://travis-ci.org/notEthan/jsi)
 [![Coverage Status](https://coveralls.io/repos/github/notEthan/jsi/badge.svg)](https://coveralls.io/github/notEthan/jsi)
 
-JSI represents JSON-schemas as ruby classes, and schema instances as instances of those classes.
+JSI offers an Object-Oriented representation for JSON data using JSON Schemas. Given your JSON Schemas, JSI constructs Ruby classes which are used to instantiate your JSON data. These classes let you use JSON with all the niceties of OOP such as property accessors and application-defined instance methods.
 
-A JSI class aims to be a fairly unobtrusive wrapper around its instance. It adds accessors for known property names, validation methods, and a few other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting #to_ary or #to_hash.
+To learn more about JSON Schema see [https://json-schema.org/]().
+
+A JSI class aims to be a fairly unobtrusive wrapper around its instance - "instance" here meaning the JSON data which instantiate the JSON Schema. The instance is usually a Hash or an Array but may be basic types, or in fact any object. A JSI class adds accessors for property names described by its schema, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting #to_ary or #to_hash.
 
 ## Example
 
@@ -102,12 +104,12 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 ## Terminology and Concepts
 
-- JSI::Base is the base class from which other classes representing JSON-Schemas inherit.
-- a JSI class refers to a class representing a schema, a subclass of JSI::Base.
+- `JSI::Base` is the base class for each JSI class representing a JSON Schema.
+- a "JSI class" is a subclass of `JSI::Base` representing a JSON schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
-  - a schema instance refers broadly to a data structure that is described by a json-schema.
+  - a schema instance refers broadly to a data structure that is described by a JSON schema.
   - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI class. it has a method #instance which contains the underlying data.
-- a schema refers to a json-schema. a JSI::Schema represents such a json-schema. a JSI class allows instantiation of such a schema.
+- a schema refers to a JSON schema. a `JSI::Schema` represents such a schema. a JSI class allows instantiation of a schema as a JSI instance.
 
 ## JSI classes
 
