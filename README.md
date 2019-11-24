@@ -3,9 +3,11 @@
 [![Build Status](https://travis-ci.org/notEthan/jsi.svg?branch=master)](https://travis-ci.org/notEthan/jsi)
 [![Coverage Status](https://coveralls.io/repos/github/notEthan/jsi/badge.svg)](https://coveralls.io/github/notEthan/jsi)
 
-JSI represents JSON-schemas as ruby classes, and schema instances as instances of those classes.
+JSI offers an Object-Oriented representation for JSON data using JSON Schemas. Given your JSON Schemas, JSI constructs Ruby classes which are used to instantiate your JSON data. These classes let you use JSON with all the niceties of OOP such as property accessors and application-defined instance methods.
 
-A JSI class aims to be a fairly unobtrusive wrapper around its instance. It adds accessors for known property names, validation methods, and a few other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting #to_ary or #to_hash.
+To learn more about JSON Schema see [https://json-schema.org/]().
+
+A JSI class aims to be a fairly unobtrusive wrapper around its instance - "instance" here meaning the JSON data which instantiate the JSON Schema. The instance is usually a Hash or an Array but may be basic types, or in fact any object. A JSI class adds accessors for property names described by its schema, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting #to_ary or #to_hash.
 
 ## Example
 
