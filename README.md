@@ -27,19 +27,28 @@ properties:
         number: {type: "string"}
 ```
 
-And here's the class for that schema from JSI:
+And here's how you'd normally instantiate the class for that schema using JSI:
 
 ```ruby
-Contact = JSI.class_for_schema(YAML.load_file('contact.schema.yml'))
-# you can copy/paste this line instead, to follow along in irb:
+# this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
 Contact = JSI.class_for_schema({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
-This definition gives you not just the Contact class, but classes for the whole nested structure. So, if we construct an instance like:
+This definition gives you not just the Contact class, but classes for the whole nested structure. To instantiate it, we need some JSON data (expressed here as YAML)
+
+```yaml
+name: bill
+phone:
+- location: home
+  number: "555"
+nickname: big b
+```
+
+So, if we construct an instance like:
 
 ```ruby
-bill = Contact.new('name' => 'bill', 'phone' => [{'location' => 'home', 'number' => '555'}], 'nickname' => 'big b')
-
+# this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
+bill = Contact.new({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
 # => #{<Contact Hash>
 #   "name" => "bill",
 #   "phone" => #[<JSI::SchemaClasses["23d8#/properties/phone"] Array>
