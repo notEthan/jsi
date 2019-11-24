@@ -37,10 +37,11 @@ This definition gives you not just the Contact class, but classes for the whole 
 
 ```ruby
 bill = Contact.new('name' => 'bill', 'phone' => [{'location' => 'home', 'number' => '555'}], 'nickname' => 'big b')
-# => #{<Contact fragment="#">
-# #{<Contact fragment="#">
-#   "phone" => #[<JSI::SchemaClasses["1f97#/properties/phone"] fragment="#/phone">
-#     #{<JSI::SchemaClasses["1f97#/properties/phone/items"] fragment="#/phone/0"> "location" => "home", "number" => "555"}
+
+# => #{<Contact Hash>
+#   "name" => "bill",
+#   "phone" => #[<JSI::SchemaClasses["23d8#/properties/phone"] Array>
+#     #{<JSI::SchemaClasses["23d8#/properties/phone/items"] Hash> "location" => "home", "number" => "555"}
 #   ],
 #   "nickname" => "big b"
 # }
@@ -75,15 +76,15 @@ bill.validate
 
 ```ruby
 bad = Contact.new('phone' => [{'number' => [5, 5, 5]}])
-# => #{<Contact fragment="#">
-#   "phone" => #[<JSI::SchemaClasses["1f97#/properties/phone"] fragment="#/phone">
-#     #{<JSI::SchemaClasses["1f97#/properties/phone/items"] fragment="#/phone/0">
-#       "number" => #[<JSI::SchemaClasses["1f97#/properties/phone/items/properties/number"] fragment="#/phone/0/number"> 5, 5, 5]
+# => #{<Contact Hash>
+#   "phone" => #[<JSI::SchemaClasses["23d8#/properties/phone"] Array>
+#     #{<JSI::SchemaClasses["23d8#/properties/phone/items"] Hash>
+#       "number" => #[<JSI::SchemaClasses["23d8#/properties/phone/items/properties/number"] Array> 5, 5, 5]
 #     }
 #   ]
 # }
 bad.phone.fully_validate
-# => ["The property '#/0/number' of type array did not match the following type: string in schema 1f97"]
+# => ["The property '#/0/number' of type array did not match the following type: string in schema 23d8"]
 ```
 
 These validations are done by the [`json-schema` gem](https://github.com/ruby-json-schema/json-schema) - JSI does not do validations on its own.
