@@ -1,3 +1,23 @@
+# v0.2.0
+
+- JSI::PathedNode unifies interfaces of JSI::Base, JSI::JSON::Node
+- JSI::Base does not (generally) wrap a JSI::JSON::Node
+- some method renames to try to better indicate what a method applies to, and unreserve common names
+  - JSI::Base
+    - #instance -> #jsi_instance
+    - #parents -> #parent_jsis, #parent -> #parent_jsi
+  - JSI::Schema
+    - #fully_validate -> #fully_validate_instance
+    - #validate -> #validate_instance
+    - #validate! -> #validate_instance!
+- improvements to methods which use a modified copy - #dup, #update/#merge
+- #deref on PathedNode classes uses a block form
+- JSI::PathedArrayNode, PathedHashNode
+- JSI::JSON::Pointer refactoring and improvement
+- Schema#new_jsi
+- JSI::SimpleWrap
+- more
+
 # v0.1.0
 
 - JSI::JSON::Pointer replaces monkey-patched-in ::JSON::Schema::Pointer
