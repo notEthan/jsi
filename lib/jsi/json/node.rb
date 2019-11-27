@@ -169,18 +169,16 @@ module JSI
 
       # pretty-prints a representation this node to the given printer
       def pretty_print(q)
-        q.instance_exec(self) do |obj|
-          text '#<'
-          text obj.object_group_text.join(' ')
-          group_sub {
-            nest(2) {
-              breakable ' '
-              pp obj.node_content
-            }
+        q.text '#<'
+        q.text object_group_text.join(' ')
+        q.group_sub {
+          q.nest(2) {
+            q.breakable ' '
+            q.pp node_content
           }
-          breakable ''
-          text '>'
-        end
+        }
+        q.breakable ''
+        q.text '>'
       end
 
       # fingerprint for equality (see FingerprintHash). two nodes are equal if they are both nodes

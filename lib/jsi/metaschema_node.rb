@@ -166,18 +166,16 @@ module JSI
     end
 
     def pretty_print(q)
-      q.instance_exec(self) do |obj|
-        text '#<'
-        text obj.object_group_text.join(' ')
-        group_sub {
-          nest(2) {
-            breakable ' '
-            pp obj.node_content
-          }
+      q.text '#<'
+      q.text object_group_text.join(' ')
+      q.group_sub {
+        q.nest(2) {
+          q.breakable ' '
+          q.pp node_content
         }
-        breakable ''
-        text '>'
-      end
+      }
+      q.breakable ''
+      q.text '>'
     end
 
     # @return [Array<String>]
