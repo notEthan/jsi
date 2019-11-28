@@ -55,10 +55,7 @@ module JSI
       # @return [String] a name for a constant for this class, generated from the
       #   schema_id. only used if the class is not assigned to another constant.
       def schema_classes_const_name
-        name = schema.schema_id.gsub(/[^\w]/, '_')
-        name = 'X' + name unless name[/\A[a-zA-Z]/]
-        name = name[0].upcase + name[1..-1]
-        name
+        'X' + schema.schema_id.gsub(/[^\w]/, '_')
       end
 
       # @return [String] a constant name of this class

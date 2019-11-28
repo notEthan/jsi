@@ -34,7 +34,7 @@ describe JSI::Base do
   describe 'class name' do
     let(:schema_content) { {'id' => 'https://jsi/BaseTest'} }
     it 'generates a class name from schema_id' do
-      assert_equal('JSI::SchemaClasses::Https___jsi_BaseTest_', subject.class.name)
+      assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest_', subject.class.name)
     end
     it 'uses an existing name' do
       assert_equal('NamedSchemaInstance', NamedSchemaInstance.name)
