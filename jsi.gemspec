@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors = ["Ethan"]
   spec.email   = ["ethan@unth.net"]
 
-  spec.summary     = "JSI: JSON-Schema instantiation"
-  spec.description = "JSI represents json-schemas as ruby classes and json-schema instances as instances of those classes"
+  spec.summary     = "JSI: JSON Schema Instantiation"
+  spec.description = "JSI offers an Object-Oriented representation for JSON data using JSON Schemas"
   spec.homepage    = "https://github.com/notEthan/jsi"
   spec.license     = "MIT"
   ignore_files = %w(.gitignore .travis.yml Gemfile test)
