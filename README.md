@@ -173,6 +173,14 @@ end
 
 Either syntax is slightly cumbersome and a better syntax is in the works.
 
+## Metaschemas
+
+A metaschema is a schema which describes schemas. Likewise, a schema is an instance of a metaschema.
+
+In JSI, a schema is generally a JSI::Base instance whose schema is a metaschema.
+
+A self-descriptive metaschema - most commonly one of the JSON schema draft metaschemas - is an object whose schema is itself. This is instantiated in JSI as a JSI::MetaschemaNode (not a JSI::Base).
+
 ## ActiveRecord serialization
 
 A really excellent place to use JSI is when dealing with serialized columns in ActiveRecord.
