@@ -1,3 +1,9 @@
+# v0.2.1
+
+- bugfix JSI::Schema#described_object_property_names looks only at allOf, not oneOf/anyOf
+- rm unused Schema#default_value, #default_value?
+- misc
+
 # v0.2.0
 
 - JSI::PathedNode unifies interfaces of JSI::Base, JSI::JSON::Node
