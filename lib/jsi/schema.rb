@@ -215,22 +215,6 @@ module JSI
       end
     end
 
-    def default_value
-      if schema_node.key?('default')
-        if schema_node['default'].respond_to?(:to_ary) || schema_node['default'].respond_to?(:to_hash)
-          schema_class.new(schema_node['default'])
-        else
-          schema_node['default']
-        end
-      else
-        nil
-      end
-    end
-
-    def default_value?
-      schema_node.key?('default')
-    end
-
     # @return [Array<String>] array of schema validation error messages for
     #   the given instance against this schema
     def fully_validate_instance(other_instance)
