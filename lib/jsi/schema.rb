@@ -192,9 +192,8 @@ module JSI
     # @return [Set] any object property names this schema indicates may be
     #   present on its instances. this includes, if present: keys of this
     #   schema's "properties" object; entries of this schema's array of
-    #   "required" property keys. if this schema has oneOf/allOf/anyOf
-    #   subschemas, those schemas are checked (recursively) for their
-    #   described object property names.
+    #   "required" property keys. if this schema has allOf subschemas, those
+    #   schemas are checked (recursively) for their described object property names.
     def described_object_property_names
       memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
@@ -204,31 +203,14 @@ module JSI
           if schema_node['required'].respond_to?(:to_ary)
             property_names.merge(schema_node['required'].to_ary)
           end
-          # we _could_ look at the properties of 'default' and each 'enum' but ... nah.
           # we should look at dependencies (TODO).
-          %w(oneOf allOf anyOf).select { |k| schema_node[k].respond_to?(:to_ary) }.each do |schemas_key|
-            schema_node[schemas_key].map(&:deref).map do |someof_node|
-              property_names.merge(self.class.new(someof_node).described_object_property_names)
+          if schema_node['allOf'].respond_to?(:to_ary)
+            schema_node['allOf'].map(&:deref).map do |allOf_node|
+              property_names.merge(self.class.new(allOf_node).described_object_property_names)
             end
           end
         end
       end
-    end
-
-    def default_value
-      if schema_node.key?('default')
-        if schema_node['default'].respond_to?(:to_ary) || schema_node['default'].respond_to?(:to_hash)
-          schema_class.new(schema_node['default'])
-        else
-          schema_node['default']
-        end
-      else
-        nil
-      end
-    end
-
-    def default_value?
-      schema_node.key?('default')
     end
 
     # @return [Array<String>] array of schema validation error messages for
