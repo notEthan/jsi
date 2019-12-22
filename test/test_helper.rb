@@ -31,6 +31,13 @@ class JSISpec < Minitest::Spec
     msg = message(msg, E) { diff exp, act }
     assert exp == act, msg
   end
+
+  def assert_match matcher, obj, msg = nil
+    msg = message(msg) { "Expected match.\nmatcher: #{mu_pp matcher}\nobject:  #{mu_pp obj}" }
+    assert_respond_to matcher, :"=~"
+    matcher = Regexp.new Regexp.escape matcher if String === matcher
+    assert matcher =~ obj, msg
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec

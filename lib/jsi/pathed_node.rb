@@ -10,11 +10,14 @@ module JSI
   #
   # the node content (#node_content) is the result of evaluating the node document at the path.
   module PathedNode
+    # @return [Object] the content of this node
     def node_content
       content = node_ptr.evaluate(node_document)
       content
     end
 
+    # @yield [JSI::JSON::Pointer] if a block is given (optional), this will yield a deref'd pointer
+    # @return [JSI::JSON::Pointer] our node_ptr, derefed against our node_document
     def node_ptr_deref(&block)
       node_ptr.deref(node_document, &block)
     end

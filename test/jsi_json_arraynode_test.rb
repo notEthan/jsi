@@ -3,24 +3,24 @@ require_relative 'test_helper'
 document_types = [
   {
     make_document: -> (d) { d },
-    document: ['a', ['b', 'q'], {'c' => {'d' => 'e'}}],
+    node_document: ['a', ['b', 'q'], {'c' => {'d' => 'e'}}],
     type_desc: 'Array',
   },
   {
     make_document: -> (d) { SortOfArray.new(d) },
-    document: SortOfArray.new(['a', SortOfArray.new(['b', 'q']), SortOfHash.new({'c' => SortOfHash.new({'d' => 'e'})})]),
+    node_document: SortOfArray.new(['a', SortOfArray.new(['b', 'q']), SortOfHash.new({'c' => SortOfHash.new({'d' => 'e'})})]),
     type_desc: 'sort of Array-like',
   },
 ]
 document_types.each do |document_type|
   describe "JSI::JSON::ArrayNode with #{document_type[:type_desc]}" do
-    # document of the node being tested
-    let(:document) { document_type[:document] }
+    # node_document of the node being tested
+    let(:node_document) { document_type[:node_document] }
     # by default the node is the whole document
     let(:path) { [] }
-    let(:pointer) { JSI::JSON::Pointer.new(path) }
+    let(:node_ptr) { JSI::JSON::Pointer.new(path) }
     # the node being tested
-    let(:node) { JSI::JSON::Node.new_by_type(document, pointer) }
+    let(:node) { JSI::JSON::Node.new_by_type(node_document, node_ptr) }
 
     describe '#[] bad index' do
       it 'improves TypeError for Array subsript' do
@@ -56,7 +56,7 @@ document_types.each do |document_type|
       end
     end
     describe '#as_json' do
-      let(:document) { document_type[:make_document].call(['a', 'b']) }
+      let(:node_document) { document_type[:make_document].call(['a', 'b']) }
       it '#as_json' do
         assert_equal(['a', 'b'], node.as_json)
         assert_equal(['a', 'b'], node.as_json(some_option: false))
@@ -130,13 +130,13 @@ document_types.each do |document_type|
     describe 'modified copy methods' do
       it('#reject')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.reject { |e| e != 'a' }) }
       it('#select')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.select { |e| e == 'a' }) }
-      it('#compact') { assert_equal(JSI::JSON::Node.new_doc(node.content.to_ary), node.compact) }
+      it('#compact') { assert_equal(JSI::JSON::Node.new_doc(node.node_content.to_ary), node.compact) }
       describe 'at a depth' do
-        let(:document) { document_type[:make_document].call([['b', 'q'], {'c' => ['d', 'e']}]) }
+        let(:node_document) { document_type[:make_document].call([['b', 'q'], {'c' => ['d', 'e']}]) }
         let(:path) { ['1', 'c'] }
         it('#select') do
           selected = node.select { |e| e == 'd' }
-          equivalent = JSI::JSON::Node.new_by_type([['b', 'q'], {'c' => ['d']}], pointer)
+          equivalent = JSI::JSON::Node.new_by_type([['b', 'q'], {'c' => ['d']}], node_ptr)
           assert_equal(equivalent, selected)
         end
       end
