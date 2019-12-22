@@ -91,10 +91,10 @@ module JSI
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
       end
 
-      if instance.is_a?(JSI::Base)
-        raise(TypeError, "assigning another JSI::Base instance to #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
-      elsif instance.is_a?(JSI::Schema)
+      if instance.is_a?(JSI::Schema)
         raise(TypeError, "assigning a schema to #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
+      elsif instance.is_a?(JSI::Base)
+        raise(TypeError, "assigning another JSI::Base instance to #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
       end
 
       if instance == NOINSTANCE
