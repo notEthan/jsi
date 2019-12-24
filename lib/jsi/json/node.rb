@@ -74,11 +74,6 @@ module JSI
       def [](subscript)
         ptr = self.node_ptr
         content = self.node_content
-        if content.respond_to?(:to_hash) && !(content.respond_to?(:key?) ? content : content.to_hash).key?(subscript)
-          deref do |deref_node|
-            return deref_node[subscript]
-          end
-        end
         unless content.respond_to?(:[])
           if content.respond_to?(:to_hash)
             content = content.to_hash

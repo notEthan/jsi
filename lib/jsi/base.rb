@@ -243,12 +243,6 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      if !token_is_ours_
-        deref do |deref_jsi|
-          return deref_jsi[token]
-        end
-      end
-
       memoize(:[], token, value_, token_is_ours_) do |token_, value, token_is_ours|
         if respond_to?(:to_ary)
           token_schema = schema.subschema_for_index(token_)

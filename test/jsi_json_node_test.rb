@@ -79,15 +79,6 @@ describe JSI::JSON::Node do
       it 'looks for a node in #/schemas with the name of the $ref' do
         assert_equal({'description' => ['baz']}, node['a'].deref.node_content)
       end
-      it 'follows a $ref when subscripting past it' do
-        subscripted = node['a']['description']
-        assert_equal(['baz'], subscripted.node_content)
-        assert_equal(JSI::JSON::Pointer.new(['schemas', 'bar', 'description']), subscripted.node_ptr)
-      end
-      it 'does not follow a $ref when subscripting a key that is present' do
-        subscripted = node['a']['foo']
-        assert_equal('bar', subscripted)
-      end
     end
     describe "dealing with whatever this is" do
       # I think google uses this style in some cases maybe. I don't remember.
@@ -135,19 +126,10 @@ describe JSI::JSON::Node do
           'a' => {'$ref' => '#/foo', 'description' => 'hi'}, # not sure a description is actually allowed here, whatever
         }
       end
-      it 'subscripts a node consisting of a $ref WITHOUT following' do
+      it 'subscripts a node consisting of a $ref without following' do
         subscripted = node['a']
         assert_equal({'$ref' => '#/foo', 'description' => 'hi'}, subscripted.node_content)
         assert_equal(JSI::JSON::Pointer.new(['a']), subscripted.node_ptr)
-      end
-      it 'follows a $ref when subscripting past it' do
-        subscripted = node['a']['bar']
-        assert_equal(['baz'], subscripted.node_content)
-        assert_equal(JSI::JSON::Pointer.new(['foo', 'bar']), subscripted.node_ptr)
-      end
-      it 'does not follow a $ref when subscripting a key that is present' do
-        subscripted = node['a']['description']
-        assert_equal('hi', subscripted)
       end
     end
   end
