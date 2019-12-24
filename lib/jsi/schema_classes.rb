@@ -20,7 +20,7 @@ module JSI
           Class.new(Base).instance_exec(schema_) do |schema|
             define_singleton_method(:schema) { schema }
             define_method(:schema) { schema }
-            include(JSI::SchemaClasses.module_for_schema(schema, conflicting_modules: [Base, BaseArray, BaseHash]))
+            include(schema.jsi_schema_module)
 
             jsi_class = self
             define_method(:jsi_class) { jsi_class }

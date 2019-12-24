@@ -107,6 +107,14 @@ module JSI
       end
     end
 
+    # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
+    #   may be used alongside the schema module. methods defined by any conflicting_module
+    #   will not be defined as accessors for the JSI schema module.
+    # @return [Module] a module representing this schema. see {JSI::SchemaClasses.module_for_schema}.
+    def jsi_schema_module(conflicting_modules: [Base, BaseArray, BaseHash])
+      JSI::SchemaClasses.module_for_schema(self, conflicting_modules: conflicting_modules)
+    end
+
     # @return [Class subclassing JSI::Base] shortcut for JSI.class_for_schema(schema)
     def jsi_schema_class
       JSI.class_for_schema(self)
