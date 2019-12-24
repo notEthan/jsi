@@ -69,73 +69,95 @@ describe JSI::Schema do
   describe '#jsi_schema_class' do
     it 'returns the class for the schema' do
       schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
-      assert_equal(JSI.class_for_schema(schema), schema.jsi_schema_class)
+      assert_equal(JSI.class_for_schemas([schema]), schema.jsi_schema_class)
     end
   end
-  describe '#subschema_for_property' do
+  describe '#subschemas_for_property_name' do
     let(:schema) do
       JSI::Schema.new({
-        properties: {foo: {description: 'foo'}},
-        patternProperties: {"^ba" => {description: 'ba*'}},
+        properties: {
+          foo: {description: 'foo'},
+          baz: {description: 'baz'},
+        },
+        patternProperties: {
+          "^b" => {description: 'ba*'},
+        },
         additionalProperties: {description: 'whatever'},
       })
     end
-    it 'has no subschema' do
-      assert_equal(nil, JSI::Schema.new({}).subschema_for_property('no'))
+    it 'has no subschemas' do
+      assert_empty(JSI::Schema.new({}).subschemas_for_property_name('no'))
     end
     it 'has a subschema by property' do
-      subschema = schema.subschema_for_property('foo')
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschema)
-      assert_equal('foo', subschema['description'])
+      subschemas = schema.subschemas_for_property_name('foo').to_a
+      assert_equal(1, subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschemas[0])
+      assert_equal('foo', subschemas[0].description)
     end
-    it 'has a subschema by pattern property' do
-      subschema = schema.subschema_for_property('bar')
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschema)
-      assert_equal('ba*', subschema['description'])
+    it 'has subschemas by patternProperties' do
+      subschemas = schema.subschemas_for_property_name('bar').to_a
+      assert_equal(1, subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschemas[0])
+      assert_equal('ba*', subschemas[0].description)
     end
-    it 'has a subschema by additional properties' do
-      subschema = schema.subschema_for_property('anything')
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschema)
-      assert_equal('whatever', subschema['description'])
+    it 'has subschemas by properties, patternProperties' do
+      subschemas = schema.subschemas_for_property_name('baz').to_a
+      assert_equal(2, subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschemas[0])
+      assert_equal('baz', subschemas[0].description)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschemas[1])
+      assert_equal('ba*', subschemas[1].description)
+    end
+    it 'has subschemas by additional properties' do
+      subschemas = schema.subschemas_for_property_name('anything').to_a
+      assert_equal(1, subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschemas[0])
+      assert_equal('whatever', subschemas[0].description)
     end
   end
-  describe '#subschema_for_index' do
-    it 'has no subschema' do
-      assert_equal(nil, JSI::Schema.new({}).subschema_for_index(0))
+  describe '#subschemas_for_index' do
+    it 'has no subschemas' do
+      assert_empty(JSI::Schema.new({}).subschemas_for_index(0))
     end
     it 'has a subschema for items' do
       schema = JSI::Schema.new({
         items: {description: 'items!'}
       })
-      first_subschema = schema.subschema_for_index(0)
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschema)
-      assert_equal('items!', first_subschema['description'])
-      last_subschema = schema.subschema_for_index(1)
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschema)
-      assert_equal('items!', last_subschema['description'])
+      first_subschemas = schema.subschemas_for_index(0).to_a
+      assert_equal(1, first_subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschemas[0])
+      assert_equal('items!', first_subschemas[0].description)
+      last_subschemas = schema.subschemas_for_index(1).to_a
+      assert_equal(1, last_subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschemas[0])
+      assert_equal('items!', last_subschemas[0].description)
     end
     it 'has a subschema for each item by index' do
       schema = JSI::Schema.new({
         items: [{description: 'item one'}, {description: 'item two'}]
       })
-      first_subschema = schema.subschema_for_index(0)
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschema)
-      assert_equal('item one', first_subschema['description'])
-      last_subschema = schema.subschema_for_index(1)
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschema)
-      assert_equal('item two', last_subschema['description'])
+      first_subschemas = schema.subschemas_for_index(0).to_a
+      assert_equal(1, first_subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschemas[0])
+      assert_equal('item one', first_subschemas[0].description)
+      last_subschemas = schema.subschemas_for_index(1).to_a
+      assert_equal(1, last_subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschemas[0])
+      assert_equal('item two', last_subschemas[0].description)
     end
     it 'has a subschema by additional items' do
       schema = JSI::Schema.new({
         items: [{description: 'item one'}],
         additionalItems: {description: "mo' crap"},
       })
-      first_subschema = schema.subschema_for_index(0)
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschema)
-      assert_equal('item one', first_subschema['description'])
-      last_subschema = schema.subschema_for_index(1)
-      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschema)
-      assert_equal("mo' crap", last_subschema['description'])
+      first_subschemas = schema.subschemas_for_index(0).to_a
+      assert_equal(1, first_subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschemas[0])
+      assert_equal('item one', first_subschemas[0].description)
+      last_subschemas = schema.subschemas_for_index(1).to_a
+      assert_equal(1, last_subschemas.size)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschemas[0])
+      assert_equal("mo' crap", last_subschemas[0].description)
     end
   end
   describe 'stringification' do

@@ -41,14 +41,9 @@ describe JSI::Base do
       assert_equal('NamedSchemaInstance', NamedSchemaInstance.name)
     end
   end
-  describe 'class for schema .schema' do
-    it '.schema' do
-      assert_equal(schema, JSI.class_for_schema(schema).schema)
-    end
-  end
-  describe 'class for schema .schema_id' do
-    it '.schema_id' do
-      assert_equal(schema.schema_id, JSI.class_for_schema(schema).schema_id)
+  describe 'class for schema .jsi_class_schemas' do
+    it '.jsi_class_schemas' do
+      assert_equal(Set.new << schema, schema.jsi_schema_class.jsi_class_schemas)
     end
   end
   describe 'module for schema .inspect' do
@@ -61,15 +56,15 @@ describe JSI::Base do
       assert_equal(schema, JSI::SchemaClasses.module_for_schema(schema).schema)
     end
   end
-  describe '.class_for_schema' do
+  describe '.class_for_schemas' do
     it 'returns a class from a schema' do
-      class_for_schema = JSI.class_for_schema(schema)
+      class_for_schema = JSI.class_for_schemas([schema])
       # same class every time
-      assert_equal(JSI.class_for_schema(schema), class_for_schema)
+      assert_equal(JSI.class_for_schemas([schema]), class_for_schema)
       assert_operator(class_for_schema, :<, JSI::Base)
     end
-    it 'returns a class from a hash' do
-      assert_equal(JSI.class_for_schema(schema), JSI.class_for_schema(schema_content))
+    it 'returns the same class from a hash' do
+      assert_equal(JSI.class_for_schemas([schema]), JSI.class_for_schemas([schema_content]))
     end
   end
   describe 'JSI::SchemaClasses.module_for_schema' do
@@ -86,7 +81,7 @@ describe JSI::Base do
     describe 'on Base' do
       it 'errors' do
         err = assert_raises(TypeError) { JSI::Base.new({}) }
-        assert_equal('cannot instantiate JSI::Base which has no method #schema. please use JSI.class_for_schema', err.message)
+        assert_equal('cannot instantiate JSI::Base which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.', err.message)
       end
     end
     describe 'nil' do
@@ -392,7 +387,7 @@ describe JSI::Base do
               'each' => {},           # PathedHashNode / PathedArrayNode
               'instance_exec' => {},  # BasicObject
               'jsi_instance' => {},   # Base
-              'schema' => {},         # module_for_schema singleton definition
+              'jsi_schemas' => {},    # module_for_schema singleton definition
             },
           }
         end
@@ -406,7 +401,7 @@ describe JSI::Base do
             'each' => 'hi',
             'instance_exec' => 'hi',
             'jsi_instance' => 'hi',
-            'schema' => 'hi',
+            'jsi_schemas' => 'hi',
           }
         end
         it 'does not define readers' do
@@ -414,14 +409,14 @@ describe JSI::Base do
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
-          assert_equal(%q(#{<JSI> "foo" => "bar", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "schema" => "hi"}), subject.inspect)
+          assert_equal(%q(#{<JSI> "foo" => "bar", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
-          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "schema" => "hi"\n}\n), subject.pretty_inspect)
+          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
-          assert_equal(schema, subject.schema)
+          assert_equal(Set.new << schema, subject.jsi_schemas)
         end
       end
     end
@@ -478,7 +473,7 @@ describe JSI::Base do
     end
   end
   describe 'equality between different classes of JSI::Base subclasses' do
-    let(:subject_subclass) { Class.new(JSI.class_for_schema(schema)).new(instance) }
+    let(:subject_subclass) { Class.new(schema.jsi_schema_class).new(instance) }
 
     it 'considers a Base subclass (class_for_schema) and subsubclass to be equal with the same instance' do
       assert_equal(subject.hash, subject_subclass.hash)

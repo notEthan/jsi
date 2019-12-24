@@ -49,39 +49,39 @@ module JSI
       end
 
       instance_for_schema = node_document
-      schema_ptr = node_ptr.reference_tokens.inject(root_schema_ptr) do |ptr0, tok|
+      schema_ptrs = node_ptr.reference_tokens.inject(Set.new << root_schema_ptr) do |ptrs, tok|
         if instance_for_schema.respond_to?(:to_ary)
-          ptr1 = ptr0 && ptr0.schema_subschema_ptr_for_index(node_document, tok)
+          subschema_ptrs_for_token = ptrs.map do |ptr|
+            ptr.schema_subschema_ptrs_for_index(node_document, tok)
+          end.inject(Set.new, &:|)
         else
-          ptr1 = ptr0 && ptr0.schema_subschema_ptr_for_property_name(node_document, tok)
+          subschema_ptrs_for_token = ptrs.map do |ptr|
+            ptr.schema_subschema_ptrs_for_property_name(node_document, tok)
+          end.inject(Set.new, &:|)
         end
         instance_for_schema = instance_for_schema[tok]
-        ptr2 = ptr1 && ptr1.deref(node_document)
-        ptr3 = ptr2 && ptr2.schema_match_ptr_to_instance(node_document, instance_for_schema)
-        ptr3 # only God may judge my variable names
+        ptrs_for_instance = subschema_ptrs_for_token.map do |ptr|
+          ptr.schema_match_ptrs_to_instance(node_document, instance_for_schema)
+        end.inject(Set.new, &:|)
+        ptrs_for_instance
       end
 
-      @schema = if schema_ptr
+      @jsi_schemas = schema_ptrs.map do |schema_ptr|
         if schema_ptr == node_ptr
           self
         else
           new_node(node_ptr: schema_ptr)
         end
-      else
-        nil
-      end
+      end.to_set
 
-      if schema_ptr
-        if schema_ptr == metaschema_root_ptr
+      @jsi_schemas.each do |schema|
+        if schema.node_ptr == metaschema_root_ptr
           extend JSI::Schema
         end
-        if schema_ptr == node_ptr
+        if schema.node_ptr == node_ptr
           extend Metaschema
         end
-      end
-
-      if @schema
-        extend(JSI::SchemaClasses.accessor_module_for_schema(@schema, conflicting_modules: [Metaschema, Schema, MetaschemaNode, PathedArrayNode, PathedHashNode]))
+        extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [Metaschema, Schema, MetaschemaNode, PathedArrayNode, PathedHashNode]))
       end
 
       # workarounds
@@ -106,8 +106,8 @@ module JSI
     attr_reader :metaschema_root_ptr
     # ptr to the schema of the root of the node_document
     attr_reader :root_schema_ptr
-    # a JSI::Schema describing this MetaschemaNode
-    attr_reader :schema
+    # JSI::Schemas describing this MetaschemaNode
+    attr_reader :jsi_schemas
 
     # @return [MetaschemaNode] document root MetaschemaNode
     def document_root_node
@@ -186,13 +186,13 @@ module JSI
 
     # @return [Array<String>]
     def object_group_text
-      if schema
-        class_n_schema = "#{self.class} (#{schema.node_ptr.uri})"
+      if jsi_schemas.any?
+        class_n_schemas = "#{self.class} (#{jsi_schemas.map { |s| s.node_ptr.uri }.join(' ')})"
       else
-        class_n_schema = self.class.to_s
+        class_n_schemas = self.class.to_s
       end
       [
-        class_n_schema,
+        class_n_schemas,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
         *(node_content.respond_to?(:object_group_text) ? node_content.object_group_text : []),
       ].compact

@@ -196,102 +196,108 @@ module JSI
         Pointer.new(reference_tokens + [token], type: @type)
       end
 
-      # given this Pointer points to a schema in the given document, returns a pointer
-      # to a subschema of that schema for the given property name.
+      # given this Pointer points to a schema in the given document, returns a set of pointers
+      # to subschemas of that schema for the given property name.
       #
       # @param document [#to_hash, #to_ary, Object] document containing the schema this pointer points to
       # @param property_name [Object] the property name for which to find a subschema
-      # @return [JSI::JSON::Pointer, nil] a pointer to a subschema in the document for the property_name, or nil
-      def schema_subschema_ptr_for_property_name(document, property_name)
+      # @return [Set<JSI::JSON::Pointer>] pointers to subschemas
+      def schema_subschema_ptrs_for_property_name(document, property_name)
         ptr = self
         schema = ptr.evaluate(document)
-        if !schema.respond_to?(:to_hash)
-          nil
-        else
-          if schema.key?('properties') && schema['properties'].respond_to?(:to_hash) && schema['properties'].key?(property_name)
-            ptr['properties'][property_name]
-          else
-            # TODO this is rather incorrect handling of patternProperties and additionalProperties
+        Set.new.tap do |ptrs|
+          if schema.respond_to?(:to_hash)
+            apply_additional = true
+            if schema.key?('properties') && schema['properties'].respond_to?(:to_hash) && schema['properties'].key?(property_name)
+              apply_additional = false
+              ptrs << ptr['properties'][property_name]
+            end
             if schema['patternProperties'].respond_to?(:to_hash)
-              pattern_schema_name = schema['patternProperties'].keys.detect do |pattern|
-                property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+              schema['patternProperties'].each_key do |pattern|
+                if property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+                  apply_additional = false
+                  ptrs << ptr['patternProperties'][pattern]
+                end
               end
             end
-            if pattern_schema_name
-              ptr['patternProperties'][pattern_schema_name]
-            else
-              if schema.key?('additionalProperties')
-                ptr['additionalProperties']
-              else
-                nil
-              end
+            if apply_additional && schema.key?('additionalProperties')
+              ptrs << ptr['additionalProperties']
             end
           end
         end
       end
 
-      # given this Pointer points to a schema in the given document, returns a pointer
-      # to a subschema of that schema for the given array index.
+      # given this Pointer points to a schema in the given document, returns a set of pointers
+      # to subschemas of that schema for the given array index.
       #
       # @param document [#to_hash, #to_ary, Object] document containing the schema this pointer points to
-      # @param idx [Object] the array index for which to find a subschema
-      # @return [JSI::JSON::Pointer, nil] a pointer to a subschema in the document for array index idx, or nil
-      def schema_subschema_ptr_for_index(document, idx)
+      # @param idx [Object] the array index for which to find subschemas
+      # @return [Set<JSI::JSON::Pointer>] pointers to subschemas
+      def schema_subschema_ptrs_for_index(document, idx)
         ptr = self
         schema = ptr.evaluate(document)
-        if !schema.respond_to?(:to_hash)
-          nil
-        else
-          if schema.key?('items') || schema.key?('additionalItems')
+        Set.new.tap do |ptrs|
+          if schema.respond_to?(:to_hash)
             if schema['items'].respond_to?(:to_ary)
               if schema['items'].each_index.to_a.include?(idx)
-                ptr['items'][idx]
+                ptrs << ptr['items'][idx]
               elsif schema.key?('additionalItems')
-                ptr['additionalItems']
-              else
-                nil
+                ptrs << ptr['additionalItems']
               end
             elsif schema.key?('items')
-              ptr['items']
-            else
-              nil
+              ptrs << ptr['items']
             end
-          else
-            nil
           end
         end
       end
 
-      # given this Pointer points to a schema in the given document, this matches
-      # any oneOf or anyOf subschema of the schema which the given instance validates
-      # against. if a subschema is matched, a pointer to that schema is returned; if not,
-      # self is returned.
+      # given this Pointer points to a schema in the given document, this matches any
+      # applicators of the schema (oneOf, anyOf, allOf, $ref) which should be applied
+      # and returns them as a set of pointers.
       #
-      # @param document [#to_hash, #to_ary, Object] document containing the schema
-      #   this pointer points to
-      # @param instance [Object] the instance to which to attempt to match *Of subschemas
+      # @param document [#to_hash, #to_ary, Object] document containing the schema this pointer points to
+      # @param instance [Object] the instance to check any applicators against
       # @return [JSI::JSON::Pointer] either a pointer to a *Of subschema in the document,
       #   or self if no other subschema was matched
-      def schema_match_ptr_to_instance(document, instance)
+      def schema_match_ptrs_to_instance(document, instance)
         ptr = self
         schema = ptr.evaluate(document)
-        if schema.respond_to?(:to_hash)
-          # matching oneOf is good here. one schema for one instance.
-          # matching anyOf is fine. there could be more than one schema matched but it's usually just
-          #   one. if more than one is a match, you just get the first one.
-          someof_token = %w(oneOf anyOf).detect { |k| schema[k].respond_to?(:to_ary) }
-          if someof_token
-            someof_ptr = ptr[someof_token].deref(document)
-            someof_ptr.evaluate(document).each_index do |i|
-              someof_schema_ptr = someof_ptr[i].deref(document)
-              valid = ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: someof_schema_ptr.fragment)
-              if valid
-                return someof_schema_ptr.schema_match_ptr_to_instance(document, instance)
+
+        Set.new.tap do |ptrs|
+          if schema.respond_to?(:to_hash)
+            if schema['$ref'].respond_to?(:to_str)
+              ptr.deref(document) do |deref_ptr|
+                ptrs.merge(deref_ptr.schema_match_ptrs_to_instance(document, instance))
+              end
+            else
+              ptrs << ptr
+            end
+            if schema['allOf'].respond_to?(:to_ary)
+              schema['allOf'].each_index do |i|
+                ptrs.merge(ptr['allOf'][i].schema_match_ptrs_to_instance(document, instance))
               end
             end
+            if schema['anyOf'].respond_to?(:to_ary)
+              schema['anyOf'].each_index do |i|
+                valid = ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr['anyOf'][i].fragment)
+                if valid
+                  ptrs.merge(ptr['anyOf'][i].schema_match_ptrs_to_instance(document, instance))
+                end
+              end
+            end
+            if schema['oneOf'].respond_to?(:to_ary)
+              one_i = schema['oneOf'].each_index.detect do |i|
+                ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr['oneOf'][i].fragment)
+              end
+              if one_i
+                ptrs.merge(ptr['oneOf'][one_i].schema_match_ptrs_to_instance(document, instance))
+              end
+            end
+            # TODO dependencies
+          else
+            ptrs << ptr
           end
         end
-        return ptr
       end
 
       # takes a document and a block. the block is yielded the content of the given document at this

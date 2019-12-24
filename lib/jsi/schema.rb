@@ -129,17 +129,20 @@ module JSI
       JSI::SchemaClasses.module_for_schema(self)
     end
 
-    # @return [Class subclassing JSI::Base] shortcut for JSI.class_for_schema(schema)
+    # @return [Class < JSI::Base] a JSI class for this one schema
     def jsi_schema_class
-      JSI.class_for_schema(self)
+      JSI.class_for_schemas(Set[self])
     end
 
-    # calls #new on the class for this schema with the given arguments. for parameters,
-    # see JSI::Base#initialize documentation.
+    # instantiates the given other_instance as a JSI::Base class for schemas matched from this schema to the
+    # other_instance.
     #
-    # @return [JSI::Base] a JSI whose schema is this schema and whose instance is the given instance
+    # any parameters are passed to JSI::Base#initialize, but none are normally used.
+    #
+    # @return [JSI::Base] a JSI whose instance is the given instance and whose schemas are matched from this
+    #   schema.
     def new_jsi(other_instance, *a, &b)
-      JSI.class_for_schema(match_to_instance(other_instance)).new(other_instance, *a, &b)
+      JSI.class_for_schemas(match_to_instance(other_instance)).new(other_instance, *a, &b)
     end
 
     # @return [Boolean] does this schema itself describe a schema?
@@ -147,60 +150,48 @@ module JSI
       is_a?(JSI::Schema::DescribesSchema)
     end
 
-    # if this schema is a oneOf, allOf, anyOf schema, #match_to_instance finds
-    # one of the subschemas that matches the given instance and returns it. if
-    # there are no matching *Of schemas, this schema is returned.
+    # checks this schema for applicators ($ref, allOf, etc.) which should be applied to the given instance.
+    # returns these as a Set of {JSI::Schema}s.
     #
-    # @param other_instance [Object] the instance to which to attempt to match *Of subschemas
-    # @return [JSI::Schema] a matched subschema, or this schema (self)
+    # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
+    #
+    # @param other_instance [Object] the instance to check any applicators against
+    # @return [Set<JSI::Schema>] matched applicator schemas
     def match_to_instance(other_instance)
-      ptr = node_ptr
-      ptr = ptr.deref(node_document)
-      ptr = ptr.schema_match_ptr_to_instance(node_document, other_instance)
-      if ptr
+      node_ptr.schema_match_ptrs_to_instance(node_document, other_instance).map do |ptr|
         ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
-      else
-        self
-      end
+      end.to_set
     end
 
-    # @param property_name [String] the property name for which to find a subschema
-    # @return [JSI::Schema, nil] a subschema from `properties`, `patternProperties`, or `additionalProperties` for the given token
-    def subschema_for_property(property_name)
-      jsi_memoize(:subschema_for_property, property_name) do |property_name|
-        ptr = node_ptr
-        ptr = ptr.deref(node_document)
-        ptr = ptr.schema_subschema_ptr_for_property_name(node_document, property_name)
-        if ptr
-          ptr = ptr.deref(node_document)
+    # returns a set of subschemas of this schema for the given property name, from keywords
+    #   `properties`, `patternProperties`, and `additionalProperties`.
+    #
+    # @param property_name [String] the property name for which to find subschemas
+    # @return [Set<JSI::Schema>] subschemas of this schema for the given property_name
+    def subschemas_for_property_name(property_name)
+      jsi_memoize(:subschemas_for_property_name, property_name) do |property_name|
+        node_ptr.schema_subschema_ptrs_for_property_name(node_document, property_name).map do |ptr|
           ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
-        else
-          nil
-        end
+        end.to_set
       end
     end
 
-    # @param index [Integer] the array index for which to find a subschema
-    # @return [JSI::Schema, nil] a subschema from `items` or `additionalItems` for the given token
-    def subschema_for_index(index)
-      jsi_memoize(:subschema_for_index, index) do |index|
-        ptr = node_ptr
-        ptr = ptr.deref(node_document)
-        ptr = ptr.schema_subschema_ptr_for_index(node_document, index)
-        if ptr
-          ptr = ptr.deref(node_document)
+    # returns a set of subschemas of this schema for the given array index, from keywords
+    #   `items` and `additionalItems`.
+    #
+    # @param index [Integer] the array index for which to find subschemas
+    # @return [Set<JSI::Schema>] subschemas of this schema for the given array index
+    def subschemas_for_index(index)
+      jsi_memoize(:subschemas_for_index, index) do |index|
+        node_ptr.schema_subschema_ptrs_for_index(node_document, index).map do |ptr|
           ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
-        else
-          nil
-        end
+        end.to_set
       end
     end
 
-    # @return [Set] any object property names this schema indicates may be
-    #   present on its instances. this includes, if present: keys of this
-    #   schema's "properties" object; entries of this schema's array of
-    #   "required" property keys. if this schema has allOf subschemas, those
-    #   schemas are checked (recursively) for their described object property names.
+    # @return [Set] any object property names this schema indicates may be present on its instances.
+    #   this includes any keys of this schema's "properties" object and any entries of this schema's
+    #   array of "required" property keys.
     def described_object_property_names
       jsi_memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
@@ -209,12 +200,6 @@ module JSI
           end
           if node_content.respond_to?(:to_hash) && node_content['required'].respond_to?(:to_ary)
             property_names.merge(node_content['required'].to_ary)
-          end
-          # we should look at dependencies (TODO).
-          if respond_to?(:to_hash) && self['allOf'].respond_to?(:to_ary)
-            self['allOf'].select{ |s| s.is_a?(JSI::Schema) }.map(&:deref).map do |allOf_schema|
-              property_names.merge(allOf_schema.described_object_property_names)
-            end
           end
         end
       end

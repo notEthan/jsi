@@ -33,43 +33,71 @@ module JSI
         @in_schema_classes
       end
 
-      # @return [String] absolute schema_id of the schema this class represents.
-      #   see {Schema#schema_id}.
-      def schema_id
-        schema.schema_id
-      end
-
-      # @return [String] a string representing the class, with schema_id or schema ptr fragment
+      # @return [String] a string representing the class, indicating the schemas represented by their module
+      #   name or a URI
       def inspect
-        if !respond_to?(:schema)
+        if !respond_to?(:jsi_class_schemas)
           super
         else
-          uri = schema_id || schema.node_ptr.uri
+          schema_names = jsi_class_schemas.map do |schema|
+            mod = schema.jsi_schema_module
+            if mod.name && schema.schema_id
+              "#{mod.name} (#{schema.schema_id})"
+            elsif mod.name
+              mod.name
+            elsif schema.schema_id
+              schema.schema_id
+            else
+              schema.node_ptr.uri
+            end
+          end
+
           if name && !in_schema_classes
-            "#{name} (#{uri})"
+            if jsi_class_schemas.empty?
+              "#{name} (0 schemas)"
+            else
+              "#{name} (#{schema_names.join(', ')})"
+            end
           else
-            "(JSI Schema Class: #{uri})"
+            if schema_names.empty?
+              "(JSI Schema Class for 0 schemas)"
+            else
+              "(JSI Schema Class: #{schema_names.join(', ')})"
+            end
           end
         end
       end
 
       alias_method :to_s, :inspect
 
-      # @return [String] a name for a constant for this class, generated from the
-      #   schema_id. only used if the class is not assigned to another constant.
+      # @return [String, nil] a name for a constant for this class, generated from the constant name
+      #   or schema id of each schema this class represents. nil if any represented schema has no constant
+      #   name or schema id.
       def schema_classes_const_name
-        if schema_id
-          'X' + schema_id.gsub(/[^\w]/, '_')
+        if respond_to?(:jsi_class_schemas)
+          schema_names = jsi_class_schemas.map do |schema|
+            if schema.jsi_schema_module.name
+              schema.jsi_schema_module.name
+            elsif schema.schema_id
+              schema.schema_id
+            else
+              nil
+            end
+          end
+          if !schema_names.any?(&:nil?) && !schema_names.empty?
+            schema_names.sort.map { |n| 'X' + n.gsub(/[^\w]/, '_') }.join('')
+          end
         end
       end
 
       # @return [String] a constant name of this class
       def name
         unless instance_variable_defined?(:@in_schema_classes)
-          if super || !schema_id || SchemaClasses.const_defined?(schema_classes_const_name)
+          const_name = schema_classes_const_name
+          if super || !const_name || SchemaClasses.const_defined?(const_name)
             @in_schema_classes = false
           else
-            SchemaClasses.const_set(schema_classes_const_name, self)
+            SchemaClasses.const_set(const_name, self)
             @in_schema_classes = true
           end
         end
@@ -95,8 +123,8 @@ module JSI
     #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
     # @param jsi_root_node [JSI::Base] for internal use, specifies the JSI at the root of the document
     def initialize(instance, jsi_document: nil, jsi_ptr: nil, jsi_root_node: nil)
-      unless respond_to?(:schema)
-        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
+      unless respond_to?(:jsi_schemas)
+        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.")
       end
 
       if instance.is_a?(JSI::Schema)
@@ -135,8 +163,11 @@ module JSI
       elsif self.jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
       end
-      if self.schema.describes_schema?
-        extend JSI::Schema
+
+      jsi_schemas.each do |schema|
+        if schema.describes_schema?
+          extend JSI::Schema
+        end
       end
     end
 
@@ -192,8 +223,9 @@ module JSI
 
     # @param token [String, Integer, Object] the token to subscript
     # @return [JSI::Base, Object] the instance's subscript value at the given token.
-    #   if there is a subschema defined for that token on this JSI's schema,
-    #   returns that value as a JSI instantiation of that subschema.
+    #   if this JSI's schemas define subschemas which apply for the given token, and the value is complex,
+    #   returns the subscript value as a JSI instantiation of those subschemas. otherwise, the plain instance
+    #   value is returned.
     def [](token)
       if respond_to?(:to_hash)
         token_in_range = node_content_hash_pubsend(:key?, token)
@@ -207,24 +239,24 @@ module JSI
 
       jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if respond_to?(:to_ary)
-          token_schema = schema.subschema_for_index(token)
+          token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_index(token) }.inject(Set.new, &:|)
         else
-          token_schema = schema.subschema_for_property(token)
+          token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_property_name(token) }.inject(Set.new, &:|)
         end
-        token_schema = token_schema && token_schema.match_to_instance(value)
+        token_schemas = token_schemas.map { |schema| schema.match_to_instance(value) }.inject(Set.new, &:|)
 
         if token_in_range
-          complex_value = token_schema && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-          schema_value = token_schema && token_schema.describes_schema?
+          complex_value = token_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+          schema_value = token_schemas.any? { |token_schema| token_schema.describes_schema? }
 
           if complex_value || schema_value
-            class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], jsi_root_node: @jsi_root_node)
+            JSI::SchemaClasses.class_for_schemas(token_schemas).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], jsi_root_node: @jsi_root_node)
           else
             value
           end
         else
           defaults = Set.new
-          if token_schema
+          token_schemas.each do |token_schema|
             if token_schema.respond_to?(:to_hash) && token_schema.key?('default')
               defaults << token_schema['default']
             end
@@ -297,12 +329,12 @@ module JSI
 
     # @return [Array] array of schema validation errors for this instance
     def fully_validate(errors_as_objects: false)
-      schema.fully_validate_instance(jsi_instance, errors_as_objects: errors_as_objects)
+      jsi_schemas.map { |schema| schema.fully_validate_instance(jsi_instance, errors_as_objects: errors_as_objects) }.inject([], &:+)
     end
 
     # @return [true, false] whether the instance validates against its schema
     def validate
-      schema.validate_instance(jsi_instance)
+      jsi_schemas.all? { |schema| schema.validate_instance(jsi_instance) }
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -310,7 +342,8 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors
     def validate!
-      schema.validate_instance!(jsi_instance)
+      jsi_schemas.each { |schema| schema.validate_instance!(jsi_instance) }
+      true
     end
 
     def dup
@@ -344,18 +377,18 @@ module JSI
       class_txt = begin
         if class_name
           # ignore ID
-          schema_name = schema.jsi_schema_module.name
-          if !schema_name
+          schema_module_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name }.compact
+          if schema_module_names.empty?
             class_name
           else
-            "#{class_name} (#{schema_name})"
+            "#{class_name} (#{schema_module_names.join(', ')})"
           end
         else
-          schema_name = schema.jsi_schema_module.name || schema.schema_id
-          if !schema_name
+          schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name || schema.schema_id }.compact
+          if schema_names.empty?
             "JSI"
           else
-            "JSI (#{schema_name})"
+            "JSI (#{schema_names.join(', ')})"
           end
         end
       end
@@ -388,13 +421,5 @@ module JSI
       {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
     end
     include FingerprintHash
-
-    private
-
-    # this is an instance method in order to allow subclasses of JSI classes to
-    # override it to point to other subclasses corresponding to other schemas.
-    def class_for_schema(schema)
-      JSI.class_for_schema(schema)
-    end
   end
 end
