@@ -256,8 +256,7 @@ module JSI
         raise(Bug, 'bad @ancestor_jsi') if @ancestor_jsi.object_id == self.object_id
 
         modified_ancestor = @ancestor_jsi.modified_copy do |anc|
-          mod_anc = @jsi_ptr.ptr_relative_to(@ancestor_jsi.jsi_ptr).modified_document_copy(anc, &block)
-          mod_anc
+          @jsi_ptr.ptr_relative_to(@ancestor_jsi.jsi_ptr).modified_document_copy(anc, &block)
         end
         self.class.new(Base::NOINSTANCE, jsi_document: modified_ancestor.jsi_document, jsi_ptr: @jsi_ptr, ancestor_jsi: modified_ancestor)
       else
