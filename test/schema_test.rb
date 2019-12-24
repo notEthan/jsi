@@ -66,10 +66,10 @@ describe JSI::Schema do
       assert_equal(schema, schema.jsi_schema_module.schema)
     end
   end
-  describe '#schema_class' do
+  describe '#jsi_schema_class' do
     it 'returns the class for the schema' do
       schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
-      assert_equal(JSI.class_for_schema(schema), schema.schema_class)
+      assert_equal(JSI.class_for_schema(schema), schema.jsi_schema_class)
     end
   end
   describe '#subschema_for_property' do

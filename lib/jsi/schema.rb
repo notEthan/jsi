@@ -138,8 +138,6 @@ module JSI
       JSI.class_for_schema(self)
     end
 
-    alias_method :schema_class, :jsi_schema_class
-
     # calls #new on the class for this schema with the given arguments. for parameters,
     # see JSI::Base#initialize documentation.
     #
