@@ -97,6 +97,40 @@ describe JSI::BaseArray do
         assert_equal("cannot assign subcript (using token: 2) to instance: nil", err.message)
       end
     end
+    describe '#inspect' do
+      it 'inspects' do
+        assert_match(%r(\A\#\[<JSI::SchemaClasses\["[^"]+\#"\]\ Array>\ "foo",\ \#\{<JSI::SchemaClasses\["[^"]+\#\/items\/1"\]\ Hash>\ "lamp"\ =>\ \[3\]\},\ \#\[<JSI::SchemaClasses\["[^"]+\#\/items\/2"\]\ Array>\ "q",\ "r"\]\]\z), subject.inspect)
+      end
+    end
+    describe '#pretty_print' do
+      it 'pretty_prints' do
+        assert_match(%r(\A\#\[<JSI::SchemaClasses\["[^"]+\#"\]\ Array>\n\ \ "foo",\n\ \ \#\{<JSI::SchemaClasses\["[^"]+\#\/items\/1"\]\ Hash>\n\ \ \ \ "lamp"\ =>\ \[3\]\n\ \ \},\n\ \ \#\[<JSI::SchemaClasses\["[^"]+\#\/items\/2"\]\ Array>\n\ \ \ \ "q",\n\ \ \ \ "r"\n\ \ \]\n\]\n\z), subject.pretty_inspect)
+      end
+    end
+    describe '#inspect SortOfArray' do
+      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      it 'inspects' do
+        assert_match(%r(\A\#\[<JSI::SchemaClasses\["[^"]+\#"\]\ SortOfArray>\ "foo",\ \#\{<JSI::SchemaClasses\["[^"]+\#\/items\/1"\]\ Hash>\ "lamp"\ =>\ \[3\]\},\ \#\[<JSI::SchemaClasses\["[^"]+\#\/items\/2"\]\ Array>\ "q",\ "r"\]\]\z), subject.inspect)
+      end
+    end
+    describe '#pretty_print SortOfArray' do
+      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      it 'pretty_prints' do
+        assert_match(%r(\A#\[<JSI::SchemaClasses\["[^"]+\#"\]\ SortOfArray>\n\ \ "foo",\n\ \ \#\{<JSI::SchemaClasses\["[^"]+\#\/items\/1"\]\ Hash>\n\ \ \ \ "lamp"\ =>\ \[3\]\n\ \ \},\n\ \ \#\[<JSI::SchemaClasses\["[^"]+\#\/items\/2"\]\ Array>\n\ \ \ \ "q",\n\ \ \ \ "r"\n\ \ \]\n\]\n\z), subject.pretty_inspect)
+      end
+    end
+    describe '#inspect Node' do
+      let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
+      it 'inspects' do
+        assert_match(%r(\A\#\[<JSI::SchemaClasses\["[^"]+\#"\]\ fragment="\#">\ "foo",\ \#\{<JSI::SchemaClasses\["[^"]+\#\/items\/1"\]\ fragment="\#\/1">\ "lamp"\ =>\ \#\[<JSI::JSON::ArrayNode\ fragment="\#\/1\/lamp">\ 3\]\},\ \#\[<JSI::SchemaClasses\["[^"]+\#\/items\/2"\]\ fragment="\#\/2">\ "q",\ "r"\]\]\z), subject.inspect)
+      end
+    end
+    describe '#pretty_print Node' do
+      let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
+      it 'pretty_prints' do
+        assert_match(%r(\A\#\[<JSI::SchemaClasses\["[^"]+\#"\]\ fragment="\#">\n\ \ "foo",\n\ \ \#\{<JSI::SchemaClasses\["[^"]+\#\/items\/1"\]\ fragment="\#\/1">\n\ \ \ \ "lamp"\ =>\ \#\[<JSI::JSON::ArrayNode\ fragment="\#\/1\/lamp">\ 3\]\n\ \ \},\n\ \ \#\[<JSI::SchemaClasses\["[^"]+\#\/items\/2"\]\ fragment="\#\/2">\n\ \ \ \ "q",\n\ \ \ \ "r"\n\ \ \]\n\]\n\z), subject.pretty_inspect)
+      end
+    end
   end
   # these methods just delegate to Array so not going to test excessively
   describe 'index only methods' do
