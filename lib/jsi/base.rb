@@ -252,13 +252,9 @@ module JSI
         if !token_is_ours && token_schema && token_schema.key?('default')
           # use the default value
           default = token_schema['default']
-          if default.respond_to?(:to_hash) || default.respond_to?(:to_ary)
-            # we are using #dup so that we get a modified copy of self, in which we set dup[token_]=default.
-            # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
-            dup.tap { |o| o[token_] = default }[token_]
-          else
-            default
-          end
+          # we are using #dup so that we get a modified copy of self, in which we set dup[token_]=default.
+          # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
+          dup.tap { |o| o[token_] = default }[token_]
         elsif token_schema && (token_schema.describes_schema? || value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
           class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token_], ancestor_jsi: @ancestor_jsi || self)
         elsif token_is_ours
