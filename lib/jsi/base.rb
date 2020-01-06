@@ -390,7 +390,7 @@ module JSI
             else
               default
             end
-          elsif property_schema && (instance_property_value.respond_to?(:to_hash) || instance_property_value.respond_to?(:to_ary))
+          elsif property_schema && (property_schema.describes_schema? || instance_property_value.respond_to?(:to_hash) || instance_property_value.respond_to?(:to_ary))
             class_for_schema(property_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[property_name_], ancestor_jsi: @ancestor_jsi || self)
           else
             instance_property_value
@@ -444,7 +444,7 @@ module JSI
             else
               default
             end
-          elsif index_schema && (instance_idx_value.respond_to?(:to_hash) || instance_idx_value.respond_to?(:to_ary))
+          elsif index_schema && (index_schema.describes_schema? || instance_idx_value.respond_to?(:to_hash) || instance_idx_value.respond_to?(:to_ary))
             class_for_schema(index_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[i_], ancestor_jsi: @ancestor_jsi || self)
           else
             instance_idx_value
