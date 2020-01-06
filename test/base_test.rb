@@ -2,6 +2,10 @@ require_relative 'test_helper'
 
 NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema'})
 
+# hitting .tap(&:name) causes JSI to assign a constant name from the ID,
+# meaning the name NamedSchemaInstanceTwo is not known.
+NamedSchemaInstanceTwo = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).tap(&:name)
+
 describe JSI::Base do
   let(:schema_content) { {} }
   let(:schema) { JSI::Schema.new(schema_content) }
@@ -26,6 +30,11 @@ describe JSI::Base do
     it 'is the constant name (plus id for .inspect) for a class assigned to a constant' do
       assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/base/named_schema#)), NamedSchemaInstance.inspect)
       assert_equal(%q(NamedSchemaInstance), NamedSchemaInstance.to_s)
+    end
+    it 'is not the constant name when the constant name has been generated from the schema_id' do
+      assert_equal("JSI::SchemaClasses::Xhttps___schemas_jsi_unth_net_test_base_named_schema_two_", NamedSchemaInstanceTwo.name)
+      assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two#)", NamedSchemaInstanceTwo.inspect)
+      assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two#)", NamedSchemaInstanceTwo.to_s)
     end
   end
   describe 'class name' do
