@@ -249,9 +249,20 @@ module JSI
           token_schema = schema.subschema_for_property(token_)
         end
         token_schema = token_schema && token_schema.match_to_instance(value)
-        if !token_is_ours && token_schema && token_schema.key?('default')
+
+        use_default = false
+        default = nil
+        if !token_is_ours
+          if token_schema
+            if token_schema.respond_to?(:to_hash) && token_schema.key?('default')
+              default = token_schema['default']
+              use_default = true
+            end
+          end
+        end
+
+        if use_default
           # use the default value
-          default = token_schema['default']
           # we are using #dup so that we get a modified copy of self, in which we set dup[token_]=default.
           # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
           dup.tap { |o| o[token_] = default }[token_]
