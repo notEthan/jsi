@@ -67,14 +67,10 @@ module JSI
           else
             default_metaschema.new_jsi(schema_object)
           end
+        elsif [true, false].include?(schema_object)
+          default_metaschema.new_jsi(schema_object)
         else
-          if schema_object == true
-            default_metaschema.new_jsi({})
-          elsif schema_object == false
-            default_metaschema.new_jsi({"not" => {}})
-          else
-            raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
-          end
+          raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
         end
       end
 
@@ -231,14 +227,14 @@ module JSI
     def described_object_property_names
       memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
-          if node_content['properties'].respond_to?(:to_hash)
+          if node_content.respond_to?(:to_hash) && node_content['properties'].respond_to?(:to_hash)
             property_names.merge(node_content['properties'].keys)
           end
-          if node_content['required'].respond_to?(:to_ary)
+          if node_content.respond_to?(:to_hash) && node_content['required'].respond_to?(:to_ary)
             property_names.merge(node_content['required'].to_ary)
           end
           # we should look at dependencies (TODO).
-          if self['allOf'].respond_to?(:to_ary)
+          if respond_to?(:to_hash) && self['allOf'].respond_to?(:to_ary)
             self['allOf'].select{ |s| s.is_a?(JSI::Schema) }.map(&:deref).map do |allOf_schema|
               property_names.merge(allOf_schema.described_object_property_names)
             end
