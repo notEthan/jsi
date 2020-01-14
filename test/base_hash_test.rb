@@ -12,8 +12,7 @@ describe JSI::BaseHash do
     }
   end
   let(:schema) { JSI::Schema.new(schema_content) }
-  let(:class_for_schema) { JSI.class_for_schema(schema) }
-  let(:subject) { class_for_schema.new(instance) }
+  let(:subject) { schema.new_jsi(instance) }
 
   describe '#[] with a default that is a basic type' do
     let(:schema_content) do
@@ -96,7 +95,7 @@ describe JSI::BaseHash do
       assert_instance_of(JSI.class_for_schema(schema['properties']['bar']), subject['bar'])
     end
     it 'sets a property to a schema instance with the same schema' do
-      other_subject = class_for_schema.new({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true})
+      other_subject = schema.new_jsi({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => true})
       # Given
       assert_equal(other_subject, subject)
 
@@ -177,8 +176,8 @@ describe JSI::BaseHash do
     # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
     # tests of all the modified copy methods here
     it('#merge') { assert_equal(subject, subject.merge({})) }
-    it('#reject') { assert_equal(class_for_schema.new({}), subject.reject { true }) }
-    it('#select') { assert_equal(class_for_schema.new({}), subject.select { false }) }
+    it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
+    it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
     describe '#select' do
       it 'yields properly too' do
         subject.select do |k, v|

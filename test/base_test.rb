@@ -6,7 +6,7 @@ describe JSI::Base do
   let(:schema_content) { {} }
   let(:schema) { JSI::Schema.new(schema_content) }
   let(:instance) { {} }
-  let(:subject) { JSI.class_for_schema(schema).new(instance) }
+  let(:subject) { schema.new_jsi(instance) }
   describe 'class .inspect + .to_s' do
     it 'is the same as Class#inspect on the base' do
       assert_equal('JSI::Base', JSI::Base.inspect)
@@ -144,7 +144,7 @@ describe JSI::Base do
     end
     describe 'another JSI::Base invalid' do
       let(:schema_content) { {'type' => 'object'} }
-      let(:instance) { JSI.class_for_schema(schema).new({'foo' => 'bar'}) }
+      let(:instance) { schema.new_jsi({'foo' => 'bar'}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
         assert_match(%r(\Aassigning another JSI::Base instance to JSI::SchemaClasses\[\".*#\"\] instance is incorrect. received: #\{<JSI::SchemaClasses\[.*\] Hash>\s*"foo" => "bar"\s*\}\z)m, err.message)
@@ -384,11 +384,11 @@ describe JSI::Base do
   end
   describe '#as_json' do
     it '#as_json' do
-      assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new({'a' => 'b'}).as_json)
-      assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
-      assert_equal({'a' => 'b'}, JSI.class_for_schema({'type' => 'object'}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
-      assert_equal(['a', 'b'], JSI.class_for_schema({'type' => 'array'}).new(JSI::JSON::Node.new_doc(['a', 'b'])).as_json)
-      assert_equal(['a'], JSI.class_for_schema({}).new(['a']).as_json(some_option: true))
+      assert_equal({'a' => 'b'}, JSI::Schema.new({}).new_jsi({'a' => 'b'}).as_json)
+      assert_equal({'a' => 'b'}, JSI::Schema.new({}).new_jsi(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
+      assert_equal({'a' => 'b'}, JSI::Schema.new({'type' => 'object'}).new_jsi(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
+      assert_equal(['a', 'b'], JSI::Schema.new({'type' => 'array'}).new_jsi(JSI::JSON::Node.new_doc(['a', 'b'])).as_json)
+      assert_equal(['a'], JSI::Schema.new({}).new_jsi(['a']).as_json(some_option: true))
     end
   end
   describe 'equality between different classes of JSI::Base subclasses' do

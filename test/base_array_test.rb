@@ -13,8 +13,7 @@ describe JSI::BaseArray do
     }
   end
   let(:schema) { JSI::Schema.new(schema_content) }
-  let(:class_for_schema) { JSI.class_for_schema(schema) }
-  let(:subject) { class_for_schema.new(instance) }
+  let(:subject) { schema.new_jsi(instance) }
 
   describe '#[] with a default that is a basic type' do
     let(:schema_content) do
@@ -115,7 +114,7 @@ describe JSI::BaseArray do
     it('#<=>')     { assert_equal(1, subject <=> []) }
     it('#<=>')      { assert_equal(-1, [] <=> subject) }
     require 'abbrev'
-    it('#abbrev')    { assert_equal({'a' => 'a'}, class_for_schema.new(['a']).abbrev) }
+    it('#abbrev')    { assert_equal({'a' => 'a'}, schema.new_jsi(['a']).abbrev) }
     it('#assoc')      { assert_equal(['q', 'r'], subject.assoc('q')) }
     it('#at')          { assert_equal('foo', subject.at(0)) }
     it('#bsearch')      { assert_equal(nil, subject.bsearch { false }) }
@@ -131,9 +130,9 @@ describe JSI::BaseArray do
     it('#first')     { assert_equal('foo', subject.first) }
     it('#include?') { assert_equal(true, subject.include?('foo')) }
     it('#index')   { assert_equal(0, subject.index('foo')) }
-    it('#join')     { assert_equal('a b', class_for_schema.new(['a', 'b']).join(' ')) }
+    it('#join')     { assert_equal('a b', schema.new_jsi(['a', 'b']).join(' ')) }
     it('#last')      { assert_equal(subject[2], subject.last) }
-    it('#pack')       { assert_equal(' ', class_for_schema.new([32]).pack('c')) }
+    it('#pack')       { assert_equal(' ', schema.new_jsi([32]).pack('c')) }
     it('#permutation') { assert_equal([['foo'], [subject[1]], [subject[2]]], subject.permutation(1).to_a) }
     it('#product')    { assert_equal([], subject.product([])) }
     # due to differences in implementation between #assoc and #rassoc, the reason for which
@@ -150,14 +149,14 @@ describe JSI::BaseArray do
     it('#reverse_each')       { assert_equal([subject[2], subject[1], 'foo'], subject.reverse_each.to_a) }
     it('#rindex')            { assert_equal(0, subject.rindex('foo')) }
     it('#rotate')           { assert_equal([subject[1], subject[2], 'foo'], subject.rotate) }
-    it('#sample')          { assert_equal('a', class_for_schema.new(['a']).sample) }
-    it('#shelljoin')      { assert_equal('a', class_for_schema.new(['a']).shelljoin) } if [].respond_to?(:shelljoin)
+    it('#sample')          { assert_equal('a', schema.new_jsi(['a']).sample) }
+    it('#shelljoin')      { assert_equal('a', schema.new_jsi(['a']).shelljoin) } if [].respond_to?(:shelljoin)
     it('#shuffle')       { assert_equal(3, subject.shuffle.size) }
     it('#slice')        { assert_equal(['foo'], subject.slice(0, 1)) }
-    it('#sort')        { assert_equal(['a'], class_for_schema.new(['a']).sort) }
+    it('#sort')        { assert_equal(['a'], schema.new_jsi(['a']).sort) }
     it('#take')       { assert_equal(['foo'], subject.take(1)) }
     it('#take_while') { assert_equal([], subject.take_while { false }) }
-    it('#transpose') { assert_equal([], class_for_schema.new([]).transpose) }
+    it('#transpose') { assert_equal([], schema.new_jsi([]).transpose) }
     it('#uniq')     { assert_equal(subject.to_a, subject.uniq) }
     it('#values_at') { assert_equal(['foo'], subject.values_at(0)) }
     it('#zip')      { assert_equal([['foo', 'foo'], [subject[1], subject[1]], [subject[2], subject[2]]], subject.zip(subject)) }
@@ -174,12 +173,12 @@ describe JSI::BaseArray do
     end
   end
   describe 'modified copy methods' do
-    it('#reject') { assert_equal(class_for_schema.new(['foo']), subject.reject { |e| e != 'foo' }) }
+    it('#reject') { assert_equal(schema.new_jsi(['foo']), subject.reject { |e| e != 'foo' }) }
     it('#reject block var') do
       subj_a = subject.to_a
       subject.reject { |e| assert_equal(e, subj_a.shift) }
     end
-    it('#select') { assert_equal(class_for_schema.new(['foo']), subject.select { |e| e == 'foo' }) }
+    it('#select') { assert_equal(schema.new_jsi(['foo']), subject.select { |e| e == 'foo' }) }
     it('#select block var') do
       subj_a = subject.to_a
       subject.select { |e| assert_equal(e, subj_a.shift) }
@@ -187,7 +186,7 @@ describe JSI::BaseArray do
     it('#compact') { assert_equal(subject, subject.compact) }
     describe 'at a depth' do
       it('#select') do
-        expected = class_for_schema.new(['foo', {'lamp' => [3]}, ['r']])[2]
+        expected = schema.new_jsi(['foo', {'lamp' => [3]}, ['r']])[2]
         actual = subject[2].select { |e| e == 'r' }
         assert_equal(expected, actual)
       end
