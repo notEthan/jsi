@@ -38,6 +38,12 @@ class JSISpec < Minitest::Spec
     matcher = Regexp.new Regexp.escape matcher if String === matcher
     assert matcher =~ obj, msg
   end
+
+  def assert_is_a mod, obj, msg = nil
+    msg = message(msg) { "Expected instance of #{mod}. received #{obj.class}: #{mu_pp(obj)}" }
+
+    assert obj.is_a?(mod), msg
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec
