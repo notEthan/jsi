@@ -298,7 +298,7 @@ module JSI
       end
       clear_memo(:[])
       if value.is_a?(Base)
-        instance[token] = value.instance
+        self[token] = value.jsi_instance
       else
         instance[token] = value
       end
