@@ -1,4 +1,18 @@
 module JSI
+  # JSI Schema Modules are extended with JSI::SchemaModule
+  module SchemaModule
+    # @return [String] absolute schema_id of the schema this module represents.
+    #   see {Schema#schema_id}.
+    def schema_id
+      schema.schema_id
+    end
+
+    # @return [String]
+    def inspect
+      %Q(#<Module for Schema: #{schema_id}>)
+    end
+  end
+
   # this module is just a namespace for schema classes.
   module SchemaClasses
     # JSI::SchemaClasses[schema_id] returns a class for the schema with the
@@ -50,12 +64,7 @@ module JSI
           Module.new.tap do |m|
             m.instance_exec(schema_) do |schema|
               define_singleton_method(:schema) { schema }
-              define_singleton_method(:schema_id) do
-                schema.schema_id
-              end
-              define_singleton_method(:inspect) do
-                %Q(#<Module for Schema: #{schema_id}>)
-              end
+              extend SchemaModule
 
               conflicting_instance_methods = (conflicting_modules_ + [m]).map do |mod|
                 mod.instance_methods + mod.private_instance_methods
