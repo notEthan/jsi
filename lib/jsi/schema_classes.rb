@@ -11,6 +11,12 @@ module JSI
     def inspect
       %Q(#<Module for Schema: #{schema_id}>)
     end
+
+    # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
+    # @return [JSI::Base] a JSI whose instance is the given instance
+    def new_jsi(instance, *a, &b)
+      schema.new_jsi(instance, *a, &b)
+    end
   end
 
   # this module is just a namespace for schema classes.
