@@ -5,6 +5,13 @@ module JSI
   # object, JSI::Schema is a relatively simple class to abstract useful methods
   # applied to a JSON Schema.
   class Schema
+    class Error < StandardError
+    end
+
+    # an exception raised when a thing is expected to be a JSI::Schema, but is not
+    class NotASchemaError < Error
+    end
+
     include Memoize
 
     class << self
