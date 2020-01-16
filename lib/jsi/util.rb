@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   module Util
     # a proc which does nothing

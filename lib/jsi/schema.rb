@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # JSI::Schema represents a JSON Schema. initialized from a Hash-like schema
   # object, JSI::Schema is a relatively simple class to abstract useful methods

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # a module relating to objects that act like Hash or Array instances
   module Typelike

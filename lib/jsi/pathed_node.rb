@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # including class MUST define
   # - #node_document [Object] returning the document

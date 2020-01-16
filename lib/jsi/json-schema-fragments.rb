@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "json-schema"
 
 # apply the changes from https://github.com/ruby-json-schema/json-schema/pull/382 

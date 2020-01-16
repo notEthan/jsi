@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   SimpleWrap = JSI.class_for_schema({"additionalProperties": {"$ref": "#"}, "items": {"$ref": "#"}})
 

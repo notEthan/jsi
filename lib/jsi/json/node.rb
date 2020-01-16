@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   module JSON
     # JSI::JSON::Node is an abstraction of a node within a JSON document.

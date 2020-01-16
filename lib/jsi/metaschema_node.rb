@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # a MetaschemaNode is a PathedNode whose node_document contains a metaschema.
   # as with any PathedNode the node_ptr points to the content of a node.

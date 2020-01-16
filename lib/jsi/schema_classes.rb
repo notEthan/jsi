@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # JSI Schema Modules are extended with JSI::SchemaModule
   module SchemaModule
