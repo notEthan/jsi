@@ -145,7 +145,7 @@ module JSI
     #
     # @return [JSI::Base] a JSI whose schema is this schema and whose instance is the given instance
     def new_jsi(other_instance, *a, &b)
-      jsi_schema_class.new(other_instance, *a, &b)
+      JSI.class_for_schema(match_to_instance(other_instance)).new(other_instance, *a, &b)
     end
 
     # @return [Boolean] does this schema itself describe a schema?
