@@ -1,9 +1,22 @@
 require_relative 'test_helper'
 
+base = {
+  'description' => 'named array schema',
+  'type' => 'array',
+  'items' => [
+    {'type' => 'string'},
+    {'type' => 'object'},
+    {'type' => 'array', 'items' => {}},
+  ],
+}
+NamedArrayInstance = JSI.class_for_schema(base)
+NamedIdArrayInstance = JSI.class_for_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_array_schema'}.merge(base))
+
 describe JSI::BaseArray do
   let(:instance) { ['foo', {'lamp' => [3]}, ['q', 'r']] }
   let(:schema_content) do
     {
+      'description' => 'hash schema',
       'type' => 'array',
       'items' => [
         {'type' => 'string'},
@@ -117,6 +130,82 @@ describe JSI::BaseArray do
       let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
       it 'pretty_prints' do
         assert_match(%r(\A#\[<JSI::SchemaClasses\["[^"]+\#"\]\ SortOfArray>\n\ \ "foo",\n\ \ \#\{<JSI::SchemaClasses\["[^"]+\#\/items\/1"\]\ Hash>\n\ \ \ \ "lamp"\ =>\ \[3\]\n\ \ \},\n\ \ \#\[<JSI::SchemaClasses\["[^"]+\#\/items\/2"\]\ Array>\n\ \ \ \ "q",\n\ \ \ \ "r"\n\ \ \]\n\]\n\z), subject.pretty_inspect)
+      end
+    end
+    describe '#inspect named' do
+      let(:subject) { NamedArrayInstance.new(instance) }
+      it 'inspects' do
+        assert_equal("#[<NamedArrayInstance Array> \"foo\", \#{<JSI::SchemaClasses[\"35462614-e3f1-5449-9c66-bb4108ec6f41#/items/1\"] Hash> \"lamp\" => [3]}, #[<JSI::SchemaClasses[\"35462614-e3f1-5449-9c66-bb4108ec6f41#/items/2\"] Array> \"q\", \"r\"]]", subject.inspect)
+      end
+    end
+    describe '#pretty_print named' do
+      let(:subject) { NamedArrayInstance.new(instance) }
+      it 'inspects' do
+        assert_equal("#[<NamedArrayInstance Array>\n  \"foo\",\n  \#{<JSI::SchemaClasses[\"35462614-e3f1-5449-9c66-bb4108ec6f41#/items/1\"] Hash>\n    \"lamp\" => [3]\n  },\n  #[<JSI::SchemaClasses[\"35462614-e3f1-5449-9c66-bb4108ec6f41#/items/2\"] Array>\n    \"q\",\n    \"r\"\n  ]\n]\n", subject.pretty_inspect)
+      end
+    end
+    describe '#inspect named SortOfArray' do
+      let(:subject) { NamedArrayInstance.new(SortOfArray.new(instance)) }
+      it 'inspects' do
+        assert_equal("#[<NamedArrayInstance SortOfArray> \"foo\", \#{<JSI::SchemaClasses[\"35462614-e3f1-5449-9c66-bb4108ec6f41#/items/1\"] Hash> \"lamp\" => [3]}, #[<JSI::SchemaClasses[\"35462614-e3f1-5449-9c66-bb4108ec6f41#/items/2\"] Array> \"q\", \"r\"]]", subject.inspect)
+      end
+    end
+    describe '#pretty_print named SortOfArray' do
+      let(:subject) { NamedArrayInstance.new(SortOfArray.new(instance)) }
+      it 'inspects' do
+        assert_equal("#[<NamedArrayInstance SortOfArray>\n  \"foo\",\n  \#{<JSI::SchemaClasses[\"35462614-e3f1-5449-9c66-bb4108ec6f41#/items/1\"] Hash>\n    \"lamp\" => [3]\n  },\n  #[<JSI::SchemaClasses[\"35462614-e3f1-5449-9c66-bb4108ec6f41#/items/2\"] Array>\n    \"q\",\n    \"r\"\n  ]\n]\n", subject.pretty_inspect)
+      end
+    end
+    describe '#inspect named with id' do
+      let(:subject) { NamedIdArrayInstance.new(instance) }
+      it 'inspects' do
+        assert_equal("#[<NamedIdArrayInstance Array> \"foo\", \#{<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/base/named_array_schema#/items/1\"] Hash> \"lamp\" => [3]}, #[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/base/named_array_schema#/items/2\"] Array> \"q\", \"r\"]]", subject.inspect)
+      end
+    end
+    describe '#pretty_print named with id' do
+      let(:subject) { NamedIdArrayInstance.new(instance) }
+      it 'inspects' do
+        assert_equal("#[<NamedIdArrayInstance Array>\n  \"foo\",\n  \#{<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/base/named_array_schema#/items/1\"] Hash>\n    \"lamp\" => [3]\n  },\n  #[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/base/named_array_schema#/items/2\"] Array>\n    \"q\",\n    \"r\"\n  ]\n]\n", subject.pretty_inspect)
+      end
+    end
+    describe '#inspect named with id SortOfArray' do
+      let(:subject) { NamedIdArrayInstance.new(SortOfArray.new(instance)) }
+      it 'inspects' do
+        assert_equal("#[<NamedIdArrayInstance SortOfArray> \"foo\", \#{<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/base/named_array_schema#/items/1\"] Hash> \"lamp\" => [3]}, #[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/base/named_array_schema#/items/2\"] Array> \"q\", \"r\"]]", subject.inspect)
+      end
+    end
+    describe '#pretty_print named with id SortOfArray' do
+      let(:subject) { NamedIdArrayInstance.new(SortOfArray.new(instance)) }
+      it 'inspects' do
+        assert_equal("#[<NamedIdArrayInstance SortOfArray>\n  \"foo\",\n  \#{<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/base/named_array_schema#/items/1\"] Hash>\n    \"lamp\" => [3]\n  },\n  #[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/base/named_array_schema#/items/2\"] Array>\n    \"q\",\n    \"r\"\n  ]\n]\n", subject.pretty_inspect)
+      end
+    end
+    describe '#inspect with id' do
+      let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/withid', 'items' => {}} }
+      let(:subject) { schema.new_jsi(instance) }
+      it 'inspects' do
+        assert_equal("#[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#\"] Array> \"foo\", \#{<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#/items\"] Hash> \"lamp\" => [3]}, #[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#/items\"] Array> \"q\", \"r\"]]", subject.inspect)
+      end
+    end
+    describe '#pretty_print with id' do
+      let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/withid', 'items' => {}} }
+      let(:subject) { schema.new_jsi(instance) }
+      it 'inspects' do
+        assert_equal("#[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#\"] Array>\n  \"foo\",\n  \#{<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#/items\"] Hash>\n    \"lamp\" => [3]\n  },\n  #[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#/items\"] Array>\n    \"q\",\n    \"r\"\n  ]\n]\n", subject.pretty_inspect)
+      end
+    end
+    describe '#inspect with id SortOfArray' do
+      let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/withid', 'items' => {}} }
+      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      it 'inspects' do
+        assert_equal("#[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#\"] SortOfArray> \"foo\", \#{<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#/items\"] Hash> \"lamp\" => [3]}, #[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#/items\"] Array> \"q\", \"r\"]]", subject.inspect)
+      end
+    end
+    describe '#pretty_print with id SortOfArray' do
+      let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/withid', 'items' => {}} }
+      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      it 'inspects' do
+        assert_equal("#[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#\"] SortOfArray>\n  \"foo\",\n  \#{<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#/items\"] Hash>\n    \"lamp\" => [3]\n  },\n  #[<JSI::SchemaClasses[\"https://schemas.jsi.unth.net/test/withid#/items\"] Array>\n    \"q\",\n    \"r\"\n  ]\n]\n", subject.pretty_inspect)
       end
     end
     describe '#inspect Node' do
