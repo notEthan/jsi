@@ -272,11 +272,11 @@ describe JSI::Base do
     describe 'readers' do
       it 'reads attributes described as properties' do
         assert_equal({'x' => 'y'}, subject.foo.as_json)
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_respond_to(subject.foo, :to_hash)
         refute_respond_to(subject.foo, :to_ary)
         assert_equal([3.14159], subject.bar.as_json)
-        assert_instance_of(JSI.class_for_schema(schema['properties']['bar']), subject.bar)
+        assert_is_a(schema.properties['bar'].jsi_schema_module, subject.bar)
         refute_respond_to(subject.bar, :to_hash)
         assert_respond_to(subject.bar, :to_ary)
         assert_equal(true, subject.baz)
@@ -345,8 +345,8 @@ describe JSI::Base do
         subject.foo = {'y' => 'z'}
 
         assert_equal({'y' => 'z'}, subject.foo.as_json)
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), orig_foo)
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
       end
       it 'modifies the instance, visible to other references to the same instance' do
         orig_instance = subject.jsi_instance

@@ -50,7 +50,7 @@ describe JSI::BaseHash do
     describe 'nondefault value (nonbasic type)' do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_equal([2], subject.foo.as_json)
       end
     end
@@ -67,7 +67,7 @@ describe JSI::BaseHash do
     describe 'default value' do
       let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_equal({'foo' => 2}, subject.foo.as_json)
       end
     end
@@ -80,7 +80,7 @@ describe JSI::BaseHash do
     describe 'nondefault value (nonbasic type)' do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_equal([2], subject.foo.as_json)
       end
     end
@@ -92,8 +92,8 @@ describe JSI::BaseHash do
       subject['foo'] = {'y' => 'z'}
 
       assert_equal({'y' => 'z'}, subject['foo'].as_json)
-      assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), orig_foo)
-      assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject['foo'])
+      assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
+      assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
     end
     it 'sets a property to a schema instance with a different schema' do
       assert(subject['foo'])
@@ -103,8 +103,8 @@ describe JSI::BaseHash do
       # the content of the subscripts' instances is the same but the subscripts' classes are different
       assert_equal([9], subject['foo'].as_json)
       assert_equal([9], subject['bar'].as_json)
-      assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject['foo'])
-      assert_instance_of(JSI.class_for_schema(schema['properties']['bar']), subject['bar'])
+      assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
+      assert_is_a(schema.properties['bar'].jsi_schema_module, subject['bar'])
     end
     it 'sets a property to a schema instance with the same schema' do
       other_subject = schema.new_jsi({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]})

@@ -85,17 +85,17 @@ describe JSI::Schema do
     end
     it 'has a subschema by property' do
       subschema = schema.subschema_for_property('foo')
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschema)
       assert_equal('foo', subschema['description'])
     end
     it 'has a subschema by pattern property' do
       subschema = schema.subschema_for_property('bar')
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschema)
       assert_equal('ba*', subschema['description'])
     end
     it 'has a subschema by additional properties' do
       subschema = schema.subschema_for_property('anything')
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschema)
       assert_equal('whatever', subschema['description'])
     end
   end
@@ -108,10 +108,10 @@ describe JSI::Schema do
         items: {description: 'items!'}
       })
       first_subschema = schema.subschema_for_index(0)
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, first_subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschema)
       assert_equal('items!', first_subschema['description'])
       last_subschema = schema.subschema_for_index(1)
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, last_subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschema)
       assert_equal('items!', last_subschema['description'])
     end
     it 'has a subschema for each item by index' do
@@ -119,10 +119,10 @@ describe JSI::Schema do
         items: [{description: 'item one'}, {description: 'item two'}]
       })
       first_subschema = schema.subschema_for_index(0)
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, first_subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschema)
       assert_equal('item one', first_subschema['description'])
       last_subschema = schema.subschema_for_index(1)
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, last_subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschema)
       assert_equal('item two', last_subschema['description'])
     end
     it 'has a subschema by additional items' do
@@ -131,10 +131,10 @@ describe JSI::Schema do
         additionalItems: {description: "mo' crap"},
       })
       first_subschema = schema.subschema_for_index(0)
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, first_subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, first_subschema)
       assert_equal('item one', first_subschema['description'])
       last_subschema = schema.subschema_for_index(1)
-      assert_instance_of(JSI::Schema.default_metaschema.jsi_schema_class, last_subschema)
+      assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, last_subschema)
       assert_equal("mo' crap", last_subschema['description'])
     end
   end

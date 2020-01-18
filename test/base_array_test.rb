@@ -50,7 +50,7 @@ describe JSI::BaseArray do
     describe 'nondefault value (nonbasic type)' do
       let(:instance) { [[2]] }
       it 'returns the nondefault value' do
-        assert_instance_of(JSI.class_for_schema(schema['items']), subject[0])
+        assert_is_a(schema.items.jsi_schema_module, subject[0])
         assert_equal([2], subject[0].as_json)
       end
     end
@@ -65,7 +65,7 @@ describe JSI::BaseArray do
     describe 'default value' do
       let(:instance) { [{'bar' => 3}] }
       it 'returns the default value' do
-        assert_instance_of(JSI.class_for_schema(schema['items']), subject[1])
+        assert_is_a(schema.items.jsi_schema_module, subject[1])
         assert_equal({'foo' => 2}, subject[1].as_json)
       end
     end
@@ -78,7 +78,7 @@ describe JSI::BaseArray do
     describe 'nondefault value (nonbasic type)' do
       let(:instance) { [true, [2]] }
       it 'returns the nondefault value' do
-        assert_instance_of(JSI.class_for_schema(schema['items']), subject[1])
+        assert_is_a(schema.items.jsi_schema_module, subject[1])
         assert_equal([2], subject[1].as_json)
       end
     end
@@ -90,8 +90,8 @@ describe JSI::BaseArray do
       subject[2] = {'y' => 'z'}
 
       assert_equal({'y' => 'z'}, subject[2].as_json)
-      assert_instance_of(JSI.class_for_schema(schema['items'][2]), orig_2)
-      assert_instance_of(JSI.class_for_schema(schema['items'][2]), subject[2])
+      assert_is_a(schema.items[2].jsi_schema_module, orig_2)
+      assert_is_a(schema.items[2].jsi_schema_module, subject[2])
     end
     it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.jsi_instance
