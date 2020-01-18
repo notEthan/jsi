@@ -153,7 +153,7 @@ describe JSI::Base do
       let(:instance) { JSI::Schema.new({}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal("assigning a schema to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI::JSONSchemaOrgDraft06 Schema>}", err.message)
+        assert_equal("assigning a schema to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>}", err.message)
       end
     end
   end

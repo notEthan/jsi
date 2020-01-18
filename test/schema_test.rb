@@ -21,12 +21,12 @@ describe JSI::Schema do
     end
   end
   describe 'as an instance of metaschema' do
-    let(:metaschema_jsi_class) { JSI::JSONSchemaOrgDraft04 }
+    let(:metaschema_jsi_module) { JSI::JSONSchemaOrgDraft04 }
     let(:schema_object) { {'type' => 'array', 'items' => {'description' => 'items!'}} }
-    let(:schema) { metaschema_jsi_class.new(schema_object) }
+    let(:schema) { metaschema_jsi_module.new_jsi(schema_object) }
     it '#[]' do
       schema_items = schema['items']
-      assert_instance_of(metaschema_jsi_class, schema_items)
+      assert_is_a(metaschema_jsi_module, schema_items)
       assert_equal({'description' => 'items!'}, schema_items.as_json)
     end
   end
@@ -144,10 +144,10 @@ describe JSI::Schema do
     end
 
     it '#inspect' do
-      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Schema> \"id\" => \"https://schemas.jsi.unth.net/test/stringification\", \"type\" => \"object\"}", schema.inspect)
+      assert_equal("\#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> \"id\" => \"https://schemas.jsi.unth.net/test/stringification\", \"type\" => \"object\"}", schema.inspect)
     end
     it '#pretty_print' do
-      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Schema>
+      assert_equal("\#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
         \"id\" => \"https://schemas.jsi.unth.net/test/stringification\",
         \"type\" => \"object\"
       }".gsub(/^      /, ''), schema.pretty_inspect.chomp)
