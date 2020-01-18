@@ -81,6 +81,19 @@ module JSI
       if @schema
         extend(JSI::SchemaClasses.module_for_schema(@schema, conflicting_modules: [Metaschema, Schema, MetaschemaNode, PathedArrayNode, PathedHashNode]))
       end
+
+      # workarounds
+      begin # draft 4 boolean schema workaround
+        # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
+        # properties/additionalProperties and properties/additionalItems.
+        # we need to extend those as DescribesSchema.
+        addtlPropsanyOf = metaschema_root_ptr["properties"]["additionalProperties"]["anyOf"]
+        addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
+
+        if !node_ptr.root? && [addtlPropsanyOf, addtlItemsanyOf].include?(node_ptr.parent)
+          extend JSI::Schema::DescribesSchema
+        end
+      end
     end
 
     # document containing the metaschema. see PathedNode#node_document.
