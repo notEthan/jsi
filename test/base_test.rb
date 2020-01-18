@@ -1,10 +1,10 @@
 require_relative 'test_helper'
 
-NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema'})
+NamedSchemaInstance = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/base/named_schema'}).jsi_schema_class
 
 # hitting .tap(&:name) causes JSI to assign a constant name from the ID,
 # meaning the name NamedSchemaInstanceTwo is not known.
-NamedSchemaInstanceTwo = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).tap(&:name)
+NamedSchemaInstanceTwo = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).jsi_schema_class.tap(&:name)
 
 describe JSI::Base do
   let(:schema_content) { {} }
