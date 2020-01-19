@@ -45,7 +45,14 @@ class JSISpec < Minitest::Spec
   end
 
   def assert_match matcher, obj, msg = nil
-    msg = message(msg) { "Expected match.\nmatcher: #{mu_pp matcher}\nobject:  #{mu_pp obj}" }
+    msg = message(msg) do
+      [].tap do |ms|
+        ms << "Expected match."
+        ms << "#{ANSI.red   { 'matcher' }}: #{mu_pp matcher}"
+        ms << "#{ANSI.green { 'object' }}:  #{mu_pp obj}"
+        ms << "#{ANSI.yellow { 'escaped' }}: #{Regexp.new(Regexp.escape(obj)).inspect}" if obj.is_a?(String)
+      end.join("\n")
+    end
     assert_respond_to matcher, :"=~"
     matcher = Regexp.new Regexp.escape matcher if String === matcher
     assert matcher =~ obj, msg
