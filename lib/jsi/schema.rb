@@ -156,11 +156,7 @@ module JSI
       ptr = ptr.deref(node_document)
       ptr = ptr.schema_match_ptr_to_instance(node_document, other_instance)
       if ptr
-        ptr.evaluate(document_root_node).tap do |subschema|
-          unless subschema.is_a?(JSI::Schema)
-            raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
-          end
-        end
+        ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
       else
         self
       end
@@ -175,11 +171,7 @@ module JSI
         ptr = ptr.schema_subschema_ptr_for_property_name(node_document, property_name_)
         if ptr
           ptr = ptr.deref(node_document)
-          ptr.evaluate(document_root_node).tap do |subschema|
-            unless subschema.is_a?(JSI::Schema)
-              raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
-            end
-          end
+          ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
         else
           nil
         end
@@ -195,11 +187,7 @@ module JSI
         ptr = ptr.schema_subschema_ptr_for_index(node_document, index_)
         if ptr
           ptr = ptr.deref(node_document)
-          ptr.evaluate(document_root_node).tap do |subschema|
-            unless subschema.is_a?(JSI::Schema)
-              raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
-            end
-          end
+          ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
         else
           nil
         end
@@ -267,6 +255,13 @@ module JSI
     #   validation errors against its metaschema
     def validate_schema!
       ::JSON::Validator.validate!(JSI::Typelike.as_json(node_document), [], fragment: node_ptr.fragment, validate_schema: true, list: true)
+    end
+
+    private
+    def jsi_ensure_subschema_is_schema(subschema, ptr)
+      unless subschema.is_a?(JSI::Schema)
+        raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
+      end
     end
   end
 end
