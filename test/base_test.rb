@@ -61,12 +61,6 @@ describe JSI::Base do
       assert_equal(schema, JSI::SchemaClasses.module_for_schema(schema).schema)
     end
   end
-  describe 'SchemaClasses[]' do
-    let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/empty'} }
-    it 'stores the class for the schema' do
-      assert_equal(JSI.class_for_schema(schema), JSI::SchemaClasses[schema.schema_id])
-    end
-  end
   describe '.class_for_schema' do
     it 'returns a class from a schema' do
       class_for_schema = JSI.class_for_schema(schema)

@@ -28,16 +28,6 @@ module JSI
 
   # this module is just a namespace for schema classes.
   module SchemaClasses
-    # JSI::SchemaClasses[schema_id] returns a class for the schema with the
-    # given id, the same class as returned from JSI.class_for_schema.
-    #
-    # @param schema_id [String] absolute schema id as returned by {JSI::Schema#schema_id}
-    # @return [Class subclassing JSI::Base] the class for that schema
-    def self.[](schema_id)
-      @classes_by_id[schema_id]
-    end
-    @classes_by_id = {}
-
     class << self
       include Memoize
 
@@ -51,10 +41,6 @@ module JSI
 
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
-
-            if schema.schema_id
-              SchemaClasses.instance_exec { @classes_by_id }[schema.schema_id] = self
-            end
 
             self
           end
