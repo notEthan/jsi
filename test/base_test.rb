@@ -11,30 +11,25 @@ describe JSI::Base do
   let(:schema) { JSI::Schema.new(schema_content) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
-  describe 'class .inspect + .to_s' do
+  describe 'class .inspect' do
     it 'is the same as Class#inspect on the base' do
       assert_equal('JSI::Base', JSI::Base.inspect)
-      assert_equal('JSI::Base', JSI::Base.to_s)
     end
     it 'is (JSI Schema Class) for generated subclass without id' do
       assert_equal("(JSI Schema Class: #)", subject.class.inspect)
-      assert_equal("(JSI Schema Class)", subject.class.to_s)
     end
     describe 'with schema id' do
       let(:schema_content) { {'id' => 'https://jsi/foo'} }
       it 'is (JSI Schema Class: ...) for generated subclass with id' do
         assert_equal("(JSI Schema Class: https://jsi/foo#)", subject.class.inspect)
-        assert_equal("(JSI Schema Class: https://jsi/foo#)", subject.class.to_s)
       end
     end
-    it 'is the constant name (plus id for .inspect) for a class assigned to a constant' do
+    it 'is the constant name plus id for a class assigned to a constant' do
       assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/base/named_schema#)), NamedSchemaInstance.inspect)
-      assert_equal(%q(NamedSchemaInstance), NamedSchemaInstance.to_s)
     end
     it 'is not the constant name when the constant name has been generated from the schema_id' do
       assert_equal("JSI::SchemaClasses::Xhttps___schemas_jsi_unth_net_test_base_named_schema_two_", NamedSchemaInstanceTwo.name)
       assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two#)", NamedSchemaInstanceTwo.inspect)
-      assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two#)", NamedSchemaInstanceTwo.to_s)
     end
   end
   describe 'class name' do

@@ -44,19 +44,7 @@ module JSI
         end
       end
 
-      # @return [String] a string representing the class - a class name if one
-      #   was explicitly defined, otherwise a string indicating what this is
-      def to_s
-        if !respond_to?(:schema)
-          super
-        elsif name && !in_schema_classes
-          name
-        elsif schema_id
-          "(JSI Schema Class: #{schema_id})"
-        else
-          "(JSI Schema Class)"
-        end
-      end
+      alias_method :to_s, :inspect
 
       # @return [String] a name for a constant for this class, generated from the
       #   schema_id. only used if the class is not assigned to another constant.
