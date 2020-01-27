@@ -98,7 +98,7 @@ module JSI
       end
 
       @jsi_schemas = schema_doc_ptrs.map do |schema_doc_ptr|
-        if schema_doc_ptr[:ptr] == jsi_ptr && schema_doc_ptr[:doc] == jsi_document
+        if schema_doc_ptr[:ptr] == jsi_ptr && (schema_doc_ptr[:doc] == jsi_document || (jsi_ptr == @metaschema_root_ptr && schema_documents))
           self
         else
           MetaschemaNode.new(schema_doc_ptr[:doc], our_initialize_params.merge(jsi_ptr: schema_doc_ptr[:ptr]))
