@@ -231,7 +231,11 @@ module JSI
 
     # @return [Object] an opaque fingerprint of this MetaschemaNode for FingerprintHash
     def jsi_fingerprint
-      {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
+      jsi_document_perhaps = {}
+      if !schema_documents || jsi_ptr != metaschema_root_ptr
+        jsi_document_perhaps[:jsi_document] = jsi_document
+      end
+      {class: self.class}.merge(jsi_document_perhaps).merge(our_initialize_params)
     end
     include Util::FingerprintHash
 
