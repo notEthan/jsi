@@ -213,17 +213,6 @@ module JSI
         end
         token_schema = token_schema && token_schema.match_to_instance(value)
 
-        use_default = false
-        default = nil
-        if !token_in_range
-          if token_schema
-            if token_schema.respond_to?(:to_hash) && token_schema.key?('default')
-              default = token_schema['default']
-              use_default = true
-            end
-          end
-        end
-
         if token_in_range
           complex_value = token_schema && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
           schema_value = token_schema && token_schema.describes_schema?
@@ -234,10 +223,17 @@ module JSI
             value
           end
         else
-          if use_default
+          defaults = Set.new
+          if token_schema
+            if token_schema.respond_to?(:to_hash) && token_schema.key?('default')
+              defaults << token_schema['default']
+            end
+          end
+
+          if defaults.size == 1
             # use the default value
             # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
-            dup.tap { |o| o[token] = default }[token]
+            dup.tap { |o| o[token] = defaults.first }[token]
           else
             # I kind of want to just return nil here. the preferred mechanism for
             # a JSI's default value should be its schema. but returning nil ignores
