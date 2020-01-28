@@ -53,37 +53,24 @@ module JSI
       instance_for_schema = jsi_document
       schema_doc_ptr_init = Set.new << {doc: jsi_document, ptr: root_schema_ptr}
       schema_doc_ptrs = jsi_ptr.reference_tokens.inject(schema_doc_ptr_init) do |doc_ptrs, tok|
-        if instance_for_schema.respond_to?(:to_ary)
-          subschema_doc_ptrs_for_token = doc_ptrs.map do |doc_ptr|
-            doc, ptr = doc_ptr[:doc], doc_ptr[:ptr]
-            if ptr == @metaschema_root_ptr && schema_documents # I don't think this is necessary. the metaschema root would not be an array.
-              schema_documents.map do |schema_document|
-                ptr.schema_subschema_ptrs_for_index(schema_document, tok).map do |subschema_ptr|
-                  {doc: schema_document, ptr: subschema_ptr}
-                end
-              end.inject(Set.new, &:|)
+        subschema_doc_ptrs_for_token = doc_ptrs.map do |doc_ptr|
+          doc, ptr = doc_ptr[:doc], doc_ptr[:ptr]
+          if ptr == @metaschema_root_ptr && schema_documents
+            documents = schema_documents
+          else
+            documents = [doc]
+          end
+          documents.map do |schema_document|
+            if instance_for_schema.respond_to?(:to_ary)
+              subschema_ptrs = ptr.schema_subschema_ptrs_for_index(schema_document, tok)
             else
-              ptr.schema_subschema_ptrs_for_index(doc, tok).map do |subschema_ptr|
-                {doc: doc, ptr: subschema_ptr}
-              end
+              subschema_ptrs = ptr.schema_subschema_ptrs_for_property_name(schema_document, tok)
+            end
+            subschema_ptrs.map do |subschema_ptr|
+              {doc: schema_document, ptr: subschema_ptr}
             end
           end.inject(Set.new, &:|)
-        else
-          subschema_doc_ptrs_for_token = doc_ptrs.map do |doc_ptr|
-            doc, ptr = doc_ptr[:doc], doc_ptr[:ptr]
-            if ptr == @metaschema_root_ptr && schema_documents
-              schema_documents.map do |schema_document|
-                ptr.schema_subschema_ptrs_for_property_name(schema_document, tok).map do |subschema_ptr|
-                  {doc: schema_document, ptr: subschema_ptr}
-                end
-              end.inject(Set.new, &:|)
-            else
-              ptr.schema_subschema_ptrs_for_property_name(doc, tok).map do |subschema_ptr|
-                {doc: doc, ptr: subschema_ptr}
-              end
-            end
-          end.inject(Set.new, &:|)
-        end
+        end.inject(Set.new, &:|)
         instance_for_schema = instance_for_schema[tok]
         doc_ptrs_for_instance = subschema_doc_ptrs_for_token.map do |doc_ptr|
           doc_ptr[:ptr].schema_match_ptrs_to_instance(doc_ptr[:doc], instance_for_schema).map do |ptr|
