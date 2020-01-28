@@ -196,16 +196,16 @@ module JSI
     #   returns that value as a JSI instantiation of that subschema.
     def [](token)
       if respond_to?(:to_hash)
-        token_is_ours = node_content_hash_pubsend(:key?, token)
+        token_in_range = node_content_hash_pubsend(:key?, token)
         value = node_content_hash_pubsend(:[], token)
       elsif respond_to?(:to_ary)
-        token_is_ours = node_content_ary_pubsend(:each_index).include?(token)
+        token_in_range = node_content_ary_pubsend(:each_index).include?(token)
         value = node_content_ary_pubsend(:[], token)
       else
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      jsi_memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
+      jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if respond_to?(:to_ary)
           token_schema = schema.subschema_for_index(token)
         else
@@ -215,7 +215,7 @@ module JSI
 
         use_default = false
         default = nil
-        if !token_is_ours
+        if !token_in_range
           if token_schema
             if token_schema.respond_to?(:to_hash) && token_schema.key?('default')
               default = token_schema['default']
@@ -224,21 +224,27 @@ module JSI
           end
         end
 
-        if use_default
-          # use the default value
-          # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
-          # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
-          dup.tap { |o| o[token] = default }[token]
-        elsif token_schema && (token_schema.describes_schema? || value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-          class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], jsi_root_node: @jsi_root_node)
-        elsif token_is_ours
-          value
+        if token_in_range
+          complex_value = token_schema && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+          schema_value = token_schema && token_schema.describes_schema?
+
+          if complex_value || schema_value
+            class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], jsi_root_node: @jsi_root_node)
+          else
+            value
+          end
         else
-          # I kind of want to just return nil here. the preferred mechanism for
-          # a JSI's default value should be its schema. but returning nil ignores
-          # any value returned by Hash#default/#default_proc. there's no compelling
-          # reason not to support both, so I'll return that.
-          value
+          if use_default
+            # use the default value
+            # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
+            dup.tap { |o| o[token] = default }[token]
+          else
+            # I kind of want to just return nil here. the preferred mechanism for
+            # a JSI's default value should be its schema. but returning nil ignores
+            # any value returned by Hash#default/#default_proc. there's no compelling
+            # reason not to support both, so I'll return that.
+            value
+          end
         end
       end
     end
