@@ -199,7 +199,7 @@ describe JSI::JSON::Node do
       # simplest thing
       modified_dup = node.modified_copy(&:dup)
       # it is equal - being a dup
-      assert_equal(modified_dup, node)
+      assert_equal(node, modified_dup)
       # but different object
       refute_equal(node.object_id, modified_dup.object_id)
       # the parents, obviously, are different
