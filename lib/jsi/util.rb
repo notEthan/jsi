@@ -71,13 +71,13 @@ module JSI
 
   module FingerprintHash
     def ==(other)
-      object_id == other.object_id || (other.respond_to?(:fingerprint) && other.fingerprint == self.fingerprint)
+      object_id == other.object_id || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == self.jsi_fingerprint)
     end
 
     alias_method :eql?, :==
 
     def hash
-      fingerprint.hash
+      jsi_fingerprint.hash
     end
   end
 

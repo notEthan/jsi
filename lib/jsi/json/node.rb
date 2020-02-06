@@ -182,7 +182,7 @@ module JSI
       # (regardless of type, e.g. one may be a Node and the other may be a HashNode) within equal
       # documents at equal pointers. note that this means two nodes with the same content may not be
       # considered equal.
-      def fingerprint
+      def jsi_fingerprint
         {class: JSI::JSON::Node, node_document: node_document, node_ptr: node_ptr}
       end
       include FingerprintHash

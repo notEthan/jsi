@@ -224,7 +224,7 @@ describe JSI::JSON::Node do
       assert_equal(%Q(#<JSI::JSON::Node fragment="#/a" {"c"=>["d", "e"]}>), node.pretty_inspect.chomp)
     end
   end
-  describe '#fingerprint' do
+  describe '#jsi_fingerprint' do
     let(:node_ptr) { JSI::JSON::Pointer.new([]) }
     it 'hashes consistently' do
       assert_equal('x', {JSI::JSON::Node.new([0], node_ptr) => 'x'}[JSI::JSON::Node.new([0], node_ptr)])

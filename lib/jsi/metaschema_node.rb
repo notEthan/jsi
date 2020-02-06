@@ -195,7 +195,7 @@ module JSI
     end
 
     # @return [Object] an opaque fingerprint of this MetaschemaNode for FingerprintHash
-    def fingerprint
+    def jsi_fingerprint
       {class: self.class, node_document: node_document}.merge(our_initialize_params)
     end
     include FingerprintHash
