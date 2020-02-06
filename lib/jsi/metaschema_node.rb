@@ -134,7 +134,7 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{node_content.pretty_inspect.chomp}")
       end
 
-      memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
+      jsi_memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
         if value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
           new_node(node_ptr: node_ptr[token])
         elsif token_is_ours

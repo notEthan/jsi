@@ -245,7 +245,7 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
+      jsi_memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
         if respond_to?(:to_ary)
           token_schema = schema.subschema_for_index(token)
         else
@@ -292,7 +292,7 @@ module JSI
       unless respond_to?(:to_hash) || respond_to?(:to_ary)
         raise(NoMethodError, "cannot assign subcript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
       end
-      clear_memo(:[])
+      jsi_clear_memo(:[])
       if value.is_a?(Base)
         self[token] = value.jsi_instance
       else

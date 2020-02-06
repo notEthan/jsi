@@ -82,21 +82,21 @@ module JSI
   end
 
   module Memoize
-    def memoize(key, *args_)
-      @memos ||= {}
-      @memos[key] ||= Hash.new do |h, args|
+    def jsi_memoize(key, *args_)
+      @jsi_memos ||= {}
+      @jsi_memos[key] ||= Hash.new do |h, args|
         h[args] = yield(*args)
       end
-      @memos[key][args_]
+      @jsi_memos[key][args_]
     end
 
-    def clear_memo(key, *args)
-      @memos ||= {}
-      if @memos[key]
+    def jsi_clear_memo(key, *args)
+      @jsi_memos ||= {}
+      if @jsi_memos[key]
         if args.empty?
-          @memos[key].clear
+          @jsi_memos[key].clear
         else
-          @memos[key].delete(args)
+          @jsi_memos[key].delete(args)
         end
       end
     end

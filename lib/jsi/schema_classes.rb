@@ -43,7 +43,7 @@ module JSI
 
       # see {JSI.class_for_schema}
       def class_for_schema(schema_object)
-        memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema|
+        jsi_memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema|
           Class.new(Base).instance_exec(schema) do |schema|
             define_singleton_method(:schema) { schema }
             define_method(:schema) { schema }
@@ -72,7 +72,7 @@ module JSI
       # methods.
       def SchemaClasses.module_for_schema(schema_object, conflicting_modules: [])
         schema = JSI::Schema.from_object(schema_object)
-        memoize(:module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
+        jsi_memoize(:module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
           Module.new.tap do |m|
             m.instance_exec(schema) do |schema|
               define_singleton_method(:schema) { schema }
