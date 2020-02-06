@@ -70,12 +70,14 @@ module JSI
   extend Util
 
   module FingerprintHash
+    # overrides BasicObject#==
     def ==(other)
       object_id == other.object_id || (other.respond_to?(:fingerprint) && other.fingerprint == self.fingerprint)
     end
 
     alias_method :eql?, :==
 
+    # overrides Kernel#hash
     def hash
       fingerprint.hash
     end
