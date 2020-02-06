@@ -17,21 +17,21 @@ module JSI
     # @param hash [#to_hash] the hash from which to convert symbol keys to strings
     # @return [same class as the param `hash`, or Hash if the former cannot be done] a
     #    hash(-like) instance containing no symbol keys
-    def stringify_symbol_keys(hash)
-      unless hash.respond_to?(:to_hash)
-        raise(ArgumentError, "expected argument to be a hash; got #{hash.class.inspect}: #{hash.pretty_inspect.chomp}")
+    def stringify_symbol_keys(hashlike)
+      unless hashlike.respond_to?(:to_hash)
+        raise(ArgumentError, "expected argument to be a hash; got #{hashlike.class.inspect}: #{hashlike.pretty_inspect.chomp}")
       end
-      JSI::Typelike.modified_copy(hash) do |hash_|
+      JSI::Typelike.modified_copy(hashlike) do |hash|
         changed = false
         out = {}
-        hash_.each do |k, v|
+        hash.each do |k, v|
           if k.is_a?(Symbol)
             changed = true
             k = k.to_s
           end
           out[k] = v
         end
-        changed ? out : hash_
+        changed ? out : hash
       end
     end
 
