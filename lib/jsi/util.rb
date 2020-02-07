@@ -22,46 +22,28 @@ module JSI
         raise(ArgumentError, "expected argument to be a hash; got #{hashlike.class.inspect}: #{hashlike.pretty_inspect.chomp}")
       end
       JSI::Typelike.modified_copy(hashlike) do |hash|
-        changed = false
         out = {}
         hash.each do |k, v|
-          if k.is_a?(Symbol)
-            changed = true
-            k = k.to_s
-          end
-          out[k] = v
+          out[k.is_a?(Symbol) ? k.to_s : k] = v
         end
-        changed ? out : hash
+        out
       end
     end
 
     def deep_stringify_symbol_keys(object)
       if object.respond_to?(:to_hash)
         JSI::Typelike.modified_copy(object) do |hash|
-          changed = false
           out = {}
           (hash.respond_to?(:each) ? hash : hash.to_hash).each do |k, v|
-            if k.is_a?(Symbol)
-              changed = true
-              k = k.to_s
-            end
-            out_k = deep_stringify_symbol_keys(k)
-            out_v = deep_stringify_symbol_keys(v)
-            changed = true if out_k.object_id != k.object_id
-            changed = true if out_v.object_id != v.object_id
-            out[out_k] = out_v
+            out[k.is_a?(Symbol) ? k.to_s : deep_stringify_symbol_keys(k)] = deep_stringify_symbol_keys(v)
           end
-          changed ? out : hash
+          out
         end
       elsif object.respond_to?(:to_ary)
         JSI::Typelike.modified_copy(object) do |ary|
-          changed = false
-          out = (ary.respond_to?(:each) ? ary : ary.to_ary).map do |e|
-            out_e = deep_stringify_symbol_keys(e)
-            changed = true if out_e.object_id != e.object_id
-            out_e
+          (ary.respond_to?(:each) ? ary : ary.to_ary).map do |e|
+            deep_stringify_symbol_keys(e)
           end
-          changed ? out : ary
         end
       else
         object
