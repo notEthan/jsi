@@ -121,14 +121,14 @@ describe JSI::BaseHash do
       refute_equal(other_subject['foo'].object_id, subject['foo'].object_id)
     end
     it 'modifies the instance, visible to other references to the same instance' do
-      orig_instance = subject.instance
+      orig_instance = subject.jsi_instance
 
       subject['foo'] = {'y' => 'z'}
 
-      assert_equal(orig_instance, subject.instance)
+      assert_equal(orig_instance, subject.jsi_instance)
       assert_equal({'y' => 'z'}, orig_instance['foo'])
-      assert_equal({'y' => 'z'}, subject.instance['foo'])
-      assert_equal(orig_instance.class, subject.instance.class)
+      assert_equal({'y' => 'z'}, subject.jsi_instance['foo'])
+      assert_equal(orig_instance.class, subject.jsi_instance.class)
     end
     describe 'when the instance is not hashlike' do
       let(:instance) { nil }
@@ -290,7 +290,7 @@ describe JSI::BaseHash do
     describe 'delegating instance methods to #to_hash' do
       it('#each_key') { assert_equal(['foo'], subject.each_key.to_a) }
       it('#each_pair') { assert_equal([['foo', subject['foo']]], subject.each_pair.to_a) }
-      it('#[]')       { assert_equal(SortOfHash.new({'a' => 'b'}), subject['foo'].instance) }
+      it('#[]')       { assert_equal(SortOfHash.new({'a' => 'b'}), subject['foo'].jsi_instance) }
       it('#as_json') { assert_equal({'foo' => {'a' => 'b'}}, subject.as_json) }
     end
   end

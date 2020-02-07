@@ -94,14 +94,14 @@ describe JSI::BaseArray do
       assert_instance_of(JSI.class_for_schema(schema['items'][2]), subject[2])
     end
     it 'modifies the instance, visible to other references to the same instance' do
-      orig_instance = subject.instance
+      orig_instance = subject.jsi_instance
 
       subject[2] = {'y' => 'z'}
 
-      assert_equal(orig_instance, subject.instance)
+      assert_equal(orig_instance, subject.jsi_instance)
       assert_equal({'y' => 'z'}, orig_instance[2])
-      assert_equal({'y' => 'z'}, subject.instance[2])
-      assert_equal(orig_instance.class, subject.instance.class)
+      assert_equal({'y' => 'z'}, subject.jsi_instance[2])
+      assert_equal(orig_instance.class, subject.jsi_instance.class)
     end
     describe 'when the instance is not arraylike' do
       let(:instance) { nil }
@@ -264,8 +264,8 @@ describe JSI::BaseArray do
     # compare:
     # assoc:  https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3780-L3813
     # rassoc: https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3815-L3847
-    # for this reason, rassoc is NOT defined on Arraylike and we call #instance to use it.
-    it('#rassoc')              { assert_equal(['q', 'r'], subject.instance.rassoc('r')) }
+    # for this reason, rassoc is NOT defined on Arraylike and we call #jsi_instance to use it.
+    it('#rassoc')              { assert_equal(['q', 'r'], subject.jsi_instance.rassoc('r')) }
     it('#repeated_combination') { assert_equal([[]], subject.repeated_combination(0).to_a) }
     it('#repeated_permutation') { assert_equal([[]], subject.repeated_permutation(0).to_a) }
     it('#reverse')             { assert_equal([subject[3], subject[2], subject[1], 'foo'], subject.reverse) }
@@ -291,7 +291,7 @@ describe JSI::BaseArray do
       it('#size')      { assert_equal(3, subject.size) }
       it('#count')    { assert_equal(1, subject.count('foo')) }
       it('#slice')   { assert_equal(['foo'], subject.slice(0, 1)) }
-      it('#[]')     { assert_equal(SortOfArray.new(['q', 'r']), subject[2].instance) }
+      it('#[]')     { assert_equal(SortOfArray.new(['q', 'r']), subject[2].jsi_instance) }
       it('#as_json') { assert_equal(['foo', {'lamp' => [3]}, ['q', 'r']], subject.as_json) }
     end
   end
