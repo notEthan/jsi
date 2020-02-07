@@ -179,7 +179,6 @@ module JSI
 
     # the instance of the json-schema
     alias_method :jsi_instance, :node_content
-    alias_method :instance, :node_content
 
     # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
