@@ -1,3 +1,11 @@
+# v0.3.0
+
+- a schema is a JSI instance of a metaschema
+- module JSI::Schema
+- module JSI::Metaschema
+- class JSI::MetaschemaNode
+- JSI::JSON::Node breaking changes
+
 # v0.2.1
 
 - bugfix JSI::Schema#described_object_property_names looks only at allOf, not oneOf/anyOf
