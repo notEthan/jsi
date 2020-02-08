@@ -140,10 +140,7 @@ module JSI
       "\#{<#{self.class}#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
     end
 
-    # @return [String] see #inspect
-    def to_s
-      inspect
-    end
+    alias_method :to_s, :inspect
 
     # pretty-prints a representation this node to the given printer
     # @return [void]
@@ -221,10 +218,7 @@ module JSI
       "\#[<#{self.class}#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
     end
 
-    # @return [String] see #inspect
-    def to_s
-      inspect
-    end
+    alias_method :to_s, :inspect
 
     # pretty-prints a representation this node to the given printer
     # @return [void]

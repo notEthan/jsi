@@ -18,7 +18,11 @@ module JSI
     class << self
       # is the constant JSI::SchemaClasses::{self.schema_classes_const_name} defined?
       # (if so, we will prefer to use something more human-readable than that ugly mess.)
-      attr_accessor :in_schema_classes
+      def in_schema_classes
+        # #name sets @in_schema_classes
+        name
+        @in_schema_classes
+      end
 
       # @return [String] absolute schema_id of the schema this class represents.
       #   see {Schema#schema_id}.
@@ -28,7 +32,6 @@ module JSI
 
       # @return [String] a string representing the class, with schema_id
       def inspect
-        name # see #name for side effects
         if !respond_to?(:schema)
           super
         elsif in_schema_classes
@@ -60,9 +63,13 @@ module JSI
 
       # @return [String] a constant name of this class
       def name
-        unless super || SchemaClasses.const_defined?(schema_classes_const_name)
-          SchemaClasses.const_set(schema_classes_const_name, self)
-          self.in_schema_classes = true
+        unless instance_variable_defined?(:@in_schema_classes)
+          if super || SchemaClasses.const_defined?(schema_classes_const_name)
+            @in_schema_classes = false
+          else
+            SchemaClasses.const_set(schema_classes_const_name, self)
+            @in_schema_classes = true
+          end
         end
         super
       end
@@ -335,19 +342,13 @@ module JSI
         raise(Bug, 'bad @ancestor_jsi') if @ancestor_jsi.object_id == self.object_id
 
         modified_ancestor = @ancestor_jsi.modified_copy do |anc|
-          mod_anc = @jsi_ptr.ptr_relative_to(@ancestor_jsi.jsi_ptr).modified_document_copy(anc, &block)
-          mod_anc
+          @jsi_ptr.ptr_relative_to(@ancestor_jsi.jsi_ptr).modified_document_copy(anc, &block)
         end
         self.class.new(Base::NOINSTANCE, jsi_document: modified_ancestor.jsi_document, jsi_ptr: @jsi_ptr, ancestor_jsi: modified_ancestor)
       else
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         self.class.new(Base::NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr)
       end
-    end
-
-    # @return [String] the fragment representation of a pointer to this JSI's instance within its document
-    def fragment
-      @jsi_ptr.fragment
     end
 
     # @return [Array<String>] array of schema validation error messages for this instance

@@ -400,10 +400,7 @@ module JSI
         "#<#{self.class.inspect} #{representation_s}>"
       end
 
-      # @return [String] string representation of this Pointer
-      def to_s
-        inspect
-      end
+      alias_method :to_s, :inspect
 
       # pointers are equal if the reference_tokens are equal, regardless of @type
       def fingerprint

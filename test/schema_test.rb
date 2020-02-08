@@ -59,6 +59,12 @@ describe JSI::Schema do
       assert_equal('https://schemas.jsi.unth.net/test/given_id#/notroot/properties/foo', subschema.schema_id)
     end
   end
+  describe '#jsi_schema_module' do
+    it 'returns the module for the schema' do
+      schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module'})
+      assert_equal(schema, schema.jsi_schema_module.schema)
+    end
+  end
   describe '#schema_class' do
     it 'returns the class for the schema' do
       schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})

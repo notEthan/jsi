@@ -28,15 +28,40 @@ class JSISpec < Minitest::Spec
   end
 
   def assert_equal exp, act, msg = nil
-    msg = message(msg, E) { diff exp, act }
+    msg = message(msg, E) do
+      [].tap do |ms|
+        ms << diff(exp, act)
+        ms << "#{ANSI.red   { 'expected' }}: #{exp.inspect}"
+        ms << "#{ANSI.green { 'actual' }}:   #{act.inspect}"
+        if exp.respond_to?(:to_str) && act.respond_to?(:to_str)
+          ms << "#{ANSI.red { 'expected (str)' }}:"
+          ms << exp
+          ms << "#{ANSI.green { 'actual (str)' }}:"
+          ms << act
+        end
+      end.join("\n")
+    end
     assert exp == act, msg
   end
 
   def assert_match matcher, obj, msg = nil
-    msg = message(msg) { "Expected match.\nmatcher: #{mu_pp matcher}\nobject:  #{mu_pp obj}" }
+    msg = message(msg) do
+      [].tap do |ms|
+        ms << "Expected match."
+        ms << "#{ANSI.red   { 'matcher' }}: #{mu_pp matcher}"
+        ms << "#{ANSI.green { 'object' }}:  #{mu_pp obj}"
+        ms << "#{ANSI.yellow { 'escaped' }}: #{Regexp.new(Regexp.escape(obj)).inspect}" if obj.is_a?(String)
+      end.join("\n")
+    end
     assert_respond_to matcher, :"=~"
     matcher = Regexp.new Regexp.escape matcher if String === matcher
     assert matcher =~ obj, msg
+  end
+
+  def assert_is_a mod, obj, msg = nil
+    msg = message(msg) { "Expected instance of #{mod}. received #{obj.class}: #{mu_pp(obj)}" }
+
+    assert obj.is_a?(mod), msg
   end
 end
 

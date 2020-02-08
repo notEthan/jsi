@@ -164,7 +164,7 @@ describe JSI::Base do
     describe 'no parent_jsis' do
       it 'has none' do
         assert_equal([], subject.parents)
-        assert_equal([], subject.parent_jsis.to_a)
+        assert_equal([], subject.parent_jsis)
         assert_equal(nil, subject.parent)
         assert_equal(nil, subject.parent_jsi)
       end
@@ -172,7 +172,7 @@ describe JSI::Base do
     describe 'one parent_jsi' do
       it 'has one' do
         assert_equal([subject], subject.foo.parents)
-        assert_equal([subject], subject.foo.parent_jsis.to_a)
+        assert_equal([subject], subject.foo.parent_jsis)
         assert_equal(subject, subject.foo.parent)
         assert_equal(subject, subject.foo.parent_jsi)
       end
@@ -180,7 +180,7 @@ describe JSI::Base do
     describe 'more parent_jsis' do
       it 'has more' do
         assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.parents)
-        assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.parent_jsis.to_a)
+        assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.parent_jsis)
         assert_equal(subject.foo.bar, subject.foo.bar.baz.parent)
         assert_equal(subject.foo.bar, subject.foo.bar.baz.parent_jsi)
       end
@@ -243,7 +243,6 @@ describe JSI::Base do
       end
     end
   end
-  it('#fragment') { assert_equal('#', subject.fragment) }
   describe 'validation' do
     describe 'without errors' do
       it '#fully_validate' do

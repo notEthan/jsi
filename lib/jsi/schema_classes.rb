@@ -1,4 +1,18 @@
 module JSI
+  # JSI Schema Modules are extended with JSI::SchemaModule
+  module SchemaModule
+    # @return [String] absolute schema_id of the schema this module represents.
+    #   see {Schema#schema_id}.
+    def schema_id
+      schema.schema_id
+    end
+
+    # @return [String]
+    def inspect
+      %Q(#<Module for Schema: #{schema_id}>)
+    end
+  end
+
   # this module is just a namespace for schema classes.
   module SchemaClasses
     # JSI::SchemaClasses[schema_id] returns a class for the schema with the
@@ -20,7 +34,7 @@ module JSI
           Class.new(Base).instance_exec(schema_) do |schema|
             define_singleton_method(:schema) { schema }
             define_method(:schema) { schema }
-            include(JSI::SchemaClasses.module_for_schema(schema, conflicting_modules: [Base, BaseArray, BaseHash]))
+            include(schema.jsi_schema_module)
 
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
@@ -32,30 +46,22 @@ module JSI
         end
       end
 
-      # a module for the given schema, with accessor methods for any object
-      # property names the schema identifies. also has a singleton method
-      # called #schema to access the {JSI::Schema} this module represents.
+      # a module for the given schema, with accessor methods for any object property names the schema
+      # identifies (see {JSI::Schema#described_object_property_names}).
       #
-      # accessor methods are defined on these modules so that methods can be
-      # defined on {JSI.class_for_schema} classes without method redefinition
-      # warnings. additionally, these overriding instance methods can call
-      # `super` to invoke the normal accessor behavior.
+      # defines a singleton method #schema to access the {JSI::Schema} this module represents, and extends
+      # the module with {JSI::SchemaModule}.
       #
-      # no property names that are the same as existing method names on the JSI
-      # class will be defined. users should use #[] and #[]= to access properties
-      # whose names conflict with existing methods.
+      # no property names that are the same as existing method names on given conflicting_modules will
+      # be defined. callers should use #[] and #[]= to access properties whose names conflict with such
+      # methods.
       def SchemaClasses.module_for_schema(schema_object, conflicting_modules: [])
         schema__ = JSI::Schema.from_object(schema_object)
         memoize(:module_for_schema, schema__, conflicting_modules) do |schema_, conflicting_modules_|
           Module.new.tap do |m|
             m.instance_exec(schema_) do |schema|
               define_singleton_method(:schema) { schema }
-              define_singleton_method(:schema_id) do
-                schema.schema_id
-              end
-              define_singleton_method(:inspect) do
-                %Q(#<Module for Schema: #{schema_id}>)
-              end
+              extend SchemaModule
 
               conflicting_instance_methods = (conflicting_modules_ + [m]).map do |mod|
                 mod.instance_methods + mod.private_instance_methods
