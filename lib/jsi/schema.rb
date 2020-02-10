@@ -173,10 +173,10 @@ module JSI
     # @param property_name [String] the property name for which to find a subschema
     # @return [JSI::Schema, nil] a subschema from `properties`, `patternProperties`, or `additionalProperties` for the given token
     def subschema_for_property(property_name)
-      memoize(:subschema_for_property, property_name) do |property_name_|
+      memoize(:subschema_for_property, property_name) do |property_name|
         ptr = node_ptr
         ptr = ptr.deref(node_document)
-        ptr = ptr.schema_subschema_ptr_for_property_name(node_document, property_name_)
+        ptr = ptr.schema_subschema_ptr_for_property_name(node_document, property_name)
         if ptr
           ptr = ptr.deref(node_document)
           ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
@@ -189,10 +189,10 @@ module JSI
     # @param index [Integer] the array index for which to find a subschema
     # @return [JSI::Schema, nil] a subschema from `items` or `additionalItems` for the given token
     def subschema_for_index(index)
-      memoize(:subschema_for_index, index) do |index_|
+      memoize(:subschema_for_index, index) do |index|
         ptr = node_ptr
         ptr = ptr.deref(node_document)
-        ptr = ptr.schema_subschema_ptr_for_index(node_document, index_)
+        ptr = ptr.schema_subschema_ptr_for_index(node_document, index)
         if ptr
           ptr = ptr.deref(node_document)
           ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }

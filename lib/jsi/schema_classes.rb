@@ -30,8 +30,8 @@ module JSI
 
       # see {JSI.class_for_schema}
       def class_for_schema(schema_object)
-        memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema_|
-          Class.new(Base).instance_exec(schema_) do |schema|
+        memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema|
+          Class.new(Base).instance_exec(schema) do |schema|
             define_singleton_method(:schema) { schema }
             define_method(:schema) { schema }
             include(schema.jsi_schema_module)
@@ -56,14 +56,14 @@ module JSI
       # be defined. callers should use #[] and #[]= to access properties whose names conflict with such
       # methods.
       def SchemaClasses.module_for_schema(schema_object, conflicting_modules: [])
-        schema__ = JSI::Schema.from_object(schema_object)
-        memoize(:module_for_schema, schema__, conflicting_modules) do |schema_, conflicting_modules_|
+        schema = JSI::Schema.from_object(schema_object)
+        memoize(:module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
           Module.new.tap do |m|
-            m.instance_exec(schema_) do |schema|
+            m.instance_exec(schema) do |schema|
               define_singleton_method(:schema) { schema }
               extend SchemaModule
 
-              conflicting_instance_methods = (conflicting_modules_ + [m]).map do |mod|
+              conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
                 mod.instance_methods + mod.private_instance_methods
               end.inject(Set.new, &:|)
               accessors_to_define = schema.described_object_property_names.map(&:to_s) - conflicting_instance_methods.map(&:to_s)
