@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # a module relating to objects that act like Hash or Array instances
   module Typelike
@@ -136,8 +138,8 @@ module JSI
     # @return [String] basically the same #inspect as Hash, but has the
     #   class name and, if responsive, self's #object_group_text
     def inspect
-      object_group_str = JSI.object_group_str(respond_to?(:object_group_text) ? self.object_group_text : [])
-      "\#{<#{self.class}#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
+      object_group_str = (respond_to?(:object_group_text) ? self.object_group_text : [self.class]).join(' ')
+      "\#{<#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
     end
 
     alias_method :to_s, :inspect
@@ -145,24 +147,22 @@ module JSI
     # pretty-prints a representation this node to the given printer
     # @return [void]
     def pretty_print(q)
-      q.instance_exec(self) do |obj|
-        object_group_str = JSI.object_group_str(obj.respond_to?(:object_group_text) ? obj.object_group_text : [])
-        text "\#{<#{obj.class}#{object_group_str}>"
-        group_sub {
-          nest(2) {
-            breakable(obj.any? { true } ? ' ' : '')
-            seplist(obj, nil, :each_pair) { |k, v|
-              group {
-                pp k
-                text ' => '
-                pp v
-              }
+      object_group_str = (respond_to?(:object_group_text) ? object_group_text : [self.class]).join(' ')
+      q.text "\#{<#{object_group_str}>"
+      q.group_sub {
+        q.nest(2) {
+          q.breakable(any? { true } ? ' ' : '')
+          q.seplist(self, nil, :each_pair) { |k, v|
+            q.group {
+              q.pp k
+              q.text ' => '
+              q.pp v
             }
           }
         }
-        breakable ''
-        text '}'
-      end
+      }
+      q.breakable ''
+      q.text '}'
     end
   end
 
@@ -214,8 +214,8 @@ module JSI
     # @return [String] basically the same #inspect as Array, but has the
     #   class name and, if responsive, self's #object_group_text
     def inspect
-      object_group_str = JSI.object_group_str(respond_to?(:object_group_text) ? object_group_text : [])
-      "\#[<#{self.class}#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
+      object_group_str = (respond_to?(:object_group_text) ? object_group_text : [self.class]).join(' ')
+      "\#[<#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
     end
 
     alias_method :to_s, :inspect
@@ -223,20 +223,18 @@ module JSI
     # pretty-prints a representation this node to the given printer
     # @return [void]
     def pretty_print(q)
-      q.instance_exec(self) do |obj|
-        object_group_str = JSI.object_group_str(obj.respond_to?(:object_group_text) ? obj.object_group_text : [])
-        text "\#[<#{obj.class}#{object_group_str}>"
-        group_sub {
-          nest(2) {
-            breakable(obj.any? { true } ? ' ' : '')
-            seplist(obj, nil, :each) { |e|
-              pp e
-            }
+      object_group_str = (respond_to?(:object_group_text) ? object_group_text : [self.class]).join(' ')
+      q.text "\#[<#{object_group_str}>"
+      q.group_sub {
+        q.nest(2) {
+          q.breakable(any? { true } ? ' ' : '')
+          q.seplist(self, nil, :each) { |e|
+            q.pp e
           }
         }
-        breakable ''
-        text ']'
-      end
+      }
+      q.breakable ''
+      q.text ']'
     end
   end
 end

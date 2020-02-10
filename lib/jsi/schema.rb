@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # JSI::Schema represents a JSON Schema. initialized from a Hash-like schema
   # object, JSI::Schema is a relatively simple class to abstract useful methods
@@ -77,9 +79,11 @@ module JSI
       alias_method :new, :from_object
     end
 
-    # @return [String] an absolute id for the schema, with a json pointer fragment
+    # @return [String, nil] an absolute id for the schema, with a json pointer fragment. nil if
+    #   no parent of this schema defines an id.
     def schema_id
-      @schema_id ||= begin
+      return @schema_id if instance_variable_defined?(:@schema_id)
+      @schema_id = begin
         # start from self and ascend parents looking for an 'id' property.
         # append a fragment to that id (appending to an existing fragment if there
         # is one) consisting of the path from that parent to our schema_node.
@@ -103,25 +107,21 @@ module JSI
         end
         if parent_id
           parent_auri = Addressable::URI.parse(parent_id)
+          if parent_auri.fragment
+            # add onto the fragment
+            parent_id_path = JSI::JSON::Pointer.from_fragment('#' + parent_auri.fragment).reference_tokens
+            path_from_id_node = parent_id_path + path_from_id_node
+            parent_auri.fragment = nil
+          #else: no fragment so parent_id good as is
+          end
+
+          fragment = JSI::JSON::Pointer.new(path_from_id_node).fragment
+          schema_id = parent_auri.to_s + fragment
+
+          schema_id
         else
-          node_for_id = document_root_node
-
-          validator = ::JSON::Validator.new(Typelike.as_json(node_for_id), nil)
-          # TODO not good instance_exec'ing into another library's ivars
-          parent_auri = validator.instance_exec { @base_schema }.uri
+          nil
         end
-        if parent_auri.fragment
-          # add onto the fragment
-          parent_id_path = JSI::JSON::Pointer.from_fragment('#' + parent_auri.fragment).reference_tokens
-          path_from_id_node = parent_id_path + path_from_id_node
-          parent_auri.fragment = nil
-        #else: no fragment so parent_id good as is
-        end
-
-        fragment = JSI::JSON::Pointer.new(path_from_id_node).fragment
-        schema_id = parent_auri.to_s + fragment
-
-        schema_id
       end
     end
 
@@ -145,7 +145,7 @@ module JSI
     #
     # @return [JSI::Base] a JSI whose schema is this schema and whose instance is the given instance
     def new_jsi(other_instance, *a, &b)
-      jsi_schema_class.new(other_instance, *a, &b)
+      JSI.class_for_schema(match_to_instance(other_instance)).new(other_instance, *a, &b)
     end
 
     # @return [Boolean] does this schema itself describe a schema?

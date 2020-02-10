@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # JSI Schema Modules are extended with JSI::SchemaModule
   module SchemaModule
@@ -9,7 +11,18 @@ module JSI
 
     # @return [String]
     def inspect
-      %Q(#<Module for Schema: #{schema_id}>)
+      idfrag = schema.schema_id || schema.node_ptr.fragment
+      if name
+        "#{name} (#{idfrag})"
+      else
+        "(JSI Schema Module: #{idfrag})"
+      end
+    end
+
+    # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
+    # @return [JSI::Base] a JSI whose instance is the given instance
+    def new_jsi(instance, *a, &b)
+      schema.new_jsi(instance, *a, &b)
     end
   end
 
@@ -39,7 +52,9 @@ module JSI
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
 
-            SchemaClasses.instance_exec(self) { |klass| @classes_by_id[klass.schema_id] = klass }
+            if schema.schema_id
+              SchemaClasses.instance_exec { @classes_by_id }[schema.schema_id] = self
+            end
 
             self
           end

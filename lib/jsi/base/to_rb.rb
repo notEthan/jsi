@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   class Base
     class << self

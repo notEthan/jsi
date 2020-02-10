@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # a MetaschemaNode is a PathedNode whose node_document contains a metaschema.
   # as with any PathedNode the node_ptr points to the content of a node.
@@ -162,27 +164,34 @@ module JSI
 
     # @return [String]
     def inspect
-      "\#<#{self.class} #{node_content.inspect}>"
+      "\#<#{object_group_text.join(' ')} #{node_content.inspect}>"
     end
 
     def pretty_print(q)
-      q.instance_exec(self) do |obj|
-        text '#<'
-        text obj.class.to_s
-        group_sub {
-          nest(2) {
-            breakable ' '
-            pp obj.node_content
-          }
+      q.text '#<'
+      q.text object_group_text.join(' ')
+      q.group_sub {
+        q.nest(2) {
+          q.breakable ' '
+          q.pp node_content
         }
-        breakable ''
-        text '>'
-      end
+      }
+      q.breakable ''
+      q.text '>'
     end
 
     # @return [Array<String>]
     def object_group_text
-      []
+      if schema
+        class_n_schema = "#{self.class} (#{schema.node_ptr.fragment})"
+      else
+        class_n_schema = self.class.to_s
+      end
+      [
+        class_n_schema,
+        is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
+        *(node_content.respond_to?(:object_group_text) ? node_content.object_group_text : []),
+      ].compact
     end
 
     # @return [Object] an opaque fingerprint of this MetaschemaNode for FingerprintHash

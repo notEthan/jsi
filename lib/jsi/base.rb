@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'json'
 require 'jsi/typelike_modules'
 
@@ -16,6 +18,13 @@ module JSI
     include PathedNode
 
     class << self
+      # JSI::Base.new_jsi behaves the same as .new, and is defined for compatibility so you may call #new_jsi
+      # on any of a JSI::Schema, a JSI::SchemaModule, or a JSI schema class.
+      # @return [JSI::Base] a JSI whose instance is the given instance
+      def new_jsi(instance, *a, &b)
+        new(instance, *a, &b)
+      end
+
       # is the constant JSI::SchemaClasses::{self.schema_classes_const_name} defined?
       # (if so, we will prefer to use something more human-readable than that ugly mess.)
       def in_schema_classes
@@ -30,41 +39,34 @@ module JSI
         schema.schema_id
       end
 
-      # @return [String] a string representing the class, with schema_id
+      # @return [String] a string representing the class, with schema_id or schema ptr fragment
       def inspect
         if !respond_to?(:schema)
           super
-        elsif in_schema_classes
-          %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
-        elsif !name
-          %Q(#<Class for Schema: #{schema_id}>)
         else
-          %Q(#{name} (#{schema_id}))
+          idfrag = schema_id || schema.node_ptr.fragment
+          if name && !in_schema_classes
+            "#{name} (#{idfrag})"
+          else
+            "(JSI Schema Class: #{idfrag})"
+          end
         end
       end
 
-      # @return [String] a string representing the class - a class name if one
-      #   was explicitly defined, otherwise a reference to JSI::SchemaClasses
-      def to_s
-        if !respond_to?(:schema)
-          super
-        elsif !name || name =~ /\AJSI::SchemaClasses::/
-          %Q(#{SchemaClasses.inspect}[#{schema_id.inspect}])
-        else
-          name
-        end
-      end
+      alias_method :to_s, :inspect
 
       # @return [String] a name for a constant for this class, generated from the
       #   schema_id. only used if the class is not assigned to another constant.
       def schema_classes_const_name
-        'X' + schema.schema_id.gsub(/[^\w]/, '_')
+        if schema_id
+          'X' + schema_id.gsub(/[^\w]/, '_')
+        end
       end
 
       # @return [String] a constant name of this class
       def name
         unless instance_variable_defined?(:@in_schema_classes)
-          if super || SchemaClasses.const_defined?(schema_classes_const_name)
+          if super || !schema_id || SchemaClasses.const_defined?(schema_classes_const_name)
             @in_schema_classes = false
           else
             SchemaClasses.const_set(schema_classes_const_name, self)
@@ -99,9 +101,9 @@ module JSI
       end
 
       if instance.is_a?(JSI::Schema)
-        raise(TypeError, "assigning a schema to #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
+        raise(TypeError, "assigning a schema to a #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
       elsif instance.is_a?(JSI::Base)
-        raise(TypeError, "assigning another JSI::Base instance to #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
+        raise(TypeError, "assigning another JSI::Base instance to a #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
       end
 
       if instance == NOINSTANCE
@@ -292,7 +294,7 @@ module JSI
       end
       clear_memo(:[])
       if value.is_a?(Base)
-        instance[token] = value.instance
+        self[token] = value.jsi_instance
       else
         instance[token] = value
       end
@@ -370,28 +372,61 @@ module JSI
     # @return [String] a string representing this JSI, indicating its class
     #   and inspecting its instance
     def inspect
-      "\#<#{self.class.to_s} #{instance.inspect}>"
+      "\#<#{object_group_text.join(' ')} #{instance.inspect}>"
     end
 
     # pretty-prints a representation this JSI to the given printer
     # @return [void]
     def pretty_print(q)
-      q.instance_exec(self) do |obj|
-        text "\#<#{obj.class.to_s}"
-        group_sub {
-          nest(2) {
-            breakable ' '
-            pp obj.instance
-          }
+      q.text '#<'
+      q.text object_group_text.join(' ')
+      q.group_sub {
+        q.nest(2) {
+          q.breakable ' '
+          q.pp instance
         }
-        breakable ''
-        text '>'
-      end
+      }
+      q.breakable ''
+      q.text '>'
     end
 
     # @return [Array<String>]
     def object_group_text
-      instance.respond_to?(:object_group_text) ? instance.object_group_text : [instance.class.inspect]
+      class_name = self.class.name unless self.class.in_schema_classes
+      class_txt = begin
+        if class_name
+          # ignore ID
+          schema_name = schema.jsi_schema_module.name
+          if !schema_name
+            class_name
+          else
+            "#{class_name} (#{schema_name})"
+          end
+        else
+          schema_name = schema.jsi_schema_module.name || schema.schema_id
+          if !schema_name
+            "JSI"
+          else
+            "JSI (#{schema_name})"
+          end
+        end
+      end
+
+      if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(node_content.class)
+        if node_content.respond_to?(:object_group_text)
+          node_content_txt = node_content.object_group_text
+        else
+          node_content_txt = [node_content.class.to_s]
+        end
+      else
+        node_content_txt = []
+      end
+
+      [
+        class_txt,
+        is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
+        *node_content_txt,
+      ].compact
     end
 
     # @return [Object] a jsonifiable representation of the instance

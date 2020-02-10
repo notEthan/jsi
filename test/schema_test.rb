@@ -31,8 +31,8 @@ describe JSI::Schema do
     end
   end
   describe '#schema_id' do
-    it 'generates one' do
-      assert_match(/\A[0-9a-f\-]+#\z/, JSI::Schema.new({}).schema_id)
+    it "hasn't got one" do
+      assert_nil(JSI::Schema.new({}).schema_id)
     end
     it 'uses a given id with a fragment' do
       schema = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/given_id#'})
@@ -62,6 +62,7 @@ describe JSI::Schema do
   describe '#jsi_schema_module' do
     it 'returns the module for the schema' do
       schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module'})
+      assert_is_a(JSI::SchemaModule, schema.jsi_schema_module)
       assert_equal(schema, schema.jsi_schema_module.schema)
     end
   end
@@ -143,10 +144,10 @@ describe JSI::Schema do
     end
 
     it '#inspect' do
-      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Hash> \"id\" => \"https://schemas.jsi.unth.net/test/stringification\", \"type\" => \"object\"}", schema.inspect)
+      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Schema> \"id\" => \"https://schemas.jsi.unth.net/test/stringification\", \"type\" => \"object\"}", schema.inspect)
     end
     it '#pretty_print' do
-      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Hash>
+      assert_equal("\#{<JSI::JSONSchemaOrgDraft06 Schema>
         \"id\" => \"https://schemas.jsi.unth.net/test/stringification\",
         \"type\" => \"object\"
       }".gsub(/^      /, ''), schema.pretty_inspect.chomp)

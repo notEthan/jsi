@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   module JSON
     autoload :Node, 'jsi/json/node'

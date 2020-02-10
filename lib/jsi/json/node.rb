@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   module JSON
     # JSI::JSON::Node is an abstraction of a node within a JSON document.
@@ -152,28 +154,28 @@ module JSI
       # @return [Array<String>]
       def object_group_text
         [
+          self.class.inspect,
           "fragment=#{node_ptr.fragment.inspect}",
         ] + (node_content.respond_to?(:object_group_text) ? node_content.object_group_text : [])
       end
 
       # a string representing this node
       def inspect
-        "\#<#{self.class.inspect}#{JSI.object_group_str(object_group_text)} #{node_content.inspect}>"
+        "\#<#{object_group_text.join(' ')} #{node_content.inspect}>"
       end
 
       # pretty-prints a representation this node to the given printer
       def pretty_print(q)
-        q.instance_exec(self) do |obj|
-          text "\#<#{obj.class.inspect}#{JSI.object_group_str(obj.object_group_text)}"
-          group_sub {
-            nest(2) {
-              breakable ' '
-              pp obj.node_content
-            }
+        q.text '#<'
+        q.text object_group_text.join(' ')
+        q.group_sub {
+          q.nest(2) {
+            q.breakable ' '
+            q.pp node_content
           }
-          breakable ''
-          text '>'
-        end
+        }
+        q.breakable ''
+        q.text '>'
       end
 
       # fingerprint for equality (see FingerprintHash). two nodes are equal if they are both nodes

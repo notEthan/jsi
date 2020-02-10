@@ -2,30 +2,34 @@ require_relative 'test_helper'
 
 NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema'})
 
+# hitting .tap(&:name) causes JSI to assign a constant name from the ID,
+# meaning the name NamedSchemaInstanceTwo is not known.
+NamedSchemaInstanceTwo = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).tap(&:name)
+
 describe JSI::Base do
   let(:schema_content) { {} }
   let(:schema) { JSI::Schema.new(schema_content) }
   let(:instance) { {} }
-  let(:subject) { JSI.class_for_schema(schema).new(instance) }
-  describe 'class .inspect + .to_s' do
+  let(:subject) { schema.new_jsi(instance) }
+  describe 'class .inspect' do
     it 'is the same as Class#inspect on the base' do
       assert_equal('JSI::Base', JSI::Base.inspect)
-      assert_equal('JSI::Base', JSI::Base.to_s)
     end
-    it 'is SchemaClasses[] for generated subclass without id' do
-      assert_match(%r(\AJSI::SchemaClasses\["[a-f0-9\-]+#"\]\z), subject.class.inspect)
-      assert_match(%r(\AJSI::SchemaClasses\["[a-f0-9\-]+#"\]\z), subject.class.to_s)
+    it 'is (JSI Schema Class) for generated subclass without id' do
+      assert_equal("(JSI Schema Class: #)", subject.class.inspect)
     end
     describe 'with schema id' do
       let(:schema_content) { {'id' => 'https://jsi/foo'} }
-      it 'is SchemaClasses[] for generated subclass with id' do
-        assert_equal(%q(JSI::SchemaClasses["https://jsi/foo#"]), subject.class.inspect)
-        assert_equal(%q(JSI::SchemaClasses["https://jsi/foo#"]), subject.class.to_s)
+      it 'is (JSI Schema Class: ...) for generated subclass with id' do
+        assert_equal("(JSI Schema Class: https://jsi/foo#)", subject.class.inspect)
       end
     end
-    it 'is the constant name (plus id for .inspect) for a class assigned to a constant' do
+    it 'is the constant name plus id for a class assigned to a constant' do
       assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/base/named_schema#)), NamedSchemaInstance.inspect)
-      assert_equal(%q(NamedSchemaInstance), NamedSchemaInstance.to_s)
+    end
+    it 'is not the constant name when the constant name has been generated from the schema_id' do
+      assert_equal("JSI::SchemaClasses::Xhttps___schemas_jsi_unth_net_test_base_named_schema_two_", NamedSchemaInstanceTwo.name)
+      assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two#)", NamedSchemaInstanceTwo.inspect)
     end
   end
   describe 'class name' do
@@ -49,7 +53,7 @@ describe JSI::Base do
   end
   describe 'module for schema .inspect' do
     it '.inspect' do
-      assert_match(%r(\A#<Module for Schema: .+#>\z), JSI::SchemaClasses.module_for_schema(schema).inspect)
+      assert_equal("(JSI Schema Module: #)", JSI::SchemaClasses.module_for_schema(schema).inspect)
     end
   end
   describe 'module for schema .schema' do
@@ -58,6 +62,7 @@ describe JSI::Base do
     end
   end
   describe 'SchemaClasses[]' do
+    let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/empty'} }
     it 'stores the class for the schema' do
       assert_equal(JSI.class_for_schema(schema), JSI::SchemaClasses[schema.schema_id])
     end
@@ -144,17 +149,17 @@ describe JSI::Base do
     end
     describe 'another JSI::Base invalid' do
       let(:schema_content) { {'type' => 'object'} }
-      let(:instance) { JSI.class_for_schema(schema).new({'foo' => 'bar'}) }
+      let(:instance) { schema.new_jsi({'foo' => 'bar'}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_match(%r(\Aassigning another JSI::Base instance to JSI::SchemaClasses\[\".*#\"\] instance is incorrect. received: #\{<JSI::SchemaClasses\[.*\] Hash>\s*"foo" => "bar"\s*\}\z)m, err.message)
+        assert_equal("assigning another JSI::Base instance to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI> \"foo\" => \"bar\"}", err.message)
       end
     end
     describe 'Schema invalid' do
       let(:instance) { JSI::Schema.new({}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_match(%r(\Aassigning a schema to JSI::SchemaClasses\[\".*#\"\] instance is incorrect. received: #\{<JSI::JSONSchemaOrgDraft06 Hash>\}\z)m, err.message)
+        assert_equal("assigning a schema to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI::JSONSchemaOrgDraft06 Schema>}", err.message)
       end
     end
   end
@@ -328,9 +333,9 @@ describe JSI::Base do
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
-          assert_match(%r(\A#\{<JSI::SchemaClasses\[".*#"\].*}\z)m, subject.inspect)
+          assert_equal(%q(#{<JSI> "foo" => "bar", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "instance" => "hi", "schema" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
-          assert_match(%r(\A#\{<JSI::SchemaClasses\[".*#"\].*}\Z)m, subject.pretty_inspect)
+          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "instance" => "hi",\n  "schema" => "hi"\n}\n), subject.pretty_inspect)
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
@@ -372,23 +377,23 @@ describe JSI::Base do
     # if the instance is hash-like, #inspect gets overridden
     let(:instance) { Object.new }
     it 'inspects' do
-      assert_match(%r(\A#<JSI::SchemaClasses\["[^"]+#"\] #<Object:[^<>]*>>\z), subject.inspect)
+      assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.inspect)
     end
   end
   describe '#pretty_print' do
     # if the instance is hash-like, #pretty_print gets overridden
     let(:instance) { Object.new }
     it 'pretty_prints' do
-      assert_match(%r(\A#<JSI::SchemaClasses\["[^"]+#"\]\n  #<Object:[^<>]*>\n>\z), subject.pretty_inspect.chomp)
+      assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
     end
   end
   describe '#as_json' do
     it '#as_json' do
-      assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new({'a' => 'b'}).as_json)
-      assert_equal({'a' => 'b'}, JSI.class_for_schema({}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
-      assert_equal({'a' => 'b'}, JSI.class_for_schema({'type' => 'object'}).new(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
-      assert_equal(['a', 'b'], JSI.class_for_schema({'type' => 'array'}).new(JSI::JSON::Node.new_doc(['a', 'b'])).as_json)
-      assert_equal(['a'], JSI.class_for_schema({}).new(['a']).as_json(some_option: true))
+      assert_equal({'a' => 'b'}, JSI::Schema.new({}).new_jsi({'a' => 'b'}).as_json)
+      assert_equal({'a' => 'b'}, JSI::Schema.new({}).new_jsi(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
+      assert_equal({'a' => 'b'}, JSI::Schema.new({'type' => 'object'}).new_jsi(JSI::JSON::Node.new_doc({'a' => 'b'})).as_json)
+      assert_equal(['a', 'b'], JSI::Schema.new({'type' => 'array'}).new_jsi(JSI::JSON::Node.new_doc(['a', 'b'])).as_json)
+      assert_equal(['a'], JSI::Schema.new({}).new_jsi(['a']).as_json(some_option: true))
     end
   end
   describe 'equality between different classes of JSI::Base subclasses' do

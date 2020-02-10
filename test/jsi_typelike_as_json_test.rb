@@ -36,7 +36,7 @@ describe JSI::Typelike do
       assert_equal({'type' => 'array'}, JSI::Typelike.as_json(schema))
 
       # JSI
-      assert_equal(['a'], JSI::Typelike.as_json(JSI.class_for_schema(schema).new(['a'])))
+      assert_equal(['a'], JSI::Typelike.as_json(schema.new_jsi(['a'])))
 
       # JSON::Node
       assert_equal(['a'], JSI::Typelike.as_json(JSI::JSON::Node.new_doc(['a'])))

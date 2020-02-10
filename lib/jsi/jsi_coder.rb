@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # this is an ActiveRecord serialization coder intended to serialize between
   # JSON-compatible objects on the database side, and a JSI instance loaded on
