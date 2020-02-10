@@ -28,22 +28,12 @@ module JSI
 
   # this module is just a namespace for schema classes.
   module SchemaClasses
-    # JSI::SchemaClasses[schema_id] returns a class for the schema with the
-    # given id, the same class as returned from JSI.class_for_schema.
-    #
-    # @param schema_id [String] absolute schema id as returned by {JSI::Schema#schema_id}
-    # @return [Class subclassing JSI::Base] the class for that schema
-    def self.[](schema_id)
-      @classes_by_id[schema_id]
-    end
-    @classes_by_id = {}
-
     class << self
       include Memoize
 
       # see {JSI.class_for_schema}
       def class_for_schema(schema_object)
-        memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema|
+        jsi_memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema|
           Class.new(Base).instance_exec(schema) do |schema|
             define_singleton_method(:schema) { schema }
             define_method(:schema) { schema }
@@ -51,10 +41,6 @@ module JSI
 
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
-
-            if schema.schema_id
-              SchemaClasses.instance_exec { @classes_by_id }[schema.schema_id] = self
-            end
 
             self
           end
@@ -72,7 +58,7 @@ module JSI
       # methods.
       def SchemaClasses.module_for_schema(schema_object, conflicting_modules: [])
         schema = JSI::Schema.from_object(schema_object)
-        memoize(:module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
+        jsi_memoize(:module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
           Module.new.tap do |m|
             m.instance_exec(schema) do |schema|
               define_singleton_method(:schema) { schema }

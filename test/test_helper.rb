@@ -77,7 +77,7 @@ class SortOfHash
     @hash
   end
   include JSI::FingerprintHash
-  def fingerprint
+  def jsi_fingerprint
     {class: self.class, hash: @hash}
   end
 end
@@ -91,7 +91,7 @@ class SortOfArray
     @ary
   end
   include JSI::FingerprintHash
-  def fingerprint
+  def jsi_fingerprint
     {class: self.class, ary: @ary}
   end
 end

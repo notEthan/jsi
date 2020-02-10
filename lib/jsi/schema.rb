@@ -138,8 +138,6 @@ module JSI
       JSI.class_for_schema(self)
     end
 
-    alias_method :schema_class, :jsi_schema_class
-
     # calls #new on the class for this schema with the given arguments. for parameters,
     # see JSI::Base#initialize documentation.
     #
@@ -173,7 +171,7 @@ module JSI
     # @param property_name [String] the property name for which to find a subschema
     # @return [JSI::Schema, nil] a subschema from `properties`, `patternProperties`, or `additionalProperties` for the given token
     def subschema_for_property(property_name)
-      memoize(:subschema_for_property, property_name) do |property_name|
+      jsi_memoize(:subschema_for_property, property_name) do |property_name|
         ptr = node_ptr
         ptr = ptr.deref(node_document)
         ptr = ptr.schema_subschema_ptr_for_property_name(node_document, property_name)
@@ -189,7 +187,7 @@ module JSI
     # @param index [Integer] the array index for which to find a subschema
     # @return [JSI::Schema, nil] a subschema from `items` or `additionalItems` for the given token
     def subschema_for_index(index)
-      memoize(:subschema_for_index, index) do |index|
+      jsi_memoize(:subschema_for_index, index) do |index|
         ptr = node_ptr
         ptr = ptr.deref(node_document)
         ptr = ptr.schema_subschema_ptr_for_index(node_document, index)
@@ -208,7 +206,7 @@ module JSI
     #   "required" property keys. if this schema has allOf subschemas, those
     #   schemas are checked (recursively) for their described object property names.
     def described_object_property_names
-      memoize(:described_object_property_names) do
+      jsi_memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
           if node_content.respond_to?(:to_hash) && node_content['properties'].respond_to?(:to_hash)
             property_names.merge(node_content['properties'].keys)

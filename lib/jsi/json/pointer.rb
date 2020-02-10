@@ -405,7 +405,7 @@ module JSI
       alias_method :to_s, :inspect
 
       # pointers are equal if the reference_tokens are equal, regardless of @type
-      def fingerprint
+      def jsi_fingerprint
         {class: JSI::JSON::Pointer, reference_tokens: reference_tokens}
       end
       include FingerprintHash

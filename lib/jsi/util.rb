@@ -56,7 +56,7 @@ module JSI
     # to define a recursive function to return the length of an array:
     #
     #    length = ycomb do |len|
-    #      proc{|list| list == [] ? 0 : 1 + len.call(list[1..-1]) }
+    #      proc { |list| list == [] ? 0 : 1 + len.call(list[1..-1]) }
     #    end
     #
     # see https://secure.wikimedia.org/wikipedia/en/wiki/Fixed_point_combinator#Y_combinator
@@ -70,33 +70,35 @@ module JSI
   extend Util
 
   module FingerprintHash
+    # overrides BasicObject#==
     def ==(other)
-      object_id == other.object_id || (other.respond_to?(:fingerprint) && other.fingerprint == self.fingerprint)
+      object_id == other.object_id || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == self.jsi_fingerprint)
     end
 
     alias_method :eql?, :==
 
+    # overrides Kernel#hash
     def hash
-      fingerprint.hash
+      jsi_fingerprint.hash
     end
   end
 
   module Memoize
-    def memoize(key, *args_)
-      @memos ||= {}
-      @memos[key] ||= Hash.new do |h, args|
+    def jsi_memoize(key, *args_)
+      @jsi_memos ||= {}
+      @jsi_memos[key] ||= Hash.new do |h, args|
         h[args] = yield(*args)
       end
-      @memos[key][args_]
+      @jsi_memos[key][args_]
     end
 
-    def clear_memo(key, *args)
-      @memos ||= {}
-      if @memos[key]
+    def jsi_clear_memo(key, *args)
+      @jsi_memos ||= {}
+      if @jsi_memos[key]
         if args.empty?
-          @memos[key].clear
+          @jsi_memos[key].clear
         else
-          @memos[key].delete(args)
+          @jsi_memos[key].delete(args)
         end
       end
     end

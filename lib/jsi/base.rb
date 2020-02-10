@@ -163,7 +163,7 @@ module JSI
     # each is overridden by BaseHash or BaseArray when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
     def each
-      raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{instance.pretty_inspect.chomp}"
+      raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
     end
 
     # an array of JSI instances above this one in the document. empty if this
@@ -202,8 +202,8 @@ module JSI
         self
       elsif @ancestor_jsi
         @ancestor_jsi.document_root_node
-      elsif instance.is_a?(PathedNode)
-        instance.document_root_node
+      elsif jsi_instance.is_a?(PathedNode)
+        jsi_instance.document_root_node
       else
         JSI::JSON::Node.new_doc(@jsi_document)
       end
@@ -218,8 +218,8 @@ module JSI
           raise(Bug, 'is @ancestor_jsi == self? it should not be') if parent_node.nil?
           raise(Bug, "parent_node not PathedNode: #{parent_node.pretty_inspect.chomp}") unless parent_node.is_a?(JSI::PathedNode)
         end
-      elsif instance.is_a?(PathedNode)
-        instance.parent_node
+      elsif jsi_instance.is_a?(PathedNode)
+        jsi_instance.parent_node
       else
         JSI::JSON::Node.new_by_type(@jsi_document, @jsi_ptr.parent)
       end
@@ -245,7 +245,7 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
+      jsi_memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
         if respond_to?(:to_ary)
           token_schema = schema.subschema_for_index(token)
         else
@@ -292,11 +292,11 @@ module JSI
       unless respond_to?(:to_hash) || respond_to?(:to_ary)
         raise(NoMethodError, "cannot assign subcript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
       end
-      clear_memo(:[])
+      jsi_clear_memo(:[])
       if value.is_a?(Base)
         self[token] = value.jsi_instance
       else
-        instance[token] = value
+        jsi_instance[token] = value
       end
     end
 
@@ -349,12 +349,12 @@ module JSI
 
     # @return [Array<String>] array of schema validation error messages for this instance
     def fully_validate
-      schema.fully_validate_instance(instance)
+      schema.fully_validate_instance(jsi_instance)
     end
 
     # @return [true, false] whether the instance validates against its schema
     def validate
-      schema.validate_instance(instance)
+      schema.validate_instance(jsi_instance)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -362,7 +362,7 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors
     def validate!
-      schema.validate_instance!(instance)
+      schema.validate_instance!(jsi_instance)
     end
 
     def dup
@@ -372,7 +372,7 @@ module JSI
     # @return [String] a string representing this JSI, indicating its class
     #   and inspecting its instance
     def inspect
-      "\#<#{object_group_text.join(' ')} #{instance.inspect}>"
+      "\#<#{object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
     # pretty-prints a representation this JSI to the given printer
@@ -383,7 +383,7 @@ module JSI
       q.group_sub {
         q.nest(2) {
           q.breakable ' '
-          q.pp instance
+          q.pp jsi_instance
         }
       }
       q.breakable ''
@@ -431,12 +431,12 @@ module JSI
 
     # @return [Object] a jsonifiable representation of the instance
     def as_json(*opt)
-      Typelike.as_json(instance, *opt)
+      Typelike.as_json(jsi_instance, *opt)
     end
 
     # @return [Object] an opaque fingerprint of this JSI for FingerprintHash. JSIs are equal
     #   if their instances are equal, and if the JSIs are of the same JSI class or subclass.
-    def fingerprint
+    def jsi_fingerprint
       {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
     end
     include FingerprintHash

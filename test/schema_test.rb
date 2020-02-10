@@ -4,12 +4,12 @@ describe JSI::Schema do
   describe 'new' do
     it 'initializes from a hash' do
       schema = JSI::Schema.new({'type' => 'object'})
-      assert_equal({'type' => 'object'}, schema.instance)
+      assert_equal({'type' => 'object'}, schema.jsi_instance)
     end
     it 'initializes from a Node' do
       schema_node = JSI::JSON::Node.new_doc({'type' => 'object'})
       schema = JSI::Schema.new(schema_node)
-      assert_equal(schema_node, schema.instance)
+      assert_equal(schema_node, schema.jsi_instance)
     end
     it 'cannot instantiate from some unknown object' do
       err = assert_raises(TypeError) { JSI::Schema.new(Object.new) }
@@ -66,10 +66,10 @@ describe JSI::Schema do
       assert_equal(schema, schema.jsi_schema_module.schema)
     end
   end
-  describe '#schema_class' do
+  describe '#jsi_schema_class' do
     it 'returns the class for the schema' do
       schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
-      assert_equal(JSI.class_for_schema(schema), schema.schema_class)
+      assert_equal(JSI.class_for_schema(schema), schema.jsi_schema_class)
     end
   end
   describe '#subschema_for_property' do

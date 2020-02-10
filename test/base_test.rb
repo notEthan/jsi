@@ -1,10 +1,10 @@
 require_relative 'test_helper'
 
-NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema'})
+NamedSchemaInstance = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/base/named_schema'}).jsi_schema_class
 
 # hitting .tap(&:name) causes JSI to assign a constant name from the ID,
 # meaning the name NamedSchemaInstanceTwo is not known.
-NamedSchemaInstanceTwo = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).tap(&:name)
+NamedSchemaInstanceTwo = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).jsi_schema_class.tap(&:name)
 
 describe JSI::Base do
   let(:schema_content) { {} }
@@ -61,12 +61,6 @@ describe JSI::Base do
       assert_equal(schema, JSI::SchemaClasses.module_for_schema(schema).schema)
     end
   end
-  describe 'SchemaClasses[]' do
-    let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/empty'} }
-    it 'stores the class for the schema' do
-      assert_equal(JSI.class_for_schema(schema), JSI::SchemaClasses[schema.schema_id])
-    end
-  end
   describe '.class_for_schema' do
     it 'returns a class from a schema' do
       class_for_schema = JSI.class_for_schema(schema)
@@ -85,7 +79,7 @@ describe JSI::Base do
       assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
     end
     it 'returns a module from a hash' do
-      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.instance))
+      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.jsi_instance))
     end
   end
   describe 'initialization' do
@@ -98,7 +92,7 @@ describe JSI::Base do
     describe 'nil' do
       let(:instance) { nil }
       it 'initializes with nil instance' do
-        assert_equal(nil, subject.instance)
+        assert_equal(nil, subject.jsi_instance)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -106,7 +100,7 @@ describe JSI::Base do
     describe 'arbitrary instance' do
       let(:instance) { Object.new }
       it 'initializes' do
-        assert_equal(instance, subject.instance)
+        assert_equal(instance, subject.jsi_instance)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -115,7 +109,7 @@ describe JSI::Base do
       let(:instance) { {'foo' => 'bar'} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal({'foo' => 'bar'}, subject.instance)
+        assert_equal({'foo' => 'bar'}, subject.jsi_instance)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -124,7 +118,7 @@ describe JSI::Base do
       let(:instance) { JSI::JSON::HashNode.new({'foo' => 'bar'}, JSI::JSON::Pointer.new([])) }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal(JSI::JSON::HashNode.new({'foo' => 'bar'}, JSI::JSON::Pointer.new([])), subject.instance)
+        assert_equal(JSI::JSON::HashNode.new({'foo' => 'bar'}, JSI::JSON::Pointer.new([])), subject.jsi_instance)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -133,7 +127,7 @@ describe JSI::Base do
       let(:instance) { ['foo'] }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(['foo'], subject.instance)
+        assert_equal(['foo'], subject.jsi_instance)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -142,7 +136,7 @@ describe JSI::Base do
       let(:instance) { JSI::JSON::ArrayNode.new(['foo'], JSI::JSON::Pointer.new([])) }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(JSI::JSON::ArrayNode.new(['foo'], JSI::JSON::Pointer.new([])), subject.instance)
+        assert_equal(JSI::JSON::ArrayNode.new(['foo'], JSI::JSON::Pointer.new([])), subject.jsi_instance)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -207,8 +201,8 @@ describe JSI::Base do
           assert_equal(instance, o)
           new_instance
         end
-        assert_equal(new_instance, modified.instance)
-        assert_equal(instance, subject.instance)
+        assert_equal(new_instance, modified.jsi_instance)
+        assert_equal(instance, subject.jsi_instance)
         refute_equal(instance, modified)
       end
     end
@@ -218,8 +212,8 @@ describe JSI::Base do
           assert_equal({}, o)
           {'a' => 'b'}
         end
-        assert_equal({'a' => 'b'}, modified.instance)
-        assert_equal({}, subject.instance)
+        assert_equal({'a' => 'b'}, modified.jsi_instance)
+        assert_equal({}, subject.jsi_instance)
         refute_equal(instance, modified)
       end
     end
@@ -227,7 +221,7 @@ describe JSI::Base do
       it 'yields the instance to modify' do
         modified = subject.modified_copy { |o| o }
         # this doesn't really need to be tested but ... whatever
-        assert_equal(subject.instance.object_id, modified.instance.object_id)
+        assert_equal(subject.jsi_instance.object_id, modified.jsi_instance.object_id)
         assert_equal(subject, modified)
         refute_equal(subject.object_id, modified.object_id)
       end
@@ -239,8 +233,8 @@ describe JSI::Base do
         modified = subject.modified_copy do |o|
           o.to_s
         end
-        assert_equal('{}', modified.instance)
-        assert_equal({}, subject.instance)
+        assert_equal('{}', modified.jsi_instance)
+        assert_equal({}, subject.jsi_instance)
         refute_equal(instance, modified)
         # interesting side effect
         assert(subject.respond_to?(:to_hash))
@@ -339,7 +333,7 @@ describe JSI::Base do
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
-          assert_equal(instance, subject.instance)
+          assert_equal(instance, subject.jsi_instance)
           assert_equal(schema, subject.schema)
         end
       end
@@ -355,14 +349,14 @@ describe JSI::Base do
         assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
       end
       it 'modifies the instance, visible to other references to the same instance' do
-        orig_instance = subject.instance
+        orig_instance = subject.jsi_instance
 
         subject.foo = {'y' => 'z'}
 
-        assert_equal(orig_instance, subject.instance)
+        assert_equal(orig_instance, subject.jsi_instance)
         assert_equal({'y' => 'z'}, orig_instance['foo'])
-        assert_equal({'y' => 'z'}, subject.instance['foo'])
-        assert_equal(orig_instance.class, subject.instance.class)
+        assert_equal({'y' => 'z'}, subject.jsi_instance['foo'])
+        assert_equal(orig_instance.class, subject.jsi_instance.class)
       end
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
