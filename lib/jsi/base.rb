@@ -153,7 +153,7 @@ module JSI
     alias_method :node_ptr, :jsi_ptr
     alias_method :document_root_node, :jsi_root_node
 
-    # the instance of the json-schema
+    # the instance of the json-schema - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :node_content
     alias_method :instance, :node_content
 
