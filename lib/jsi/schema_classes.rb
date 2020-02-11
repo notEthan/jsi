@@ -52,18 +52,31 @@ module JSI
       #
       # defines a singleton method #schema to access the {JSI::Schema} this module represents, and extends
       # the module with {JSI::SchemaModule}.
-      #
-      # no property names that are the same as existing method names on given conflicting_modules will
-      # be defined. callers should use #[] and #[]= to access properties whose names conflict with such
-      # methods.
-      def SchemaClasses.module_for_schema(schema_object, conflicting_modules: [])
+      def module_for_schema(schema_object)
         schema = JSI::Schema.from_object(schema_object)
-        jsi_memoize(:module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
+        jsi_memoize(:module_for_schema, schema) do |schema|
           Module.new.tap do |m|
-            m.instance_exec(schema) do |schema|
+            m.module_eval do
               define_singleton_method(:schema) { schema }
+
               extend SchemaModule
 
+              include JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [JSI::Base, JSI::BaseArray, JSI::BaseHash])
+            end
+          end
+        end
+      end
+
+      # @param schema [JSI::Schema] a schema for which to define accessors for any described property names
+      # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
+      #   may be used alongside the accessor module. methods defined by any conflicting_module
+      #   will not be defined as accessors.
+      # @return [Module] a module of accessors (setters and getters) for described property names of the given
+      #   schema
+      def accessor_module_for_schema(schema, conflicting_modules: )
+        jsi_memoize(:accessor_module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
+          Module.new.tap do |m|
+            m.module_eval do
               conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
                 mod.instance_methods + mod.private_instance_methods
               end.inject(Set.new, &:|)

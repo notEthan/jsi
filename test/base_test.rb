@@ -322,8 +322,7 @@ describe JSI::Base do
           }
         end
         it 'does not define readers' do
-          assert_equal('bar', subject.foo)
-          assert_equal(JSI::SchemaClasses.module_for_schema(subject.schema, conflicting_modules: [JSI::Base, JSI::BaseArray, JSI::BaseHash]), subject.method(:foo).owner)
+          assert_equal('bar', subject.foo) # this one is defined
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])

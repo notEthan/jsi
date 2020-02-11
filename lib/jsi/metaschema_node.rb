@@ -81,7 +81,7 @@ module JSI
       end
 
       if @schema
-        extend(JSI::SchemaClasses.module_for_schema(@schema, conflicting_modules: [Metaschema, Schema, MetaschemaNode, PathedArrayNode, PathedHashNode]))
+        extend(JSI::SchemaClasses.accessor_module_for_schema(@schema, conflicting_modules: [Metaschema, Schema, MetaschemaNode, PathedArrayNode, PathedHashNode]))
       end
 
       # workarounds
