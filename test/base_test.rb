@@ -309,7 +309,7 @@ describe JSI::Base do
               'as_json' => {},        # Base::OverrideFromExtensions, extended on initialization
               'each' => {},           # BaseHash / BaseArray
               'instance_exec' => {},  # BasicObject
-              'instance' => {},       # Base
+              'jsi_instance' => {},   # Base
               'schema' => {},         # module_for_schema singleton definition
             },
           }
@@ -323,7 +323,7 @@ describe JSI::Base do
             'as_json' => 'hi',
             'each' => 'hi',
             'instance_exec' => 'hi',
-            'instance' => 'hi',
+            'jsi_instance' => 'hi',
             'schema' => 'hi',
           }
         end
@@ -333,9 +333,9 @@ describe JSI::Base do
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
-          assert_equal(%q(#{<JSI> "foo" => "bar", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "instance" => "hi", "schema" => "hi"}), subject.inspect)
+          assert_equal(%q(#{<JSI> "foo" => "bar", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "schema" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
-          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "instance" => "hi",\n  "schema" => "hi"\n}\n), subject.pretty_inspect)
+          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "schema" => "hi"\n}\n), subject.pretty_inspect)
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
