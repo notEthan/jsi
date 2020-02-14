@@ -348,8 +348,8 @@ module JSI
     end
 
     # @return [Array<String>] array of schema validation error messages for this instance
-    def fully_validate
-      schema.fully_validate_instance(jsi_instance)
+    def fully_validate **args
+      schema.fully_validate_instance(jsi_instance, args)
     end
 
     # @return [true, false] whether the instance validates against its schema

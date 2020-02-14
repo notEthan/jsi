@@ -226,8 +226,8 @@ module JSI
 
     # @return [Array<String>] array of schema validation error messages for
     #   the given instance against this schema
-    def fully_validate_instance(other_instance)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(node_document), JSI::Typelike.as_json(other_instance), fragment: node_ptr.fragment)
+    def fully_validate_instance(other_instance, **args)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(node_document), JSI::Typelike.as_json(other_instance), args)
     end
 
     # @return [true, false] whether the given instance validates against this schema

@@ -11,6 +11,24 @@ describe JSI::Base do
   let(:schema) { JSI::Schema.new(schema_content) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
+
+  let(:schema_content_for_errors) {
+    {
+      'type' => 'object',
+      'properties' => {
+        'some_number' => {
+          'type' => 'number'
+        },
+        'a_required_property' => {
+          'type' => 'string'
+        }
+      }
+    }
+  }
+  let(:schema_for_errors) { JSI::Schema.new(schema_content_for_errors) }
+  let(:instance_for_errors) { "this is a string" }
+  let(:subject_for_errors) { schema_for_errors.new_jsi(instance_for_errors) }
+
   describe 'class .inspect' do
     it 'is the same as Class#inspect on the base' do
       assert_equal('JSI::Base', JSI::Base.inspect)
@@ -252,6 +270,25 @@ describe JSI::Base do
       end
       it '#validate!' do
         assert_equal(true, subject.validate!)
+      end
+    end
+    describe 'with errors' do
+      it '#validate' do
+        assert_equal(false, subject_for_errors.validate)
+      end
+      it '#validate!' do
+        assert_raises JSON::Schema::ValidationError do
+          subject_for_errors.validate!
+        end
+      end
+      describe 'fully_validate' do
+        it '#fully_validate ' do
+          assert_equal(String, subject_for_errors.fully_validate[0].class)
+        end
+        it '#fully_validate :errors_as_objects' do
+          response = subject_for_errors.fully_validate(:errors_as_objects => true)
+          assert_equal(Hash, response[0].class)
+        end
       end
     end
   end
