@@ -254,6 +254,48 @@ describe JSI::Base do
         assert_equal(true, subject.validate!)
       end
     end
+    describe 'with errors' do
+      let(:schema_content) {
+        {
+          'id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors',
+          'type' => 'object',
+          'properties' => {
+            'some_number' => {
+              'type' => 'number'
+            },
+            'a_required_property' => {
+              'type' => 'string'
+            }
+          }
+        }
+      }
+      let(:instance) { "this is a string" }
+
+      it '#validate' do
+        assert_equal(false, subject.validate)
+      end
+      it '#validate!' do
+        assert_raises JSON::Schema::ValidationError do
+          subject.validate!
+        end
+      end
+      describe 'fully_validate' do
+        it '#fully_validate ' do
+          assert_equal(["The property '#/' of type string did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors"], subject.fully_validate)
+        end
+        it '#fully_validate :errors_as_objects' do
+          expected = [
+            {
+              :schema => Addressable::URI.parse('https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors'),
+              :fragment => "#/",
+              :message => "The property '#/' of type string did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors",
+              :failed_attribute=>"TypeV4"
+            }
+          ]
+          assert_equal(expected, subject.fully_validate(:errors_as_objects => true))
+        end
+      end
+    end
   end
   describe 'property accessors' do
     let(:schema_content) do
