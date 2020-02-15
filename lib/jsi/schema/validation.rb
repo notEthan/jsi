@@ -33,6 +33,7 @@ module JSI
     # array validation
 
     # string validation
+    autoload :StringLength, 'jsi/schema/validation/string'
 
     # numeric validation
     autoload :MultipleOf, 'jsi/schema/validation/numeric'
