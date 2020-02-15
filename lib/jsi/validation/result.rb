@@ -49,6 +49,24 @@ module JSI
     class FullResult < Result
       # @private
       class Builder < Result::Builder
+        def validate(
+            valid,
+            message,
+            keyword: nil,
+            results: []
+        )
+          results.each { |res| result.schema_issues.merge(res.schema_issues) }
+          if !valid
+            results.each { |res| result.validation_errors.merge(res.validation_errors) }
+            result.validation_errors << Validation::Error.new({
+              message: message,
+              keyword: keyword,
+              schema: schema,
+              instance_ptr: instance_ptr,
+              instance_document: instance_document,
+            })
+          end
+        end
       end
 
       def initialize
@@ -98,6 +116,16 @@ module JSI
     class ValidityResult < Result
       # @private
       class Builder < Result::Builder
+        def validate(
+            valid,
+            message,
+            keyword: nil,
+            results: []
+        )
+          if !valid
+            throw(:jsi_validation_result, INVALID)
+          end
+        end
       end
 
       def initialize(valid)
