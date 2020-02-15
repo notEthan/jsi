@@ -31,6 +31,7 @@ module JSI
     autoload :Dependencies, 'jsi/schema/validation/dependencies'
 
     # array validation
+    autoload :ArrayLength, 'jsi/schema/validation/array'
 
     # string validation
     autoload :StringLength, 'jsi/schema/validation/string'
