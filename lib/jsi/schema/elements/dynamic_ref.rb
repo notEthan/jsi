@@ -41,6 +41,23 @@ module JSI
 
           [ref, resolved_schema.jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)]
         end
+
+        element.add_action(:validate) do
+          ref, resolved_schema = *instance_exec(&resolve_dynamicRef) || next
+          ref_result = resolved_schema.internal_validate_instance(
+            instance_ptr,
+            instance_document,
+            validate_only: validate_only,
+            visited_refs: Util.add_visited_ref(visited_refs, ref),
+          )
+          inplace_results_validate(
+            ref_result.valid?,
+            'validation.keyword.$dynamicRef.invalid',
+            "instance is not valid against the schema referenced by `$dynamicRef`",
+            keyword: '$dynamicRef',
+            results: [ref_result],
+          )
+        end
       end
     end
   end
