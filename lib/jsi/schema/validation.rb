@@ -5,6 +5,7 @@ module JSI
     autoload :Core, 'jsi/schema/validation/core'
 
     # ref application
+    autoload :Ref, 'jsi/schema/validation/ref'
 
     # inplace subschema application
 
