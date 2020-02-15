@@ -42,4 +42,28 @@ module JSI
       end
     end
   end
+  module Schema::Validation::UniqueItems
+    # @private
+    def internal_validate_uniqueItems(result_builder)
+      if schema_content.key?('uniqueItems')
+        value = schema_content['uniqueItems']
+        # The value of this keyword MUST be a boolean.
+        if value == false
+          # If this keyword has boolean value false, the instance validates successfully.
+          # (noop)
+        elsif value == true
+          if result_builder.instance.respond_to?(:to_ary)
+            # If it has boolean value true, the instance validates successfully if all of its elements are unique.
+            result_builder.validate(
+              result_builder.instance.uniq.size == result_builder.instance.size,
+              "instance array items' uniqueness does not match `uniqueItems` value",
+              keyword: 'uniqueItems',
+            )
+          end
+        else
+          result_builder.schema_error('`uniqueItems` is not a boolean', 'uniqueItems')
+        end
+      end
+    end
+  end
 end

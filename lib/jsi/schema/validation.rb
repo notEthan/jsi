@@ -33,6 +33,7 @@ module JSI
 
     # array validation
     autoload :ArrayLength, 'jsi/schema/validation/array'
+    autoload :UniqueItems, 'jsi/schema/validation/array'
 
     # string validation
     autoload :StringLength, 'jsi/schema/validation/string'
