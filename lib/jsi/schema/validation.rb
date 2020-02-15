@@ -14,6 +14,7 @@ module JSI
     autoload :Not,  'jsi/schema/validation/not'
 
     # child subschema application
+    autoload :Items,    'jsi/schema/validation/items'
 
     # property names subschema application
 
