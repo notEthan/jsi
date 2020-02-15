@@ -37,6 +37,7 @@ module JSI
 
     # string validation
     autoload :StringLength, 'jsi/schema/validation/string'
+    autoload :Pattern, 'jsi/schema/validation/pattern'
 
     # numeric validation
     autoload :MultipleOf, 'jsi/schema/validation/numeric'
