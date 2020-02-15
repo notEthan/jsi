@@ -16,6 +16,7 @@ module JSI
     # child subschema application
     autoload :Items,    'jsi/schema/validation/items'
     autoload :Contains,  'jsi/schema/validation/contains'
+    autoload :Properties, 'jsi/schema/validation/properties'
 
     # property names subschema application
 
