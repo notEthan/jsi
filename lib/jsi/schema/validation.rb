@@ -8,6 +8,9 @@ module JSI
     autoload :Ref, 'jsi/schema/validation/ref'
 
     # inplace subschema application
+    autoload :AllOf, 'jsi/schema/validation/someof'
+    autoload :AnyOf, 'jsi/schema/validation/someof'
+    autoload :OneOf, 'jsi/schema/validation/someof'
 
     # child subschema application
 
