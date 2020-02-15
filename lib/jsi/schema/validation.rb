@@ -19,6 +19,7 @@ module JSI
     autoload :Properties, 'jsi/schema/validation/properties'
 
     # property names subschema application
+    autoload :PropertyNames, 'jsi/schema/validation/property_names'
 
     # any type validation
 
