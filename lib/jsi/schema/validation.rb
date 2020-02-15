@@ -29,6 +29,7 @@ module JSI
     # object validation
     autoload :Required,    'jsi/schema/validation/required'
     autoload :Dependencies, 'jsi/schema/validation/dependencies'
+    autoload :MinMaxProperties, 'jsi/schema/validation/object'
 
     # array validation
     autoload :ArrayLength, 'jsi/schema/validation/array'
