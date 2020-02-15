@@ -22,6 +22,18 @@ module JSI
         def instance
           instance_ptr.evaluate(instance_document)
         end
+
+        def schema_issue(*_)
+          virtual_method
+        end
+
+        def schema_error(message, keyword = nil)
+          schema_issue(:error, message, keyword)
+        end
+
+        def schema_warning(message, keyword = nil)
+          schema_issue(:warning, message, keyword)
+        end
       end
 
       def builder(schema, instance_ptr, instance_document, validate_only, visited_refs)
@@ -66,6 +78,15 @@ module JSI
               instance_document: instance_document,
             })
           end
+        end
+
+        def schema_issue(level, message, keyword = nil)
+          result.schema_issues << Schema::Issue.new({
+            level: level,
+            message: message,
+            keyword: keyword,
+            schema: schema,
+          })
         end
       end
 
@@ -125,6 +146,10 @@ module JSI
           if !valid
             throw(:jsi_validation_result, INVALID)
           end
+        end
+
+        def schema_issue(*_)
+          # noop
         end
       end
 
