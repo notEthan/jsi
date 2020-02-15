@@ -35,5 +35,7 @@ module JSI
     # string validation
 
     # numeric validation
+    autoload :MultipleOf, 'jsi/schema/validation/numeric'
+    autoload :MinMax,    'jsi/schema/validation/numeric'
   end
 end
