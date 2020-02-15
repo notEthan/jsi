@@ -23,6 +23,7 @@ module JSI
 
     # any type validation
     autoload :Type, 'jsi/schema/validation/type'
+    autoload :Const, 'jsi/schema/validation/const'
 
     # object validation
 
