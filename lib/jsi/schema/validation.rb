@@ -22,6 +22,7 @@ module JSI
     autoload :PropertyNames, 'jsi/schema/validation/property_names'
 
     # any type validation
+    autoload :Type, 'jsi/schema/validation/type'
 
     # object validation
 
