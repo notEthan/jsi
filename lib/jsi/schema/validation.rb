@@ -27,6 +27,7 @@ module JSI
     autoload :Const, 'jsi/schema/validation/const'
 
     # object validation
+    autoload :Required,    'jsi/schema/validation/required'
 
     # array validation
 
