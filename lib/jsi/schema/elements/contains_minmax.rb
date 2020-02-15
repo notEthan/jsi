@@ -40,22 +40,48 @@ module JSI
 
         element.add_action(:validate) do
           if keyword?('contains')
-            # An array instance is valid against "contains" if at least one of its elements is valid against
-            # the given schema.
+            # https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-contains
+            #> An array instance is valid against "contains" if at least one of its elements is valid against
+            #> the given schema, except when "minContains" is present and has a value of 0,
+            #> in which case an array instance MUST be considered valid against the "contains" keyword,
+            #> even if none of its elements is valid against the given schema.
             if instance.respond_to?(:to_ary)
               results = {}
               instance.each_index do |i|
                 results[i] = child_subschema_validate(i, ['contains'])
               end
-              child_results_validate(
-                results.each_value.any?(&:valid?),
-                'validation.keyword.contains.none',
-                "instance array does not contain any items valid against `contains` schema",
-                keyword: 'contains',
-                child_results: results,
-                # when invalid these are all false, but included for consistency with `contains` with min/max
-                instance_indexes_valid: results.inject({}) { |h, (i, r)| h.update({i => r.valid?}) }.freeze,
-              )
+              child_valid_count = instance.each_index.count { |i| results[i].valid? }
+
+              minContains = keyword_value_numeric?('minContains') ? schema_content['minContains'] : nil
+              if minContains
+                # https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-mincontains
+                child_results_validate(
+                  child_valid_count >= minContains,
+                  'validation.keyword.contains.fewer_than_minContains',
+                  "instance array contains fewer items that are valid against `contains` schema than `minContains` value",
+                  keyword: 'contains',
+                  child_results: results,
+                )
+              else
+                child_results_validate(
+                  child_valid_count > 0,
+                  'validation.keyword.contains.none',
+                  "instance array does not contain any items that are valid against `contains` schema",
+                  keyword: 'contains',
+                  child_results: results,
+                )
+              end
+
+              maxContains = keyword_value_numeric?('maxContains') ? schema_content['maxContains'] : nil
+              if maxContains
+                # https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-maxcontains
+                validate(
+                  child_valid_count <= maxContains,
+                  'validation.keyword.maxContains.more_than_maxContains',
+                  "instance array contains more items that are valid against `contains` schema than `maxContains` value",
+                  keyword: 'maxContains',
+                )
+              end
             end
           end
         end # element.add_action(:validate)
