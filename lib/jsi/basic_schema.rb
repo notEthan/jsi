@@ -180,7 +180,7 @@ module JSI
     # @param instance_document [#to_hash, #to_ary, Object] document containing the instance instance_ptr pointer points to
     # @return [Boolean]
     def valid?(instance)
-      ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr.fragment)
+      validate(JSI::JSON::Pointer[], instance, validate_only: true).valid?
     end
 
     # validates the given instance against this schema, returning a .
