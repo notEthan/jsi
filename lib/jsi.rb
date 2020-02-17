@@ -4,7 +4,6 @@ require "jsi/version"
 require "pp"
 require "set"
 require "pathname"
-require "jsi/json-schema-fragments"
 require "jsi/util"
 
 module JSI
