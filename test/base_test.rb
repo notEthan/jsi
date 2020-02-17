@@ -328,6 +328,15 @@ describe JSI::Base do
   end
   describe 'validation' do
     describe 'without errors' do
+      it '#jsi_validate' do
+        result = subject.jsi_validate
+        assert_equal(true, result.valid?)
+        assert_equal(Set[], result.validation_errors)
+        assert_equal(Set[], result.schema_issues)
+      end
+      it '#jsi_valid?' do
+        assert_equal(true, subject.jsi_valid?)
+      end
       it '#fully_validate' do
         assert_equal([], subject.fully_validate)
       end
@@ -355,6 +364,22 @@ describe JSI::Base do
       }
       let(:instance) { "this is a string" }
 
+      it '#jsi_valid?' do
+        assert_equal(false, subject.jsi_valid?)
+      end
+      it '#jsi_validate' do
+        result = subject.jsi_validate
+        assert_equal(false, result.valid?)
+        assert_equal(Set[
+          JSI::Validation::Error.new({
+            message: "instance type does not match `type` value",
+            keyword: "type",
+            schema: schema,
+            instance_ptr: JSI::Ptr[], instance_document: instance,
+          }),
+        ], result.validation_errors)
+        assert_equal(Set[], result.schema_issues)
+      end
       it '#validate' do
         assert_equal(false, subject.validate)
       end
@@ -398,6 +423,16 @@ describe JSI::Base do
       describe 'without errors' do
         let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
 
+        it '#jsi_validate' do
+          assert_equal(true, subject.foo.jsi_validate.valid?)
+          assert_equal(Set[], subject.foo.jsi_validate.validation_errors)
+          assert_equal(true, subject.bar.jsi_validate.valid?)
+          assert_equal(Set[], subject.bar.jsi_validate.validation_errors)
+        end
+        it '#jsi_valid?' do
+          assert_equal(true, subject.foo.jsi_valid?)
+          assert_equal(true, subject.bar.jsi_valid?)
+        end
         it '#fully_validate' do
           assert_equal([], subject.foo.fully_validate)
           assert_equal([], subject.bar.fully_validate)
@@ -410,6 +445,72 @@ describe JSI::Base do
       describe 'with errors' do
         let(:instance) { {'foo' => [true], 'bar' => [9], 'baz' => {'x' => 'y'}, 'more' => {}} }
 
+        it '#jsi_validate' do
+          assert_equal(Set[
+            JSI::Validation::Error.new({
+              message: "instance type does not match `type` value",
+              keyword: "type",
+              schema: schema["properties"]["foo"],
+              instance_ptr: JSI::Ptr["foo"], instance_document: instance,
+            }),
+          ], subject.foo.jsi_validate.validation_errors)
+          assert_equal(Set[], subject.bar.jsi_validate.validation_errors)
+          assert_equal(Set[
+            JSI::Validation::Error.new({
+              message: "instance type does not match `type` value",
+              keyword: "type",
+              schema: schema["properties"]["baz"],
+              instance_ptr: JSI::Ptr["baz"], instance_document: instance,
+            }),
+          ], subject.baz.jsi_validate.validation_errors)
+          assert_equal(Set[
+            JSI::Validation::Error.new({
+              message: "instance is valid against the schema specified as `not` value",
+              keyword: "not",
+              schema: schema["additionalProperties"],
+              instance_ptr: JSI::Ptr["more"], instance_document: instance,
+            }),
+          ], subject['more'].jsi_validate.validation_errors)
+          assert_equal(Set[
+            JSI::Validation::Error.new({
+              message: "instance type does not match `type` value",
+              keyword: "type",
+              schema: schema["properties"]["foo"],
+              instance_ptr: JSI::Ptr["foo"], instance_document: instance,
+            }),
+            JSI::Validation::Error.new({
+              message: "instance type does not match `type` value",
+              keyword: "type",
+              schema: schema["properties"]["baz"],
+              instance_ptr: JSI::Ptr["baz"], instance_document: instance,
+            }),
+            JSI::Validation::Error.new({
+              message: "instance object properties are not all valid against corresponding `properties` schema values",
+              keyword: "properties",
+              schema: schema,
+              instance_ptr: JSI::Ptr[], instance_document: instance,
+            }),
+            JSI::Validation::Error.new({
+              message: "instance is valid against the schema specified as `not` value",
+              keyword: "not",
+              schema: schema["additionalProperties"],
+              instance_ptr: JSI::Ptr["more"], instance_document: instance,
+            }),
+            JSI::Validation::Error.new({
+              message: "instance object additional properties are not all valid against `additionalProperties` schema value",
+              keyword: "additionalProperties",
+              schema: schema,
+              instance_ptr: JSI::Ptr[], instance_document: instance,
+            }),
+          ], subject.jsi_validate.validation_errors)
+        end
+        it '#jsi_valid?' do
+          assert_equal(false, subject.foo.jsi_valid?)
+          assert_equal(true, subject.bar.jsi_valid?)
+          assert_equal(false, subject.baz.jsi_valid?)
+          assert_equal(false, subject['more'].jsi_valid?)
+          assert_equal(false, subject.jsi_valid?)
+        end
         it '#fully_validate' do
           assert_equal(["The property '#/' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.foo.fully_validate)
           assert_equal([], subject.bar.fully_validate)
