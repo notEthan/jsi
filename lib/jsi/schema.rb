@@ -200,43 +200,27 @@ module JSI
       end
     end
 
-    # @return [Array] array of schema validation errors for
-    #   the given instance against this schema
-    def fully_validate_instance(other_instance, errors_as_objects: false)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment, errors_as_objects: errors_as_objects)
+    def jsi_validate_instance(instance)
+      if instance.is_a?(JSI::PathedNode)
+        instance_ptr = instance.jsi_ptr
+        instance_document = instance.jsi_document
+      else
+        instance_ptr = JSI::JSON::Pointer[]
+        instance_document = instance
+      end
+      jsi_ptr.schema_validate(jsi_document, instance_ptr, instance_document, validate_only: false)
     end
 
-    # @return [true, false] whether the given instance validates against this schema
-    def validate_instance(other_instance)
-      ::JSON::Validator.validate(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment)
-    end
-
-    # @return [true] if this method does not raise, it returns true to
-    #   indicate the instance is valid against this schema
-    # @raise [::JSON::Schema::ValidationError] raises if the instance has
-    #   validation errors against this schema
-    def validate_instance!(other_instance)
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment)
-    end
-
-    # @return [Array] array of schema validation errors for
-    #   this schema, validated against its metaschema. a default metaschema
-    #   is assumed if the schema does not specify a $schema.
-    def fully_validate_schema(errors_as_objects: false)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true, errors_as_objects: errors_as_objects)
-    end
-
-    # @return [true, false] whether this schema validates against its metaschema
-    def validate_schema
-      ::JSON::Validator.validate(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true)
-    end
-
-    # @return [true] if this method does not raise, it returns true to
-    #   indicate this schema is valid against its metaschema
-    # @raise [::JSON::Schema::ValidationError] raises if this schema has
-    #   validation errors against its metaschema
-    def validate_schema!
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true)
+    # @return [Boolean]
+    def jsi_instance_valid?(instance)
+      if instance.is_a?(JSI::PathedNode)
+        instance_ptr = instance.jsi_ptr
+        instance_document = instance.jsi_document
+      else
+        instance_ptr = JSI::JSON::Pointer[]
+        instance_document = instance
+      end
+      jsi_ptr.schema_validate(jsi_document, instance_ptr, instance_document, validate_only: true).valid?
     end
 
     private

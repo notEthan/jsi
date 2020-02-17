@@ -233,14 +233,15 @@ describe JSI::Base do
   end
   describe 'validation' do
     describe 'without errors' do
-      it '#fully_validate' do
-        assert_equal([], subject.fully_validate)
+      it '#jsi_validate' do
+        result = subject.jsi_validate
+        assert_equal(true, result.valid?)
+        assert_equal([], result.validation_errors)
+        assert_equal([], result.annotations)
+        assert_equal([], result.schema_errors)
       end
-      it '#validate' do
-        assert_equal(true, subject.validate)
-      end
-      it '#validate!' do
-        assert_equal(true, subject.validate!)
+      it '#jsi_valid?' do
+        assert_equal(true, subject.jsi_valid?)
       end
     end
     describe 'with errors' do
@@ -260,29 +261,23 @@ describe JSI::Base do
       }
       let(:instance) { "this is a string" }
 
-      it '#validate' do
-        assert_equal(false, subject.validate)
+      it '#jsi_valid?' do
+        assert_equal(false, subject.jsi_valid?)
       end
-      it '#validate!' do
-        assert_raises JSON::Schema::ValidationError do
-          subject.validate!
-        end
-      end
-      describe 'fully_validate' do
-        it '#fully_validate ' do
-          assert_equal(["The property '#/' of type string did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors"], subject.fully_validate)
-        end
-        it '#fully_validate :errors_as_objects' do
-          expected = [
-            {
-              :schema => Addressable::URI.parse('https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors'),
-              :fragment => "#/",
-              :message => "The property '#/' of type string did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors",
-              :failed_attribute=>"TypeV4"
-            }
-          ]
-          assert_equal(expected, subject.fully_validate(:errors_as_objects => true))
-        end
+      it '#jsi_validate' do
+        result = subject.jsi_validate
+        assert_equal(false, result.valid?)
+        errs = [
+          {
+            :message => "instance type does not match `type` value",
+            :keyword => "type",
+            :schema_ptr => JSI::SchemaPointer[], :schema_document => schema.jsi_document,
+            :instance_ptr => JSI::JSON::Pointer[], :instance_document => instance,
+          }
+        ]
+        assert_equal(errs, result.validation_errors)
+        assert_equal([], result.annotations)
+        assert_equal([], result.schema_errors)
       end
     end
     describe 'at a depth' do
@@ -303,31 +298,67 @@ describe JSI::Base do
       describe 'without errors' do
         let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
 
-        it '#fully_validate' do
-          assert_equal([], subject.foo.fully_validate)
-          assert_equal([], subject.bar.fully_validate)
+        it '#jsi_validate' do
+          assert_equal(true, subject.foo.jsi_validate.valid?)
+          assert_equal([], subject.foo.jsi_validate.validation_errors)
+          assert_equal(true, subject.bar.jsi_validate.valid?)
+          assert_equal([], subject.bar.jsi_validate.validation_errors)
         end
-        it '#validate' do
-          assert_equal(true, subject.foo.validate)
-          assert_equal(true, subject.bar.validate)
+        it '#jsi_valid?' do
+          assert_equal(true, subject.foo.jsi_valid?)
+          assert_equal(true, subject.bar.jsi_valid?)
         end
       end
       describe 'with errors' do
         let(:instance) { {'foo' => [true], 'bar' => [9], 'baz' => {'x' => 'y'}, 'more' => {}} }
 
-        it '#fully_validate' do
-          assert_equal(["The property '#/' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.foo.fully_validate)
-          assert_equal([], subject.bar.fully_validate)
-          assert_equal(["The property '#/' of type object did not match the following type: array in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.baz.fully_validate)
-          assert_equal(["The property '#/' of type object matched the disallowed schema in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject['more'].fully_validate)
-          assert_equal(["The property '#/foo' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth", "The property '#/baz' of type object did not match the following type: array in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth", "The property '#/more' of type object matched the disallowed schema in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.fully_validate)
+        it '#jsi_validate' do
+          assert_equal([
+            {
+              :message => "instance type does not match `type` value",
+              :keyword => "type",
+              :schema_ptr => JSI::SchemaPointer["properties"]["foo"], :schema_document => schema_content,
+              :instance_ptr => JSI::JSON::Pointer["foo"], :instance_document => instance,
+            }
+          ], subject.foo.jsi_validate.validation_errors)
+          assert_equal([], subject.bar.jsi_validate.validation_errors)
+          assert_equal([
+            {
+              :message => "instance type does not match `type` value",
+              :keyword => "type",
+              :schema_ptr => JSI::SchemaPointer["properties"]["baz"], :schema_document => schema_content,
+              :instance_ptr => JSI::JSON::Pointer["baz"], :instance_document => instance,
+            }
+          ], subject.baz.jsi_validate.validation_errors)
+          assert_equal([
+            {
+              :message => "instance validated against the schema defined by `not` value",
+              :keyword => "not",
+              :schema_ptr => JSI::SchemaPointer["additionalProperties"], :schema_document => schema_content,
+              :instance_ptr => JSI::JSON::Pointer["more"], :instance_document => instance,
+            }
+          ], subject['more'].jsi_validate.validation_errors)
+          assert_equal([
+            {
+              :message => "instance object properties do not all validate against corresponding `properties` schema values",
+              :keyword => "properties",
+              :schema_ptr => JSI::SchemaPointer[], :schema_document => schema_content,
+              :instance_ptr => JSI::JSON::Pointer[], :instance_document => instance,
+            },
+            {
+              :message => "additional instance object properties do not all validate against `additionalProperties` schema value",
+              :keyword => "additionalProperties",
+              :schema_ptr => JSI::SchemaPointer[], :schema_document => schema_content,
+              :instance_ptr => JSI::JSON::Pointer[], :instance_document => instance,
+            }
+          ], subject.jsi_validate.validation_errors)
         end
-        it '#validate' do
-          assert_equal(false, subject.foo.validate)
-          assert_equal(true, subject.bar.validate)
-          assert_equal(false, subject.baz.validate)
-          assert_equal(false, subject['more'].validate)
-          assert_equal(false, subject.validate)
+        it '#jsi_valid?' do
+          assert_equal(false, subject.foo.jsi_valid?)
+          assert_equal(true, subject.bar.jsi_valid?)
+          assert_equal(false, subject.baz.jsi_valid?)
+          assert_equal(false, subject['more'].jsi_valid?)
+          assert_equal(false, subject.jsi_valid?)
         end
       end
     end
