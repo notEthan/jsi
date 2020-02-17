@@ -79,7 +79,7 @@ module JSI
         schema = ptr.evaluate(document)
 
         if schema.respond_to?(:to_hash)
-          if schema['$ref'].respond_to?(:to_str)
+          if schema['$ref'].respond_to?(:to_str) || schema['$recursiveRef'].respond_to?(:to_str)
             ptr.deref(document) do |deref_ptr|
               ptrs.merge(deref_ptr.schema_match_ptrs_to_instance(document, instance, ignore: ignore + [self]))
             end

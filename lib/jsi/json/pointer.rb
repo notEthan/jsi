@@ -288,7 +288,8 @@ module JSI
         content = evaluate(document)
 
         if content.respond_to?(:to_hash)
-          ref = (content.respond_to?(:[]) ? content : content.to_hash)['$ref']
+          content = content.to_hash
+          ref = content.key?('$ref') ? content['$ref'] : content.key?('$recursiveRef') ? content['$recursiveRef'] : nil
         end
         return self unless ref.is_a?(String)
 
