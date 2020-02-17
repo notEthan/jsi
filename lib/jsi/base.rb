@@ -311,23 +311,13 @@ module JSI
       end
     end
 
-    # @return [Array] array of schema validation errors for this instance
-    def fully_validate(errors_as_objects: false)
-      jsi_schemas.map { |schema| schema.fully_validate_instance(jsi_instance, errors_as_objects: errors_as_objects) }.inject([], &:+)
+    def jsi_validate
+      jsi_schemas.map { |schema| schema.jsi_validate_instance(self) }.inject(JSI::SchemaValidation::FullResult.new, &:+)
     end
 
-    # @return [true, false] whether the instance validates against its schema
-    def validate
-      jsi_schemas.all? { |schema| schema.validate_instance(jsi_instance) }
-    end
-
-    # @return [true] if this method does not raise, it returns true to
-    #   indicate a valid instance.
-    # @raise [::JSON::Schema::ValidationError] raises if the instance has
-    #   validation errors
-    def validate!
-      jsi_schemas.each { |schema| schema.validate_instance!(jsi_instance) }
-      true
+    # @return [Boolean]
+    def jsi_valid?
+      jsi_schemas.all? { |schema| schema.jsi_instance_valid?(self) }
     end
 
     def dup
