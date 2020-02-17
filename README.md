@@ -87,7 +87,7 @@ bill.phone.map(&:location)
 We also get validations, as you'd expect given that's largely what json-schema exists to do:
 
 ```ruby
-bill.validate
+bill.jsi_valid?
 # => true
 ```
 
@@ -102,11 +102,15 @@ bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 #     }
 #   ]
 # }
-bad.phone.fully_validate
-# => ["The property '#/0/number' of type array did not match the following type: string in schema 594126e3"]
+bad.phone.jsi_validate
+# => #<JSI::Validation::FullResult
+#  @validation_errors=
+#   #<Set: {#<JSI::Validation::Error
+#      message: "instance type does not match `type` value",
+#      keyword: "type",
+#  ...
+# >
 ```
-
-These validations are done by the [`json-schema` gem](https://github.com/ruby-json-schema/json-schema) - JSI does not do validations on its own.
 
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with `#[]` or, say, `#transform_values`:
 
