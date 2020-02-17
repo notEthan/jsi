@@ -26,8 +26,6 @@ Gem::Specification.new do |spec|
 
   spec.require_paths = ["lib"]
 
-  # we are monkey patching json-schema with a fix that has not been merged in a timely fashion.
-  spec.add_dependency "json-schema", "~> 2.8"
   spec.add_development_dependency "rake"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency "minitest-around"

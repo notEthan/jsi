@@ -8,8 +8,6 @@ require "pathname"
 require "bigdecimal"
 require "addressable/uri"
 
-require "jsi/json-schema-fragments"
-
 require "jsi/util"
 require "jsi/typelike_modules"
 
