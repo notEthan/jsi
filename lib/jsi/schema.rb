@@ -451,6 +451,30 @@ module JSI
       end
     end
 
+    # validates the given instance against this schema
+    #
+    # @param instance [Object] the instance to validate against this schema
+    # @return [JSI::Validation::Result]
+    def instance_validate(instance)
+      if instance.is_a?(JSI::PathedNode)
+        instance_ptr = instance.jsi_ptr
+        instance_document = instance.jsi_document
+      else
+        instance_ptr = Ptr[]
+        instance_document = instance
+      end
+      internal_validate_instance(instance_ptr, instance_document)
+    end
+
+    # @param instance [Object] the instance to validate against this schema
+    # @return [Boolean] whether the given instance is valid against this schema
+    def instance_valid?(instance)
+      if instance.is_a?(JSI::PathedNode)
+        instance = instance.jsi_node_content
+      end
+      internal_validate_instance(Ptr[], instance, validate_only: true).valid?
+    end
+
     # @return [Array] array of schema validation errors for
     #   the given instance against this schema
     def fully_validate_instance(other_instance, errors_as_objects: false)

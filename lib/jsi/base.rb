@@ -359,6 +359,19 @@ module JSI
       end
     end
 
+    # validates this JSI's instance against its schemas
+    #
+    # @return [JSI::Validation::FullResult]
+    def jsi_validate
+      results = jsi_schemas.map { |schema| schema.instance_validate(self) }
+      results.inject(Validation::FullResult.new, &:merge).freeze
+    end
+
+    # @return [Boolean] whether this JSI's instance is valid against all of its schemas
+    def jsi_valid?
+      jsi_schemas.all? { |schema| schema.instance_valid?(self) }
+    end
+
     # @return [Array] array of schema validation errors for this instance
     def fully_validate(errors_as_objects: false)
       jsi_schemas.map { |schema| schema.fully_validate_instance(jsi_instance, errors_as_objects: errors_as_objects) }.inject([], &:+)
