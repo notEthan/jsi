@@ -402,15 +402,6 @@ describe JSI::Schema do
       it '#instance_valid?' do
         assert_equal(true, schema.instance_valid?(instance))
       end
-      it '#fully_validate_instance' do
-        assert_equal([], schema.fully_validate_instance(instance))
-      end
-      it '#validate_instance' do
-        assert_equal(true, schema.validate_instance(instance))
-      end
-      it '#validate_instance!' do
-        assert_equal(true, schema.validate_instance!(instance))
-      end
     end
     describe 'with errors' do
       let(:instance) { ['no'] }
@@ -429,18 +420,6 @@ describe JSI::Schema do
       end
       it '#instance_valid?' do
         assert_equal(false, schema.instance_valid?(instance))
-      end
-      it '#fully_validate_instance' do
-        assert_equal(["The property '#/' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/validation"], schema.fully_validate_instance(instance))
-      end
-      it '#validate_instance' do
-        assert_equal(false, schema.validate_instance(instance))
-      end
-      it '#validate_instance!' do
-        err = assert_raises(JSON::Schema::ValidationError) do
-          schema.validate_instance!(instance)
-        end
-        assert_equal("The property '#/' of type array did not match the following type: object", err.message)
       end
     end
   end

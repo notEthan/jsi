@@ -337,15 +337,6 @@ describe JSI::Base do
       it '#jsi_valid?' do
         assert_equal(true, subject.jsi_valid?)
       end
-      it '#fully_validate' do
-        assert_equal([], subject.fully_validate)
-      end
-      it '#validate' do
-        assert_equal(true, subject.validate)
-      end
-      it '#validate!' do
-        assert_equal(true, subject.validate!)
-      end
     end
     describe 'with errors' do
       let(:schema_content) {
@@ -380,30 +371,6 @@ describe JSI::Base do
         ], result.validation_errors)
         assert_equal(Set[], result.schema_issues)
       end
-      it '#validate' do
-        assert_equal(false, subject.validate)
-      end
-      it '#validate!' do
-        assert_raises JSON::Schema::ValidationError do
-          subject.validate!
-        end
-      end
-      describe 'fully_validate' do
-        it '#fully_validate ' do
-          assert_equal(["The property '#/' of type string did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors"], subject.fully_validate)
-        end
-        it '#fully_validate :errors_as_objects' do
-          expected = [
-            {
-              :schema => Addressable::URI.parse('https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors'),
-              :fragment => "#/",
-              :message => "The property '#/' of type string did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors",
-              :failed_attribute=>"TypeV4"
-            }
-          ]
-          assert_equal(expected, subject.fully_validate(:errors_as_objects => true))
-        end
-      end
     end
     describe 'at a depth' do
       let(:schema_content) do
@@ -432,14 +399,6 @@ describe JSI::Base do
         it '#jsi_valid?' do
           assert_equal(true, subject.foo.jsi_valid?)
           assert_equal(true, subject.bar.jsi_valid?)
-        end
-        it '#fully_validate' do
-          assert_equal([], subject.foo.fully_validate)
-          assert_equal([], subject.bar.fully_validate)
-        end
-        it '#validate' do
-          assert_equal(true, subject.foo.validate)
-          assert_equal(true, subject.bar.validate)
         end
       end
       describe 'with errors' do
@@ -510,20 +469,6 @@ describe JSI::Base do
           assert_equal(false, subject.baz.jsi_valid?)
           assert_equal(false, subject['more'].jsi_valid?)
           assert_equal(false, subject.jsi_valid?)
-        end
-        it '#fully_validate' do
-          assert_equal(["The property '#/' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.foo.fully_validate)
-          assert_equal([], subject.bar.fully_validate)
-          assert_equal(["The property '#/' of type object did not match the following type: array in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.baz.fully_validate)
-          assert_equal(["The property '#/' of type object matched the disallowed schema in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject['more'].fully_validate)
-          assert_equal(["The property '#/foo' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth", "The property '#/baz' of type object did not match the following type: array in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth", "The property '#/more' of type object matched the disallowed schema in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.fully_validate)
-        end
-        it '#validate' do
-          assert_equal(false, subject.foo.validate)
-          assert_equal(true, subject.bar.validate)
-          assert_equal(false, subject.baz.validate)
-          assert_equal(false, subject['more'].validate)
-          assert_equal(false, subject.validate)
         end
       end
     end
