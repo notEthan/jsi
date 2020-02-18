@@ -125,12 +125,9 @@ module JSI
       end
     end
 
-    # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
-    #   may be used alongside the schema module. methods defined by any conflicting_module
-    #   will not be defined as accessors for the JSI schema module.
     # @return [Module] a module representing this schema. see {JSI::SchemaClasses.module_for_schema}.
-    def jsi_schema_module(conflicting_modules: [Base, BaseArray, BaseHash])
-      JSI::SchemaClasses.module_for_schema(self, conflicting_modules: conflicting_modules)
+    def jsi_schema_module
+      JSI::SchemaClasses.module_for_schema(self)
     end
 
     # @return [Class subclassing JSI::Base] shortcut for JSI.class_for_schema(schema)
@@ -224,10 +221,10 @@ module JSI
       end
     end
 
-    # @return [Array<String>] array of schema validation error messages for
+    # @return [Array] array of schema validation errors for
     #   the given instance against this schema
-    def fully_validate_instance(other_instance)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(node_document), JSI::Typelike.as_json(other_instance), fragment: node_ptr.fragment)
+    def fully_validate_instance(other_instance, errors_as_objects: false)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(node_document), JSI::Typelike.as_json(other_instance), fragment: node_ptr.fragment, errors_as_objects: errors_as_objects)
     end
 
     # @return [true, false] whether the given instance validates against this schema
@@ -243,11 +240,11 @@ module JSI
       ::JSON::Validator.validate!(JSI::Typelike.as_json(node_document), JSI::Typelike.as_json(other_instance), fragment: node_ptr.fragment)
     end
 
-    # @return [Array<String>] array of schema validation error messages for
+    # @return [Array] array of schema validation errors for
     #   this schema, validated against its metaschema. a default metaschema
     #   is assumed if the schema does not specify a $schema.
-    def fully_validate_schema
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(node_document), [], fragment: node_ptr.fragment, validate_schema: true, list: true)
+    def fully_validate_schema(errors_as_objects: false)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(node_document), [], fragment: node_ptr.fragment, validate_schema: true, list: true, errors_as_objects: errors_as_objects)
     end
 
     # @return [true, false] whether this schema validates against its metaschema

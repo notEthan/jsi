@@ -1,10 +1,10 @@
 require_relative 'test_helper'
 
-NamedSchemaInstance = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema'})
+NamedSchemaInstance = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/base/named_schema'}).jsi_schema_class
 
 # hitting .tap(&:name) causes JSI to assign a constant name from the ID,
 # meaning the name NamedSchemaInstanceTwo is not known.
-NamedSchemaInstanceTwo = JSI.class_for_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).tap(&:name)
+NamedSchemaInstanceTwo = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).jsi_schema_class.tap(&:name)
 
 describe JSI::Base do
   let(:schema_content) { {} }
@@ -59,12 +59,6 @@ describe JSI::Base do
   describe 'module for schema .schema' do
     it '.schema' do
       assert_equal(schema, JSI::SchemaClasses.module_for_schema(schema).schema)
-    end
-  end
-  describe 'SchemaClasses[]' do
-    let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/test/empty'} }
-    it 'stores the class for the schema' do
-      assert_equal(JSI.class_for_schema(schema), JSI::SchemaClasses[schema.schema_id])
     end
   end
   describe '.class_for_schema' do
@@ -159,7 +153,7 @@ describe JSI::Base do
       let(:instance) { JSI::Schema.new({}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal("assigning a schema to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI::JSONSchemaOrgDraft06 Schema>}", err.message)
+        assert_equal("assigning a schema to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>}", err.message)
       end
     end
   end
@@ -260,6 +254,48 @@ describe JSI::Base do
         assert_equal(true, subject.validate!)
       end
     end
+    describe 'with errors' do
+      let(:schema_content) {
+        {
+          'id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors',
+          'type' => 'object',
+          'properties' => {
+            'some_number' => {
+              'type' => 'number'
+            },
+            'a_required_property' => {
+              'type' => 'string'
+            }
+          }
+        }
+      }
+      let(:instance) { "this is a string" }
+
+      it '#validate' do
+        assert_equal(false, subject.validate)
+      end
+      it '#validate!' do
+        assert_raises JSON::Schema::ValidationError do
+          subject.validate!
+        end
+      end
+      describe 'fully_validate' do
+        it '#fully_validate ' do
+          assert_equal(["The property '#/' of type string did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors"], subject.fully_validate)
+        end
+        it '#fully_validate :errors_as_objects' do
+          expected = [
+            {
+              :schema => Addressable::URI.parse('https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors'),
+              :fragment => "#/",
+              :message => "The property '#/' of type string did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors",
+              :failed_attribute=>"TypeV4"
+            }
+          ]
+          assert_equal(expected, subject.fully_validate(:errors_as_objects => true))
+        end
+      end
+    end
   end
   describe 'property accessors' do
     let(:schema_content) do
@@ -278,11 +314,11 @@ describe JSI::Base do
     describe 'readers' do
       it 'reads attributes described as properties' do
         assert_equal({'x' => 'y'}, subject.foo.as_json)
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_respond_to(subject.foo, :to_hash)
         refute_respond_to(subject.foo, :to_ary)
         assert_equal([3.14159], subject.bar.as_json)
-        assert_instance_of(JSI.class_for_schema(schema['properties']['bar']), subject.bar)
+        assert_is_a(schema.properties['bar'].jsi_schema_module, subject.bar)
         refute_respond_to(subject.bar, :to_hash)
         assert_respond_to(subject.bar, :to_ary)
         assert_equal(true, subject.baz)
@@ -328,8 +364,7 @@ describe JSI::Base do
           }
         end
         it 'does not define readers' do
-          assert_equal('bar', subject.foo)
-          assert_equal(JSI::SchemaClasses.module_for_schema(subject.schema, conflicting_modules: [JSI::Base, JSI::BaseArray, JSI::BaseHash]), subject.method(:foo).owner)
+          assert_equal('bar', subject.foo) # this one is defined
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
@@ -351,8 +386,8 @@ describe JSI::Base do
         subject.foo = {'y' => 'z'}
 
         assert_equal({'y' => 'z'}, subject.foo.as_json)
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), orig_foo)
-        assert_instance_of(JSI.class_for_schema(schema['properties']['foo']), subject.foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
+        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
       end
       it 'modifies the instance, visible to other references to the same instance' do
         orig_instance = subject.jsi_instance

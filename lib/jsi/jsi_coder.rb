@@ -21,24 +21,27 @@ module JSI
   #       arms_serialize 'preferences', [:jsi, Preferences], :json
   #     end
   #
-  # the column data may be either a single instance of the loaded class
+  # the column data may be either a single instance of the schema class
   # (represented as one json object) or an array of them (represented as a json
   # array of json objects), indicated by the keyword argument `array`.
   class JSICoder
-    # @param loaded_class [Class] the JSI::Base subclass which #load will instantiate
-    # @param array [Boolean] whether the dumped data represent one instance of loaded_class,
-    #   or an array of them. note that it may be preferable to have loaded_class simply be
-    #   an array schema class.
-    def initialize(loaded_class, array: false)
-      @loaded_class = loaded_class
+    # @param schema [JSI::Schema, JSI::SchemaModule, Class < JSI::Base] a schema, a JSI schema class, or
+    #   a JSI schema module. #load will instantiate column data using the JSI schema represented.
+    # @param array [Boolean] whether the dumped data represent one instance of the schema,
+    #   or an array of them. note that it may be preferable to simply use an array schema.
+    def initialize(schema, array: false)
+      unless schema.respond_to?(:new_jsi)
+        raise(ArgumentError, "not a JSI schema, class, or module: #{schema.inspect}")
+      end
+      @schema = schema
       @array = array
     end
 
-    # loads the database column to instances of #loaded_class
+    # loads the database column to JSI instances of our schema
     #
     # @param data [Object, Array, nil] the dumped schema instance(s) of the JSI(s)
-    # @return [loaded_class instance, Array<loaded_class instance>, nil] the JSI or JSIs
-    #   containing the schema instance(s), or nil if data is nil
+    # @return [JSI::Base, Array<JSI::Base>, nil] the JSI or JSIs containing the schema
+    #   instance(s), or nil if data is nil
     def load(data)
       return nil if data.nil?
       object = if @array
@@ -52,8 +55,8 @@ module JSI
       object
     end
 
-    # @param object [loaded_class instance, Array<loaded_class instance>, nil] the JSI or array
-    #   of JSIs containing the schema instance(s)
+    # @param object [JSI::Base, Array<JSI::Base>, nil] the JSI or array of JSIs containing
+    #   the schema instance(s)
     # @return [Object, Array, nil] the schema instance(s) of the JSI(s), or nil if object is nil
     def dump(object)
       return nil if object.nil?
@@ -74,12 +77,12 @@ module JSI
 
     private
     # @param data [Object]
-    # @return [loaded_class]
+    # @return [JSI::Base]
     def load_object(data)
-      @loaded_class.new(data)
+      @schema.new_jsi(data)
     end
 
-    # @param object [loaded_class]
+    # @param object [JSI::Base, Object]
     # @return [Object]
     def dump_object(object)
       JSI::Typelike.as_json(object)

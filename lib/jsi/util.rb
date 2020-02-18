@@ -56,7 +56,7 @@ module JSI
     # to define a recursive function to return the length of an array:
     #
     #    length = ycomb do |len|
-    #      proc{|list| list == [] ? 0 : 1 + len.call(list[1..-1]) }
+    #      proc { |list| list == [] ? 0 : 1 + len.call(list[1..-1]) }
     #    end
     #
     # see https://secure.wikimedia.org/wikipedia/en/wiki/Fixed_point_combinator#Y_combinator
@@ -70,12 +70,14 @@ module JSI
   extend Util
 
   module FingerprintHash
+    # overrides BasicObject#==
     def ==(other)
       object_id == other.object_id || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == self.jsi_fingerprint)
     end
 
     alias_method :eql?, :==
 
+    # overrides Kernel#hash
     def hash
       jsi_fingerprint.hash
     end

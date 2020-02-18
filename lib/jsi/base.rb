@@ -93,9 +93,8 @@ module JSI
     # @param jsi_ptr [JSI::JSON::Pointer] for internal use. a JSON pointer specifying
     #   the path of this instance in the `jsi_document` param. `jsi_ptr` must be passed
     #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
-    # @param ancestor_jsi [JSI::Base] for internal use, specifies an ancestor_jsi
-    #   from which this JSI originated to calculate #parents
-    def initialize(instance, jsi_document: nil, jsi_ptr: nil, ancestor_jsi: nil)
+    # @param jsi_root_node [JSI::Base] for internal use, specifies the JSI at the root of the document
+    def initialize(instance, jsi_document: nil, jsi_ptr: nil, jsi_root_node: nil)
       unless respond_to?(:schema)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema. please use JSI.class_for_schema")
       end
@@ -112,27 +111,24 @@ module JSI
           raise(TypeError, "jsi_ptr must be a JSI::JSON::Pointer; got: #{jsi_ptr.inspect}")
         end
         @jsi_ptr = jsi_ptr
-      else
-        raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || ancestor_jsi
-        if instance.is_a?(PathedNode)
-          @jsi_document = instance.document_root_node
-          # this can result in the unusual situation where ancestor_jsi is nil, though jsi_ptr is not root.
-          # #document_root_node will then return a JSI::JSON::Pointer instead of a root JSI.
-          @jsi_ptr = instance.node_ptr
+        if @jsi_ptr.root?
+          raise(Bug, "jsi_root_node cannot be specified for root JSI") if jsi_root_node
+          @jsi_root_node = self
         else
-          @jsi_document = instance
-          @jsi_ptr = JSI::JSON::Pointer.new([])
+          if !jsi_root_node.is_a?(JSI::Base)
+            raise(TypeError, "jsi_root_node must be a JSI::Base; got: #{jsi_root_node.inspect}")
+          end
+          if !jsi_root_node.jsi_ptr.root?
+            raise(Bug, "jsi_root_node ptr #{jsi_root_node.jsi_ptr.inspect} is not root")
+          end
+          @jsi_root_node = jsi_root_node
         end
+      else
+        raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || jsi_root_node
+        @jsi_document = instance
+        @jsi_ptr = JSI::JSON::Pointer.new([])
+        @jsi_root_node = self
       end
-      if ancestor_jsi
-        if !ancestor_jsi.is_a?(JSI::Base)
-          raise(TypeError, "ancestor_jsi must be a JSI::Base; got: #{ancestor_jsi.inspect}")
-        end
-        if !ancestor_jsi.jsi_ptr.contains?(@jsi_ptr)
-          raise(Bug, "ancestor_jsi ptr #{ancestor_jsi.jsi_ptr.inspect} is not ancestor of #{@jsi_ptr.inspect}")
-        end
-      end
-      @ancestor_jsi = ancestor_jsi
 
       if self.jsi_instance.respond_to?(:to_hash)
         extend BaseHash
@@ -150,11 +146,12 @@ module JSI
     # JSI::JSON::Pointer pointing to this JSI's instance within the jsi_document
     attr_reader :jsi_ptr
 
-    # a JSI which is an ancestor_jsi of this
-    attr_reader :ancestor_jsi
+    # the JSI at the root of this JSI's document
+    attr_reader :jsi_root_node
 
     alias_method :node_document, :jsi_document
     alias_method :node_ptr, :jsi_ptr
+    alias_method :document_root_node, :jsi_root_node
 
     # the instance of the json-schema
     alias_method :jsi_instance, :node_content
@@ -166,24 +163,15 @@ module JSI
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
     end
 
-    # an array of JSI instances above this one in the document. empty if this
-    # JSI does not have a known ancestor.
+    # an array of JSI instances above this one in the document.
     #
     # @return [Array<JSI::Base>]
     def parent_jsis
-      ancestor_jsi = @ancestor_jsi || self
-      parent = ancestor_jsi
+      parent = jsi_root_node
 
-      (ancestor_jsi.jsi_ptr.reference_tokens.size...self.jsi_ptr.reference_tokens.size).map do |i|
-        current = parent
-        parent = parent[self.jsi_ptr.reference_tokens[i]]
-        if current.is_a?(JSI::Base)
-          current
-        else
-          # sometimes after a deref, we may end up with parents whose schema we do not know.
-          # TODO this is kinda crap; hopefully we can remove it along with deref instantiating
-          # a deref ptr as the same JSI class it is
-          SimpleWrap.new(NOINSTANCE, jsi_document: jsi_document, jsi_ptr: jsi_ptr.take(i), ancestor_jsi: @ancestor_jsi)
+      jsi_ptr.reference_tokens.map do |token|
+        parent.tap do
+          parent = parent[token]
         end
       end.reverse
     end
@@ -195,35 +183,7 @@ module JSI
       parent_jsis.first
     end
 
-    # @return [JSI::PathedNode] a pathed node at the root of the document. this is generally a JSI::Base
-    #   but may be a JSI::JSON::Node in unusual circumstances.
-    def document_root_node
-      if @jsi_ptr.root?
-        self
-      elsif @ancestor_jsi
-        @ancestor_jsi.document_root_node
-      elsif jsi_instance.is_a?(PathedNode)
-        jsi_instance.document_root_node
-      else
-        JSI::JSON::Node.new_doc(@jsi_document)
-      end
-    end
-
-    # @return [JSI::PathedNode]
-    def parent_node
-      if @jsi_ptr.root?
-        nil
-      elsif @ancestor_jsi
-        parent_jsis.first.tap do |parent_node|
-          raise(Bug, 'is @ancestor_jsi == self? it should not be') if parent_node.nil?
-          raise(Bug, "parent_node not PathedNode: #{parent_node.pretty_inspect.chomp}") unless parent_node.is_a?(JSI::PathedNode)
-        end
-      elsif jsi_instance.is_a?(PathedNode)
-        jsi_instance.parent_node
-      else
-        JSI::JSON::Node.new_by_type(@jsi_document, @jsi_ptr.parent)
-      end
-    end
+    alias_method :parent_node, :parent_jsi
 
     # @deprecated
     alias_method :parents, :parent_jsis
@@ -270,7 +230,7 @@ module JSI
           # this avoids duplication of code with #modified_copy and below in #[] to handle pathing and such.
           dup.tap { |o| o[token] = default }[token]
         elsif token_schema && (token_schema.describes_schema? || value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-          class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], ancestor_jsi: @ancestor_jsi || self)
+          class_for_schema(token_schema).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], jsi_root_node: @jsi_root_node)
         elsif token_is_ours
           value
         else
@@ -309,19 +269,7 @@ module JSI
     # @return [JSI::Base, self]
     def deref(&block)
       node_ptr_deref do |deref_ptr|
-        jsi_from_root = deref_ptr.evaluate(document_root_node)
-        if jsi_from_root.is_a?(JSI::Base)
-          return jsi_from_root.tap(&(block || Util::NOOP))
-        else
-          # TODO I want to get rid of this ... just return jsi_from_root whatever it is
-          # NOTE when I get rid of this, simplify #parent_jsis too
-          if @ancestor_jsi && @ancestor_jsi.jsi_ptr.contains?(deref_ptr)
-            derefed = self.class.new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: deref_ptr, ancestor_jsi: @ancestor_jsi)
-          else
-            derefed = self.class.new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: deref_ptr)
-          end
-          return derefed.tap(&(block || Util::NOOP))
-        end
+        deref_ptr.evaluate(jsi_root_node).tap(&(block || Util::NOOP))
       end
       return self
     end
@@ -334,22 +282,20 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def modified_copy(&block)
-      if @ancestor_jsi
-        raise(Bug, 'bad @ancestor_jsi') if @ancestor_jsi.object_id == self.object_id
-
-        modified_ancestor = @ancestor_jsi.modified_copy do |anc|
-          @jsi_ptr.ptr_relative_to(@ancestor_jsi.jsi_ptr).modified_document_copy(anc, &block)
-        end
-        self.class.new(Base::NOINSTANCE, jsi_document: modified_ancestor.jsi_document, jsi_ptr: @jsi_ptr, ancestor_jsi: modified_ancestor)
-      else
+      if node_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         self.class.new(Base::NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr)
+      else
+        modified_jsi_root_node = @jsi_root_node.modified_copy do |root|
+          @jsi_ptr.modified_document_copy(root, &block)
+        end
+        self.class.new(Base::NOINSTANCE, jsi_document: modified_jsi_root_node.node_document, jsi_ptr: @jsi_ptr, jsi_root_node: modified_jsi_root_node)
       end
     end
 
-    # @return [Array<String>] array of schema validation error messages for this instance
-    def fully_validate
-      schema.fully_validate_instance(jsi_instance)
+    # @return [Array] array of schema validation errors for this instance
+    def fully_validate(errors_as_objects: false)
+      schema.fully_validate_instance(jsi_instance, errors_as_objects: errors_as_objects)
     end
 
     # @return [true, false] whether the instance validates against its schema
