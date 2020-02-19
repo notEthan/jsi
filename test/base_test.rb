@@ -296,6 +296,52 @@ describe JSI::Base do
         end
       end
     end
+    describe 'at a depth' do
+      let(:schema_content) do
+        {
+          'id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth',
+          'description' => 'hash schema',
+          'type' => 'object',
+          'properties' => {
+            'foo' => {'type' => 'object'},
+            'bar' => {},
+            'baz' => {'type' => 'array'},
+          },
+          'additionalProperties' => {'not' => {}},
+        }
+      end
+
+      describe 'without errors' do
+        let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
+
+        it '#fully_validate' do
+          assert_equal([], subject.foo.fully_validate)
+          assert_equal([], subject.bar.fully_validate)
+        end
+        it '#validate' do
+          assert_equal(true, subject.foo.validate)
+          assert_equal(true, subject.bar.validate)
+        end
+      end
+      describe 'with errors' do
+        let(:instance) { {'foo' => [true], 'bar' => [9], 'baz' => {'x' => 'y'}, 'more' => {}} }
+
+        it '#fully_validate' do
+          assert_equal(["The property '#/' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.foo.fully_validate)
+          assert_equal([], subject.bar.fully_validate)
+          assert_equal(["The property '#/' of type object did not match the following type: array in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.baz.fully_validate)
+          assert_equal(["The property '#/' of type object matched the disallowed schema in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject['more'].fully_validate)
+          assert_equal(["The property '#/foo' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth", "The property '#/baz' of type object did not match the following type: array in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth", "The property '#/more' of type object matched the disallowed schema in schema https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth"], subject.fully_validate)
+        end
+        it '#validate' do
+          assert_equal(false, subject.foo.validate)
+          assert_equal(true, subject.bar.validate)
+          assert_equal(false, subject.baz.validate)
+          assert_equal(false, subject['more'].validate)
+          assert_equal(false, subject.validate)
+        end
+      end
+    end
   end
   describe 'property accessors' do
     let(:schema_content) do

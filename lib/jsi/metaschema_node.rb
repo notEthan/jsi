@@ -125,20 +125,24 @@ module JSI
     #   returns that value as a MetaschemaNode instantiation of that subschema.
     def [](token)
       if respond_to?(:to_hash)
-        token_is_ours = node_content_hash_pubsend(:key?, token)
+        token_in_range = node_content_hash_pubsend(:key?, token)
         value = node_content_hash_pubsend(:[], token)
       elsif respond_to?(:to_ary)
-        token_is_ours = node_content_ary_pubsend(:each_index).include?(token)
+        token_in_range = node_content_ary_pubsend(:each_index).include?(token)
         value = node_content_ary_pubsend(:[], token)
       else
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{node_content.pretty_inspect.chomp}")
       end
 
-      jsi_memoize(:[], token, value, token_is_ours) do |token, value, token_is_ours|
-        if value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
-          new_node(node_ptr: node_ptr[token])
-        elsif token_is_ours
-          value
+      jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
+        if token_in_range
+          value_node = new_node(node_ptr: node_ptr[token])
+
+          if value_node.is_a?(Schema) || value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
+            value_node
+          else
+            value
+          end
         else
           # I think I will not support Hash#default/#default_proc in this case.
           nil

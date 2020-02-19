@@ -3,11 +3,11 @@
 [![Build Status](https://travis-ci.org/notEthan/jsi.svg?branch=master)](https://travis-ci.org/notEthan/jsi)
 [![Coverage Status](https://coveralls.io/repos/github/notEthan/jsi/badge.svg)](https://coveralls.io/github/notEthan/jsi)
 
-JSI offers an Object-Oriented representation for JSON data using JSON Schemas. Given your JSON Schemas, JSI constructs Ruby classes which are used to instantiate your JSON data. These classes let you use JSON with all the niceties of OOP such as property accessors and application-defined instance methods.
+JSI offers an Object-Oriented representation for JSON data using JSON Schemas. Given your JSON Schemas, JSI constructs Ruby modules and classes which are used to instantiate your JSON data. These modules let you use JSON with all the niceties of OOP such as property accessors and application-defined instance methods.
 
 To learn more about JSON Schema see [https://json-schema.org/]().
 
-A JSI class aims to be a fairly unobtrusive wrapper around its instance - "instance" here meaning the JSON data which instantiate the JSON Schema. The instance is usually a Hash or an Array but may be basic types, or in fact any object. A JSI class adds accessors for property names described by its schema, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting #to_ary or #to_hash.
+A JSI class aims to be a fairly unobtrusive wrapper around its instance - "instance" here meaning the JSON data, usually a Hash or Array, which instantiate the JSON Schema. JSI schema modules and classes add accessors for property names described by its schema, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting `#to_ary` or `#to_hash`.
 
 ## Example
 
@@ -21,20 +21,27 @@ properties:
   phone:
     type: "array"
     items:
+      description: "A phone number"
       type: "object"
       properties:
         location: {type: "string"}
         number: {type: "string"}
 ```
 
-And here's how you'd normally instantiate the class for that schema using JSI:
+Using that schema, we instantiate a JSI::Schema to represent it:
 
 ```ruby
 # this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
-Contact = JSI.class_for_schema({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
+contact_schema = JSI::Schema.new({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
-This definition gives you not just the Contact class, but classes for the whole nested structure. To instantiate it, we need some JSON data (expressed here as YAML)
+We name the module that JSI will use when instantiating a contact. Named modules are better to work with, and JSI will indicate the names of schema modules in its `#inspect` output.
+
+```ruby
+Contact = contact_schema.jsi_schema_module
+```
+
+To instantiate the schema, we need some JSON data (expressed here as YAML)
 
 ```yaml
 name: bill
@@ -48,19 +55,20 @@ So, if we construct an instance like:
 
 ```ruby
 # this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
-bill = Contact.new({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
-# => #{<Contact Hash>
+bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
+# => #{<JSI (Contact)>
 #   "name" => "bill",
-#   "phone" => #[<JSI::SchemaClasses["23d8#/properties/phone"] Array>
-#     #{<JSI::SchemaClasses["23d8#/properties/phone/items"] Hash> "location" => "home", "number" => "555"}
+#   "phone" => #[<JSI>
+#     #{<JSI>
+#       "location" => "home",
+#       "number" => "555"
+#     }
 #   ],
 #   "nickname" => "big b"
 # }
 ```
 
 Note that the keys are strings. JSI, being designed with JSON in mind, is geared toward string keys. Symbol keys will not match to schema properties, and so act the same as any other key not recognized from the schema.
-
-The nested classes can be seen in the #inspect output as `JSI::SchemaClasses[schema_id]` where schema_id is a generated value.
 
 We get accessors for the Contact:
 
@@ -86,21 +94,21 @@ bill.validate
 ... and validations on the nested schema instances (#phone here), showing in this example validation failure:
 
 ```ruby
-bad = Contact.new('phone' => [{'number' => [5, 5, 5]}])
-# => #{<Contact Hash>
-#   "phone" => #[<JSI::SchemaClasses["23d8#/properties/phone"] Array>
-#     #{<JSI::SchemaClasses["23d8#/properties/phone/items"] Hash>
-#       "number" => #[<JSI::SchemaClasses["23d8#/properties/phone/items/properties/number"] Array> 5, 5, 5]
+bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
+# => #{<JSI (Contact)>
+#   "phone" => #[<JSI>
+#     #{<JSI>
+#       "number" => #[<JSI> 5, 5, 5]
 #     }
 #   ]
 # }
 bad.phone.fully_validate
-# => ["The property '#/0/number' of type array did not match the following type: string in schema 23d8"]
+# => ["The property '#/0/number' of type array did not match the following type: string in schema 594126e3"]
 ```
 
 These validations are done by the [`json-schema` gem](https://github.com/ruby-json-schema/json-schema) - JSI does not do validations on its own.
 
-Since the underlying instance is a ruby hash (json object), we can use it like a hash with #[] or, say, #transform_values:
+Since the underlying instance is a ruby hash (json object), we can use it like a hash with `#[]` or, say, `#transform_values`:
 
 ```ruby
 # note that #size here is actually referring to multiple different methods; for name and nickname
@@ -117,17 +125,18 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 - `JSI::Base` is the base class for each JSI class representing a JSON Schema.
 - a "JSI class" is a subclass of `JSI::Base` representing a JSON schema.
+- a "JSI schema module" is a module representing a schema, included on a JSI class.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
   - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI class. it has a method `#jsi_instance` which contains the underlying data.
-- a schema refers to a JSON schema. a `JSI::Schema` represents such a schema. a JSI class allows instantiation of a schema as a JSI instance.
+- a schema refers to a JSON schema. `JSI::Schema` is a module which extends schemas. A schema is usually a `JSI::Base` instance, and that schema JSI's schema is a metaschema (see the sections on Metaschemas below).
 
-## JSI classes
+## JSI and Object Oriented Programming
 
-A JSI class (that is, subclass of JSI::Base) is a starting point. But, since the major point of object-oriented programming is applying methods to your objects, obviously you want to be able to define your own methods. To do this we reopen the JSI class (as you would any other class). Referring back to the Example section above, we reopen the `Contact` class:
+Instantiating your schema is a starting point. But, since the major point of object-oriented programming is applying methods to your objects, of course you want to be able to define your own methods. To do this we reopen the JSI module we defined. Referring back to the Example section above, we reopen the `Contact` module:
 
 ```ruby
-class Contact
+module Contact
   def phone_numbers
     phone.map(&:number)
   end
@@ -145,15 +154,17 @@ bill.name = 'rob esq.'
 # => "rob esq."
 bill['name']
 # => "rob"
+bill.phone_numbers
+# => ["555"]
 ```
 
-Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers (these accessor methods are defined on an included module instead of the JSI class for this reason). You can also use `[]` and `[]=`, of course, with the same effect.
+Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers. You can alternatively use `[]` and `[]=` with the same effect.
 
-If you want to add methods to a subschema, get the class_for_schema for that schema and open up that class. You can leave the class anonymous, as in this example:
+You can also add methods to a subschema using the same method `#jsi_schema_module` which we used to define the `Contact` module above.
 
 ```ruby
-phone_schema = Contact.schema['properties']['phone']['items']
-JSI.class_for_schema(phone_schema).class_eval do
+phone_schema = Contact.schema.properties['phone'].items
+phone_schema.jsi_schema_module.module_eval do
   def number_with_dashes
     number.split(//).join('-')
   end
@@ -162,11 +173,11 @@ bill.phone.first.number_with_dashes
 # => "5-5-5"
 ```
 
-If you want to name the class, this works:
+If you want to name the module, this works:
 
 ```ruby
-Phone = JSI.class_for_schema(Contact.schema['properties']['phone']['items'])
-class Phone
+ContactPhone = Contact.schema.properties['phone'].items.jsi_schema_module
+module ContactPhone
   def number_with_dashes
     number.split(//).join('-')
   end
@@ -191,7 +202,7 @@ Let's say you're sticking to JSON types in the database - you have to do so if y
 
 But if your database contains JSON, then your deserialized objects in ruby are likewise Hash / Array / basic types. You have to use subscripts instead of accessors, and you don't have any way to add methods to your data types.
 
-JSI gives you the best of both with JSICoder. This coder dumps objects which are simple JSON types, and loads instances of a specified JSI class. Here's an example:
+JSI gives you the best of both with JSICoder. This coder dumps objects which are simple JSON types, and loads instances of a specified JSI schema. Here's an example:
 
 ```ruby
 class User < ActiveRecord::Base

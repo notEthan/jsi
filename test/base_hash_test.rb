@@ -26,7 +26,7 @@ describe JSI::BaseHash do
   let(:schema) { JSI::Schema.new(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
 
-  describe '#[] with a default that is a basic type' do
+  describe '#[] with a schema default that is a basic type' do
     let(:schema_content) do
       {
         'type' => 'object',
@@ -55,7 +55,7 @@ describe JSI::BaseHash do
       end
     end
   end
-  describe '#[] with a default that is a nonbasic type' do
+  describe '#[] with a schema default that is a nonbasic type' do
     let(:schema_content) do
       {
         'type' => 'object',
@@ -82,6 +82,23 @@ describe JSI::BaseHash do
       it 'returns the nondefault value' do
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_equal([2], subject.foo.as_json)
+      end
+    end
+  end
+  describe '#[] with a hash default that is a nonbasic type' do
+    let(:schema_content) do
+      {
+        'type' => 'object',
+        'properties' => {
+          'foo' => {},
+        },
+      }
+    end
+    describe 'default value' do
+      let(:instance) { Hash.new({'foo' => 2}).merge({'bar' => 3}) }
+      it 'returns the default value' do
+        assert_is_a(Hash, subject.foo)
+        assert_equal({'foo' => 2}, subject.foo)
       end
     end
   end
