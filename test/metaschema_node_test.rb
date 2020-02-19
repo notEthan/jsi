@@ -13,7 +13,7 @@ describe JSI::MetaschemaNode do
   end
   describe 'json schema draft' do
     it 'type has a schema' do
-      assert(JSI::JSONSchemaOrgDraft06Schema.type.schema)
+      assert(JSI::JSONSchemaOrgDraft06.schema.type.schema)
     end
   end
 end
