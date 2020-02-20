@@ -13,6 +13,8 @@ module JSI
       class ReferenceError < Error
       end
 
+      include JSI::SchemaPointer
+
       # instantiates a Pointer from any given reference tokens.
       #
       #     >> JSI::JSON::Pointer[]
