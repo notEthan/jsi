@@ -7,6 +7,7 @@ module JSI
   # expected to be a Hash (JSON object) or a Boolean.
   module Schema
     autoload :Application, 'jsi/schema/application'
+    autoload :Validation, 'jsi/schema/validation'
 
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
 
