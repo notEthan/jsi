@@ -2,8 +2,8 @@
 
 module JSI
   # including class MUST define
-  # - #node_document [Object] returning the document
-  # - #node_ptr [JSI::JSON::Pointer] returning a pointer for the node path in the document
+  # - #jsi_document [Object] returning the document
+  # - #jsi_ptr [JSI::JSON::Pointer] returning a pointer for the node path in the document
   # - #document_root_node [JSI::PathedNode] returning a PathedNode pointing at the document root
   # - #parent_node [JSI::PathedNode] returning the parent node of this PathedNode
   # - #deref [JSI::PathedNode] following a $ref
@@ -14,14 +14,14 @@ module JSI
   module PathedNode
     # @return [Object] the content of this node
     def node_content
-      content = node_ptr.evaluate(node_document)
+      content = jsi_ptr.evaluate(jsi_document)
       content
     end
 
     # @yield [JSI::JSON::Pointer] if a block is given (optional), this will yield a deref'd pointer
-    # @return [JSI::JSON::Pointer] our node_ptr, derefed against our node_document
-    def node_ptr_deref(&block)
-      node_ptr.deref(node_document, &block)
+    # @return [JSI::JSON::Pointer] our jsi_ptr, derefed against our jsi_document
+    def jsi_ptr_deref(&block)
+      jsi_ptr.deref(jsi_document, &block)
     end
   end
 

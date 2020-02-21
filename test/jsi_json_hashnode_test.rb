@@ -3,24 +3,24 @@ require_relative 'test_helper'
 document_types = [
   {
     make_document: -> (d) { d },
-    node_document: {'a' => 'b', 'c' => {'d' => 'e'}},
+    jsi_document: {'a' => 'b', 'c' => {'d' => 'e'}},
     type_desc: 'Hash',
   },
   {
     make_document: -> (d) { SortOfHash.new(d) },
-    node_document: SortOfHash.new({'a' => 'b', 'c' => SortOfHash.new({'d' => 'e'})}),
+    jsi_document: SortOfHash.new({'a' => 'b', 'c' => SortOfHash.new({'d' => 'e'})}),
     type_desc: 'sort of Hash-like',
   },
 ]
 document_types.each do |document_type|
   describe "JSI::JSON::HashNode with #{document_type[:type_desc]}" do
-    # node_document of the node being tested
-    let(:node_document) { document_type[:node_document] }
+    # jsi_document of the node being tested
+    let(:jsi_document) { document_type[:jsi_document] }
     # by default the node is the whole document
     let(:path) { [] }
-    let(:node_ptr) { JSI::JSON::Pointer.new(path) }
+    let(:jsi_ptr) { JSI::JSON::Pointer.new(path) }
     # the node being tested
-    let(:node) { JSI::JSON::Node.new_by_type(node_document, node_ptr) }
+    let(:node) { JSI::JSON::Node.new_by_type(jsi_document, jsi_ptr) }
 
     describe '#each' do
       it 'iterates, one argument' do
@@ -55,21 +55,21 @@ document_types.each do |document_type|
       end
     end
     describe '#merge' do
-      let(:node_document) { document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}) }
+      let(:jsi_document) { document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}) }
       # testing the node at 'c' here, merging a hash at a path within a document.
       let(:path) { ['c'] }
       it 'merges' do
         merged = node.merge('x' => 'y')
         # check the node_content at 'c' was merged with the remainder of the document intact (at 'a')
-        assert_equal({'a' => {'b' => 0}, 'c' => {'d' => 'e', 'x' => 'y'}}, merged.node_document)
+        assert_equal({'a' => {'b' => 0}, 'c' => {'d' => 'e', 'x' => 'y'}}, merged.jsi_document)
         # check the original node retains its original document
-        assert_equal(document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}), node.node_document)
+        assert_equal(document_type[:make_document].call({'a' => {'b' => 0}, 'c' => {'d' => 'e'}}), node.jsi_document)
         # check that unnecessary copies of unaffected parts of the document were not made
-        assert_equal(node.node_document.to_hash['a'].object_id, merged.node_document['a'].object_id)
+        assert_equal(node.jsi_document.to_hash['a'].object_id, merged.jsi_document['a'].object_id)
       end
     end
     describe '#as_json' do
-      let(:node_document) { document_type[:make_document].call({'a' => 'b'}) }
+      let(:jsi_document) { document_type[:make_document].call({'a' => 'b'}) }
       it '#as_json' do
         assert_equal({'a' => 'b'}, node.as_json)
         assert_equal({'a' => 'b'}, node.as_json(this_option: 'what?'))
