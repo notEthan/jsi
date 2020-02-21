@@ -115,7 +115,7 @@ module JSI
     end
 
     # @return [MetaschemaNode] parent MetaschemaNode
-    def parent_node
+    def jsi_parent_node
       new_node(jsi_ptr: jsi_ptr.parent)
     end
 

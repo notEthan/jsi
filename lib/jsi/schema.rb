@@ -101,7 +101,7 @@ module JSI
             done = true
           else
             path_from_id_node.unshift(node_for_id.jsi_ptr.reference_tokens.last)
-            node_for_id = node_for_id.parent_node
+            node_for_id = node_for_id.jsi_parent_node
           end
         end
         if parent_id

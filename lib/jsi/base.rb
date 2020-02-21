@@ -195,7 +195,7 @@ module JSI
     # an array of JSI instances above this one in the document.
     #
     # @return [Array<JSI::Base>]
-    def parent_jsis
+    def jsi_parent_nodes
       parent = jsi_root_node
 
       jsi_ptr.reference_tokens.map do |token|
@@ -208,16 +208,9 @@ module JSI
     # the immediate parent of this JSI. nil if there is no parent.
     #
     # @return [JSI::Base, nil]
-    def parent_jsi
-      parent_jsis.first
+    def jsi_parent_node
+      jsi_parent_nodes.first
     end
-
-    alias_method :parent_node, :parent_jsi
-
-    # @deprecated
-    alias_method :parents, :parent_jsis
-    # @deprecated
-    alias_method :parent, :parent_jsi
 
     # @param token [String, Integer, Object] the token to subscript
     # @return [JSI::Base, Object] the instance's subscript value at the given token.
