@@ -36,6 +36,20 @@ module JSI
         @schema_errors.freeze
         super
       end
+
+      def merge(result)
+        unless result.is_a?(FullResult)
+          raise(TypeError, "not a JSI::SchemaValidation::FullResult: #{result.pretty_inspect.chomp}")
+        end
+        validation_errors.merge(result.validation_errors)
+        annotations.merge(result.annotations)
+        schema_errors.merge(result.schema_errors)
+        self
+      end
+
+      def +(result)
+        FullResult.new.merge(self).merge(result)
+      end
     end
 
     # a simple result of validating an instance against a schema, indicating only validity
