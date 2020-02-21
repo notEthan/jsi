@@ -158,7 +158,7 @@ module JSI
     # @return [Enumerable<JSI::Schema>] matched applicator subschemas
     def match_to_instance(other_instance)
       jsi_ptr.schema_match_ptrs_to_instance(jsi_document, other_instance).map do |ptr|
-        ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+        ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
       end
     end
 
@@ -168,7 +168,7 @@ module JSI
     def subschemas_for_property(property_name)
       jsi_memoize(:subschemas_for_property, property_name) do |property_name|
         jsi_ptr.schema_subschema_ptrs_for_property_name(jsi_document, property_name).map do |ptr|
-          ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+          ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
         end
       end
     end
@@ -179,7 +179,7 @@ module JSI
     def subschemas_for_index(index)
       jsi_memoize(:subschemas_for_index, index) do |index|
         jsi_ptr.schema_subschema_ptrs_for_index(jsi_document, index).map do |ptr|
-          ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+          ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
         end
       end
     end
