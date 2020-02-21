@@ -10,10 +10,10 @@ module JSI
   #
   # given these, this module represents the node in the document at the path.
   #
-  # the node content (#node_content) is the result of evaluating the node document at the path.
+  # the node content (#jsi_node_content) is the result of evaluating the node document at the path.
   module PathedNode
     # @return [Object] the content of this node
-    def node_content
+    def jsi_node_content
       content = jsi_ptr.evaluate(jsi_document)
       content
     end
@@ -25,7 +25,7 @@ module JSI
     end
   end
 
-  # module extending a {JSI::PathedNode} object when its node_content is Hash-like (responds to #to_hash)
+  # module extending a {JSI::PathedNode} object when its jsi_node_content is Hash-like (responds to #to_hash)
   module PathedHashNode
     # yields each hash key and value of this node.
     #
@@ -37,16 +37,16 @@ module JSI
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator]
     def each(&block)
-      return to_enum(__method__) { node_content_hash_pubsend(:size) } unless block
+      return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
-        node_content_hash_pubsend(:each_key) { |k| yield k, self[k] }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield k, self[k] }
       else
-        node_content_hash_pubsend(:each_key) { |k| yield [k, self[k]] }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield [k, self[k]] }
       end
       self
     end
 
-    # @return [Hash] a hash in which each key is a key of the node_content hash and
+    # @return [Hash] a hash in which each key is a key of the jsi_node_content hash and
     #   each value is the result of self[key] (see #[]).
     def to_hash
       {}.tap { |h| each_key { |k| h[k] = self[k] } }
@@ -56,19 +56,19 @@ module JSI
 
     # @param method_name [String, Symbol]
     # @param *a, &b are passed to the invocation of method_name
-    # @return [Object] the result of calling method method_name on the node_content or its #to_hash
-    def node_content_hash_pubsend(method_name, *a, &b)
-      if node_content.respond_to?(method_name)
-        node_content.public_send(method_name, *a, &b)
+    # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_hash
+    def jsi_node_content_hash_pubsend(method_name, *a, &b)
+      if jsi_node_content.respond_to?(method_name)
+        jsi_node_content.public_send(method_name, *a, &b)
       else
-        node_content.to_hash.public_send(method_name, *a, &b)
+        jsi_node_content.to_hash.public_send(method_name, *a, &b)
       end
     end
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
     SAFE_KEY_ONLY_METHODS.each do |method_name|
       define_method(method_name) do |*a, &b|
-        node_content_hash_pubsend(method_name, *a, &b)
+        jsi_node_content_hash_pubsend(method_name, *a, &b)
       end
     end
   end
@@ -83,12 +83,12 @@ module JSI
     # @yield [Object] each element of this array node
     # @return [self, Enumerator]
     def each(&block)
-      return to_enum(__method__) { node_content_ary_pubsend(:size) } unless block
-      node_content_ary_pubsend(:each_index) { |i| yield(self[i]) }
+      return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
+      jsi_node_content_ary_pubsend(:each_index) { |i| yield(self[i]) }
       self
     end
 
-    # @return [Array] an array, the same size as the node_content, in which the
+    # @return [Array] an array, the same size as the jsi_node_content, in which the
     #   element at each index is the result of self[index] (see #[])
     def to_ary
       to_a
@@ -98,12 +98,12 @@ module JSI
 
     # @param method_name [String, Symbol]
     # @param *a, &b are passed to the invocation of method_name
-    # @return [Object] the result of calling method method_name on the node_content or its #to_ary
-    def node_content_ary_pubsend(method_name, *a, &b)
-      if node_content.respond_to?(method_name)
-        node_content.public_send(method_name, *a, &b)
+    # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_ary
+    def jsi_node_content_ary_pubsend(method_name, *a, &b)
+      if jsi_node_content.respond_to?(method_name)
+        jsi_node_content.public_send(method_name, *a, &b)
       else
-        node_content.to_ary.public_send(method_name, *a, &b)
+        jsi_node_content.to_ary.public_send(method_name, *a, &b)
       end
     end
 
@@ -111,7 +111,7 @@ module JSI
     # we override these methods from Arraylike
     SAFE_INDEX_ONLY_METHODS.each do |method_name|
       define_method(method_name) do |*a, &b|
-        node_content_ary_pubsend(method_name, *a, &b)
+        jsi_node_content_ary_pubsend(method_name, *a, &b)
       end
     end
   end

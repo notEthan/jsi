@@ -184,7 +184,7 @@ module JSI
     attr_reader :jsi_root_node
 
     # the instance of the json-schema - the underlying JSON data used to instantiate this JSI
-    alias_method :jsi_instance, :node_content
+    alias_method :jsi_instance, :jsi_node_content
 
     # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
@@ -219,11 +219,11 @@ module JSI
     #   value is returned.
     def [](token)
       if respond_to?(:to_hash)
-        token_in_range = node_content_hash_pubsend(:key?, token)
-        value = node_content_hash_pubsend(:[], token)
+        token_in_range = jsi_node_content_hash_pubsend(:key?, token)
+        value = jsi_node_content_hash_pubsend(:[], token)
       elsif respond_to?(:to_ary)
-        token_in_range = node_content_ary_pubsend(:each_index).include?(token)
-        value = node_content_ary_pubsend(:[], token)
+        token_in_range = jsi_node_content_ary_pubsend(:each_index).include?(token)
+        value = jsi_node_content_ary_pubsend(:[], token)
       else
         raise(CannotSubscriptError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
@@ -392,20 +392,20 @@ module JSI
         end
       end
 
-      if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(node_content.class)
-        if node_content.respond_to?(:object_group_text)
-          node_content_txt = node_content.object_group_text
+      if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(jsi_node_content.class)
+        if jsi_node_content.respond_to?(:object_group_text)
+          content_txt = jsi_node_content.object_group_text
         else
-          node_content_txt = [node_content.class.to_s]
+          content_txt = [jsi_node_content.class.to_s]
         end
       else
-        node_content_txt = []
+        content_txt = []
       end
 
       [
         class_txt,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
-        *node_content_txt,
+        *content_txt,
       ].compact
     end
 

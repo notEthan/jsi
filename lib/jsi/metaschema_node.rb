@@ -40,11 +40,11 @@ module JSI
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
 
-      node_content = self.node_content
+      jsi_node_content = self.jsi_node_content
 
-      if node_content.respond_to?(:to_hash)
+      if jsi_node_content.respond_to?(:to_hash)
         extend PathedHashNode
-      elsif node_content.respond_to?(:to_ary)
+      elsif jsi_node_content.respond_to?(:to_ary)
         extend PathedArrayNode
       end
 
@@ -125,13 +125,13 @@ module JSI
     #   returns that value as a MetaschemaNode instantiation of that subschema.
     def [](token)
       if respond_to?(:to_hash)
-        token_in_range = node_content_hash_pubsend(:key?, token)
-        value = node_content_hash_pubsend(:[], token)
+        token_in_range = jsi_node_content_hash_pubsend(:key?, token)
+        value = jsi_node_content_hash_pubsend(:[], token)
       elsif respond_to?(:to_ary)
-        token_in_range = node_content_ary_pubsend(:each_index).include?(token)
-        value = node_content_ary_pubsend(:[], token)
+        token_in_range = jsi_node_content_ary_pubsend(:each_index).include?(token)
+        value = jsi_node_content_ary_pubsend(:[], token)
       else
-        raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{node_content.pretty_inspect.chomp}")
+        raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{jsi_node_content.pretty_inspect.chomp}")
       end
 
       result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
@@ -169,7 +169,7 @@ module JSI
 
     # @return [String]
     def inspect
-      "\#<#{object_group_text.join(' ')} #{node_content.inspect}>"
+      "\#<#{object_group_text.join(' ')} #{jsi_node_content.inspect}>"
     end
 
     def pretty_print(q)
@@ -178,7 +178,7 @@ module JSI
       q.group_sub {
         q.nest(2) {
           q.breakable ' '
-          q.pp node_content
+          q.pp jsi_node_content
         }
       }
       q.breakable ''
@@ -195,7 +195,7 @@ module JSI
       [
         class_n_schemas,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
-        *(node_content.respond_to?(:object_group_text) ? node_content.object_group_text : []),
+        *(jsi_node_content.respond_to?(:object_group_text) ? jsi_node_content.object_group_text : []),
       ].compact
     end
 

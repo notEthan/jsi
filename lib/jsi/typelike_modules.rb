@@ -39,7 +39,7 @@ module JSI
     #   array of object) cannot be expressed as json
     def self.as_json(object, *opt)
       if object.is_a?(JSI::PathedNode)
-        as_json(object.node_content, *opt)
+        as_json(object.jsi_node_content, *opt)
       elsif object.respond_to?(:to_hash)
         (object.respond_to?(:map) ? object : object.to_hash).map do |k, v|
           unless k.is_a?(Symbol) || k.respond_to?(:to_str)

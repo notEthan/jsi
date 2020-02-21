@@ -91,10 +91,10 @@ module JSI
         done = false
 
         while !done
-          node_content_for_id = node_for_id.node_content
-          if node_for_id.is_a?(JSI::Schema) && node_content_for_id.respond_to?(:to_hash)
-            parent_id = node_content_for_id.key?('$id') && node_content_for_id['$id'].respond_to?(:to_str) ? node_content_for_id['$id'].to_str :
-              node_content_for_id.key?('id') && node_content_for_id['id'].respond_to?(:to_str) ? node_content_for_id['id'].to_str : nil
+          content_for_id = node_for_id.jsi_node_content
+          if node_for_id.is_a?(JSI::Schema) && content_for_id.respond_to?(:to_hash)
+            parent_id = content_for_id.key?('$id') && content_for_id['$id'].respond_to?(:to_str) ? content_for_id['$id'].to_str :
+              content_for_id.key?('id') && content_for_id['id'].respond_to?(:to_str) ? content_for_id['id'].to_str : nil
           end
 
           if parent_id || node_for_id.jsi_ptr.root?
@@ -194,11 +194,11 @@ module JSI
     def described_object_property_names
       jsi_memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
-          if node_content.respond_to?(:to_hash) && node_content['properties'].respond_to?(:to_hash)
-            property_names.merge(node_content['properties'].keys)
+          if jsi_node_content.respond_to?(:to_hash) && jsi_node_content['properties'].respond_to?(:to_hash)
+            property_names.merge(jsi_node_content['properties'].keys)
           end
-          if node_content.respond_to?(:to_hash) && node_content['required'].respond_to?(:to_ary)
-            property_names.merge(node_content['required'].to_ary)
+          if jsi_node_content.respond_to?(:to_hash) && jsi_node_content['required'].respond_to?(:to_ary)
+            property_names.merge(jsi_node_content['required'].to_ary)
           end
         end
       end
