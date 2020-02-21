@@ -13,8 +13,6 @@ module JSI
       class ReferenceError < Error
       end
 
-      include JSI::SchemaPointer
-
       # instantiates a Pointer from any given reference tokens.
       #
       #     >> JSI::JSON::Pointer[]
@@ -301,6 +299,11 @@ module JSI
         return self
       end
 
+      # @return [JSI::SchemaPointer]
+      def as_schema_ptr
+        JSI::SchemaPointer.new(reference_tokens, type: @type)
+      end
+
       # @return [String] string representation of this Pointer
       def inspect
         "#<#{self.class.inspect} #{representation_s}>"
@@ -308,7 +311,7 @@ module JSI
 
       alias_method :to_s, :inspect
 
-      # pointers are equal if the reference_tokens are equal, regardless of @type
+      # pointers are equal if the reference_tokens are equal, regardless of @type or subclass
       def jsi_fingerprint
         {class: JSI::JSON::Pointer, reference_tokens: reference_tokens}
       end

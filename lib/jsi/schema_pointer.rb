@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  module SchemaPointer
+  class SchemaPointer < JSI::JSON::Pointer
     # given this Pointer points to a schema in the given document, returns a set of pointers
     # to subschemas of that schema for the given property name.
     #
@@ -30,7 +30,7 @@ module JSI
             ptrs << ptr['additionalProperties']
           end
         end
-      end
+      end.map(&:as_schema_ptr)
     end
 
     # given this Pointer points to a schema in the given document, returns a set of pointers
@@ -54,7 +54,7 @@ module JSI
             ptrs << ptr['items']
           end
         end
-      end
+      end.map(&:as_schema_ptr)
     end
 
     # given this Pointer points to a schema in the given document, this matches any
@@ -73,21 +73,21 @@ module JSI
         if schema.respond_to?(:to_hash)
           if schema['$ref'].respond_to?(:to_str)
             ptr.deref(document) do |deref_ptr|
-              ptrs.merge(deref_ptr.schema_match_ptrs_to_instance(document, instance))
+              ptrs.merge(deref_ptr.as_schema_ptr.schema_match_ptrs_to_instance(document, instance))
             end
           else
             ptrs << ptr
           end
           if schema['allOf'].respond_to?(:to_ary)
             schema['allOf'].each_index do |i|
-              ptrs.merge(ptr['allOf'][i].schema_match_ptrs_to_instance(document, instance))
+              ptrs.merge(ptr['allOf'][i].as_schema_ptr.schema_match_ptrs_to_instance(document, instance))
             end
           end
           if schema['anyOf'].respond_to?(:to_ary)
             schema['anyOf'].each_index do |i|
               valid = ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr['anyOf'][i].fragment)
               if valid
-                ptrs.merge(ptr['anyOf'][i].schema_match_ptrs_to_instance(document, instance))
+                ptrs.merge(ptr['anyOf'][i].as_schema_ptr.schema_match_ptrs_to_instance(document, instance))
               end
             end
           end
@@ -96,12 +96,12 @@ module JSI
               ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr['oneOf'][i].fragment)
             end
             if one_i
-              ptrs.merge(ptr['oneOf'][one_i].schema_match_ptrs_to_instance(document, instance))
+              ptrs.merge(ptr['oneOf'][one_i].as_schema_ptr.schema_match_ptrs_to_instance(document, instance))
             end
           end
           # TODO dependencies
         end
-      end
+      end.map(&:as_schema_ptr)
     end
   end
 end

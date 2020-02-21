@@ -163,6 +163,7 @@ module JSI
         extend BaseArray
       end
       if jsi_schemas.any?(&:describes_schema?)
+        @jsi_ptr = @jsi_ptr.as_schema_ptr
         extend JSI::Schema
       end
     end
