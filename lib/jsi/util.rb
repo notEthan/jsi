@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module JSI
+  # JSI::Util classes, modules, constants, and methods are INTERNAL and will be added and removed without warning.
+  # do not rely on them.
   module Util
     # a proc which does nothing
     NOOP = -> (*_) { }
