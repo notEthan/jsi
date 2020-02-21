@@ -376,20 +376,20 @@ module JSI
         end
       end
 
-      if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(jsi_node_content.class)
-        if jsi_node_content.respond_to?(:object_group_text)
-          content_txt = jsi_node_content.object_group_text
+      if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(jsi_instance.class)
+        if jsi_instance.respond_to?(:object_group_text)
+          instance_txt = jsi_instance.object_group_text
         else
-          content_txt = [jsi_node_content.class.to_s]
+          instance_txt = [jsi_instance.class.to_s]
         end
       else
-        content_txt = []
+        instance_txt = []
       end
 
       [
         class_txt,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
-        *content_txt,
+        *instance_txt,
       ].compact
     end
 
