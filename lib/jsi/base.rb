@@ -173,8 +173,6 @@ module JSI
     # the JSI at the root of this JSI's document
     attr_reader :jsi_root_node
 
-    alias_method :document_root_node, :jsi_root_node
-
     # the instance of the json-schema
     alias_method :jsi_instance, :node_content
 

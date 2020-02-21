@@ -125,7 +125,7 @@ module JSI
       end
 
       # a Node at the root of the document
-      def document_root_node
+      def jsi_root_node
         Node.new_doc(jsi_document)
       end
 
