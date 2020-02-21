@@ -31,8 +31,8 @@ class JSISpec < Minitest::Spec
     msg = message(msg, E) do
       [].tap do |ms|
         ms << diff(exp, act)
-        ms << "#{ANSI.red   { 'expected' }}: #{exp.inspect}"
-        ms << "#{ANSI.green { 'actual' }}:   #{act.inspect}"
+        ms << "#{ANSI.red   { 'expected' }}: #{exp.pretty_inspect}"
+        ms << "#{ANSI.green { 'actual' }}:   #{act.pretty_inspect}"
         if exp.respond_to?(:to_str) && act.respond_to?(:to_str)
           ms << "#{ANSI.red { 'expected (str)' }}:"
           ms << exp
