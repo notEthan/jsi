@@ -97,10 +97,10 @@ module JSI
               node_content_for_id.key?('id') && node_content_for_id['id'].respond_to?(:to_str) ? node_content_for_id['id'].to_str : nil
           end
 
-          if parent_id || node_for_id.node_ptr.root?
+          if parent_id || node_for_id.jsi_ptr.root?
             done = true
           else
-            path_from_id_node.unshift(node_for_id.node_ptr.reference_tokens.last)
+            path_from_id_node.unshift(node_for_id.jsi_ptr.reference_tokens.last)
             node_for_id = node_for_id.parent_node
           end
         end
@@ -157,7 +157,7 @@ module JSI
     # @param other_instance [Object] the instance to check any applicators against
     # @return [Set<JSI::Schema>] matched applicator schemas
     def match_to_instance(other_instance)
-      node_ptr.schema_match_ptrs_to_instance(node_document, other_instance).map do |ptr|
+      jsi_ptr.schema_match_ptrs_to_instance(jsi_document, other_instance).map do |ptr|
         ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
       end.to_set
     end
@@ -169,7 +169,7 @@ module JSI
     # @return [Set<JSI::Schema>] subschemas of this schema for the given property_name
     def subschemas_for_property_name(property_name)
       jsi_memoize(:subschemas_for_property_name, property_name) do |property_name|
-        node_ptr.schema_subschema_ptrs_for_property_name(node_document, property_name).map do |ptr|
+        jsi_ptr.schema_subschema_ptrs_for_property_name(jsi_document, property_name).map do |ptr|
           ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
         end.to_set
       end
@@ -182,7 +182,7 @@ module JSI
     # @return [Set<JSI::Schema>] subschemas of this schema for the given array index
     def subschemas_for_index(index)
       jsi_memoize(:subschemas_for_index, index) do |index|
-        node_ptr.schema_subschema_ptrs_for_index(node_document, index).map do |ptr|
+        jsi_ptr.schema_subschema_ptrs_for_index(jsi_document, index).map do |ptr|
           ptr.evaluate(document_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
         end.to_set
       end
@@ -207,12 +207,12 @@ module JSI
     # @return [Array] array of schema validation errors for
     #   the given instance against this schema
     def fully_validate_instance(other_instance, errors_as_objects: false)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(node_document), JSI::Typelike.as_json(other_instance), fragment: node_ptr.fragment, errors_as_objects: errors_as_objects)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment, errors_as_objects: errors_as_objects)
     end
 
     # @return [true, false] whether the given instance validates against this schema
     def validate_instance(other_instance)
-      ::JSON::Validator.validate(JSI::Typelike.as_json(node_document), JSI::Typelike.as_json(other_instance), fragment: node_ptr.fragment)
+      ::JSON::Validator.validate(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -220,19 +220,19 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if the instance has
     #   validation errors against this schema
     def validate_instance!(other_instance)
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(node_document), JSI::Typelike.as_json(other_instance), fragment: node_ptr.fragment)
+      ::JSON::Validator.validate!(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment)
     end
 
     # @return [Array] array of schema validation errors for
     #   this schema, validated against its metaschema. a default metaschema
     #   is assumed if the schema does not specify a $schema.
     def fully_validate_schema(errors_as_objects: false)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(node_document), [], fragment: node_ptr.fragment, validate_schema: true, list: true, errors_as_objects: errors_as_objects)
+      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true, errors_as_objects: errors_as_objects)
     end
 
     # @return [true, false] whether this schema validates against its metaschema
     def validate_schema
-      ::JSON::Validator.validate(JSI::Typelike.as_json(node_document), [], fragment: node_ptr.fragment, validate_schema: true, list: true)
+      ::JSON::Validator.validate(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true)
     end
 
     # @return [true] if this method does not raise, it returns true to
@@ -240,7 +240,7 @@ module JSI
     # @raise [::JSON::Schema::ValidationError] raises if this schema has
     #   validation errors against its metaschema
     def validate_schema!
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(node_document), [], fragment: node_ptr.fragment, validate_schema: true, list: true)
+      ::JSON::Validator.validate!(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true)
     end
 
     private

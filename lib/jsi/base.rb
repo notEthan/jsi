@@ -47,7 +47,7 @@ module JSI
             elsif schema.schema_id
               schema.schema_id
             else
-              schema.node_ptr.uri
+              schema.jsi_ptr.uri
             end
           end
 
@@ -183,8 +183,6 @@ module JSI
     # the JSI at the root of this JSI's document
     attr_reader :jsi_root_node
 
-    alias_method :node_document, :jsi_document
-    alias_method :node_ptr, :jsi_ptr
     alias_method :document_root_node, :jsi_root_node
 
     # the instance of the json-schema - the underlying JSON data used to instantiate this JSI
@@ -309,7 +307,7 @@ module JSI
     #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
     # @return [JSI::Base, self]
     def deref(&block)
-      node_ptr_deref do |deref_ptr|
+      jsi_ptr_deref do |deref_ptr|
         deref_ptr.evaluate(jsi_root_node).tap(&(block || Util::NOOP))
       end
       return self
@@ -323,7 +321,7 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def modified_copy(&block)
-      if node_ptr.root?
+      if jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         self.class.new(Base::NOINSTANCE,
           jsi_document: modified_document,
@@ -333,7 +331,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
         end
-        self.class.new(Base::NOINSTANCE, jsi_document: modified_jsi_root_node.node_document, jsi_ptr: @jsi_ptr, jsi_root_node: modified_jsi_root_node)
+        self.class.new(Base::NOINSTANCE, jsi_document: modified_jsi_root_node.jsi_document, jsi_ptr: @jsi_ptr, jsi_root_node: modified_jsi_root_node)
       end
     end
 
