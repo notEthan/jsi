@@ -130,7 +130,7 @@ document_types.each do |document_type|
     describe 'modified copy methods' do
       it('#reject')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.reject { |e| e != 'a' }) }
       it('#select')  { assert_equal(JSI::JSON::Node.new_doc(['a']), node.select { |e| e == 'a' }) }
-      it('#compact') { assert_equal(JSI::JSON::Node.new_doc(node.node_content.to_ary), node.compact) }
+      it('#compact') { assert_equal(JSI::JSON::Node.new_doc(node.jsi_node_content.to_ary), node.compact) }
       describe 'at a depth' do
         let(:jsi_document) { document_type[:make_document].call([['b', 'q'], {'c' => ['d', 'e']}]) }
         let(:path) { ['1', 'c'] }
