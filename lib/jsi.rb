@@ -10,6 +10,9 @@ require "jsi/util"
 module JSI
   # generally put in code paths that are not expected to be valid control flow paths.
   # rather a NotImplementedCorrectlyError. but that's too long.
+  #
+  # if you've found this class because JSI has raised this error, please open an issue with the backtrace
+  # and any context you can provide at https://github.com/notEthan/jsi/issues
   class Bug < NotImplementedError
   end
 
