@@ -24,7 +24,7 @@ module JSI
   # its schema is the metaschema.
   class MetaschemaNode
     include PathedNode
-    include Memoize
+    include Util::Memoize
 
     # not every MetaschemaNode is actually an Enumerable, but it's better to include Enumerable on
     # the class than to conditionally extend the instance.

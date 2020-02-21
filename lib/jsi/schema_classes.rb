@@ -29,7 +29,7 @@ module JSI
   # this module is just a namespace for schema classes.
   module SchemaClasses
     class << self
-      include Memoize
+      include Util::Memoize
 
       # see {JSI.class_for_schema}
       def class_for_schema(schema_object)
