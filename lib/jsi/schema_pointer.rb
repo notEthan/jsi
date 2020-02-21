@@ -85,7 +85,7 @@ module JSI
           end
           if schema['anyOf'].respond_to?(:to_ary)
             schema['anyOf'].each_index do |i|
-              valid = ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr['anyOf'][i].fragment)
+              valid = ptr['anyOf'][i].as_schema_ptr.schema_validate(document, JSI::JSON::Pointer[], instance, validate_only: true).valid?
               if valid
                 ptrs.merge(ptr['anyOf'][i].as_schema_ptr.schema_match_ptrs_to_instance(document, instance))
               end
@@ -93,7 +93,7 @@ module JSI
           end
           if schema['oneOf'].respond_to?(:to_ary)
             one_i = schema['oneOf'].each_index.detect do |i|
-              ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr['oneOf'][i].fragment)
+              ptr['oneOf'][i].as_schema_ptr.schema_validate(document, JSI::JSON::Pointer[], instance, validate_only: true).valid?
             end
             if one_i
               ptrs.merge(ptr['oneOf'][one_i].as_schema_ptr.schema_match_ptrs_to_instance(document, instance))
