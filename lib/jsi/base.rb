@@ -403,7 +403,7 @@ module JSI
     def jsi_fingerprint
       {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
     end
-    include FingerprintHash
+    include Util::FingerprintHash
   end
 
   # module extending a {JSI::Base} object when its instance is Hash-like (responds to #to_hash)
