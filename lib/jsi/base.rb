@@ -13,7 +13,7 @@ module JSI
   # are dynamically created for schemas using {JSI.class_for_schema}, and these
   # are what are used to instantiate and represent JSON schema instances.
   class Base
-    include Memoize
+    include Util::Memoize
     include Enumerable
     include PathedNode
 
