@@ -43,12 +43,12 @@ describe JSI::JSON::Node do
       assert_instance_of(JSI::JSON::Pointer, JSI::JSON::Node.new({}, jsi_ptr).jsi_ptr)
     end
   end
-  describe '#node_content' do
-    it 'returns the node_content at the root' do
-      assert_equal({'a' => 'b'}, JSI::JSON::Node.new({'a' => 'b'}, jsi_ptr).node_content)
+  describe '#jsi_node_content' do
+    it 'returns the jsi_node_content at the root' do
+      assert_equal({'a' => 'b'}, JSI::JSON::Node.new({'a' => 'b'}, jsi_ptr).jsi_node_content)
     end
-    it 'returns the node_content from the deep' do
-      assert_equal('b', JSI::JSON::Node.new([0, {'x' => [{'a' => ['b']}]}], JSI::JSON::Pointer.new([1, 'x', 0, 'a', 0])).node_content)
+    it 'returns the jsi_node_content from the deep' do
+      assert_equal('b', JSI::JSON::Node.new([0, {'x' => [{'a' => ['b']}]}], JSI::JSON::Pointer.new([1, 'x', 0, 'a', 0])).jsi_node_content)
     end
   end
   describe '#deref' do
@@ -59,10 +59,10 @@ describe JSI::JSON::Node do
       }
     end
     it 'follows a $ref' do
-      assert_equal({'bar' => ['baz']}, node['a'].deref.node_content)
+      assert_equal({'bar' => ['baz']}, node['a'].deref.jsi_node_content)
     end
     it 'returns the node when there is no $ref to follow' do
-      assert_equal({'bar' => ['baz']}, node['foo'].deref.node_content)
+      assert_equal({'bar' => ['baz']}, node['foo'].deref.jsi_node_content)
     end
     describe "dealing with google's invalid $refs" do
       let(:jsi_document) do
@@ -73,11 +73,11 @@ describe JSI::JSON::Node do
       end
       it 'subscripts a node consisting of a $ref WITHOUT following' do
         subscripted = node['a']
-        assert_equal({'$ref' => 'bar', 'foo' => 'bar'}, subscripted.node_content)
+        assert_equal({'$ref' => 'bar', 'foo' => 'bar'}, subscripted.jsi_node_content)
         assert_equal(JSI::JSON::Pointer.new(['a']), subscripted.jsi_ptr)
       end
       it 'looks for a node in #/schemas with the name of the $ref' do
-        assert_equal({'description' => ['baz']}, node['a'].deref.node_content)
+        assert_equal({'description' => ['baz']}, node['a'].deref.jsi_node_content)
       end
     end
     describe "dealing with whatever this is" do
@@ -89,7 +89,7 @@ describe JSI::JSON::Node do
         }
       end
       it 'looks for a node in #/schemas with the name of the $ref' do
-        assert_equal({'id' => 'BarID', 'description' => 'baz'}, node['a'].deref.node_content)
+        assert_equal({'id' => 'BarID', 'description' => 'baz'}, node['a'].deref.jsi_node_content)
       end
     end
   end
@@ -102,16 +102,16 @@ describe JSI::JSON::Node do
       it 'returns ArrayNode for an array' do
         subscripted = node[1]['x']
         assert_instance_of(JSI::JSON::ArrayNode, subscripted)
-        assert_equal([{'a' => ['b']}], subscripted.node_content)
+        assert_equal([{'a' => ['b']}], subscripted.jsi_node_content)
         assert_equal(JSI::JSON::Pointer.new([1, 'x']), subscripted.jsi_ptr)
       end
       it 'returns HashNode for a Hash' do
         subscripted = node[1]
         assert_instance_of(JSI::JSON::HashNode, subscripted)
-        assert_equal({'x' => [{'a' => ['b']}]}, subscripted.node_content)
+        assert_equal({'x' => [{'a' => ['b']}]}, subscripted.jsi_node_content)
         assert_equal(JSI::JSON::Pointer.new([1]), subscripted.jsi_ptr)
       end
-      describe 'node_content does not respond to []' do
+      describe 'jsi_node_content does not respond to []' do
         let(:jsi_document) { Object.new }
         it 'cannot subscript' do
           err = assert_raises(NoMethodError) { node['x'] }
@@ -128,7 +128,7 @@ describe JSI::JSON::Node do
       end
       it 'subscripts a node consisting of a $ref without following' do
         subscripted = node['a']
-        assert_equal({'$ref' => '#/foo', 'description' => 'hi'}, subscripted.node_content)
+        assert_equal({'$ref' => '#/foo', 'description' => 'hi'}, subscripted.jsi_node_content)
         assert_equal(JSI::JSON::Pointer.new(['a']), subscripted.jsi_ptr)
       end
     end
@@ -151,8 +151,8 @@ describe JSI::JSON::Node do
   end
   describe '#jsi_root_node' do
     let(:jsi_document) { {'a' => {'b' => 3}} }
-    it 'has node_content that is the jsi_document' do
-      assert_equal({'a' => {'b' => 3}}, node['a'].jsi_root_node.node_content)
+    it 'has jsi_node_content that is the jsi_document' do
+      assert_equal({'a' => {'b' => 3}}, node['a'].jsi_root_node.jsi_node_content)
     end
   end
   describe '#jsi_parent_node' do
@@ -162,11 +162,11 @@ describe JSI::JSON::Node do
       assert_equal(JSI::JSON::Pointer.new(['a', 'b']), sub.jsi_ptr)
       parent = sub.jsi_parent_node
       assert_equal(JSI::JSON::Pointer.new(['a']), parent.jsi_ptr)
-      assert_equal({'b' => []}, parent.node_content)
+      assert_equal({'b' => []}, parent.jsi_node_content)
       assert_equal(node['a'], parent)
       root_from_sub = sub.jsi_parent_node.jsi_parent_node
       assert_equal(JSI::JSON::Pointer.new([]), root_from_sub.jsi_ptr)
-      assert_equal({'a' => {'b' => []}}, root_from_sub.node_content)
+      assert_equal({'a' => {'b' => []}}, root_from_sub.jsi_node_content)
       assert_equal(node, root_from_sub)
       err = assert_raises(JSI::JSON::Pointer::ReferenceError) do
         root_from_sub.jsi_parent_node
@@ -185,10 +185,10 @@ describe JSI::JSON::Node do
       # but different object
       refute_equal(node.object_id, modified_dup.object_id)
       # the parents, obviously, are different
-      refute_equal(node.jsi_parent_node.node_content.object_id, modified_dup.jsi_parent_node.node_content.object_id)
-      refute_equal(node.jsi_parent_node.jsi_parent_node.node_content.object_id, modified_dup.jsi_parent_node.jsi_parent_node.node_content.object_id)
+      refute_equal(node.jsi_parent_node.jsi_node_content.object_id, modified_dup.jsi_parent_node.jsi_node_content.object_id)
+      refute_equal(node.jsi_parent_node.jsi_parent_node.jsi_node_content.object_id, modified_dup.jsi_parent_node.jsi_parent_node.jsi_node_content.object_id)
       # but any untouched part(s) - in this case the ['b', 'q'] at jsi_document[0] - are untouched
-      assert_equal(node.jsi_root_node[0].node_content.object_id, modified_dup.jsi_root_node[0].node_content.object_id)
+      assert_equal(node.jsi_root_node[0].jsi_node_content.object_id, modified_dup.jsi_root_node[0].jsi_node_content.object_id)
     end
     it 'returns the same object' do
       unmodified_dup = node.modified_copy { |o| o }
@@ -196,10 +196,10 @@ describe JSI::JSON::Node do
       # same object, since the block just returned it
       refute_equal(node.object_id, unmodified_dup.object_id)
       # the parents are unchanged since the object is the same
-      assert_equal(node.jsi_parent_node.node_content.object_id, unmodified_dup.jsi_parent_node.node_content.object_id)
-      assert_equal(node.jsi_parent_node.jsi_parent_node.node_content.object_id, unmodified_dup.jsi_parent_node.jsi_parent_node.node_content.object_id)
+      assert_equal(node.jsi_parent_node.jsi_node_content.object_id, unmodified_dup.jsi_parent_node.jsi_node_content.object_id)
+      assert_equal(node.jsi_parent_node.jsi_parent_node.jsi_node_content.object_id, unmodified_dup.jsi_parent_node.jsi_parent_node.jsi_node_content.object_id)
       # same as the other: any untouched part(s) - in this case the ['b', 'q'] at jsi_document[0] - are untouched
-      assert_equal(node.jsi_root_node[0].node_content.object_id, unmodified_dup.jsi_root_node[0].node_content.object_id)
+      assert_equal(node.jsi_root_node[0].jsi_node_content.object_id, unmodified_dup.jsi_root_node[0].jsi_node_content.object_id)
     end
     it 'raises subscripting string from array' do
       err = assert_raises(TypeError) { JSI::JSON::Node.new(jsi_document, JSI::JSON::Pointer.new(['x'])).modified_copy(&:dup) }

@@ -75,7 +75,7 @@ module JSI
       # not a key of the hash, then the $ref is followed before returning the subcontent.
       def [](subscript)
         ptr = self.jsi_ptr
-        content = self.node_content
+        content = self.jsi_node_content
         unless content.respond_to?(:[])
           if content.respond_to?(:to_hash)
             content = content.to_hash
@@ -102,9 +102,9 @@ module JSI
       # assigns the given subscript of the content to the given value. the document is modified in place.
       def []=(subscript, value)
         if value.is_a?(Node)
-          node_content[subscript] = value.node_content
+          jsi_node_content[subscript] = value.jsi_node_content
         else
-          node_content[subscript] = value
+          jsi_node_content[subscript] = value
         end
       end
 
@@ -137,7 +137,7 @@ module JSI
 
       # returns a jsonifiable representation of this node's content
       def as_json(*opt)
-        Typelike.as_json(node_content, *opt)
+        Typelike.as_json(jsi_node_content, *opt)
       end
 
       # takes a block. the block is yielded the content of this node. the block MUST return a modified
@@ -156,12 +156,12 @@ module JSI
         [
           self.class.inspect,
           jsi_ptr.uri.to_s,
-        ] + (node_content.respond_to?(:object_group_text) ? node_content.object_group_text : [])
+        ] + (jsi_node_content.respond_to?(:object_group_text) ? jsi_node_content.object_group_text : [])
       end
 
       # a string representing this node
       def inspect
-        "\#<#{object_group_text.join(' ')} #{node_content.inspect}>"
+        "\#<#{object_group_text.join(' ')} #{jsi_node_content.inspect}>"
       end
 
       # pretty-prints a representation this node to the given printer
@@ -171,7 +171,7 @@ module JSI
         q.group_sub {
           q.nest(2) {
             q.breakable ' '
-            q.pp node_content
+            q.pp jsi_node_content
           }
         }
         q.breakable ''
