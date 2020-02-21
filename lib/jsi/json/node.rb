@@ -131,7 +131,7 @@ module JSI
 
       # the parent of this node. if this node is the document root, raises
       # JSI::JSON::Pointer::ReferenceError.
-      def parent_node
+      def jsi_parent_node
         Node.new_by_type(jsi_document, jsi_ptr.parent)
       end
 
