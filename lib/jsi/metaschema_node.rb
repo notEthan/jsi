@@ -114,6 +114,17 @@ module JSI
       new_node(jsi_ptr: JSI::JSON::Pointer[])
     end
 
+    # @return [Array<JSI::MetaschemaNode>]
+    def jsi_parent_nodes
+      parent = jsi_root_node
+
+      jsi_ptr.reference_tokens.map do |token|
+        parent.tap do
+          parent = parent[token]
+        end
+      end.reverse
+    end
+
     # @return [MetaschemaNode] parent MetaschemaNode
     def jsi_parent_node
       new_node(jsi_ptr: jsi_ptr.parent)
