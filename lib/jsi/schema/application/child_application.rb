@@ -8,10 +8,29 @@ module JSI
     # @param property_name [String] the property name for which to find subschemas
     # @return [Set<JSI::Schema>] subschemas of this schema for the given property_name
     def subschemas_for_property_name(property_name)
-      jsi_memoize(:subschemas_for_property_name, property_name) do |property_name|
-        jsi_ptr.schema_subschema_ptrs_for_property_name(jsi_document, property_name).map do |ptr|
-          resource_root_subschema(ptr)
-        end.to_set
+      begin
+        ptr = self
+        schema = ptr.evaluate(document)
+        Set.new.tap do |ptrs|
+          if schema.respond_to?(:to_hash)
+            apply_additional = true
+            if schema.key?('properties') && schema['properties'].respond_to?(:to_hash) && schema['properties'].key?(property_name)
+              apply_additional = false
+              ptrs << ptr['properties'][property_name]
+            end
+            if schema['patternProperties'].respond_to?(:to_hash)
+              schema['patternProperties'].each_key do |pattern|
+                if property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+                  apply_additional = false
+                  ptrs << ptr['patternProperties'][pattern]
+                end
+              end
+            end
+            if apply_additional && schema.key?('additionalProperties')
+              ptrs << ptr['additionalProperties']
+            end
+          end
+        end
       end
     end
 
@@ -21,10 +40,22 @@ module JSI
     # @param index [Integer] the array index for which to find subschemas
     # @return [Set<JSI::Schema>] subschemas of this schema for the given array index
     def subschemas_for_index(index)
-      jsi_memoize(:subschemas_for_index, index) do |index|
-        jsi_ptr.schema_subschema_ptrs_for_index(jsi_document, index).map do |ptr|
-          resource_root_subschema(ptr)
-        end.to_set
+      begin
+        ptr = self
+        schema = ptr.evaluate(document)
+        Set.new.tap do |ptrs|
+          if schema.respond_to?(:to_hash)
+            if schema['items'].respond_to?(:to_ary)
+              if schema['items'].each_index.to_a.include?(idx)
+                ptrs << ptr['items'][idx]
+              elsif schema.key?('additionalItems')
+                ptrs << ptr['additionalItems']
+              end
+            elsif schema.key?('items')
+              ptrs << ptr['items']
+            end
+          end
+        end
       end
     end
   end
