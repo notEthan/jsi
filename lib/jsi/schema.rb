@@ -158,8 +158,8 @@ module JSI
     # @param other_instance [Object] the instance to which to attempt to match *Of subschemas
     # @return [Enumerable<JSI::Schema>] matched applicator subschemas
     def match_to_instance(other_instance)
-      jsi_ptr.schema_match_ptrs_to_instance(jsi_document, other_instance).map do |ptr|
-        ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+      own_basic_schema.match_to_instance(other_instance).map do |match_basic_schema|
+        match_basic_schema.ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, match_basic_schema) }
       end
     end
 
@@ -168,8 +168,8 @@ module JSI
     #   `properties`, `patternProperties`, and `additionalProperties`
     def subschemas_for_property(property_name)
       jsi_memoize(:subschemas_for_property, property_name) do |property_name|
-        jsi_ptr.schema_subschema_ptrs_for_property_name(jsi_document, property_name).map do |ptr|
-          ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+        own_basic_schema.subschemas_for_property_name(property_name).map do |sub_basic_schema|
+          sub_basic_schema.ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, sub_basic_schema) }
         end
       end
     end
@@ -179,8 +179,8 @@ module JSI
     #   `items` and `additionalItems`
     def subschemas_for_index(index)
       jsi_memoize(:subschemas_for_index, index) do |index|
-        jsi_ptr.schema_subschema_ptrs_for_index(jsi_document, index).map do |ptr|
-          ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+        own_basic_schema.subschemas_for_index(index).map do |sub_basic_schema|
+          sub_basic_schema.ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, sub_basic_schema) }
         end
       end
     end
@@ -241,9 +241,9 @@ module JSI
     end
 
     private
-    def jsi_ensure_subschema_is_schema(subschema, ptr)
+    def jsi_ensure_subschema_is_schema(subschema, basic_schema)
       unless subschema.is_a?(JSI::Schema)
-        raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
+        raise(NotASchemaError, "subschema not a schema: #{subschema.pretty_inspect}\nfrom basic schema: #{basic_schema.pretty_inspect.chomp}")
       end
     end
   end

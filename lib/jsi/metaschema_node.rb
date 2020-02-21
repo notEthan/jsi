@@ -49,28 +49,27 @@ module JSI
       end
 
       instance_for_schema = jsi_document
-      schema_ptrs = jsi_ptr.reference_tokens.inject(Set.new << root_schema_ptr) do |ptrs, tok|
-        if instance_for_schema.respond_to?(:to_ary)
-          subschema_ptrs_for_token = ptrs.map do |ptr|
-            ptr.schema_subschema_ptrs_for_index(jsi_document, tok)
-          end.inject(Set.new, &:|)
-        else
-          subschema_ptrs_for_token = ptrs.map do |ptr|
-            ptr.schema_subschema_ptrs_for_property_name(jsi_document, tok)
-          end.inject(Set.new, &:|)
-        end
-        instance_for_schema = instance_for_schema[tok]
-        ptrs_for_instance = subschema_ptrs_for_token.map do |ptr|
-          ptr.schema_match_ptrs_to_instance(jsi_document, instance_for_schema)
+      basic_schema_init = Set[BasicSchema.new(root_schema_ptr, jsi_document)]
+      basic_schemas = jsi_ptr.reference_tokens.inject(basic_schema_init) do |basic_schemas_under_tok, tok|
+        subschemas_for_token = basic_schemas_under_tok.map do |basic_schema|
+          if instance_for_schema.respond_to?(:to_ary)
+            basic_schema.subschemas_for_index(tok)
+          else
+            basic_schema.subschemas_for_property_name(tok)
+          end
         end.inject(Set.new, &:|)
-        ptrs_for_instance
+        instance_for_schema = instance_for_schema[tok]
+        basic_schemas_for_instance = subschemas_for_token.map do |basic_schema|
+          basic_schema.match_to_instance(instance_for_schema)
+        end.inject(Set.new, &:|)
+        basic_schemas_for_instance
       end
 
-      @jsi_schemas = schema_ptrs.map do |schema_ptr|
-        if schema_ptr == jsi_ptr
+      @jsi_schemas = basic_schemas.map do |basic_schema|
+        if basic_schema.ptr == jsi_ptr
           self
         else
-          new_node(jsi_ptr: schema_ptr)
+          new_node(jsi_ptr: basic_schema.ptr)
         end
       end
 
