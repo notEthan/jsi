@@ -65,21 +65,19 @@ module JSI
       proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
     end
     module_function :ycomb
-  end
-  public
-  extend Util
 
-  module FingerprintHash
-    # overrides BasicObject#==
-    def ==(other)
-      object_id == other.object_id || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == self.jsi_fingerprint)
-    end
+    module FingerprintHash
+      # overrides BasicObject#==
+      def ==(other)
+        object_id == other.object_id || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == self.jsi_fingerprint)
+      end
 
-    alias_method :eql?, :==
+      alias_method :eql?, :==
 
-    # overrides Kernel#hash
-    def hash
-      jsi_fingerprint.hash
+      # overrides Kernel#hash
+      def hash
+        jsi_fingerprint.hash
+      end
     end
   end
 
@@ -103,5 +101,7 @@ module JSI
       end
     end
   end
+  public
+  extend Util
   extend Memoize
 end

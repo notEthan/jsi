@@ -387,7 +387,7 @@ module JSI
     def jsi_fingerprint
       {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
     end
-    include FingerprintHash
+    include Util::FingerprintHash
 
     private
 

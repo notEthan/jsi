@@ -408,7 +408,7 @@ module JSI
       def jsi_fingerprint
         {class: JSI::JSON::Pointer, reference_tokens: reference_tokens}
       end
-      include FingerprintHash
+      include Util::FingerprintHash
 
       private
 
