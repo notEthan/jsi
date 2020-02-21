@@ -152,31 +152,25 @@ describe JSI::Base do
       end
     end
   end
-  describe '#parent_jsis, #parent_jsi' do
+  describe '#jsi_parent_nodes, #jsi_parent_node' do
     let(:schema_content) { {'properties' => {'foo' => {'properties' => {'bar' => {'properties' => {'baz' => {}}}}}}} }
     let(:instance) { {'foo' => {'bar' => {'baz' => {}}}} }
-    describe 'no parent_jsis' do
+    describe 'no jsi_parent_nodes' do
       it 'has none' do
-        assert_equal([], subject.parents)
-        assert_equal([], subject.parent_jsis)
-        assert_equal(nil, subject.parent)
-        assert_equal(nil, subject.parent_jsi)
+        assert_equal([], subject.jsi_parent_nodes)
+        assert_equal(nil, subject.jsi_parent_node)
       end
     end
-    describe 'one parent_jsi' do
+    describe 'one jsi_parent_node' do
       it 'has one' do
-        assert_equal([subject], subject.foo.parents)
-        assert_equal([subject], subject.foo.parent_jsis)
-        assert_equal(subject, subject.foo.parent)
-        assert_equal(subject, subject.foo.parent_jsi)
+        assert_equal([subject], subject.foo.jsi_parent_nodes)
+        assert_equal(subject, subject.foo.jsi_parent_node)
       end
     end
-    describe 'more parent_jsis' do
+    describe 'more jsi_parent_nodes' do
       it 'has more' do
-        assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.parents)
-        assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.parent_jsis)
-        assert_equal(subject.foo.bar, subject.foo.bar.baz.parent)
-        assert_equal(subject.foo.bar, subject.foo.bar.baz.parent_jsi)
+        assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.jsi_parent_nodes)
+        assert_equal(subject.foo.bar, subject.foo.bar.baz.jsi_parent_node)
       end
     end
   end
