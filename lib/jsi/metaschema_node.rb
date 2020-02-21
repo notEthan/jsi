@@ -198,7 +198,7 @@ module JSI
     # @return [Array<String>]
     def object_group_text
       if jsi_schemas.any?
-        class_n_schemas = "#{self.class} (#{jsi_schemas.map { |s| s.jsi_ptr.fragment }.join(' ')})"
+        class_n_schemas = "#{self.class} (#{jsi_schemas.map { |s| s.jsi_schema_module.name_from_ancestor || s.jsi_ptr.fragment }.join(', ')})"
       else
         class_n_schemas = self.class.to_s
       end
