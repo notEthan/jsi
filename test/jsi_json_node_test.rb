@@ -149,10 +149,10 @@ describe JSI::JSON::Node do
       assert_equal([0, {'x' => [{'a' => ['b']}], 'y' => {'a' => ['b']}}], jsi_document)
     end
   end
-  describe '#document_root_node' do
+  describe '#jsi_root_node' do
     let(:jsi_document) { {'a' => {'b' => 3}} }
     it 'has node_content that is the jsi_document' do
-      assert_equal({'a' => {'b' => 3}}, node['a'].document_root_node.node_content)
+      assert_equal({'a' => {'b' => 3}}, node['a'].jsi_root_node.node_content)
     end
   end
   describe '#parent_node' do
@@ -188,7 +188,7 @@ describe JSI::JSON::Node do
       refute_equal(node.parent_node.node_content.object_id, modified_dup.parent_node.node_content.object_id)
       refute_equal(node.parent_node.parent_node.node_content.object_id, modified_dup.parent_node.parent_node.node_content.object_id)
       # but any untouched part(s) - in this case the ['b', 'q'] at jsi_document[0] - are untouched
-      assert_equal(node.document_root_node[0].node_content.object_id, modified_dup.document_root_node[0].node_content.object_id)
+      assert_equal(node.jsi_root_node[0].node_content.object_id, modified_dup.jsi_root_node[0].node_content.object_id)
     end
     it 'returns the same object' do
       unmodified_dup = node.modified_copy { |o| o }
@@ -199,7 +199,7 @@ describe JSI::JSON::Node do
       assert_equal(node.parent_node.node_content.object_id, unmodified_dup.parent_node.node_content.object_id)
       assert_equal(node.parent_node.parent_node.node_content.object_id, unmodified_dup.parent_node.parent_node.node_content.object_id)
       # same as the other: any untouched part(s) - in this case the ['b', 'q'] at jsi_document[0] - are untouched
-      assert_equal(node.document_root_node[0].node_content.object_id, unmodified_dup.document_root_node[0].node_content.object_id)
+      assert_equal(node.jsi_root_node[0].node_content.object_id, unmodified_dup.jsi_root_node[0].node_content.object_id)
     end
     it 'raises subscripting string from array' do
       err = assert_raises(TypeError) { JSI::JSON::Node.new(jsi_document, JSI::JSON::Pointer.new(['x'])).modified_copy(&:dup) }

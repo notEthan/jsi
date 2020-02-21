@@ -110,7 +110,7 @@ module JSI
     attr_reader :jsi_schemas
 
     # @return [MetaschemaNode] document root MetaschemaNode
-    def document_root_node
+    def jsi_root_node
       new_node(jsi_ptr: JSI::JSON::Pointer[])
     end
 
