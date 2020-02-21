@@ -76,7 +76,7 @@ class SortOfHash
   def to_hash
     @hash
   end
-  include JSI::FingerprintHash
+  include JSI::Util::FingerprintHash
   def jsi_fingerprint
     {class: self.class, hash: @hash}
   end
@@ -90,7 +90,7 @@ class SortOfArray
   def to_ary
     @ary
   end
-  include JSI::FingerprintHash
+  include JSI::Util::FingerprintHash
   def jsi_fingerprint
     {class: self.class, ary: @ary}
   end

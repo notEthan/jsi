@@ -185,7 +185,7 @@ module JSI
       def jsi_fingerprint
         {class: JSI::JSON::Node, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
       end
-      include FingerprintHash
+      include Util::FingerprintHash
     end
 
     # a JSI::JSON::Node whose content is Array-like (responds to #to_ary)
