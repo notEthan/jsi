@@ -202,7 +202,7 @@ module JSI
     def jsi_fingerprint
       {class: self.class, node_document: node_document}.merge(our_initialize_params)
     end
-    include FingerprintHash
+    include Util::FingerprintHash
 
     private
 
