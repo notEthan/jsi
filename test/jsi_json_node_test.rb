@@ -155,21 +155,21 @@ describe JSI::JSON::Node do
       assert_equal({'a' => {'b' => 3}}, node['a'].jsi_root_node.node_content)
     end
   end
-  describe '#parent_node' do
+  describe '#jsi_parent_node' do
     let(:jsi_document) { {'a' => {'b' => []}} }
     it 'finds a parent' do
       sub = node['a']['b']
       assert_equal(JSI::JSON::Pointer.new(['a', 'b']), sub.jsi_ptr)
-      parent = sub.parent_node
+      parent = sub.jsi_parent_node
       assert_equal(JSI::JSON::Pointer.new(['a']), parent.jsi_ptr)
       assert_equal({'b' => []}, parent.node_content)
       assert_equal(node['a'], parent)
-      root_from_sub = sub.parent_node.parent_node
+      root_from_sub = sub.jsi_parent_node.jsi_parent_node
       assert_equal(JSI::JSON::Pointer.new([]), root_from_sub.jsi_ptr)
       assert_equal({'a' => {'b' => []}}, root_from_sub.node_content)
       assert_equal(node, root_from_sub)
       err = assert_raises(JSI::JSON::Pointer::ReferenceError) do
-        root_from_sub.parent_node
+        root_from_sub.jsi_parent_node
       end
       assert_equal('cannot access parent of root pointer: JSI::JSON::Pointer[]', err.message)
     end
@@ -185,8 +185,8 @@ describe JSI::JSON::Node do
       # but different object
       refute_equal(node.object_id, modified_dup.object_id)
       # the parents, obviously, are different
-      refute_equal(node.parent_node.node_content.object_id, modified_dup.parent_node.node_content.object_id)
-      refute_equal(node.parent_node.parent_node.node_content.object_id, modified_dup.parent_node.parent_node.node_content.object_id)
+      refute_equal(node.jsi_parent_node.node_content.object_id, modified_dup.jsi_parent_node.node_content.object_id)
+      refute_equal(node.jsi_parent_node.jsi_parent_node.node_content.object_id, modified_dup.jsi_parent_node.jsi_parent_node.node_content.object_id)
       # but any untouched part(s) - in this case the ['b', 'q'] at jsi_document[0] - are untouched
       assert_equal(node.jsi_root_node[0].node_content.object_id, modified_dup.jsi_root_node[0].node_content.object_id)
     end
@@ -196,8 +196,8 @@ describe JSI::JSON::Node do
       # same object, since the block just returned it
       refute_equal(node.object_id, unmodified_dup.object_id)
       # the parents are unchanged since the object is the same
-      assert_equal(node.parent_node.node_content.object_id, unmodified_dup.parent_node.node_content.object_id)
-      assert_equal(node.parent_node.parent_node.node_content.object_id, unmodified_dup.parent_node.parent_node.node_content.object_id)
+      assert_equal(node.jsi_parent_node.node_content.object_id, unmodified_dup.jsi_parent_node.node_content.object_id)
+      assert_equal(node.jsi_parent_node.jsi_parent_node.node_content.object_id, unmodified_dup.jsi_parent_node.jsi_parent_node.node_content.object_id)
       # same as the other: any untouched part(s) - in this case the ['b', 'q'] at jsi_document[0] - are untouched
       assert_equal(node.jsi_root_node[0].node_content.object_id, unmodified_dup.jsi_root_node[0].node_content.object_id)
     end
