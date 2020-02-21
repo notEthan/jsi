@@ -39,6 +39,19 @@ module JSI
         super
       end
 
+      def merge(result)
+        unless result.is_a?(FullResult)
+          raise(TypeError, "not a #{FullResult.name}: #{result.pretty_inspect.chomp}")
+        end
+        validation_errors.merge(result.validation_errors)
+        schema_issues.merge(result.schema_issues)
+        self
+      end
+
+      def +(result)
+        FullResult.new.merge(self).merge(result)
+      end
+
       # @api private
       def jsi_fingerprint
         {
