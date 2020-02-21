@@ -11,7 +11,7 @@ module JSI
 
     # @return [String]
     def inspect
-      uri = schema.schema_id || schema.node_ptr.uri
+      uri = schema.schema_id || schema.jsi_ptr.uri
       if name
         "#{name} (#{uri})"
       else

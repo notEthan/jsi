@@ -27,42 +27,42 @@ module JSI
       include Enumerable
       include PathedNode
 
-      def self.new_doc(node_document)
-        new_by_type(node_document, JSI::JSON::Pointer.new([]))
+      def self.new_doc(jsi_document)
+        new_by_type(jsi_document, JSI::JSON::Pointer.new([]))
       end
 
       # if the content of the document at the given pointer is Hash-like, returns
       # a HashNode; if Array-like, returns ArrayNode. otherwise returns a
       # regular Node, although Nodes are for the most part instantiated from
       # Hash or Array-like content.
-      def self.new_by_type(node_document, node_ptr)
-        content = node_ptr.evaluate(node_document)
+      def self.new_by_type(jsi_document, jsi_ptr)
+        content = jsi_ptr.evaluate(jsi_document)
         if content.respond_to?(:to_hash)
-          HashNode.new(node_document, node_ptr)
+          HashNode.new(jsi_document, jsi_ptr)
         elsif content.respond_to?(:to_ary)
-          ArrayNode.new(node_document, node_ptr)
+          ArrayNode.new(jsi_document, jsi_ptr)
         else
-          Node.new(node_document, node_ptr)
+          Node.new(jsi_document, jsi_ptr)
         end
       end
 
       # a Node represents the content of a document at a given pointer.
-      def initialize(node_document, node_ptr)
-        unless node_ptr.is_a?(JSI::JSON::Pointer)
-          raise(TypeError, "node_ptr must be a JSI::JSON::Pointer. got: #{node_ptr.pretty_inspect.chomp} (#{node_ptr.class})")
+      def initialize(jsi_document, jsi_ptr)
+        unless jsi_ptr.is_a?(JSI::JSON::Pointer)
+          raise(TypeError, "jsi_ptr must be a JSI::JSON::Pointer. got: #{jsi_ptr.pretty_inspect.chomp} (#{jsi_ptr.class})")
         end
-        if node_document.is_a?(JSI::JSON::Node)
-          raise(TypeError, "node_document of a Node should not be another JSI::JSON::Node: #{node_document.inspect}")
+        if jsi_document.is_a?(JSI::JSON::Node)
+          raise(TypeError, "jsi_document of a Node should not be another JSI::JSON::Node: #{jsi_document.inspect}")
         end
-        @node_document = node_document
-        @node_ptr = node_ptr
+        @jsi_document = jsi_document
+        @jsi_ptr = jsi_ptr
       end
 
       # the document containing this Node at our pointer
-      attr_reader :node_document
+      attr_reader :jsi_document
 
       # JSI::JSON::Pointer pointing to this node within its document
-      attr_reader :node_ptr
+      attr_reader :jsi_ptr
 
       # returns content at the given subscript - call this the subcontent.
       #
@@ -74,7 +74,7 @@ module JSI
       # if this node's content is a $ref - that is, a hash with a $ref attribute - and the subscript is
       # not a key of the hash, then the $ref is followed before returning the subcontent.
       def [](subscript)
-        ptr = self.node_ptr
+        ptr = self.jsi_ptr
         content = self.node_content
         unless content.respond_to?(:[])
           if content.respond_to?(:to_hash)
@@ -91,9 +91,9 @@ module JSI
           raise(e.class, e.message + "\nsubscripting with #{subscript.pretty_inspect.chomp} (#{subscript.class}) from #{content.class.inspect}. content is: #{content.pretty_inspect.chomp}", e.backtrace)
         end
         if subcontent.respond_to?(:to_hash)
-          HashNode.new(node_document, ptr[subscript])
+          HashNode.new(jsi_document, ptr[subscript])
         elsif subcontent.respond_to?(:to_ary)
-          ArrayNode.new(node_document, ptr[subscript])
+          ArrayNode.new(jsi_document, ptr[subscript])
         else
           subcontent
         end
@@ -118,21 +118,21 @@ module JSI
       #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
       # @return [JSI::JSON::Node] dereferenced node, or this node
       def deref(&block)
-        node_ptr_deref do |deref_ptr|
-          return Node.new_by_type(node_document, deref_ptr).tap(&(block || Util::NOOP))
+        jsi_ptr_deref do |deref_ptr|
+          return Node.new_by_type(jsi_document, deref_ptr).tap(&(block || Util::NOOP))
         end
         return self
       end
 
       # a Node at the root of the document
       def document_root_node
-        Node.new_doc(node_document)
+        Node.new_doc(jsi_document)
       end
 
       # the parent of this node. if this node is the document root, raises
       # JSI::JSON::Pointer::ReferenceError.
       def parent_node
-        Node.new_by_type(node_document, node_ptr.parent)
+        Node.new_by_type(jsi_document, jsi_ptr.parent)
       end
 
       # returns a jsonifiable representation of this node's content
@@ -143,7 +143,7 @@ module JSI
       # takes a block. the block is yielded the content of this node. the block MUST return a modified
       # copy of that content (and NOT modify the object it is given).
       def modified_copy(&block)
-        Node.new_by_type(node_ptr.modified_document_copy(node_document, &block), node_ptr)
+        Node.new_by_type(jsi_ptr.modified_document_copy(jsi_document, &block), jsi_ptr)
       end
 
       def dup
@@ -155,7 +155,7 @@ module JSI
       def object_group_text
         [
           self.class.inspect,
-          node_ptr.uri.to_s,
+          jsi_ptr.uri.to_s,
         ] + (node_content.respond_to?(:object_group_text) ? node_content.object_group_text : [])
       end
 
@@ -183,7 +183,7 @@ module JSI
       # documents at equal pointers. note that this means two nodes with the same content may not be
       # considered equal.
       def jsi_fingerprint
-        {class: JSI::JSON::Node, node_document: node_document, node_ptr: node_ptr}
+        {class: JSI::JSON::Node, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
       end
       include Util::FingerprintHash
     end
