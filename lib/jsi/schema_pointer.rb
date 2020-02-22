@@ -497,7 +497,7 @@ module JSI
               missing_required = value.reject { |property_name| instance.key?(property_name) }
               # TODO include missing required property names in the validation error
               validate.(missing_required.empty?, 'instance object does not contain all property names specified by the `required` value', keyword)
-x                validate.(missing_required.empty?, 'instance object does not contain all property names specified by the `required` value', keyword, missing_required: missing_required)
+#                validate.(missing_required.empty?, 'instance object does not contain all property names specified by the `required` value', keyword, missing_required: missing_required)
             end
           else
             schema_error.('`required` is not an array', keyword)
@@ -528,7 +528,7 @@ x                validate.(missing_required.empty?, 'instance object does not co
               end
               # TODO include missing dependent required property names in the validation error
               validate.(missing_dependent_required.empty?, 'instance object does not contain all dependent required property names specified by the `dependentRequired` value', keyword)
-x                validate.(missing_dependent_required.empty?, 'instance object does not contain all dependent required property names specified by the `dependentRequired` value', keyword, missing_dependent_required: missing_dependent_required)
+#x                validate.(missing_dependent_required.empty?, 'instance object does not contain all dependent required property names specified by the `dependentRequired` value', keyword, missing_dependent_required: missing_dependent_required)
             end
           else
             schema_error.('`dependentRequired` is not an object whose properties are arrays', keyword)
