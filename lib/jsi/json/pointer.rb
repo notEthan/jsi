@@ -28,7 +28,14 @@ module JSI
       # @param *reference_tokens any number of reference tokens
       # @return [JSI::JSON::Pointer]
       def self.[](*reference_tokens)
-        new(reference_tokens)
+        if reference_tokens.empty?
+          unless instance_variable_defined?(:@root_ptr)
+            @root_ptr = new(reference_tokens)
+          end
+          @root_ptr
+        else
+          new(reference_tokens)
+        end
       end
 
       # parse a URI-escaped fragment and instantiate as a JSI::JSON::Pointer
