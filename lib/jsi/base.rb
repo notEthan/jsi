@@ -123,7 +123,7 @@ module JSI
       else
         raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || jsi_root_node
         @jsi_document = instance
-        @jsi_ptr = JSI::JSON::Pointer.new([])
+        @jsi_ptr = JSI::JSON::Pointer[]
         @jsi_root_node = self
       end
 
