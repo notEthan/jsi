@@ -447,7 +447,7 @@ module JSI
               # An array instance is valid against "maxContains" if the number of elements that are valid
               # against the schema for "contains" is less than, or equal to, the value of this keyword.
               results = instance.each_index.map do |idx|
-                schema_ptr['contains'].schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
+                schema_ptr['contains'].as_schema_ptr.schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
               end
               validate.(results.select(&:valid?).size <= value, 'instance array contains more items valid against the `contains` schema than the `maxContains` value', keyword, results: results)
             end
@@ -466,7 +466,7 @@ module JSI
               # An array instance is valid against "minContains" if the number of elements that are valid
               # against the schema for "contains" is greater than, or equal to, the value of this keyword.
               results = instance.each_index.map do |idx|
-                schema_ptr['contains'].schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
+                schema_ptr['contains'].as_schema_ptr.schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
               end
               validate.(results.select(&:valid?).size >= value, 'instance array contains fewer items valid against the `contains` schema than the `minContains` value', keyword, results: results)
             end
@@ -568,7 +568,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           if value.respond_to?(:to_ary)
             # An instance validates successfully against this keyword if it validates successfully against all schemas defined by this keyword's value.
             allOf_results = value.each_index.map do |idx|
-              schema_ptr['allOf'][idx].schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+              schema_ptr['allOf'][idx].as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
             end
             validate.(allOf_results.all?(&:valid?), 'instance did not validate against all schemas defined by `allOf` value', keyword, results: allOf_results)
           else
@@ -584,7 +584,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           if value.respond_to?(:to_ary)
             # An instance validates successfully against this keyword if it validates successfully against at least one schema defined by this keyword's value. Note that when annotations are being collected, all subschemas MUST be examined so that annotations are collected from each subschema that validates successfully.
             anyOf_results = value.each_index.map do |idx|
-              schema_ptr['anyOf'][idx].schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+              schema_ptr['anyOf'][idx].as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
             end
             validate.(anyOf_results.any?(&:valid?), 'instance did not validate against any schemas defined by `anyOf` value', keyword, results: anyOf_results)
           else
@@ -600,7 +600,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           if value.respond_to?(:to_ary)
             # An instance validates successfully against this keyword if it validates successfully against exactly one schema defined by this keyword's value.
             oneOf_results = value.each_index.map do |idx|
-              schema_ptr['oneOf'][idx].schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+              schema_ptr['oneOf'][idx].as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
             end
             if oneOf_results.none?(&:valid?)
               validate.(false, 'instance did not validate against any schemas defined by `oneOf` value', keyword, results: oneOf_results)
@@ -618,7 +618,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           value = schema[keyword]
           # This keyword's value MUST be a valid JSON Schema.
           # An instance is valid against this keyword if it fails to validate successfully against the schema defined by this keyword.
-          not_valid = schema_ptr['not'].schema_validate(schema_document, instance_ptr, instance_document, validate_only: true).valid?
+          not_valid = schema_ptr['not'].as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: true).valid?
           validate.(!not_valid, 'instance validated against the schema defined by `not` value', keyword)
         end
 
@@ -631,15 +631,15 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
 
           # This keyword's value MUST be a valid JSON Schema.
           # This validation outcome of this keyword's subschema has no direct effect on the overall validation result. Rather, it controls which of the "then" or "else" keywords are evaluated.
-          if_valid = schema_ptr['if'].schema_validate(schema_document, instance_ptr, instance_document, validate_only: true).valid?
+          if_valid = schema_ptr['if'].as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: true).valid?
           if if_valid
             if schema.key?('then')
-              then_result = schema_ptr['then'].schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+              then_result = schema_ptr['then'].as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
               validate.(then_result.valid?, 'instance did not validate against the schema defined by `then` value after validating against the schema defined by the `if` value', keyword, results: [then_result])
             end
           else
             if schema.key?('else')
-              else_result = schema_ptr['else'].schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+              else_result = schema_ptr['else'].as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
               validate.(else_result.valid?, 'instance did not validate against the schema defined by `else` value after not validating against the schema defined by the `if` value', keyword, results: [else_result])
             end
           end
@@ -657,7 +657,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
             if instance.respond_to?(:to_hash)
               results = value.keys.map do |property_name|
                 if instance.key?(property_name)
-                  schema_ptr['dependentSchemas'][property_name].schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+                  schema_ptr['dependentSchemas'][property_name].as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
                 end
               end.compact
               validate.(results.all?(:valid?), 'instance object does not validate against all schemas corresponding to matched property names specified by the `dependentSchemas` value', keyword, results: results)
@@ -681,9 +681,9 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
             if instance.respond_to?(:to_ary)
               results = instance.each_index.map do |idx|
                 if idx < value.size
-                  schema_ptr['items'][idx].schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
+                  schema_ptr['items'][idx].as_schema_ptr.schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
                 elsif schema.key?('additionalItems')
-                  schema_ptr['additionalItems'].schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
+                  schema_ptr['additionalItems'].as_schema_ptr.schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
                 else
                   JSI::SchemaValidation::VALID
                 end
@@ -694,7 +694,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
             # If "items" is a schema, validation succeeds if all elements in the array successfully validate against that schema.
             if instance.respond_to?(:to_ary)
               results = instance.each_index.map do |idx|
-                schema_ptr['items'].schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
+                schema_ptr['items'].as_schema_ptr.schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
               end
               validate.(results.all?(&:valid?), 'instance array items did not all validate against the `items` schema value', keyword, results: results)
             end
@@ -708,7 +708,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           # An array instance is valid against "contains" if at least one of its elements is valid against the given schema. Note that when collecting annotations, the subschema MUST be applied to every array element even after the first match has been found. This is to ensure that all possible annotations are collected.
           if instance.respond_to?(:to_ary)
             results = instance.each_index.map do |idx|
-              schema_ptr['contains'].schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
+              schema_ptr['contains'].as_schema_ptr.schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only)
             end
             validate.(results.any?(&:valid?), 'instance array does not contain any items valid against the `contains` schema value', keyword, results: results)
           end
@@ -729,7 +729,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
               results = instance.keys.map do |property_name|
                 if value.key?(property_name)
                   evaluated_property_names << property_name
-                  schema_ptr['properties'][property_name].schema_validate(schema_document, instance_ptr[property_name], instance_document, validate_only: validate_only)
+                  schema_ptr['properties'][property_name].as_schema_ptr.schema_validate(schema_document, instance_ptr[property_name], instance_document, validate_only: validate_only)
                 end
               end.compact
               validate.(results.all?(&:valid?), 'instance object properties do not all validate against corresponding `properties` schema values', keyword, results: results)
@@ -753,7 +753,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
                     # TODO ECMA 262
                     if value_property_pattern.respond_to?(:to_str) && property_name.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name)
                       evaluated_property_names << property_name
-                      schema_ptr['patternProperties'][value_property_pattern].schema_validate(schema_document, instance_ptr[property_name], instance_document, validate_only: validate_only)
+                      schema_ptr['patternProperties'][value_property_pattern].as_schema_ptr.schema_validate(schema_document, instance_ptr[property_name], instance_document, validate_only: validate_only)
                     end
                   rescue RegexpError
                     nil
@@ -775,7 +775,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           if instance.respond_to?(:to_hash)
             results = instance.keys.map do |property_name|
               if !evaluated_property_names.include?(property_name)
-                schema_ptr['additionalProperties'].schema_validate(schema_document, instance_ptr[property_name], instance_document, validate_only: validate_only)
+                schema_ptr['additionalProperties'].as_schema_ptr.schema_validate(schema_document, instance_ptr[property_name], instance_document, validate_only: validate_only)
               end
             end.compact
             validate.(results.all?(&:valid?), 'additional instance object properties do not all validate against `additionalProperties` schema value', keyword, results: results)
@@ -790,7 +790,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           # If the instance is an object, this keyword validates if every property name in the instance validates against the provided schema. Note the property name that the schema is testing will always be a string.
           if instance.respond_to?(:to_hash)
             results = instance.keys.map do |property_name|
-              schema_ptr['propertyNames'].schema_validate(schema_document, JSI::JSON::Pointer[], property_name, validate_only: validate_only)
+              schema_ptr['propertyNames'].as_schema_ptr.schema_validate(schema_document, JSI::JSON::Pointer[], property_name, validate_only: validate_only)
             end
             validate.(results.all?(&:valid?), 'instance object property names do not all validate against `propertyNames` schema value', keyword, results: results)
           end
@@ -801,7 +801,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           value = schema[keyword]
 
           schema_ptr.deref(schema_document) do |deref_ptr|
-            ref_result = deref_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+            ref_result = deref_ptr.as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
             validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$ref` value', keyword, results: [ref_result])
           end
         end
@@ -811,7 +811,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           value = schema[keyword]
 
           schema_ptr.deref(schema_document) do |deref_ptr|
-            ref_result = deref_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+            ref_result = deref_ptr.as_schema_ptr.schema_validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
             validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$recursiveRef` value', keyword, results: [ref_result])
           end
         end
