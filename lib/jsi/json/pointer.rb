@@ -201,9 +201,10 @@ module JSI
       # appends the given token to this Pointer's reference tokens and returns the result
       #
       # @param token [Object]
+      # @param as [Class] the class as which to instantiate the Pointer
       # @return [JSI::JSON::Pointer] pointer to a child node of this pointer with the given token
-      def [](token)
-        Pointer.new(reference_tokens + [token], type: @type)
+      def [](token, as: Pointer)
+        as.new(reference_tokens + [token], type: @type)
       end
 
       # @return [pointer_class] this Pointer, instantiated as the given pointer class
