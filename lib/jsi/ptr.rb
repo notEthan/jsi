@@ -42,7 +42,14 @@ module JSI
       # @param tokens any number of tokens
       # @return [JSI::Ptr]
       def self.[](*tokens)
-        new(tokens)
+        if tokens.empty?
+          unless instance_variable_defined?(:@root_ptr)
+            @root_ptr = new(tokens)
+          end
+          @root_ptr
+        else
+          new(tokens)
+        end
       end
 
       # parse a URI-escaped fragment and instantiate as a JSI::Ptr
