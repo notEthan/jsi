@@ -289,17 +289,17 @@ module JSI
         return self unless ref.is_a?(String)
 
         if ref[/\A#/]
-          return Pointer.from_fragment(ref).tap(&block)
+          return self.class.from_fragment(ref).tap(&block)
         end
 
         # HAX for how google does refs and ids
         if document['schemas'].respond_to?(:to_hash)
           if document['schemas'][ref]
-            return Pointer.new(['schemas', ref], type: 'hax').tap(&block)
+            return self.class.new(['schemas', ref], type: 'hax').tap(&block)
           end
           document['schemas'].each do |k, schema|
             if schema['id'] == ref
-              return Pointer.new(['schemas', k], type: 'hax').tap(&block)
+              return self.class.new(['schemas', k], type: 'hax').tap(&block)
             end
           end
         end
