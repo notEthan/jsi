@@ -206,6 +206,11 @@ module JSI
         Pointer.new(reference_tokens + [token], type: @type)
       end
 
+      # @return [pointer_class] this Pointer, instantiated as the given pointer class
+      def as(pointer_class)
+        pointer_class.new(reference_tokens, type: @type)
+      end
+
       # takes a document and a block. the block is yielded the content of the given document at this
       # pointer's location. the block must result a modified copy of that content (and MUST NOT modify
       # the object it is given). this modified copy of that content is incorporated into a modified copy
