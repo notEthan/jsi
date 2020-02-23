@@ -171,7 +171,7 @@ describe JSI::JSON::Node do
       err = assert_raises(JSI::JSON::Pointer::ReferenceError) do
         root_from_sub.parent_node
       end
-      assert_match(/\Acannot access parent of root pointer: #<JSI::JSON::Pointer/, err.message)
+      assert_equal('cannot access parent of root pointer: JSI::JSON::Pointer[]', err.message)
     end
   end
   describe '#modified_copy' do
