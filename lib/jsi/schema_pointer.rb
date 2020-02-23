@@ -63,31 +63,35 @@ module JSI
     #
     # @param document [#to_hash, #to_ary, Object] document containing the schema this pointer points to
     # @param instance [Object] the instance to check any applicators against
+    # @param ignore [Enumerable<JSI::JSON::Pointer>] a Set of Pointers which have already been checked to
+    #   the schema. used to prevent infinite recursion on invalid self-referential schemas.
     # @return [JSI::JSON::Pointer] either a pointer to a *Of subschema in the document,
     #   or self if no other subschema was matched
-    def schema_match_ptrs_to_instance(document, instance)
-      ptr = self
-      schema = ptr.evaluate(document)
+    def schema_match_ptrs_to_instance(document, instance, ignore: [])
+      return(Set[self]) if ignore.include?(self)
 
       Set.new.tap do |ptrs|
+        ptr = self
+        schema = ptr.evaluate(document)
+
         if schema.respond_to?(:to_hash)
           if schema['$ref'].respond_to?(:to_str)
             ptr.deref(document) do |deref_ptr|
-              ptrs.merge(deref_ptr.schema_match_ptrs_to_instance(document, instance))
+              ptrs.merge(deref_ptr.schema_match_ptrs_to_instance(document, instance, ignore: ignore + [self]))
             end
           else
             ptrs << ptr
           end
           if schema['allOf'].respond_to?(:to_ary)
             schema['allOf'].each_index do |i|
-              ptrs.merge(ptr['allOf'][i, as: self.class].schema_match_ptrs_to_instance(document, instance))
+              ptrs.merge(ptr['allOf'][i, as: self.class].schema_match_ptrs_to_instance(document, instance, ignore: ignore))
             end
           end
           if schema['anyOf'].respond_to?(:to_ary)
             schema['anyOf'].each_index do |i|
               valid = ptr['anyOf'][i, as: self.class].schema_validate(document, JSI::JSON::Pointer[], instance, validate_only: true).valid?
               if valid
-                ptrs.merge(ptr['anyOf'][i, as: self.class].schema_match_ptrs_to_instance(document, instance))
+                ptrs.merge(ptr['anyOf'][i, as: self.class].schema_match_ptrs_to_instance(document, instance, ignore: ignore))
               end
             end
           end
@@ -96,7 +100,7 @@ module JSI
               ptr['oneOf'][i, as: self.class].schema_validate(document, JSI::JSON::Pointer[], instance, validate_only: true).valid?
             end
             if one_i
-              ptrs.merge(ptr['oneOf'][one_i, as: self.class].schema_match_ptrs_to_instance(document, instance))
+              ptrs.merge(ptr['oneOf'][one_i, as: self.class].schema_match_ptrs_to_instance(document, instance, ignore: ignore))
             end
           end
           # TODO dependencies
