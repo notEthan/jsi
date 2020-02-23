@@ -435,6 +435,7 @@ module JSI
               results = instance.each_index.map do |idx|
                 schema_ptr['contains', as: self.class].schema_validate(schema_document, instance_ptr[idx], instance_document, validate_only: validate_only, ignore: ignore)
               end
+# TODO passing results is not quite right
               validate.(results.select(&:valid?).size <= value, 'instance array contains more items valid against the `contains` schema than the `maxContains` value', keyword, results: results)
             end
           else
@@ -604,6 +605,7 @@ module JSI
           value = schema[keyword]
           # This keyword's value MUST be a valid JSON Schema.
           # An instance is valid against this keyword if it fails to validate successfully against the schema defined by this keyword.
+# TODO schema_error will not include `not` schema errors
           not_valid = schema_ptr['not', as: self.class].schema_validate(schema_document, instance_ptr, instance_document, validate_only: true, ignore: ignore).valid?
           validate.(!not_valid, 'instance validated against the schema defined by `not` value', keyword)
         end
@@ -617,6 +619,7 @@ module JSI
 
           # This keyword's value MUST be a valid JSON Schema.
           # This validation outcome of this keyword's subschema has no direct effect on the overall validation result. Rather, it controls which of the "then" or "else" keywords are evaluated.
+# TODO schema_error will not include `if` schema errors
           if_valid = schema_ptr['if', as: self.class].schema_validate(schema_document, instance_ptr, instance_document, validate_only: true, ignore: ignore).valid?
           if if_valid
             if schema.key?('then')
