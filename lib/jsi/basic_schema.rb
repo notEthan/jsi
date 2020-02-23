@@ -189,7 +189,7 @@ module JSI
     # @param instance_document [#to_hash, #to_ary, Object] document containing the instance instance_ptr pointer points to
     # @param validate_only [Boolean] whether to return a SchemaApplicationResult or a SchemaValidResult
     # @return [SchemaApplicationResult, SchemaValidResult]
-    def validate(instance_ptr, instance_document, validate_only: false)
+    def validate(instance_ptr, instance_document, validate_only: false, visited_refs: [])
       instance = instance_ptr.evaluate(instance_document)
 
       if validate_only
@@ -250,7 +250,7 @@ module JSI
           value = schema_content[keyword]
 
           schema_ptr.deref(schema_document) do |deref_ptr|
-            ref_result = deref_ptr.validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+x
             validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$ref` value', keyword, results: [ref_result])
           end
         end
@@ -260,7 +260,7 @@ module JSI
           value = schema_content[keyword]
 
           schema_ptr.deref(schema_document) do |deref_ptr|
-            ref_result = deref_ptr.validate(schema_document, instance_ptr, instance_document, validate_only: validate_only)
+x
             validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$recursiveRef` value', keyword, results: [ref_result])
           end
         end
@@ -864,7 +864,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           # If the instance is an object, this keyword validates if every property name in the instance validates against the provided schema. Note the property name that the schema is testing will always be a string.
           if instance.respond_to?(:to_hash)
             results = instance.keys.map do |property_name|
-              self['propertyNames'].validate(JSI::JSON::Pointer[], property_name, validate_only: validate_only)
+              self['propertyNames'].validate(JSI::JSON::Pointer[], property_name, validate_only: validate_only, visited_refs: visited_refs)
             end
             validate.(results.all?(&:valid?), 'instance object property names do not all validate against `propertyNames` schema value', keyword, results: results)
           end
