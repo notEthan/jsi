@@ -15,7 +15,9 @@ Note: The canonical location of this README is on [RubyDoc](http://rubydoc.info/
 
 ## Example
 
-Words are boring, let's code. Here's a schema in yaml:
+Words are boring, let's code. You can follow along from the code blocks - install the gem (`gem install jsi`), load an irb (`irb -r jsi`), and copy/paste/hack.
+
+Here's a schema in yaml:
 
 ```yaml
 $schema: "http://json-schema.org/draft-07/schema"
@@ -91,7 +93,7 @@ bill.phone.map(&:location)
 # => ["home"]
 ```
 
-We also get validations, as you'd expect given that's largely what json-schema exists to do:
+We also get validations, as you'd expect given that's largely what JSON Schema exists to do:
 
 ```ruby
 bill.jsi_valid?
@@ -190,7 +192,7 @@ bill['name']
 
 For `#name` and `#name=`, we're overriding existing accessor methods. note the use of `super` - this invokes the accessor methods defined by JSI which these override. You could alternatively use `self['name']` and `self['name']=` in these methods, with the same effect as `super`.
 
-Working with subschemas is just about as easy as with root schemas.
+Working with subschemas to add methods is just about as easy as with root schemas.
 
 You can subscript or use property accessors on a JSI schema module to refer to the schema modules of its subschemas, e.g.:
 
@@ -211,8 +213,7 @@ bill.phone.first.number_with_dashes
 # => "5-5-5"
 ```
 
-A recommended convention for naming subschemas is to define them in the namespace of the module of their
-parent schema. The module can then be opened to add methods to the subschema's module.
+A recommended convention for naming subschemas is to define them in the namespace of the module of their parent schema. The module can then be opened to add methods to the subschema's module.
 
 ```ruby
 module Contact
@@ -282,7 +283,7 @@ class User < ActiveRecord::Base
 end
 ```
 
-Now `user.contact_info` will be instantiated as a `Contact` JSI instance, from the JSON type in the database, with Contact's accessors, validations, and user-defined instance methods.
+Now `user.contact_info` will be instantiated as a `Contact` JSI instance, from the JSON type in the database, with Contact's accessors, validations, and application-defined instance methods.
 
 See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize the dumped JSON-compatible objects further as text.
 
