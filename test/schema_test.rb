@@ -229,4 +229,59 @@ describe JSI::Schema do
       end
     end
   end
+  describe 'infinite loops' do
+    describe 'self-referential' do
+      let(:schema) do
+        JSI::Schema.new({
+          '$ref' => '#',
+        })
+      end
+      it "doesn't choke" do
+        result = schema.new_jsi({}).jsi_validate
+        assert_equal(true, result.valid?)
+        assert_equal(Set[], result.validation_errors)
+        assert_equal(Set[], result.annotations)
+        assert_equal(Set[
+          {
+            :message => "self-referential schema structure",
+            :keyword => "$ref",
+            :schema_ptr => JSI::SchemaPointer[], :schema_document => schema.jsi_document,
+          },
+        ], result.schema_errors)
+      end
+    end
+    describe 'mutually self-referential' do
+      let(:schema) do
+        JSI::Schema.new({
+          'definitions' => {
+            'alice' => {
+              '$ref' => '#/definitions/bob',
+            },
+            'bob' => {
+              '$ref' => '#/definitions/alice',
+            },
+          },
+          'allOf' => [{'$ref' => '#/definitions/alice'}, {'$ref' => '#/definitions/bob'}],
+        })
+      end
+      it "doesn't choke" do
+        result = schema.new_jsi({}).jsi_validate
+        assert_equal(true, result.valid?)
+        assert_equal(Set[], result.validation_errors)
+        assert_equal(Set[], result.annotations)
+        assert_equal(Set[
+          {
+            :message => "self-referential schema structure",
+            :keyword => "$ref",
+            :schema_ptr => JSI::SchemaPointer['definitions']['alice'], :schema_document => schema.jsi_document,
+          },
+          {
+            :message => "self-referential schema structure",
+            :keyword => "$ref",
+            :schema_ptr => JSI::SchemaPointer['definitions']['bob'], :schema_document => schema.jsi_document,
+          },
+        ], result.schema_errors)
+      end
+    end
+  end
 end
