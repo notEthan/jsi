@@ -4,6 +4,7 @@ module JSI
   class SchemaPointer < JSI::JSON::Pointer
     autoload :Draft04, 'jsi/schema_pointer/draft04'
     autoload :Draft06, 'jsi/schema_pointer/draft06'
+    autoload :Draft201909, 'jsi/schema_pointer/draft201909'
 
     # given this Pointer points to a schema in the given document, returns a set of pointers
     # to subschemas of that schema for the given property name.
