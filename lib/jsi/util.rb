@@ -18,7 +18,7 @@ module JSI
     # the return if you need to ensure it is not the same instance as the
     # argument instance.
     #
-    # @param hash [#to_hash] the hash from which to convert symbol keys to strings
+    # @param hashlike [#to_hash] the hash from which to convert symbol keys to strings
     # @return [same class as the param `hash`, or Hash if the former cannot be done] a
     #    hash(-like) instance containing no symbol keys
     def stringify_symbol_keys(hashlike)
