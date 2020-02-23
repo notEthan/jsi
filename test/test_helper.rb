@@ -95,3 +95,27 @@ class SortOfArray
     {class: self.class, ary: @ary}
   end
 end
+
+class Set
+  def inspect
+    "Set[#{self.map { |e| e.inspect }.join(', ')}]"
+  end
+
+  alias_method :to_s, :inspect
+
+  # pretty-prints a representation this node to the given printer
+  # @return [void]
+  def pretty_print(q)
+    q.text 'Set['
+    q.group_sub {
+      q.nest(2) {
+        q.breakable('')
+        q.seplist(self, nil, :each) { |e|
+          q.pp e
+        }
+      }
+    }
+    q.breakable ''
+    q.text ']'
+  end
+end
