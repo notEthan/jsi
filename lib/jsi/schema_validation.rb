@@ -11,6 +11,18 @@ module JSI
       end
     end
 
+    class Result
+      class Builder
+        def initialize(schema_document, instance_ptr, instance_document, validate_only, return_proc)
+          @schema_document = schema_document
+          @instance_ptr = instance_ptr
+          @instance_document = instance_document
+          @validate_only = validate_only
+          @return_proc = return_proc
+        end
+      end
+    end
+
     # a full result of validating an instance against a schema, with all validation errors, annotations, and schema errors
     class FullResult < Result
       def initialize
