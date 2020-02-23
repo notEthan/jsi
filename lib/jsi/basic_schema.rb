@@ -98,6 +98,7 @@ module JSI
     # returns any applicator subschemas of this schema ($ref, oneOf, anyOf, allOf) which apply to the given instance
     #
     # @param instance [Object] the instance to check any applicators against
+    # @param visited_refs [Enumerable<JSI::SchemaRef>]
     # @return [Set<JSI::BasicSchema>] matched applicator subschemas
     def match_to_instance(instance, visited_refs: [])
       Set.new.tap do |schemas|
