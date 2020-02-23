@@ -135,6 +135,40 @@ describe 'unsupported behavior' do
     end
   end
 
+  describe("cyclical $ref application") do
+    describe("self-referential") do
+      let(:schema_content) do
+        {
+          '$ref' => '#',
+        }
+      end
+
+      it("doesn't choke") do
+        assert(subject.jsi_valid?)
+      end
+    end
+
+    describe("mutually self-referential") do
+      let(:schema_content) do
+        {
+          'definitions' => {
+            'alice' => {
+              '$ref' => '#/definitions/bob',
+            },
+            'bob' => {
+              '$ref' => '#/definitions/alice',
+            },
+          },
+          'allOf' => [{'$ref' => '#/definitions/alice'}, {'$ref' => '#/definitions/bob'}],
+        }
+      end
+
+      it("doesn't choke") do
+        assert(subject.jsi_valid?)
+      end
+    end
+  end
+
   describe 'property names which are not strings' do
     ARBITRARY_OBJECT = Object.new
     describe 'arbitrary object property name' do
