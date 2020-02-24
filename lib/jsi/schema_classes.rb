@@ -130,7 +130,17 @@ module JSI
               conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
                 mod.instance_methods + mod.private_instance_methods
               end.inject(Set.new, &:|)
-              accessors_to_define = schema.described_object_property_names.map(&:to_s) - conflicting_instance_methods.map(&:to_s)
+
+              accessors_to_define = schema.described_object_property_names.select do |name|
+                do_define = true
+                # must be a string
+                do_define &&= name.respond_to?(:to_str)
+                # must not conflict with any method on a conflicting module
+                do_define &&= !conflicting_instance_methods.any? { |m| m.to_s == name }
+
+                do_define
+              end
+
               accessors_to_define.each do |property_name|
                 define_method(property_name) do |*a|
                   self[property_name, *a]
