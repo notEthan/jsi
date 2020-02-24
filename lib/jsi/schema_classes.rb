@@ -135,6 +135,10 @@ module JSI
                 do_define = true
                 # must be a string
                 do_define &&= name.respond_to?(:to_str)
+                # must not begin with a digit
+                do_define &&= name !~ /\A[0-9]/
+                # must not contain characters special to ruby syntax
+                do_define &&= name !~ /[\\\s\#;\.,\(\)\[\]\{\}'"`%\+\-\/\*\^\|&=<>\?:!@\$~]/
                 # must not conflict with any method on a conflicting module
                 do_define &&= !conflicting_instance_methods.any? { |m| m.to_s == name }
 
