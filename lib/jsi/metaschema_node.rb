@@ -80,7 +80,7 @@ module JSI
         doc_ptrs_for_instance
       end
 
-      if schema_ptrs.include?(metaschema_root_ptr)
+      if schema_doc_ptrs.any? { |doc_ptr| doc_ptr[:ptr] == metaschema_root_ptr }
         @jsi_ptr = jsi_ptr.as(JSI::SchemaPointer)
       end
 
@@ -131,13 +131,13 @@ module JSI
 
     # @return [Array<MetaschemaNode>] an array of MetaschemaNode instances, one at the root of each of
     #   our schema_documents. if schema_documents is not set, returns one MetaschemaNode at the root of our
-    #   node_document.
+    #   jsi_document.
     def metaschema_root_nodes
-      (schema_documents || node_document).map do |schema_document|
-        if node_document == schema_document && node_ptr == metaschema_root_ptr
+      (schema_documents || jsi_document).map do |schema_document|
+        if jsi_document == schema_document && jsi_ptr == metaschema_root_ptr
           self
         else
-          MetaschemaNode.new(schema_document, our_initialize_params.merge(node_ptr: metaschema_root_ptr))
+          MetaschemaNode.new(schema_document, our_initialize_params.merge(jsi_ptr: metaschema_root_ptr))
         end
       end
     end

@@ -139,7 +139,7 @@ module JSI
     # @return [Enumerable<JSI::Schema>] a collection of JSI::PathedNode JSI::Schema instances
     #   representing this schema
     def jsi_schema_nodes
-      if is_a?(Metaschema) && schema_documents && node_ptr == @metaschema_root_ptr
+      if is_a?(Metaschema) && schema_documents && jsi_ptr == @metaschema_root_ptr
         metaschema_root_nodes
       else
         [self]
@@ -205,7 +205,7 @@ module JSI
     def described_object_property_names
       jsi_memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
-          schema_contents = if is_a?(Metaschema) && schema_documents && node_ptr == metaschema_root_ptr
+          schema_contents = if is_a?(Metaschema) && schema_documents && jsi_ptr == metaschema_root_ptr
             schema_documents.map { |doc| metaschema_root_ptr.evaluate(doc) }
           else
             [jsi_node_content]
