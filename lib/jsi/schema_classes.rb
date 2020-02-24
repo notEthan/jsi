@@ -66,7 +66,7 @@ module JSI
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
               schema.jsi_schemas.each do |schema_schema|
-                extend(JSI::SchemaClasses.accessor_module_for_schema(schema_schema, conflicting_modules: [Module, SchemaModule, SchemaModulePossibly]))
+                extend(JSI::SchemaClasses.accessor_module_for_schema(schema_schema, conflicting_modules: [Module, SchemaModule, SchemaModulePossibly], setters: false))
               end
             end
           end
@@ -79,11 +79,11 @@ module JSI
       #   will not be defined as accessors.
       # @return [Module] a module of accessors (setters and getters) for described property names of the given
       #   schema
-      def accessor_module_for_schema(schema, conflicting_modules: )
+      def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         unless schema.is_a?(JSI::Schema)
           raise(JSI::Schema::NotASchemaError, "not a schema: #{schema.pretty_inspect.chomp}")
         end
-        jsi_memoize(:accessor_module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
+        jsi_memoize(:accessor_module_for_schema, schema, conflicting_modules, setters) do |schema, conflicting_modules, setters|
           Module.new.tap do |m|
             m.module_eval do
               conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
@@ -94,8 +94,10 @@ module JSI
                 define_method(property_name) do
                   self[property_name]
                 end
-                define_method("#{property_name}=") do |value|
-                  self[property_name] = value
+                if setters
+                  define_method("#{property_name}=") do |value|
+                    self[property_name] = value
+                  end
                 end
               end
             end
@@ -149,7 +151,7 @@ module JSI
       end
       @possibly_schema_node = node
       node.jsi_schemas.each do |schema|
-        extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly]))
+        extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly], setters: false))
       end
     end
 
