@@ -14,11 +14,11 @@ module JSI
   #     Preferences = JSI.class_for_schema(preferences_json_schema)
   #     class Foo < ActiveRecord::Base
   #       # as a single serializer, loads a Preferences instance from a json column
-  #       serialize 'preferences', JSI::JSICoder.new(Preferences)
+  #       serialize 'preferences_json', JSI::JSICoder.new(Preferences)
   #
   #       # for a text column, arms_serialize will go from JSI to JSON-compatible
   #       # objects to a string. the symbol `:jsi` is a shortcut for JSI::JSICoder.
-  #       arms_serialize 'preferences', [:jsi, Preferences], :json
+  #       arms_serialize 'preferences_txt', [:jsi, Preferences], :json
   #     end
   #
   # the column data may be either a single instance of the schema class
