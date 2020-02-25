@@ -182,22 +182,6 @@ module JSI
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
     end
 
-    # an array of JSI instances above this one in the document.
-    #
-    # @param include_self [Boolean] whether to include this node in the array of parents
-    # @return [Array<JSI::Base>]
-    def jsi_parent_nodes(include_self: false)
-      [].tap do |nodes|
-        parent = jsi_root_node
-
-        jsi_ptr.reference_tokens.each do |token|
-          nodes.unshift(parent)
-          parent = parent[token]
-        end.reverse
-        nodes.unshift(self) if include_self
-      end
-    end
-
     # the immediate parent of this JSI. nil if there is no parent.
     #
     # @return [JSI::Base, nil]
