@@ -5,6 +5,7 @@ require "pp"
 require "set"
 require "json"
 require "pathname"
+require "bigdecimal"
 require "addressable/uri"
 
 require "jsi/json-schema-fragments"

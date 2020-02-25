@@ -10,8 +10,18 @@ module JSI
         if value.is_a?(Numeric) && value > 0
           # A numeric instance is valid only if division by this keyword's value results in an integer.
           if result_builder.instance.is_a?(Numeric)
+            if result_builder.instance.is_a?(Integer) && value.is_a?(Integer)
+              valid = result_builder.instance % value == 0
+            else
+              quotient = result_builder.instance / value
+              if quotient.finite?
+                valid = quotient % 1.0 == 0.0
+              else
+                valid = BigDecimal(result_builder.instance, Float::DIG) % BigDecimal(value, Float::DIG) == 0
+              end
+            end
             result_builder.validate(
-              result_builder.instance % value == 0,
+              valid,
               'instance is not a multiple of `multipleOf` value',
               keyword: 'multipleOf',
             )
