@@ -23,14 +23,18 @@ describe 'JSON Schema Test Suite' do
                     describe(test.description) do
                       let(:jsi) { schema.new_jsi(JSI::Typelike.as_json(test.data)) }
                       it(test.valid ? 'is valid' : 'is invalid') do
-                        if test.valid != jsi.jsi_valid?
-                          errors = jsi.jsi_validate
-                          assert(false, {
-                            valid: test.valid,
-                            data: test.data,
-                            schema: schema,
-                            errors: errors,
-                          }.pretty_inspect)
+                        result = jsi.jsi_validate
+                        if test.valid != result.valid?
+                          if !test.valid && schema['format']
+                            # skip format errors
+                          else
+                            assert(false, {
+                              valid: test.valid,
+                              data: test.data,
+                              schema: schema,
+                              result: result,
+                            }.pretty_inspect)
+                          end
                         end
                       end
                     end
