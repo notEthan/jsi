@@ -184,15 +184,18 @@ module JSI
 
     # an array of JSI instances above this one in the document.
     #
+    # @param include_self [Boolean] whether to include this node in the array of parents
     # @return [Array<JSI::Base>]
-    def jsi_parent_nodes
-      parent = jsi_root_node
+    def jsi_parent_nodes(include_self: false)
+      [].tap do |nodes|
+        parent = jsi_root_node
 
-      jsi_ptr.reference_tokens.map do |token|
-        parent.tap do
+        jsi_ptr.reference_tokens.each do |token|
+          nodes.unshift(parent)
           parent = parent[token]
-        end
-      end.reverse
+        end.reverse
+        nodes.unshift(self) if include_self
+      end
     end
 
     # the immediate parent of this JSI. nil if there is no parent.
