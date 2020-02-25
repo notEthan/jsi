@@ -340,7 +340,11 @@ x
           if value.is_a?(Numeric) && value > 0
             # A numeric instance is valid only if division by this keyword's value results in an integer.
             if instance.is_a?(Numeric)
-              validate.(instance % value == 0, 'instance is not a multiple of `multipleOf` value', keyword)
+              if instance.is_a?(Integer) && value.is_a?(Integer)
+                result_validate.(instance % value == 0, 'instance is not a multiple of `multipleOf` value', keyword)
+              else
+                result_validate.((instance / value) % 1.0 == 0.0, 'instance is not a multiple of `multipleOf` value', keyword)
+              end
             end
           else
             schema_error.('`multipleOf` is not a number greater than 0', keyword)
