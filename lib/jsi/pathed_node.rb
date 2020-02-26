@@ -6,7 +6,6 @@ module JSI
   # - #jsi_ptr [JSI::JSON::Pointer] returning a pointer for the node path in the document
   # - #jsi_root_node [JSI::PathedNode] returning a PathedNode pointing at the document root
   # - #jsi_parent_node [JSI::PathedNode] returning the parent node of this PathedNode
-  # - #deref [JSI::PathedNode] following a $ref
   #
   # given these, this module represents the node in the document at the path.
   #
@@ -16,12 +15,6 @@ module JSI
     def jsi_node_content
       content = jsi_ptr.evaluate(jsi_document)
       content
-    end
-
-    # @yield [JSI::JSON::Pointer] if a block is given (optional), this will yield a deref'd pointer
-    # @return [JSI::JSON::Pointer] our jsi_ptr, derefed against our jsi_document
-    def jsi_ptr_deref(&block)
-      jsi_ptr.deref(jsi_document, &block)
     end
   end
 

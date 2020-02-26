@@ -267,49 +267,6 @@ module JSI
         modified_document
       end
 
-      # if this Pointer points at a $ref node within the given document, #deref attempts
-      # to follow that $ref and return a Pointer to the referenced location. otherwise,
-      # this Pointer is returned.
-      #
-      # if the content this Pointer points to in the document is not hash-like, does not
-      # have a $ref property, its $ref cannot be found, or its $ref points outside the document,
-      # this pointer is returned.
-      #
-      # @param document [Object] the document this pointer applies to
-      # @yield [Pointer] if a block is given (optional), this will yield a deref'd pointer. if this
-      #   pointer does not point to a $ref object in the given document, the block is not called.
-      #   if we point to a $ref which cannot be followed (e.g. a $ref to an external
-      #   document, which is not yet supported), the block is not called.
-      # @return [Pointer] dereferenced pointer, or this pointer
-      def deref(document, &block)
-        block ||= Util::NOOP
-        content = evaluate(document)
-
-        if content.respond_to?(:to_hash)
-          ref = (content.respond_to?(:[]) ? content : content.to_hash)['$ref']
-        end
-        return self unless ref.is_a?(String)
-
-        if ref[/\A#/]
-          return Pointer.from_fragment(Addressable::URI.parse(ref).fragment).tap(&block)
-        end
-
-        # HAX for how google does refs and ids
-        if document['schemas'].respond_to?(:to_hash)
-          if document['schemas'][ref]
-            return Pointer.new(['schemas', ref]).tap(&block)
-          end
-          document['schemas'].each do |k, schema|
-            if schema['id'] == ref
-              return Pointer.new(['schemas', k]).tap(&block)
-            end
-          end
-        end
-
-        #raise(NotImplementedError, "cannot dereference #{ref}") # TODO
-        return self
-      end
-
       # @return [String] a string representation of this Pointer
       def inspect
         "#{self.class.name}[#{reference_tokens.map(&:inspect).join(", ")}]"

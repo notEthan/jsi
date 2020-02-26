@@ -305,20 +305,6 @@ module JSI
       end
     end
 
-    # if this JSI is a $ref then the $ref is followed. otherwise this JSI
-    # is returned.
-    #
-    # @yield [JSI::Base] if a block is given (optional), this will yield a deref'd JSI. if this
-    #   JSI is not a $ref object, the block is not called. if we are a $ref which cannot be followed
-    #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
-    # @return [JSI::Base, self]
-    def deref(&block)
-      jsi_ptr_deref do |deref_ptr|
-        deref_ptr.evaluate(jsi_root_node).tap(&(block || Util::NOOP))
-      end
-      return self
-    end
-
     # @return [Set<Module>] the set of JSI schema modules corresponding to the schemas that describe this JSI
     def jsi_schema_modules
       jsi_schemas.map(&:jsi_schema_module).to_set

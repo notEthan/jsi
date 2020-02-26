@@ -197,15 +197,6 @@ module JSI
       result
     end
 
-    # if this MetaschemaNode is a $ref then the $ref is followed. otherwise this MetaschemaNode is returned.
-    # @return [MetaschemaNode]
-    def deref(&block)
-      jsi_ptr_deref do |deref_ptr|
-        return new_node(jsi_ptr: deref_ptr).tap(&(block || Util::NOOP))
-      end
-      return self
-    end
-
     # @yield [Object] the node content of the instance. the block should result
     #   in a (nondestructively) modified copy of this.
     # @return [MetaschemaNode] modified copy of self
