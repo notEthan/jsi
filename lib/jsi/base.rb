@@ -324,7 +324,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
         end
-        self.class.new(Base::NOINSTANCE, jsi_document: modified_jsi_root_node.jsi_document, jsi_ptr: @jsi_ptr, jsi_root_node: modified_jsi_root_node)
+        @jsi_ptr.evaluate(modified_jsi_root_node)
       end
     end
 
