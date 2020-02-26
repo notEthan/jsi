@@ -307,7 +307,7 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def jsi_modified_copy(&block)
-      if jsi_ptr.root?
+      if @jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         self.class.new(Base::NOINSTANCE,
           jsi_document: modified_document,
