@@ -79,6 +79,16 @@ module JSI
       alias_method :new, :from_object
     end
 
+    # @return [String, nil] the id of this schema, if any is specified, according to the $id field
+    #   or (with older json schema drafts) the id field.
+    def id
+      if jsi_node_content.respond_to?(:to_hash)
+        jsi_node_content.key?('$id') && jsi_node_content['$id'].respond_to?(:to_str) ? jsi_node_content['$id'].to_str :
+          jsi_node_content.key?('id') && jsi_node_content['id'].respond_to?(:to_str) ? jsi_node_content['id'].to_str :
+          nil
+      end
+    end
+
     # @return [String, nil] an absolute id for the schema, with a json pointer fragment. nil if
     #   no parent of this schema defines an id.
     def schema_id
