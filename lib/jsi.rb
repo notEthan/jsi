@@ -25,6 +25,7 @@ module JSI
   RESOURCES_PATH = ROOT_PATH.join('resources')
 
   autoload :JSON, 'jsi/json'
+  autoload :SchemaRef, 'jsi/schema_ref'
   autoload :PathedNode, 'jsi/pathed_node'
   autoload :Typelike, 'jsi/typelike_modules'
   autoload :Hashlike, 'jsi/typelike_modules'
