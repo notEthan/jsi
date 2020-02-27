@@ -34,6 +34,42 @@ module JSI
         def schema_warning(message, keyword = nil)
           schema_issue(:warning, message, keyword)
         end
+
+        # @param subschema_ptr [JSI::Ptr, #to_ary]
+        # @return [JSI::Validation::Result]
+        def inplace_subschema_validate(subschema_ptr)
+          subresult = schema.subschema(subschema_ptr).internal_validate_instance(
+            instance_ptr,
+            instance_document,
+            validate_only: validate_only,
+            visited_refs: visited_refs,
+          )
+          merge_schema_issues(subresult)
+          subresult
+        end
+
+        # @param subschema_ptr [JSI::Ptr, #to_ary]
+        # @param subinstance_ptr [JSI::Ptr, #to_ary]
+        # @return [JSI::Validation::Result]
+        def child_subschema_validate(subschema_ptr, subinstance_ptr)
+          subresult = schema.subschema(subschema_ptr).internal_validate_instance(
+            instance_ptr + subinstance_ptr,
+            instance_document,
+            validate_only: validate_only,
+          )
+          merge_schema_issues(subresult)
+          subresult
+        end
+
+        # @param other_result [JSI::Validation::Result]
+        # @return [Void]
+        def merge_schema_issues(other_result)
+          unless validate_only
+            # schema_issues are always merged from subschema results (not depending on validation results)
+            result.schema_issues.merge(other_result.schema_issues)
+          end
+          nil
+        end
       end
 
       def builder(schema, instance_ptr, instance_document, validate_only, visited_refs)
