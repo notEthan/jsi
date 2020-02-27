@@ -82,10 +82,23 @@ module JSI
     # @return [String, nil] the id of this schema, if any is specified, according to the $id field
     #   or (with older json schema drafts) the id field.
     def id
-      if jsi_node_content.respond_to?(:to_hash)
-        jsi_node_content.key?('$id') && jsi_node_content['$id'].respond_to?(:to_str) ? jsi_node_content['$id'].to_str :
-          jsi_node_content.key?('id') && jsi_node_content['id'].respond_to?(:to_str) ? jsi_node_content['id'].to_str :
+      dopn = jsi_schemas.map(&:described_object_property_names).inject(Set.new, &:|)
+      idk = %w($id id).detect { |k| dopn.include?(k) }
+      if idk
+        content = jsi_node_content
+        if content.key?(idk)
+          if content[idk].respond_to?(:to_str)
+            content[idk].to_str
+          else
+            # invalid non-string in the id field
+            nil
+          end
+        else
           nil
+        end
+      else
+        # this should not ever happen
+        nil
       end
     end
 
