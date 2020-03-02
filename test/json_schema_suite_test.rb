@@ -9,13 +9,13 @@ describe 'JSON Schema Test Suite' do
       {name: 'draft6', metaschema: JSI::JSONSchemaOrgDraft06.schema},
     ]
     drafts.each do |name: , metaschema: |
-      describe(name) do
-        draft_dir = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests').join(name)
-        JSI::Util.ycomb do |rec|
-          proc do |path|
-            if path.directory?
-              path.children.each(&rec)
-            elsif path.file? && path.to_s =~ /\.json\z/
+      JSI::Util.ycomb do |rec|
+        proc do |subpath|
+          path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests').join(*subpath)
+          if path.directory?
+            path.children(with_directory = false).each { |c| rec.call(subpath + [c]) }
+          elsif path.file? && path.to_s =~ /\.json\z/
+            describe(subpath.join('/')) do
               JSONSchemaTestSchema.new_jsi(::JSON.parse(path.read)).map do |tests_desc|
                 describe(tests_desc.description) do
                   let(:schema) { metaschema.new_jsi(JSI::Typelike.as_json(tests_desc['schema'])) }
@@ -43,8 +43,8 @@ describe 'JSON Schema Test Suite' do
               end
             end
           end
-        end.call(draft_dir)
-      end
+        end
+      end.call([name])
     end
   end
 end
