@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'addressable/uri'
-
 module JSI
   module JSON
     # a JSON Pointer, as described by RFC 6901 https://tools.ietf.org/html/rfc6901

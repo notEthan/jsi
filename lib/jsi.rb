@@ -3,9 +3,14 @@
 require "jsi/version"
 require "pp"
 require "set"
+require "json"
 require "pathname"
+require "addressable/uri"
+
 require "jsi/json-schema-fragments"
+
 require "jsi/util"
+require "jsi/typelike_modules"
 
 module JSI
   # generally put in code paths that are not expected to be valid control flow paths.

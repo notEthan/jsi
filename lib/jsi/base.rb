@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'jsi/typelike_modules'
-
 module JSI
   # the base class for representing and instantiating a JSON Schema.
   #
