@@ -187,7 +187,7 @@ module JSI
     # @return [Array<String>]
     def object_group_text
       if schema
-        class_n_schema = "#{self.class} (#{schema.node_ptr.fragment})"
+        class_n_schema = "#{self.class} (#{schema.node_ptr.uri})"
       else
         class_n_schema = self.class.to_s
       end

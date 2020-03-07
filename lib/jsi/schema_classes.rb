@@ -11,11 +11,11 @@ module JSI
 
     # @return [String]
     def inspect
-      idfrag = schema.schema_id || schema.node_ptr.fragment
+      uri = schema.schema_id || schema.node_ptr.uri
       if name
-        "#{name} (#{idfrag})"
+        "#{name} (#{uri})"
       else
-        "(JSI Schema Module: #{idfrag})"
+        "(JSI Schema Module: #{uri})"
       end
     end
 

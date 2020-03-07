@@ -33,28 +33,22 @@ module JSI
 
       # parse a URI-escaped fragment and instantiate as a JSI::JSON::Pointer
       #
-      #     ptr = JSI::JSON::Pointer.from_fragment('#/foo/bar')
-      #     => #<JSI::JSON::Pointer fragment: #/foo/bar>
+      #     ptr = JSI::JSON::Pointer.from_fragment('/foo/bar')
+      #     => #<JSI::JSON::Pointer fragment: /foo/bar>
       #     ptr.reference_tokens
       #     => ["foo", "bar"]
       #
       # with URI escaping:
       #
-      #     ptr = JSI::JSON::Pointer.from_fragment('#/foo%20bar')
-      #     => #<JSI::JSON::Pointer fragment: #/foo%20bar>
+      #     ptr = JSI::JSON::Pointer.from_fragment('/foo%20bar')
+      #     => #<JSI::JSON::Pointer fragment: /foo%20bar>
       #     ptr.reference_tokens
       #     => ["foo bar"]
       #
       # @param fragment [String] a fragment containing a pointer (starting with #)
       # @return [JSI::JSON::Pointer]
       def self.from_fragment(fragment)
-        fragment = Addressable::URI.unescape(fragment)
-        match = fragment.match(/\A#/)
-        if match
-          from_pointer(match.post_match, type: 'fragment')
-        else
-          raise(PointerSyntaxError, "Invalid fragment syntax in #{fragment.inspect}: fragment must begin with #")
-        end
+        from_pointer(Addressable::URI.unescape(fragment), type: 'fragment')
       end
 
       # parse a pointer string and instantiate as a JSI::JSON::Pointer
@@ -137,7 +131,12 @@ module JSI
 
       # @return [String] the fragment string representation of this Pointer
       def fragment
-        '#' + Addressable::URI.escape(pointer)
+        Addressable::URI.escape(pointer)
+      end
+
+      # @return [Addressable::URI] a URI consisting only of a pointer fragment
+      def uri
+        Addressable::URI.new(fragment: fragment)
       end
 
       # @return [Boolean] whether this pointer points to the root (has an empty array of reference_tokens)
@@ -378,7 +377,7 @@ module JSI
         return self unless ref.is_a?(String)
 
         if ref[/\A#/]
-          return Pointer.from_fragment(ref).tap(&block)
+          return Pointer.from_fragment(Addressable::URI.parse(ref).fragment).tap(&block)
         end
 
         # HAX for how google does refs and ids

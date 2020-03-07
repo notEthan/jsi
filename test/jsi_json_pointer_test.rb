@@ -79,18 +79,14 @@ describe JSI::JSON::Pointer do
         '#/%20',        7,
         '#/m~0n',       8,
       ]
-      evaluations.each_slice(2) do |fragment, value|
-        assert_equal(value, JSI::JSON::Pointer.from_fragment(fragment).evaluate(document))
+      evaluations.each_slice(2) do |uri, value|
+        assert_equal(value, JSI::JSON::Pointer.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(document))
       end
     end
 
     it 'raises for invalid syntax' do
       err = assert_raises(JSI::JSON::Pointer::PointerSyntaxError) do
-        JSI::JSON::Pointer.from_fragment("this does not begin with #").evaluate(document)
-      end
-      assert_equal("Invalid fragment syntax in \"this does not begin with #\": fragment must begin with #", err.message)
-      err = assert_raises(JSI::JSON::Pointer::PointerSyntaxError) do
-        JSI::JSON::Pointer.from_fragment("#this does not begin with slash").evaluate(document)
+        JSI::JSON::Pointer.from_fragment("this does not begin with slash").evaluate(document)
       end
       assert_equal("Invalid pointer syntax in \"this does not begin with slash\": pointer must begin with /", err.message)
     end

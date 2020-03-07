@@ -44,11 +44,11 @@ module JSI
         if !respond_to?(:schema)
           super
         else
-          idfrag = schema_id || schema.node_ptr.fragment
+          uri = schema_id || schema.node_ptr.uri
           if name && !in_schema_classes
-            "#{name} (#{idfrag})"
+            "#{name} (#{uri})"
           else
-            "(JSI Schema Class: #{idfrag})"
+            "(JSI Schema Class: #{uri})"
           end
         end
       end

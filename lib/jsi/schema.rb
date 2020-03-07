@@ -109,14 +109,13 @@ module JSI
           parent_auri = Addressable::URI.parse(parent_id)
           if parent_auri.fragment
             # add onto the fragment
-            parent_id_path = JSI::JSON::Pointer.from_fragment('#' + parent_auri.fragment).reference_tokens
+            parent_id_path = JSI::JSON::Pointer.from_fragment(parent_auri.fragment).reference_tokens
             path_from_id_node = parent_id_path + path_from_id_node
             parent_auri.fragment = nil
           #else: no fragment so parent_id good as is
           end
 
-          fragment = JSI::JSON::Pointer.new(path_from_id_node).fragment
-          schema_id = parent_auri.to_s + fragment
+          schema_id = parent_auri.merge(fragment: JSI::JSON::Pointer.new(path_from_id_node).fragment).to_s
 
           schema_id
         else
