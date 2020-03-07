@@ -17,7 +17,7 @@ describe JSI::JSON::Node do
     end
     it 'initializes, node_document is another Node' do
       err = assert_raises(TypeError) { JSI::JSON::Node.new(JSI::JSON::Node.new({'a' => 'b'}, node_ptr), node_ptr) }
-      assert_equal("node_document of a Node should not be another JSI::JSON::Node: #<JSI::JSON::Node fragment=\"#\" {\"a\"=>\"b\"}>", err.message)
+      assert_equal("node_document of a Node should not be another JSI::JSON::Node: #<JSI::JSON::Node # {\"a\"=>\"b\"}>", err.message)
     end
   end
   describe 'initialization by .new_by_type' do
@@ -214,14 +214,14 @@ describe JSI::JSON::Node do
     let(:node_document) { {'a' => {'c' => ['d', 'e']}} }
     let(:path) { ['a'] }
     it 'inspects' do
-      assert_equal(%Q(#<JSI::JSON::Node fragment="#/a" {"c"=>["d", "e"]}>), node.inspect)
+      assert_equal(%Q(#<JSI::JSON::Node #/a {"c"=>["d", "e"]}>), node.inspect)
     end
   end
   describe '#pretty_print' do
     let(:node_document) { {'a' => {'c' => ['d', 'e']}} }
     let(:path) { ['a'] }
     it 'pretty prints' do
-      assert_equal(%Q(#<JSI::JSON::Node fragment="#/a" {"c"=>["d", "e"]}>), node.pretty_inspect.chomp)
+      assert_equal(%Q(#<JSI::JSON::Node #/a {"c"=>["d", "e"]}>), node.pretty_inspect.chomp)
     end
   end
   describe '#jsi_fingerprint' do

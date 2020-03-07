@@ -155,7 +155,7 @@ module JSI
       def object_group_text
         [
           self.class.inspect,
-          "fragment=#{node_ptr.fragment.inspect}",
+          node_ptr.fragment.to_s,
         ] + (node_content.respond_to?(:object_group_text) ? node_content.object_group_text : [])
       end
 

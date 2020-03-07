@@ -211,13 +211,13 @@ describe JSI::BaseArray do
     describe '#inspect Node' do
       let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
       it 'inspects' do
-        assert_equal("#[<JSI JSI::JSON::ArrayNode fragment=\"#\"> \"foo\", \#{<JSI JSI::JSON::HashNode fragment=\"#/1\"> \"lamp\" => #[<JSI::JSON::ArrayNode fragment=\"#/1/lamp\"> 3]}, #[<JSI JSI::JSON::ArrayNode fragment=\"#/2\"> \"q\", \"r\"], \#{<JSI::JSON::HashNode fragment=\"#/3\"> \"four\" => 4}]", subject.inspect)
+        assert_equal("#[<JSI JSI::JSON::ArrayNode #> \"foo\", \#{<JSI JSI::JSON::HashNode #/1> \"lamp\" => #[<JSI::JSON::ArrayNode #/1/lamp> 3]}, #[<JSI JSI::JSON::ArrayNode #/2> \"q\", \"r\"], \#{<JSI::JSON::HashNode #/3> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print Node' do
       let(:subject) { schema.new_jsi(JSI::JSON::Node.new_doc(instance)) }
       it 'pretty_prints' do
-        assert_equal("#[<JSI JSI::JSON::ArrayNode fragment=\"#\">\n  \"foo\",\n  \#{<JSI JSI::JSON::HashNode fragment=\"#/1\">\n    \"lamp\" => #[<JSI::JSON::ArrayNode fragment=\"#/1/lamp\"> 3]\n  },\n  #[<JSI JSI::JSON::ArrayNode fragment=\"#/2\"> \"q\", \"r\"],\n  \#{<JSI::JSON::HashNode fragment=\"#/3\"> \"four\" => 4}\n]\n", subject.pretty_inspect)
+        assert_equal("#[<JSI JSI::JSON::ArrayNode #>\n  \"foo\",\n  \#{<JSI JSI::JSON::HashNode #/1>\n    \"lamp\" => #[<JSI::JSON::ArrayNode #/1/lamp> 3]\n  },\n  #[<JSI JSI::JSON::ArrayNode #/2> \"q\", \"r\"],\n  \#{<JSI::JSON::HashNode #/3> \"four\" => 4}\n]\n", subject.pretty_inspect)
       end
     end
   end
