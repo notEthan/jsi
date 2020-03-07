@@ -202,7 +202,7 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
+      result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if respond_to?(:to_ary)
           token_schema = schema.subschema_for_index(token)
         else
@@ -240,6 +240,7 @@ module JSI
           end
         end
       end
+      result
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.

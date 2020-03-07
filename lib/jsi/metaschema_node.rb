@@ -134,7 +134,7 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{node_content.pretty_inspect.chomp}")
       end
 
-      jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
+      result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if token_in_range
           value_node = new_node(node_ptr: node_ptr[token])
 
@@ -148,6 +148,7 @@ module JSI
           nil
         end
       end
+      result
     end
 
     # if this MetaschemaNode is a $ref then the $ref is followed. otherwise this MetaschemaNode is returned.
