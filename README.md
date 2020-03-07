@@ -31,7 +31,7 @@ properties:
 Using that schema, we instantiate a JSI::Schema to represent it:
 
 ```ruby
-# this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
+# this would usually load YAML or JSON; it's inlined for copypastability.
 contact_schema = JSI::Schema.new({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
@@ -54,7 +54,7 @@ nickname: big b
 So, if we construct an instance like:
 
 ```ruby
-# this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
+# this would usually load YAML or JSON; it's inlined for copypastability.
 bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
 # => #{<JSI (Contact)>
 #   "name" => "bill",
@@ -77,7 +77,7 @@ bill.name
 # => "bill"
 ```
 
-but also nested accessors - #phone is an instance of its array-type schema, and each phone item is an instance of another object-type schema with location and number accessors:
+but also nested accessors - `#phone` is an instance of its array-type schema, and each phone item is an instance of another object-type schema with `#location` and `#number` accessors:
 
 ```ruby
 bill.phone.map(&:location)
@@ -91,7 +91,7 @@ bill.validate
 # => true
 ```
 
-... and validations on the nested schema instances (#phone here), showing in this example validation failure:
+... and validations on the nested schema instances (`#phone` here), showing in this example validation failure:
 
 ```ruby
 bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
@@ -111,10 +111,11 @@ These validations are done by the [`json-schema` gem](https://github.com/ruby-js
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with `#[]` or, say, `#transform_values`:
 
 ```ruby
-# note that #size here is actually referring to multiple different methods; for name and nickname
-# it is String#size but for phone it is Array#size.
+# note that #size here is actually referring to multiple different methods;
+# for name and nickname it is String#size but for phone it is Array#size.
 bill.transform_values(&:size)
 # => {"name" => 4, "phone" => 1, "nickname" => 5}
+
 bill['nickname']
 # => "big b"
 ```
