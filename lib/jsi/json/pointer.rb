@@ -201,6 +201,18 @@ module JSI
         Pointer.new(reference_tokens + [token], type: @type)
       end
 
+      # @param [Addressable::URI]
+      # @return [Addressable::URI]
+      def uri_append_fragment(uri)
+        if uri.fragment
+          ptr = JSI::JSON::Pointer.from_fragment(uri.fragment) + self
+        else
+          ptr = self
+        end
+
+        uri.merge(fragment: ptr.fragment).to_s
+      end
+
       # takes a document and a block. the block is yielded the content of the given document at this
       # pointer's location. the block must result a modified copy of that content (and MUST NOT modify
       # the object it is given). this modified copy of that content is incorporated into a modified copy
