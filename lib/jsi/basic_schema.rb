@@ -2,6 +2,11 @@
 
 module JSI
   class BasicSchema
+    autoload :Draft04, 'jsi/basic_schema/draft04'
+    autoload :Draft06, 'jsi/basic_schema/draft06'
+    autoload :Draft07, 'jsi/basic_schema/draft07'
+    autoload :Draft201909, 'jsi/basic_schema/draft201909'
+
     include Util::Memoize
     include Util::FingerprintHash
 
