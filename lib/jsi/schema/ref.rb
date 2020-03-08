@@ -30,7 +30,15 @@ module JSI
       if ref_uri_nofrag.empty?
         schema_resource_root = ref_schema.schema_resource_root
       else
-        raise(NotImplementedError, "cannot find schema by uri #{uri}")
+        # find the schema_resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.
+        schema_resource_root = nil
+
+        unless schema_resource_root
+          raise(Schema::ReferenceError, [
+            "cannot find schema by ref: #{ref}",
+            "from schema: #{ref_schema.pretty_inspect.chomp}",
+          ].join("\n"))
+        end
       end
 
       fragment = ref_uri.fragment
