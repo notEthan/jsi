@@ -116,15 +116,14 @@ module JSI
           end
           if schema_content['anyOf'].respond_to?(:to_ary)
             schema_content['anyOf'].each_index do |i|
-              valid = ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr['anyOf'][i].fragment)
-              if valid
+              if self['anyOf', i].valid?(instance)
                 schemas.merge(self['anyOf', i].match_to_instance(instance))
               end
             end
           end
           if schema_content['oneOf'].respond_to?(:to_ary)
             one_i = schema_content['oneOf'].each_index.detect do |i|
-              ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr['oneOf'][i].fragment)
+              self['oneOf', i].valid?(instance)
             end
             if one_i
               schemas.merge(self['oneOf', one_i].match_to_instance(instance))
@@ -135,6 +134,15 @@ module JSI
           schemas << self
         end
       end
+    end
+
+    # indicates whether the given instance validates this schema
+    #
+    # @param instance_ptr [JSI::JSON::Pointer] a pointer to the instance to validate against the schema, in the instance_document
+    # @param instance_document [#to_hash, #to_ary, Object] document containing the instance instance_ptr pointer points to
+    # @return [Boolean]
+    def valid?(instance)
+      ::JSON::Validator.validate(JSI::Typelike.as_json(document), JSI::Typelike.as_json(instance), fragment: ptr.fragment)
     end
 
     # @return [String]
