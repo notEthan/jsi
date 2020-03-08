@@ -3,6 +3,7 @@
 module JSI
   class BasicSchema
     class Draft04 < BasicSchema
+      include Id
     end
   end
 end
