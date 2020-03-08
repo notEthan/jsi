@@ -171,9 +171,60 @@ module JSI
     #
     # @param other_instance [Object] the instance to which to attempt to match *Of subschemas
     # @return [Enumerable<JSI::Schema>] matched applicator subschemas
-    def match_to_instance(other_instance)
-      own_basic_schema.match_to_instance(other_instance).map do |matched_basic_schema|
-        matched_basic_schema.ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, match_basic_schema) }
+    def match_to_instance(other_instance, visited_refs: [], matched: Set[])
+      Set.new.tap do |schemas|
+        schema = self
+
+        if schema.respond_to?(:to_hash)
+          if schema['$ref'].respond_to?(:to_str)
+            keyword = '$ref'
+            ref = SchemaRef.new(own_basic_schema, keyword)
+
+            if visited_refs.include?(ref)
+              schemas << self
+            else
+              deref_schema = ref.deref_schema(self)
+              schemas.merge(deref_schema.match_to_instance(other_instance, visited_refs: visited_refs + [ref]))
+            end
+          end
+          if schema['$recursiveRef'].respond_to?(:to_str)
+            keyword = '$recursiveRef'
+            ref = SchemaRef.new(own_basic_schema, keyword)
+            if visited_refs.include?(ref)
+              schemas << self
+            else
+              deref_schema = ref.deref_schema(self)
+              schemas.merge(deref_schema.match_to_instance(other_instance, visited_refs: visited_refs + [ref]))
+            end
+          end
+          unless ref
+            schemas << self
+          end
+          if schema['allOf'].respond_to?(:to_ary)
+            schema['allOf'].each_index do |i|
+              schemas.merge(schema['allOf'][i].match_to_instance(other_instance, visited_refs: visited_refs))
+            end
+          end
+          if schema['anyOf'].respond_to?(:to_ary)
+            schema['anyOf'].each_index do |i|
+              valid = schema['anyOf'][i].jsi_instance_valid?(other_instance)
+              if valid
+                schemas.merge(schema['anyOf'][i].match_to_instance(other_instance, visited_refs: visited_refs))
+              end
+            end
+          end
+          if schema['oneOf'].respond_to?(:to_ary)
+            one_i = schema['oneOf'].each_index.detect do |i|
+              schema['oneOf'][i].jsi_instance_valid?(other_instance)
+            end
+            if one_i
+              schemas.merge(schema['oneOf'][one_i].match_to_instance(other_instance, visited_refs: visited_refs))
+            end
+          end
+          # TODO dependencies
+        else
+          schemas << self
+        end
       end
     end
 
