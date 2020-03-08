@@ -23,6 +23,8 @@ module JSI
   # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
   # the metaschema is one of its schemas.
   class MetaschemaNode
+    autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
+
     include PathedNode
     include Util::Memoize
 
