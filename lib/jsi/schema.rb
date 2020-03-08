@@ -8,6 +8,10 @@ module JSI
   module Schema
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
 
+    autoload :Draft04, 'jsi/schema/draft04'
+    autoload :Draft06, 'jsi/schema/draft06'
+    autoload :Draft07, 'jsi/schema/draft07'
+
     class Error < StandardError
     end
 
