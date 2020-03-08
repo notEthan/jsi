@@ -27,8 +27,8 @@ module JSI
       # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   consist of this schema.
-      def new_schema(schema_content)
-        new_jsi(schema_content)
+      def new_schema(schema_content, base_uri: nil)
+        new_jsi(schema_content, jsi_schema_base_uri: base_uri)
       end
     end
 
@@ -58,7 +58,7 @@ module JSI
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a schema, it is returned as-is.
       # @return [JSI::Schema] a JSI::Schema representing the given schema_object
-      def new_schema(schema_object)
+      def new_schema(schema_object, base_uri: nil)
         if schema_object.is_a?(Schema)
           schema_object
         elsif schema_object.is_a?(JSI::Base)
@@ -70,12 +70,12 @@ module JSI
             unless metaschema
               raise(NotImplementedError, "metaschema not supported: #{schema_object['$schema']}")
             end
-            metaschema.new_schema(schema_object)
+            metaschema.new_schema(schema_object, base_uri: base_uri)
           else
-            default_metaschema.new_schema(schema_object)
+            default_metaschema.new_schema(schema_object, base_uri: base_uri)
           end
         elsif [true, false].include?(schema_object)
-          default_metaschema.new_schema(schema_object)
+          default_metaschema.new_schema(schema_object, base_uri: base_uri)
         else
           raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
         end
