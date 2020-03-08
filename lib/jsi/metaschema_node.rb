@@ -37,7 +37,8 @@ module JSI
         metaschema_instance_modules: ,
         metaschema_root_ptr: Ptr[],
         root_schema_ptr: Ptr[],
-        jsi_schema_base_uri: nil
+        jsi_schema_base_uri: nil,
+        jsi_root_node: nil
     )
       jsi_initialize_memos
 
@@ -46,6 +47,8 @@ module JSI
       @metaschema_instance_modules = Util.ensure_module_set(metaschema_instance_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
+      raise(Bug, 'jsi_root_node') if jsi_ptr.root? ^ !jsi_root_node
+      @jsi_root_node = jsi_ptr.root? ? self : jsi_root_node
 
       if jsi_ptr.root? && jsi_schema_base_uri
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
@@ -100,10 +103,13 @@ module JSI
       @jsi_schemas = SchemaSet.new(our_bootstrap_schemas) do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == jsi_ptr
           self
+        elsif bootstrap_schema.jsi_ptr.root?
+          @jsi_root_node
         else
           new_node(
             jsi_ptr: bootstrap_schema.jsi_ptr,
             jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
+            jsi_root_node: @jsi_root_node,
           )
         end
       end
@@ -141,19 +147,6 @@ module JSI
     # JSI Schemas describing this MetaschemaNode
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
-
-    # document root MetaschemaNode
-    # @return [MetaschemaNode]
-    def jsi_root_node
-      if jsi_ptr.root?
-        self
-      else
-        new_node(
-          jsi_ptr: Ptr[],
-          jsi_schema_base_uri: nil,
-        )
-      end
-    end
 
     # parent MetaschemaNode
     # @return [MetaschemaNode]
@@ -196,7 +189,15 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [MetaschemaNode] modified copy of self
     def jsi_modified_copy(&block)
-      MetaschemaNode.new(jsi_ptr.modified_document_copy(jsi_document, &block), **our_initialize_params)
+      if jsi_ptr.root?
+        modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
+        MetaschemaNode.new(modified_document, **our_initialize_params)
+      else
+        modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
+          jsi_ptr.modified_document_copy(root, &block)
+        end
+        jsi_ptr.evaluate(modified_jsi_root_node, as_jsi: true)
+      end
     end
 
     # @private
@@ -221,6 +222,7 @@ module JSI
 
     private
 
+    # note: does not include jsi_root_node
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
@@ -231,6 +233,7 @@ module JSI
       }
     end
 
+    # note: not for root node
     def new_node(params)
       MetaschemaNode.new(jsi_document, **our_initialize_params.merge(params))
     end
@@ -240,6 +243,7 @@ module JSI
         new_node(
           jsi_ptr: jsi_ptr[token],
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
+          jsi_root_node: jsi_root_node,
         )
       end
     end
