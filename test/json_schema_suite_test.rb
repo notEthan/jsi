@@ -2,6 +2,26 @@ require_relative 'test_helper'
 
 JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').read))
 
+JSI::Util.ycomb do |rec|
+  proc do |subpath|
+    path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes').join(*subpath)
+
+    if path.directory?
+      path.children(with_directory = false).each { |c| rec.call(subpath + [c.to_s]) }
+    elsif path.file? && path.to_s =~ /\.json\z/
+      remote_content = ::JSON.parse(path.read)
+      uri = File.join('http://localhost:1234/', *subpath)
+      if subpath == ['subSchemas.json']
+        subSchemas_schema = JSI.new_schema({'additionalProperties' => {'$ref' => JSI::Schema.default_metaschema.id}})
+        subSchemas = subSchemas_schema.new_jsi(remote_content, base_uri: uri)
+        JSI.schema_registry.register(subSchemas)
+      else
+        JSI.new_schema(remote_content, base_uri: uri)
+      end
+    end
+  end
+end.call([])
+
 describe 'JSON Schema Test Suite' do
   describe 'validity' do
     drafts = [
