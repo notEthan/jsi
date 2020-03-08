@@ -30,11 +30,13 @@ module JSI
     module DescribesSchema
       # instantiates the given schema content as a JSI Schema.
       #
+      # the schema will be registered with `JSI.schema_registry`.
+      #
       # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   consist of this schema.
       def new_schema(schema_content, base_uri: nil)
-        new_jsi(schema_content, jsi_schema_base_uri: base_uri)
+        new_jsi(schema_content, jsi_schema_base_uri: base_uri).tap(&:register_schema)
       end
     end
 
@@ -174,6 +176,13 @@ module JSI
     #   from this schema.
     def new_jsi(instance, *a, &b)
       JSI.class_for_schemas(match_to_instance(instance)).new(instance, *a, &b)
+    end
+
+    # registers this schema with `JSI.schema_registry`
+    #
+    # @return [void]
+    def register_schema
+      JSI.schema_registry.register(self)
     end
 
     # @return [Boolean] does this schema itself describe a schema?
