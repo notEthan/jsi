@@ -59,7 +59,7 @@ module JSI
           schema_object = JSI.deep_stringify_symbol_keys(schema_object)
           if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
             if schema_object['$schema'] == schema_object['$id'] || schema_object['$schema'] == schema_object['id']
-              MetaschemaNode.new(schema_object)
+              MetaschemaNode.new(schema_object).tap { |schema| schema.jsi_register_schema(schema_id: schema_id) }
             else
               metaschema = supported_metaschemas.detect { |ms| schema_object['$schema'] == ms['$id'] || schema_object['$schema'] == ms['id'] }
               unless metaschema
@@ -148,10 +148,22 @@ module JSI
     #
     # any parameters are passed to JSI::Base#initialize, but none are normally used.
     #
+    # side effects:
+    # - if the instantiated JSI is a {JSI::Schema}, it is registered with `JSI.registered_schemas` (a {JSI::SchemaRegistry})
+    #
+    # @param schema_id [#to_str]
     # @return [JSI::Base] a JSI whose instance is the given instance and whose schemas are matched from this
     #   schema.
-    def new_jsi(other_instance, *a, &b)
-      JSI.class_for_schemas(match_to_instance(other_instance)).new(other_instance, *a, &b)
+    def new_jsi(other_instance, schema_id: nil, **a, &b)
+      JSI.class_for_schemas(match_to_instance(other_instance)).new(other_instance, a, &b).tap do |jsi|
+        if jsi.is_a?(Schema)
+          jsi.jsi_register_schema(schema_id: schema_id)
+        end
+      end
+    end
+
+    def jsi_register_schema(schema_id: nil)
+      JSI.registered_schemas.register(self, schema_id: schema_id)
     end
 
     # @return [Boolean] does this schema itself describe a schema?
