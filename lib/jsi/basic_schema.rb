@@ -209,8 +209,8 @@ module JSI
           result.annotations << {
             keyword: keyword,
             annotation: annotation,
-            schema_ptr: schema_ptr,
-            schema_document: schema_document,
+            schema_ptr: self.ptr,
+            schema_document: self.document,
             instance_ptr: instance_ptr,
             instance_document: instance_document,
           }
@@ -220,13 +220,13 @@ module JSI
           result.schema_errors << {
             message: message,
             keyword: keyword,
-            schema_ptr: schema_ptr,
-            schema_document: schema_document,
+            schema_ptr: self.ptr,
+            schema_document: self.document,
           }
         end
       end
 
-      validate = proc do |valid, message, keyword = nil, results: []|
+      result_validate = proc do |valid, message, keyword = nil, results: []|
         if validate_only
           unless valid
             return JSI::SchemaValidation::INVALID
@@ -238,8 +238,8 @@ module JSI
             result.validation_errors << {
               message: message,
               keyword: keyword,
-              schema_ptr: schema_ptr,
-              schema_document: schema_document,
+              schema_ptr: self.ptr,
+              schema_document: self.document,
               instance_ptr: instance_ptr,
               instance_document: instance_document,
             }
@@ -260,15 +260,23 @@ module JSI
       if schema_content == true
         # (noop)
       elsif schema_content == false
-        validate.(false, "false schema")
+        result_validate.(false, "false schema")
       elsif schema_content.respond_to?(:to_hash)
         if schema_content.key?('$ref')
           keyword = '$ref'
           value = schema_content[keyword]
 
-          schema_ptr.deref(schema_document) do |deref_ptr|
-x
-            validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$ref` value', keyword, results: [ref_result])
+          if value.respond_to?(:to_str)
+            schema_ref = SchemaRef.new(self, keyword)
+
+            if visited_refs.include?(schema_ref)
+              schema_error.('self-referential schema structure', keyword)
+            else
+              ref_result = schema_ref.deref_basic_schema.validate(instance_ptr, instance_document, validate_only: validate_only, visited_refs: visited_refs + [schema_ref])
+              result_validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$ref` value', keyword, results: [ref_result])
+            end
+          else
+            schema_error.("`$ref` is not a string", keyword)
           end
         end
 
@@ -276,9 +284,17 @@ x
           keyword = '$recursiveRef'
           value = schema_content[keyword]
 
-          schema_ptr.deref(schema_document) do |deref_ptr|
-x
-            validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$recursiveRef` value', keyword, results: [ref_result])
+          if value.respond_to?(:to_str)
+            schema_ref = SchemaRef.new(self, keyword)
+
+            if visited_refs.include?(schema_ref)
+              schema_error.('self-referential schema structure', keyword)
+            else
+              ref_result = schema_ref.deref_basic_schema.validate(instance_ptr, instance_document, validate_only: validate_only, visited_refs: visited_refs + [schema_ref])
+              result_validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$recursiveRef` value', keyword, results: [ref_result])
+            end
+          else
+            schema_error.("`$recursiveRef` is not a string", keyword)
           end
         end
 
@@ -308,13 +324,13 @@ x
                 when 'integer'
                   instance.is_a?(Integer) || (instance.is_a?(Numeric) && instance % 1.0 == 0.0)
                 else
-                  schema_error.("`type` must be one of: null, boolean, object, array, string, number, or integer", keyword)
+                  schema_error.("`type` is not one of: null, boolean, object, array, string, number, or integer", keyword)
                 end
               else
                 schema_error.("`type` is not a string at index #{i}", keyword)
               end
             end
-            validate.(matched_type, 'instance type does not match `type` value', keyword)
+            result_validate.(matched_type, 'instance type does not match `type` value', keyword)
           else
             schema_error.('`type` is not a string or array', keyword)
           end
@@ -329,7 +345,7 @@ x
           if value.respond_to?(:to_ary)
             # An instance validates successfully against this keyword if its value is equal to one of the
             # elements in this keyword's array value.
-            validate.(value.include?(instance), 'instance is not equal to any `enum` value', keyword)
+            result_validate.(value.include?(instance), 'instance is not equal to any `enum` value', keyword)
           else
             schema_error.('`enum` is not an array', keyword)
           end
@@ -342,7 +358,7 @@ x
           # The value of this keyword MAY be of any type, including null.
           # An instance validates successfully against this keyword if its value is equal to the value of
           # the keyword.
-          validate.(instance == value, 'instance is not equal to `const` value', keyword)
+          result_validate.(instance == value, 'instance is not equal to `const` value', keyword)
         end
 
         # 6.2. Validation Keywords for Numeric Instances (number and integer)
@@ -375,7 +391,7 @@ x
             # If the instance is a number, then this keyword validates only if the instance is less than
             # or exactly equal to "maximum".
             if instance.is_a?(Numeric)
-              validate.(instance <= value, 'instance is not less than or equal to `maximum` value', keyword)
+              result_validate.(instance <= value, 'instance is not less than or equal to `maximum` value', keyword)
             end
           else
             schema_error.('`maximum` is not a number', keyword)
@@ -390,7 +406,7 @@ x
           if value.is_a?(Numeric)
             # If the instance is a number, then the instance is valid only if it has a value strictly less than (not equal to) "exclusiveMaximum".
             if instance.is_a?(Numeric)
-              validate.(instance < value, 'instance is not less than `exclusiveMaximum` value', keyword)
+              result_validate.(instance < value, 'instance is not less than `exclusiveMaximum` value', keyword)
             end
           else
             schema_error.('`exclusiveMaximum` is not a number', keyword)
@@ -405,7 +421,7 @@ x
           if value.is_a?(Numeric)
             # If the instance is a number, then this keyword validates only if the instance is greater than or exactly equal to "minimum".
             if instance.is_a?(Numeric)
-              validate.(instance >= value, 'instance is not greater than or equal to `minimum` value', keyword)
+              result_validate.(instance >= value, 'instance is not greater than or equal to `minimum` value', keyword)
             end
           else
             schema_error.('`minimum` is not a number', keyword)
@@ -420,7 +436,7 @@ x
           if value.is_a?(Numeric)
             # If the instance is a number, then the instance is valid only if it has a value strictly greater than (not equal to) "exclusiveMinimum".
             if instance.is_a?(Numeric)
-              validate.(instance > value, 'instance is not greater than `exclusiveMinimum` value', keyword)
+              result_validate.(instance > value, 'instance is not greater than `exclusiveMinimum` value', keyword)
             end
           else
             schema_error.('`exclusiveMinimum` is not a number', keyword)
@@ -437,7 +453,7 @@ x
           if value.is_a?(Integer) && value >= 0
             if instance.respond_to?(:to_str)
               # A string instance is valid against this keyword if its length is less than, or equal to, the value of this keyword.
-              validate.(instance.to_str.length <= value, 'instance string length is not less than or equal to `maxLength` value', keyword)
+              result_validate.(instance.to_str.length <= value, 'instance string length is not less than or equal to `maxLength` value', keyword)
             end
           else
             schema_error.('`maxLength` is not a non-negative integer', keyword)
@@ -452,7 +468,7 @@ x
           if value.is_a?(Integer) && value >= 0
             if instance.respond_to?(:to_str)
               # A string instance is valid against this keyword if its length is greater than, or equal to, the value of this keyword.
-              validate.(instance.to_str.length >= value, 'instance string length is not greater than or equal to `minLength` value', keyword)
+              result_validate.(instance.to_str.length >= value, 'instance string length is not greater than or equal to `minLength` value', keyword)
             end
           else
             schema_error.('`minLength` is not a non-negative integer', keyword)
@@ -471,7 +487,7 @@ x
                 # TODO
                 regexp = Regexp.new(value)
                 # A string instance is considered valid if the regular expression matches the instance successfully. Recall: regular expressions are not implicitly anchored.
-                validate.(regexp.match(instance), 'instance string does not match `pattern` regular expression value', keyword)
+                result_validate.(regexp.match(instance), 'instance string does not match `pattern` regular expression value', keyword)
               rescue RegexpError => e
                 schema_error.("`pattern` is not a valid regular expression: #{e.message}", keyword)
               end
@@ -491,7 +507,7 @@ x
           if value.is_a?(Integer) && value >= 0
             if instance.respond_to?(:to_ary)
               # An array instance is valid against "maxItems" if its size is less than, or equal to, the value of this keyword.
-              validate.(instance.to_ary.size <= value, 'instance array size is not less than or equal to `maxItems` value', keyword)
+              result_validate.(instance.to_ary.size <= value, 'instance array size is not less than or equal to `maxItems` value', keyword)
             end
           else
             schema_error.('`maxItems` is not a non-negative integer', keyword)
@@ -506,7 +522,7 @@ x
           if value.is_a?(Integer) && value >= 0
             if instance.respond_to?(:to_ary)
               # An array instance is valid against "minItems" if its size is greater than, or equal to, the value of this keyword.
-              validate.(instance.to_ary.size >= value, 'instance array size is not greater than or equal to `minItems` value', keyword)
+              result_validate.(instance.to_ary.size >= value, 'instance array size is not greater than or equal to `minItems` value', keyword)
             end
           else
             schema_error.('`minItems` is not a non-negative integer', keyword)
@@ -524,7 +540,7 @@ x
           elsif value == true
             if instance.respond_to?(:to_ary)
               # If it has boolean value true, the instance validates successfully if all of its elements are unique.
-              validate.(instance.uniq.size == instance.size, "instance array items' uniqueness does not match `uniqueItems` value", keyword)
+              result_validate.(instance.uniq.size == instance.size, "instance array items' uniqueness does not match `uniqueItems` value", keyword)
             end
           else
             schema_error.('`uniqueItems` is not a boolean', keyword)
@@ -544,6 +560,7 @@ x
                 subschema_validate.(self['contains'], instance_ptr[idx])
               end
               # TODO better info on what items passed/failed validation
+x              result_validate.(results.select(&:valid?).size <= value, 'instance array contains more items valid against the `contains` schema than the `maxContains` value', keyword, results: results)
               validate.(results.select(&:valid?).size <= value, 'instance array contains more items valid against the `contains` schema than the `maxContains` value', keyword)
             end
           else
@@ -563,7 +580,7 @@ x
               results = instance.each_index.map do |idx|
                 subschema_validate.(self['contains'], instance_ptr[idx])
               end
-              validate.(results.select(&:valid?).size >= value, 'instance array contains fewer items valid against the `contains` schema than the `minContains` value', keyword, results: results)
+              result_validate.(results.select(&:valid?).size >= value, 'instance array contains fewer items valid against the `contains` schema than the `minContains` value', keyword, results: results)
             end
           else
             schema_error.('`minContains` is not a non-negative integer', keyword)
@@ -580,7 +597,7 @@ x
           if value.is_a?(Integer) && value >= 0
             if instance.respond_to?(:to_hash)
               # An object instance is valid against "maxProperties" if its number of properties is less than, or equal to, the value of this keyword.
-              validate.(instance.size <= value, 'instance object contains more properties than the `maxProperties` value', keyword)
+              result_validate.(instance.size <= value, 'instance object contains more properties than the `maxProperties` value', keyword)
             end
           else
             schema_error.('`maxProperties` is not a non-negative integer', keyword)
@@ -595,7 +612,7 @@ x
           if value.is_a?(Integer) && value >= 0
             if instance.respond_to?(:to_hash)
               # An object instance is valid against "minProperties" if its number of properties is greater than, or equal to, the value of this keyword.
-              validate.(instance.size >= value, 'instance object contains fewer properties than the `minProperties` value', keyword)
+              result_validate.(instance.size >= value, 'instance object contains fewer properties than the `minProperties` value', keyword)
             end
           else
             schema_error.('`minProperties` is not a non-negative integer', keyword)
@@ -612,8 +629,7 @@ x
               # An object instance is valid against this keyword if every item in the array is the name of a property in the instance.
               missing_required = value.reject { |property_name| instance.key?(property_name) }
               # TODO include missing required property names in the validation error
-              validate.(missing_required.empty?, 'instance object does not contain all property names specified by the `required` value', keyword)
-x                validate.(missing_required.empty?, 'instance object does not contain all property names specified by the `required` value', keyword, missing_required: missing_required)
+              result_validate.(missing_required.empty?, 'instance object does not contain all property names specified by the `required` value', keyword)
             end
           else
             schema_error.('`required` is not an array', keyword)
@@ -643,8 +659,7 @@ x                validate.(missing_required.empty?, 'instance object does not co
                 end
               end
               # TODO include missing dependent required property names in the validation error
-              validate.(missing_dependent_required.empty?, 'instance object does not contain all dependent required property names specified by the `dependentRequired` value', keyword)
-x                validate.(missing_dependent_required.empty?, 'instance object does not contain all dependent required property names specified by the `dependentRequired` value', keyword, missing_dependent_required: missing_dependent_required)
+              result_validate.(missing_dependent_required.empty?, 'instance object does not contain all dependent required property names specified by the `dependentRequired` value', keyword)
             end
           else
             schema_error.('`dependentRequired` is not an object whose properties are arrays', keyword)
@@ -665,7 +680,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
             allOf_results = value.each_index.map do |idx|
               subschema_validate.(self['allOf', idx], instance_ptr)
             end
-            validate.(allOf_results.all?(&:valid?), 'instance did not validate against all schemas defined by `allOf` value', keyword, results: allOf_results)
+            result_validate.(allOf_results.all?(&:valid?), 'instance did not validate against all schemas defined by `allOf` value', keyword, results: allOf_results)
           else
             schema_error.('`allOf` is not an array', keyword)
           end
@@ -681,7 +696,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
             anyOf_results = value.each_index.map do |idx|
               subschema_validate.(self['anyOf', idx], instance_ptr)
             end
-            validate.(anyOf_results.any?(&:valid?), 'instance did not validate against any schemas defined by `anyOf` value', keyword, results: anyOf_results)
+            result_validate.(anyOf_results.any?(&:valid?), 'instance did not validate against any schemas defined by `anyOf` value', keyword, results: anyOf_results)
           else
             schema_error.('`anyOf` is not an array', keyword)
           end
@@ -698,9 +713,10 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
               subschema_validate.(self['oneOf', idx], instance_ptr)
             end
             if oneOf_results.none?(&:valid?)
-              validate.(false, 'instance did not validate against any schemas defined by `oneOf` value', keyword, results: oneOf_results)
+              result_validate.(false, 'instance did not validate against any schemas defined by `oneOf` value', keyword, results: oneOf_results)
             else
-              validate.(oneOf_results.select(&:valid?).size == 1, 'instance validated against multiple schemas defined by `oneOf` value', keyword, results: oneOf_results)
+              # TODO better info on what schemas passed/failed validation
+              result_validate.(oneOf_results.select(&:valid?).size == 1, 'instance validated against multiple schemas defined by `oneOf` value', keyword, results: oneOf_results)
             end
           else
             schema_error.('`oneOf` is not an array', keyword)
@@ -714,7 +730,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           # This keyword's value MUST be a valid JSON Schema.
           # An instance is valid against this keyword if it fails to validate successfully against the schema defined by this keyword.
           not_valid = subschema_validate.(self['not'], instance_ptr).valid?
-          validate.(!not_valid, 'instance validated against the schema defined by `not` value', keyword)
+          result_validate.(!not_valid, 'instance validated against the schema defined by `not` value', keyword)
         end
 
         # 9.2.2. Keywords for Applying Subschemas Conditionally
@@ -730,12 +746,12 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
           if if_valid
             if schema_content.key?('then')
               then_result = subschema_validate.(self['then'], instance_ptr)
-              validate.(then_result.valid?, 'instance did not validate against the schema defined by `then` value after validating against the schema defined by the `if` value', keyword, results: [then_result])
+              result_validate.(then_result.valid?, 'instance did not validate against the schema defined by `then` value after validating against the schema defined by the `if` value', keyword, results: [then_result])
             end
           else
             if schema_content.key?('else')
               else_result = subschema_validate.(self['else'], instance_ptr)
-              validate.(else_result.valid?, 'instance did not validate against the schema defined by `else` value after not validating against the schema defined by the `if` value', keyword, results: [else_result])
+              result_validate.(else_result.valid?, 'instance did not validate against the schema defined by `else` value after not validating against the schema defined by the `if` value', keyword, results: [else_result])
             end
           end
         end
@@ -755,7 +771,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
                   subschema_validate.(self['dependentSchemas', property_name], instance_ptr)
                 end
               end.compact
-              validate.(results.all?(:valid?), 'instance object does not validate against all schemas corresponding to matched property names specified by the `dependentSchemas` value', keyword, results: results)
+              result_validate.(results.all?(&:valid?), 'instance object does not validate against all schemas corresponding to matched property names specified by the `dependentSchemas` value', keyword, results: results)
             end
           else
             schema_error.('`dependentSchemas` is not an object', keyword)
@@ -783,7 +799,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
                   JSI::SchemaValidation::FullResult.new
                 end
               end
-              validate.(results.all?(&:valid?), 'instance array items did not all validate against corresponding `items` or `additionalItems` schema values', keyword, results: results)
+              result_validate.(results.all?(&:valid?), 'instance array items did not all validate against corresponding `items` or `additionalItems` schema values', keyword, results: results)
             end
           else
             # If "items" is a schema, validation succeeds if all elements in the array successfully validate against that schema.
@@ -791,7 +807,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
               results = instance.each_index.map do |idx|
                 subschema_validate.(self['items'], instance_ptr[idx])
               end
-              validate.(results.all?(&:valid?), 'instance array items did not all validate against the `items` schema value', keyword, results: results)
+              result_validate.(results.all?(&:valid?), 'instance array items did not all validate against the `items` schema value', keyword, results: results)
             end
           end
         end
@@ -805,7 +821,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
             results = instance.each_index.map do |idx|
               subschema_validate.(self['contains'], instance_ptr[idx])
             end
-            validate.(results.any?(&:valid?), 'instance array does not contain any items valid against the `contains` schema value', keyword, results: results)
+            result_validate.(results.any?(&:valid?), 'instance array does not contain any items valid against the `contains` schema value', keyword, results: results)
           end
         end
 
@@ -827,7 +843,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
                   subschema_validate.(self['properties', property_name], instance_ptr[property_name])
                 end
               end.compact
-              validate.(results.all?(&:valid?), 'instance object properties do not all validate against corresponding `properties` schema values', keyword, results: results)
+              result_validate.(results.all?(&:valid?), 'instance object properties do not all validate against corresponding `properties` schema values', keyword, results: results)
             end
           else
             schema_error.('`properties` is not an object', keyword)
@@ -855,7 +871,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
                   end
                 end.compact
               end.inject([], &:+)
-              validate.(results.all?(&:valid?), 'instance object properties do not all validate against corresponding `patternProperties` schema values', keyword, results: results)
+              result_validate.(results.all?(&:valid?), 'instance object properties do not all validate against corresponding `patternProperties` schema values', keyword, results: results)
             end
           else
             schema_error.('`patternProperties` is not an object', keyword)
@@ -873,7 +889,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
                 subschema_validate.(self['additionalProperties'], instance_ptr[property_name])
               end
             end.compact
-            validate.(results.all?(&:valid?), 'additional instance object properties do not all validate against `additionalProperties` schema value', keyword, results: results)
+            result_validate.(results.all?(&:valid?), 'additional instance object properties do not all validate against `additionalProperties` schema value', keyword, results: results)
           end
         end
 
@@ -887,7 +903,7 @@ x                validate.(missing_dependent_required.empty?, 'instance object d
             results = instance.keys.map do |property_name|
               self['propertyNames'].validate(JSI::JSON::Pointer[], property_name, validate_only: validate_only, visited_refs: visited_refs)
             end
-            validate.(results.all?(&:valid?), 'instance object property names do not all validate against `propertyNames` schema value', keyword, results: results)
+            result_validate.(results.all?(&:valid?), 'instance object property names do not all validate against `propertyNames` schema value', keyword, results: results)
           end
         end
       else
