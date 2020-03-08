@@ -4,7 +4,7 @@ module JSI
   # a MetaschemaNode is a PathedNode whose jsi_document contains a metaschema.
   # as with any PathedNode the jsi_ptr points to the content of a node.
   # the root of the metaschema is pointed to by metaschema_root_ptr.
-  # the schema of the root of the document is pointed to by root_schema_ptr.
+  # the schema of the root of the document is represented by the BasicSchema `root_basic_schema`.
   #
   # like JSI::Base, this class represents an instance of a schema, an instance
   # which may itself be a schema. unlike JSI::Base, the document containing the
@@ -32,13 +32,14 @@ module JSI
 
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
+    # @param root_basic_schema [JSI::BasicSchema] BasicSchema for the root of the metaschema in jsi_document
     # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in jsi_document
-    # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema of the root of the jsi_document
-    def initialize(jsi_document, jsi_ptr: JSI::JSON::Pointer[], metaschema_root_ptr: JSI::JSON::Pointer[], root_schema_ptr: JSI::JSON::Pointer[])
+    def initialize(jsi_document, jsi_ptr: JSI::JSON::Pointer[], root_basic_schema: , metaschema_root_ptr: JSI::JSON::Pointer[])
       @jsi_document = jsi_document
       @jsi_ptr = jsi_ptr
+      raise(Bug, "root_basic_schema not BasicSchema") unless root_basic_schema.is_a?(BasicSchema)
+      @root_basic_schema = root_basic_schema
       @metaschema_root_ptr = metaschema_root_ptr
-      @root_schema_ptr = root_schema_ptr
 
       jsi_node_content = self.jsi_node_content
 
