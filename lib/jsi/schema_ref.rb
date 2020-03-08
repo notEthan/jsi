@@ -5,7 +5,12 @@ module JSI
       @keyword = keyword
 
       @ref = basic_schema.schema_content[keyword]
-      @ref_uri = Addressable::URI.parse(ref)
+
+      if basic_schema.base_uri
+        @ref_uri = basic_schema.base_uri.join(ref)
+      else
+        @ref_uri = Addressable::URI.parse(ref)
+      end
 
       if ref[/\A#/]
         @deref_basic_schema = basic_schema / JSI::JSON::Pointer.from_fragment(ref_uri.fragment)
@@ -20,6 +25,15 @@ module JSI
 
     def deref_basic_schema
       return @deref_basic_schema if instance_variable_defined?(:@deref_basic_schema)
+      return(@deref_basic_schema = JSI.registered_schemas.find_basic_schema(self))
+    end
+
+    def deref_schema(ref_schema)
+      return @deref_schema if instance_variable_defined?(:@deref_schema)
+      if ref[/\A#/]
+        return(@deref_schema = JSI::JSON::Pointer.from_fragment(ref_uri.fragment).evaluate(ref_schema.jsi_root_node))
+      end
+      return(@deref_schema = JSI.registered_schemas.find_schema(self))
     end
 
     def jsi_fingerprint
