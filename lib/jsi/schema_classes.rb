@@ -12,11 +12,34 @@ module JSI
     # @return [String]
     def inspect
       uri = schema.schema_id || schema.jsi_ptr.uri
-      if name
-        "#{name} (#{uri})"
+      if name_from_ancestor
+        "#{name_from_ancestor} (#{uri})"
       else
         "(JSI Schema Module: #{uri})"
       end
+    end
+
+    def name_from_ancestor
+      schema_ancestors = [schema] + schema.jsi_parent_nodes
+      named_parent_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
+
+      return nil unless named_parent_schema
+
+      tokens = schema.jsi_ptr.ptr_relative_to(named_parent_schema.jsi_ptr).reference_tokens
+      name = named_parent_schema.jsi_schema_module.name
+      parent = named_parent_schema
+      tokens.each do |token|
+        #if parent.jsi_schemas.map(&:described_object_property_names).inject([], &:|).include?(token)
+        if parent.jsi_schemas.any? { |s| s.described_object_property_names.include?(token) }
+          name += ".#{token}"
+        elsif [String, Numeric, TrueClass, FalseClass, NilClass].any? { |m| token.is_a?(m) }
+          name += "[#{token.inspect}]"
+        else
+          return nil
+        end
+        parent = parent[token]
+      end
+      name
     end
 
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.

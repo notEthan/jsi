@@ -1,5 +1,7 @@
 require_relative 'test_helper'
 
+SchemaModuleTestModule = JSI::Schema.new({'properties' => {'foo' => {'items' => {'type' => 'string'}}}}).jsi_schema_module
+
 describe 'JSI::SchemaModule' do
   let(:schema_content) { {'properties' => {'foo' => {'items' => {'type' => 'string'}}}} }
   let(:schema) { JSI::Schema.new(schema_content) }
@@ -16,6 +18,14 @@ describe 'JSI::SchemaModule' do
     it 'accessors and subscripts with a metaschema' do
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties, JSI::JSONSchemaOrgDraft06.properties.possibly_schema_node)
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties)
+    end
+  end
+  describe '.inspect' do
+    it 'gives the name relative to a named parent module' do
+      assert_equal(
+        'SchemaModuleTestModule.properties["foo"].items (#/properties/foo/items)',
+        SchemaModuleTestModule.properties["foo"].items.inspect
+      )
     end
   end
 end
