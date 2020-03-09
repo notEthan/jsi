@@ -1,5 +1,10 @@
 require_relative 'test_helper'
 
+SchemaModuleTestModule = JSI::Schema.new({
+  'title' => 'a9b7',
+  'properties' => {'foo' => {'items' => {'type' => 'string'}}}
+}).jsi_schema_module
+
 describe 'JSI::SchemaModule' do
   let(:schema_content) { {'properties' => {'foo' => {'items' => {'type' => 'string'}}}} }
   let(:schema) { JSI.new_schema(schema_content) }
@@ -16,6 +21,31 @@ describe 'JSI::SchemaModule' do
     it 'accessors and subscripts with a metaschema' do
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties, JSI::JSONSchemaOrgDraft06.properties.possibly_schema_node)
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties)
+    end
+  end
+  describe '.inspect' do
+    it 'shows the name relative to a named parent module' do
+      assert_equal(
+        'SchemaModuleTestModule.properties (JSI wrapper for Schema Module)',
+        SchemaModuleTestModule.properties.inspect
+      )
+      assert_equal(
+        'SchemaModuleTestModule.properties["foo"].items (JSI Schema Module)',
+        SchemaModuleTestModule.properties["foo"].items.inspect
+      )
+    end
+    it 'shows a pointer fragment uri with no named parent module' do
+      mod = JSI.new_schema_module({
+        'title' => 'lhzm', 'properties' => {'foo' => {'items' => {'type' => 'string'}}}
+      })
+      assert_equal(
+        '(JSI wrapper for Schema Module: #/properties)',
+        mod.properties.inspect
+      )
+      assert_equal(
+        '(JSI Schema Module: #/properties/foo/items)',
+        mod.properties["foo"].items.inspect
+      )
     end
   end
 end
