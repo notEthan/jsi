@@ -175,6 +175,31 @@ module JSI
   module SchemaModulePossibly
     attr_reader :possibly_schema_node
 
+    # @return [String, nil] a name relative to a named schema module of an ancestor schema.
+    #   for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
+    #   then the module `Foos.items` will have a name_from_ancestor of `"Foos.items"`
+    def name_from_ancestor
+      schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
+      named_parent_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
+
+      return nil unless named_parent_schema
+
+      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_parent_schema.jsi_ptr).reference_tokens
+      name = named_parent_schema.jsi_schema_module.name
+      parent = named_parent_schema
+      tokens.each do |token|
+        if parent.jsi_schemas.any? { |s| s.jsi_schema_module.jsi_property_accessors.include?(token) }
+          name += ".#{token}"
+        elsif [String, Numeric, TrueClass, FalseClass, NilClass].any? { |m| token.is_a?(m) }
+          name += "[#{token.inspect}]"
+        else
+          return nil
+        end
+        parent = parent[token]
+      end
+      name
+    end
+
     # subscripting a JSI schema module or a NotASchemaModule will subscript the node, and
     # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a PathedNode,
     # return a NotASchemaModule; or if it is another value (a basic type), return that value.
