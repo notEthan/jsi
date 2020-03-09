@@ -503,7 +503,7 @@ module JSI
             "#{class_name} (#{schema_module_names.join(', ')})"
           end
         else
-          schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name || schema.schema_uri }.compact
+          schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_uri }.compact
           if schema_names.empty?
             "JSI"
           else

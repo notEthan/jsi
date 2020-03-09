@@ -11,11 +11,10 @@ module JSI
 
     # @return [String]
     def inspect
-      uri = schema.schema_uri || schema.jsi_ptr.uri
-      if name
-        "#{name} (#{uri})"
+      if name_from_ancestor
+        "#{name_from_ancestor} (JSI Schema Module)"
       else
-        "(JSI Schema Module: #{uri})"
+        "(JSI Schema Module: #{schema.schema_uri || schema.jsi_ptr.uri})"
       end
     end
 
