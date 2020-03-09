@@ -1,10 +1,10 @@
 require_relative 'test_helper'
 
-NamedSchemaInstance = JSI.new_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema'}).jsi_schema_class
+NamedSchemaInstance = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_schema'}).jsi_schema_class
 
 # hitting .tap(&:name) causes JSI to assign a constant name from the ID,
 # meaning the name NamedSchemaInstanceTwo is not known.
-NamedSchemaInstanceTwo = JSI.new_schema({id: 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).jsi_schema_class.tap(&:name)
+NamedSchemaInstanceTwo = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).jsi_schema_class.tap(&:name)
 
 describe JSI::Base do
   let(:schema_content) { {} }
@@ -19,7 +19,7 @@ describe JSI::Base do
       assert_equal("(JSI Schema Class: #)", subject.class.inspect)
     end
     describe 'with schema id' do
-      let(:schema_content) { {'id' => 'https://jsi/foo'} }
+      let(:schema_content) { {'$id' => 'https://jsi/foo'} }
       it 'is (JSI Schema Class: ...) for generated subclass with id' do
         assert_equal("(JSI Schema Class: https://jsi/foo#)", subject.class.inspect)
       end
@@ -33,7 +33,7 @@ describe JSI::Base do
     end
   end
   describe 'class name' do
-    let(:schema_content) { {'id' => 'https://jsi/BaseTest'} }
+    let(:schema_content) { {'$id' => 'https://jsi/BaseTest'} }
     it 'generates a class name from schema_id' do
       assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest_', subject.class.name)
     end
@@ -341,7 +341,7 @@ describe JSI::Base do
     describe 'with errors' do
       let(:schema_content) {
         {
-          'id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors',
+          '$id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors',
           'type' => 'object',
           'properties' => {
             'some_number' => {
@@ -375,7 +375,7 @@ describe JSI::Base do
     describe 'at a depth' do
       let(:schema_content) do
         {
-          'id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth',
+          '$id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth',
           'description' => 'hash schema',
           'type' => 'object',
           'properties' => {
