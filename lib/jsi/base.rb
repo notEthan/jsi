@@ -372,6 +372,7 @@ module JSI
       q.text '>'
     end
 
+    # @private
     # @return [Array<String>]
     def jsi_object_group_text
       class_name = self.class.name unless self.class.in_schema_classes

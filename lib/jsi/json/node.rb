@@ -151,6 +151,7 @@ module JSI
       end
 
       # meta-information about the object, outside the content. used by #inspect / #pretty_print
+      # @private
       # @return [Array<String>]
       def jsi_object_group_text
         [
