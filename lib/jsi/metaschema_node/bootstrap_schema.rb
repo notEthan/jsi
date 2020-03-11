@@ -34,6 +34,35 @@ module JSI
       jsi_ptr.evaluate(jsi_document)
     end
 
+    # @return [String]
+    def inspect
+      "\#<#{object_group_text.join(' ')} #{schema_content.inspect}>"
+    end
+
+    # pretty-prints a representation of self to the given printer
+    # @return [void]
+    def pretty_print(q)
+      q.text '#<'
+      q.text object_group_text.join(' ')
+      q.group_sub {
+        q.nest(2) {
+          q.breakable ' '
+          q.pp schema_content
+        }
+      }
+      q.breakable ''
+      q.text '>'
+    end
+
+    # @private
+    # @return [Array<String>]
+    def object_group_text
+      [
+        self.class.name || MetaschemaNode::BootstrapSchema.name,
+        jsi_ptr.uri,
+      ]
+    end
+
     # @private
     def jsi_fingerprint
       {
