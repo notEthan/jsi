@@ -61,7 +61,7 @@ module JSI
 
               extend SchemaModule
 
-              include JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [JSI::Base, JSI::BaseArray, JSI::BaseHash])
+              include JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode])
 
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)

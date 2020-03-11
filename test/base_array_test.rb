@@ -12,7 +12,7 @@ base = {
 NamedArrayInstance = JSI.class_for_schema(base)
 NamedIdArrayInstance = JSI.class_for_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_array_schema'}.merge(base))
 
-describe JSI::BaseArray do
+describe 'JSI::Base array' do
   let(:instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
   let(:schema_content) do
     {
