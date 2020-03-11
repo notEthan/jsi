@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'jsi/typelike_modules'
-
 module JSI
   # the base class for representing and instantiating a JSON Schema.
   #
@@ -13,7 +10,7 @@ module JSI
   # are dynamically created for schemas using {JSI.class_for_schema}, and these
   # are what are used to instantiate and represent JSON schema instances.
   class Base
-    include Memoize
+    include Util::Memoize
     include Enumerable
     include PathedNode
 
@@ -131,9 +128,9 @@ module JSI
       end
 
       if self.jsi_instance.respond_to?(:to_hash)
-        extend BaseHash
+        extend PathedHashNode
       elsif self.jsi_instance.respond_to?(:to_ary)
-        extend BaseArray
+        extend PathedArrayNode
       end
       if self.schema.describes_schema?
         extend JSI::Schema
@@ -157,7 +154,7 @@ module JSI
     alias_method :jsi_instance, :node_content
     alias_method :instance, :node_content
 
-    # each is overridden by BaseHash or BaseArray when appropriate. the base
+    # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
     def each
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
@@ -205,7 +202,7 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
+      result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if respond_to?(:to_ary)
           token_schema = schema.subschema_for_index(token)
         else
@@ -243,6 +240,7 @@ module JSI
           end
         end
       end
+      result
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.
@@ -291,7 +289,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
         end
-        self.class.new(Base::NOINSTANCE, jsi_document: modified_jsi_root_node.node_document, jsi_ptr: @jsi_ptr, jsi_root_node: modified_jsi_root_node)
+        @jsi_ptr.evaluate(modified_jsi_root_node)
       end
     end
 
@@ -387,7 +385,7 @@ module JSI
     def jsi_fingerprint
       {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
     end
-    include FingerprintHash
+    include Util::FingerprintHash
 
     private
 
@@ -396,15 +394,5 @@ module JSI
     def class_for_schema(schema)
       JSI.class_for_schema(schema)
     end
-  end
-
-  # module extending a {JSI::Base} object when its instance is Hash-like (responds to #to_hash)
-  module BaseHash
-    include PathedHashNode
-  end
-
-  # module extending a {JSI::Base} object when its instance is Array-like (responds to #to_ary)
-  module BaseArray
-    include PathedArrayNode
   end
 end

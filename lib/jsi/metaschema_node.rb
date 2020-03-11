@@ -24,7 +24,7 @@ module JSI
   # its schema is the metaschema.
   class MetaschemaNode
     include PathedNode
-    include Memoize
+    include Util::Memoize
 
     # not every MetaschemaNode is actually an Enumerable, but it's better to include Enumerable on
     # the class than to conditionally extend the instance.
@@ -134,7 +134,7 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{node_content.pretty_inspect.chomp}")
       end
 
-      jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
+      result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if token_in_range
           value_node = new_node(node_ptr: node_ptr[token])
 
@@ -148,6 +148,7 @@ module JSI
           nil
         end
       end
+      result
     end
 
     # if this MetaschemaNode is a $ref then the $ref is followed. otherwise this MetaschemaNode is returned.
@@ -202,7 +203,7 @@ module JSI
     def jsi_fingerprint
       {class: self.class, node_document: node_document}.merge(our_initialize_params)
     end
-    include FingerprintHash
+    include Util::FingerprintHash
 
     private
 

@@ -389,7 +389,7 @@ describe JSI::Base do
               'inspect' => {},        # Base
               'pretty_inspect' => {}, # Kernel
               'as_json' => {},        # Base::OverrideFromExtensions, extended on initialization
-              'each' => {},           # BaseHash / BaseArray
+              'each' => {},           # PathedHashNode / PathedArrayNode
               'instance_exec' => {},  # BasicObject
               'jsi_instance' => {},   # Base
               'schema' => {},         # module_for_schema singleton definition

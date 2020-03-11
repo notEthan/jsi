@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'addressable/uri'
-
 module JSI
   module JSON
     # a JSON Pointer, as described by RFC 6901 https://tools.ietf.org/html/rfc6901
@@ -398,7 +396,7 @@ module JSI
 
       # @return [String] string representation of this Pointer
       def inspect
-        "#<#{self.class.inspect} #{representation_s}>"
+        "#{self.class.name}[#{reference_tokens.map(&:inspect).join(", ")}]"
       end
 
       alias_method :to_s, :inspect
@@ -407,20 +405,7 @@ module JSI
       def jsi_fingerprint
         {class: JSI::JSON::Pointer, reference_tokens: reference_tokens}
       end
-      include FingerprintHash
-
-      private
-
-      # @return [String] a representation of this pointer based on @type
-      def representation_s
-        if @type == 'fragment'
-          "fragment: #{fragment}"
-        elsif @type == 'pointer'
-          "pointer: #{pointer}"
-        else
-          "reference_tokens: #{reference_tokens.inspect}"
-        end
-      end
+      include Util::FingerprintHash
     end
   end
 end
