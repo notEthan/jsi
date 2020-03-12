@@ -145,6 +145,13 @@ module JSI
       is_a?(JSI::Schema::DescribesSchema)
     end
 
+    # @return [BasicSchema]
+    def own_basic_schema
+      jsi_memoize(__method__) do
+        BasicSchema.new(jsi_ptr, jsi_document)
+      end
+    end
+
     # checks this schema for relevant applicators ($ref, allOf, anyOf, oneOf), and returns  an Enumerable
     # containing each resulting JSI::Schema. if no applicators apply, the only schema returned will be self.
     #
