@@ -171,8 +171,8 @@ module JSI
     # @param other_instance [Object] the instance to which to attempt to match *Of subschemas
     # @return [Enumerable<JSI::Schema>] matched applicator subschemas
     def match_to_instance(other_instance)
-      own_basic_schema.match_to_instance(other_instance).map do |match_basic_schema|
-        match_basic_schema.ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, match_basic_schema) }
+      own_basic_schema.match_to_instance(other_instance).map do |matched_basic_schema|
+        matched_basic_schema.ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, match_basic_schema) }
       end
     end
 
