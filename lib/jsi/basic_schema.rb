@@ -69,10 +69,12 @@ module JSI
     # @param ptr [JSI::JSON::Pointer] pointer to a schema in our document
     # @return [JSI::BasicSchema] the schema in our document at the given pointer
     def /(ptr)
-      if ptr.respond_to?(:to_ary)
-        ptr = JSI::JSON::Pointer[*ptr]
+      jsi_memoize(:/, ptr) do |ptr|
+        if ptr.respond_to?(:to_ary)
+          ptr = JSI::JSON::Pointer[*ptr]
+        end
+        self.class.new(ptr, document)
       end
-      self.class.new(ptr, document)
     end
 
     # returns a set of subschemas of this schema for the given property name.
