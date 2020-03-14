@@ -19,6 +19,48 @@ module JSI
 
     attr_reader :ref_schema
 
+    # @return [JSI::Schema] the schema this ref points to
+    # @raise [JSI::Schema::NotASchemaError] when the thing this ref points to is not a schema
+    # @raise [JSI::Schema::ReferenceError] when this reference cannot be resolved
+    def deref_schema
+      return @deref_schema if instance_variable_defined?(:@deref_schema)
+
+      ref_uri_nofrag = ref_uri.merge(fragment: nil)
+
+      if ref_uri_nofrag.empty?
+        schema_resource_root = ref_schema.schema_resource_root
+      else
+        raise(NotImplementedError, "cannot find schema by uri #{uri}")
+      end
+
+      fragment = ref_uri.fragment
+
+      if fragment
+        begin
+          ptr_from_fragment = JSI::JSON::Pointer.from_fragment(fragment)
+        rescue JSI::JSON::Pointer::PointerSyntaxError
+        end
+      end
+
+      if ptr_from_fragment
+        result_schema = ptr_from_fragment.evaluate(schema_resource_root)
+      elsif fragment.nil?
+        result_schema = schema_resource_root
+      else
+        # TODO find an anchor that resembles the fragment
+        raise(Schema::ReferenceError, "cannot find schema by fragment: #{fragment} from ref schema: #{ref_schema.pretty_inspect.chomp}")
+      end
+
+      if result_schema.is_a?(JSI::Schema)
+        return @deref_schema = result_schema
+      else
+        raise(Schema::NotASchemaError, [
+          "object identified by uri #{ref} is not a schema:",
+          result_schema.pretty_inspect.chomp,
+        ].join("\n"))
+      end
+    end
+
     # @return [String]
     def inspect
       %Q(\#<#{self.class.name} #{ref}>)
