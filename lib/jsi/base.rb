@@ -253,7 +253,11 @@ module JSI
           schema_value = token_schemas.any? { |token_schema| token_schema.describes_schema? }
 
           if complex_value || schema_value
-            JSI::SchemaClasses.class_for_schemas(token_schemas).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], jsi_root_node: @jsi_root_node)
+            JSI::SchemaClasses.class_for_schemas(token_schemas).new(Base::NOINSTANCE,
+              jsi_document: @jsi_document,
+              jsi_ptr: @jsi_ptr[token],
+              jsi_root_node: @jsi_root_node,
+            )
           else
             value
           end
