@@ -110,7 +110,7 @@ byebug
         schema_ref.basic_schema.class.new(ptr, @schema_documents[ref_root_uri])
 #      elsif @schemas.key?(ref_root_uri)
       else
-        find_schema(schema_ref).jsi_instance_basic_schema
+        find_schema(schema_ref).own_basic_schema
 
 #byebug
 #        raise(SchemaNotFound, "id #{ref_root_uri} not in ids:\n#{(@schema_documents.keys | @schemas.keys).join("\n")}")

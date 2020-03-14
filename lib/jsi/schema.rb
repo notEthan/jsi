@@ -216,7 +216,7 @@ module JSI
           end
           if schema['anyOf'].respond_to?(:to_ary)
             schema['anyOf'].each_index do |i|
-              valid = schema['anyOf'][i].jsi_instance_valid?(other_instance)
+              valid = schema['anyOf'][i].instance_valid?(other_instance)
               if valid
                 schemas.merge(schema['anyOf'][i].match_to_instance(other_instance, visited_refs: visited_refs))
               end
@@ -224,7 +224,7 @@ module JSI
           end
           if schema['oneOf'].respond_to?(:to_ary)
             one_i = schema['oneOf'].each_index.detect do |i|
-              schema['oneOf'][i].jsi_instance_valid?(other_instance)
+              schema['oneOf'][i].instance_valid?(other_instance)
             end
             if one_i
               schemas.merge(schema['oneOf'][one_i].match_to_instance(other_instance, visited_refs: visited_refs))

@@ -32,6 +32,16 @@ module JSI
       end
     end
 
+    def id
+      if schema_content.respond_to?(:to_hash)
+        schema_content.key?('$id') && schema_content['$id'].respond_to?(:to_str) ? schema_content['$id'].to_str :
+          schema_content.key?('id') && schema_content['id'].respond_to?(:to_str) ? schema_content['id'].to_str :
+          nil
+      else
+        nil
+      end
+    end
+
     # @param ptr [JSI::JSON::Pointer] pointer to the schema in the document
     # @param document [#to_hash, #to_ary, Boolean, Object] document containing the schema
     def initialize(ptr, document, base_uri: nil)
