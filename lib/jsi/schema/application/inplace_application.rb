@@ -13,10 +13,10 @@ module JSI
       Set.new.tap do |schemas|
         if schema_content.respond_to?(:to_hash)
           if schema_content['$ref'].respond_to?(:to_str)
-            jsi_ptr.deref(jsi_document) do |deref_ptr|
-              schemas.merge((resource_root_subschema(deref_ptr)).match_to_instance(instance))
-            end
-          else
+            ref = Schema::Ref.new(schema_content['$ref'], self)
+            schemas.merge(ref.deref_schema.match_to_instance(instance))
+          end
+          unless ref
             schemas << self
           end
           if schema_content['allOf'].respond_to?(:to_ary)
