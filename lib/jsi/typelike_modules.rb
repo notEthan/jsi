@@ -4,7 +4,7 @@ module JSI
   # a module relating to objects that act like Hash or Array instances
   module Typelike
     # yields the content of the given param `object`. for objects which have a
-    # #modified_copy method of their own (JSI::Base, JSI::JSON::Node) that
+    # #jsi_modified_copy method of their own (JSI::Base, JSI::JSON::Node) that
     # method is invoked with the given block. otherwise the given object itself
     # is yielded.
     #
@@ -15,8 +15,8 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [object.class] modified copy of the given object
     def self.modified_copy(object, &block)
-      if object.respond_to?(:modified_copy)
-        object.modified_copy(&block)
+      if object.respond_to?(:jsi_modified_copy)
+        object.jsi_modified_copy(&block)
       else
         return yield(object)
       end
@@ -86,7 +86,7 @@ module JSI
     end
     safe_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        modified_copy do |object_to_modify|
+        jsi_modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
           responsive_object.public_send(method_name, *a, &b)
         end
@@ -94,7 +94,7 @@ module JSI
     end
     safe_kv_block_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        modified_copy do |object_to_modify|
+        jsi_modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
           responsive_object.public_send(method_name, *a) do |k, _v|
             b.call(k, self[k])
@@ -193,7 +193,7 @@ module JSI
     end
     safe_modified_copy_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        modified_copy do |object_to_modify|
+        jsi_modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
           responsive_object.public_send(method_name, *a, &b)
         end
@@ -201,7 +201,7 @@ module JSI
     end
     safe_el_block_methods.each do |method_name|
       define_method(method_name) do |*a, &b|
-        modified_copy do |object_to_modify|
+        jsi_modified_copy do |object_to_modify|
           i = 0
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
           responsive_object.public_send(method_name, *a) do |_e|

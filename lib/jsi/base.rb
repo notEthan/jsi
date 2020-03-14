@@ -311,7 +311,7 @@ module JSI
     # @yield [Object] the content of the instance. the block should result
     #   in a (nondestructively) modified copy of this.
     # @return [JSI::Base subclass the same as self] the modified copy of self
-    def modified_copy(&block)
+    def jsi_modified_copy(&block)
       if jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         self.class.new(Base::NOINSTANCE,
@@ -319,7 +319,7 @@ module JSI
           jsi_ptr: @jsi_ptr,
         )
       else
-        modified_jsi_root_node = @jsi_root_node.modified_copy do |root|
+        modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
         end
         self.class.new(Base::NOINSTANCE, jsi_document: modified_jsi_root_node.jsi_document, jsi_ptr: @jsi_ptr, jsi_root_node: modified_jsi_root_node)
@@ -346,7 +346,7 @@ module JSI
     end
 
     def dup
-      modified_copy(&:dup)
+      jsi_modified_copy(&:dup)
     end
 
     # @return [String] a string representing this JSI, indicating its class

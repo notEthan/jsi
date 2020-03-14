@@ -142,12 +142,12 @@ module JSI
 
       # takes a block. the block is yielded the content of this node. the block MUST return a modified
       # copy of that content (and NOT modify the object it is given).
-      def modified_copy(&block)
+      def jsi_modified_copy(&block)
         Node.new_by_type(jsi_ptr.modified_document_copy(jsi_document, &block), jsi_ptr)
       end
 
       def dup
-        modified_copy(&:dup)
+        jsi_modified_copy(&:dup)
       end
 
       # meta-information about the object, outside the content. used by #inspect / #pretty_print

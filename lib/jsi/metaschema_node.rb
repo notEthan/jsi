@@ -163,7 +163,7 @@ module JSI
     # @yield [Object] the node content of the instance. the block should result
     #   in a (nondestructively) modified copy of this.
     # @return [MetaschemaNode] modified copy of self
-    def modified_copy(&block)
+    def jsi_modified_copy(&block)
       MetaschemaNode.new(jsi_ptr.modified_document_copy(jsi_document, &block), our_initialize_params)
     end
 

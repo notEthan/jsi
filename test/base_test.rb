@@ -181,12 +181,12 @@ describe JSI::Base do
       assert_raises(NoMethodError) { subject.map { nil } }
     end
   end
-  describe '#modified_copy' do
-    describe 'with an instance that does not have #modified_copy' do
+  describe '#jsi_modified_copy' do
+    describe 'with an instance that does not have #jsi_modified_copy' do
       let(:instance) { Object.new }
       it 'yields the instance to modify' do
         new_instance = Object.new
-        modified = subject.modified_copy do |o|
+        modified = subject.jsi_modified_copy do |o|
           assert_equal(instance, o)
           new_instance
         end
@@ -195,9 +195,9 @@ describe JSI::Base do
         refute_equal(instance, modified)
       end
     end
-    describe 'with an instance that does have #modified_copy' do
+    describe 'with an instance that does have #jsi_modified_copy' do
       it 'yields the instance to modify' do
-        modified = subject.modified_copy do |o|
+        modified = subject.jsi_modified_copy do |o|
           assert_equal({}, o)
           {'a' => 'b'}
         end
@@ -208,7 +208,7 @@ describe JSI::Base do
     end
     describe 'no modification' do
       it 'yields the instance to modify' do
-        modified = subject.modified_copy { |o| o }
+        modified = subject.jsi_modified_copy { |o| o }
         # this doesn't really need to be tested but ... whatever
         assert_equal(subject.jsi_instance.object_id, modified.jsi_instance.object_id)
         assert_equal(subject, modified)
@@ -219,7 +219,7 @@ describe JSI::Base do
       let(:schema_content) { {'type' => 'object'} }
       it 'works' do
         # I'm not really sure the best thing to do here, but this is how it is for now. this is subject to change.
-        modified = subject.modified_copy do |o|
+        modified = subject.jsi_modified_copy do |o|
           o.to_s
         end
         assert_equal('{}', modified.jsi_instance)
