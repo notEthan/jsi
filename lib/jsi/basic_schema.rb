@@ -5,16 +5,43 @@ module JSI
     include Util::Memoize
     include Util::FingerprintHash
 
+    module BigMoneyId
+      def id
+        keyword = '$id'
+        if schema_content.respond_to?(:to_hash) && schema_content[keyword].respond_to?(:to_str)
+          schema_content[keyword]
+        else
+          nil
+        end
+      end
+    end
+
+    module Id
+      def id
+        keyword = 'id'
+        if schema_content.respond_to?(:to_hash) && schema_content[keyword].respond_to?(:to_str)
+          schema_content[keyword]
+        else
+          nil
+        end
+      end
+    end
+
     # @param ptr [JSI::JSON::Pointer] pointer to the schema in the document
     # @param document [#to_hash, #to_ary, Boolean, Object] document containing the schema
-    def initialize(ptr, document)
+    def initialize(ptr, document, base_uri: nil)
       unless ptr.is_a?(JSI::JSON::Pointer)
         raise(TypeError, "ptr is not a JSI::JSON::Pointer: #{ptr.inspect}")
       end
       @ptr = ptr
       @document = document
+      @base_uri = base_uri
 
       @schema_content = ptr.evaluate(document)
+
+      if id
+        @schema_uri = base_uri ? Addressable::URI.parse(base_uri).join(id) : Addressable::URI.parse(id)
+      end
     end
 
     # document containing the schema content
@@ -26,12 +53,16 @@ module JSI
     # underlying schema content (boolean or ruby Hash / json object)
     attr_reader :schema_content
 
+    attr_reader :base_uri
+
+    attr_reader :schema_uri
+
     # returns a subschema of this BasicSchema
     #
     # @param *tokens [Array[Object]] tokens appended to our ptr indicating the location of the subschema
     # @return [JSI::BasicSchema] the subschema at the location indicated by *tokens
     def [](*tokens)
-      self.class.new(ptr + JSI::JSON::Pointer[*tokens], document)
+      self.class.new(ptr + JSI::JSON::Pointer[*tokens], document, base_uri: schema_uri || base_uri)
     end
 
     # returns a schema in the same document as this one at the given ptr
@@ -175,13 +206,13 @@ module JSI
     def object_group_text
       [
         self.class.inspect,
-        ptr.uri,
+        schema_uri || ptr.uri,
       ]
     end
 
     # @private
     def jsi_fingerprint
-      {class: self.class, ptr: @ptr, document: @document}
+      {class: self.class, ptr: @ptr, document: @document, base_uri: @base_uri}
     end
   end
 end
