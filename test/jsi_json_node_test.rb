@@ -174,12 +174,12 @@ describe JSI::JSON::Node do
       assert_equal('cannot access parent of root pointer: JSI::JSON::Pointer[]', err.message)
     end
   end
-  describe '#modified_copy' do
+  describe '#jsi_modified_copy' do
     let(:jsi_document) { [['b', 'q'], {'c' => ['d', 'e']}] }
     let(:path) { ['1', 'c'] }
     it 'returns a different object' do
       # simplest thing
-      modified_dup = node.modified_copy(&:dup)
+      modified_dup = node.jsi_modified_copy(&:dup)
       # it is equal - being a dup
       assert_equal(node, modified_dup)
       # but different object
@@ -191,7 +191,7 @@ describe JSI::JSON::Node do
       assert_equal(node.jsi_root_node[0].jsi_node_content.object_id, modified_dup.jsi_root_node[0].jsi_node_content.object_id)
     end
     it 'returns the same object' do
-      unmodified_dup = node.modified_copy { |o| o }
+      unmodified_dup = node.jsi_modified_copy { |o| o }
       assert_equal(unmodified_dup, node)
       # same object, since the block just returned it
       refute_equal(node.object_id, unmodified_dup.object_id)
@@ -202,11 +202,11 @@ describe JSI::JSON::Node do
       assert_equal(node.jsi_root_node[0].jsi_node_content.object_id, unmodified_dup.jsi_root_node[0].jsi_node_content.object_id)
     end
     it 'raises subscripting string from array' do
-      err = assert_raises(TypeError) { JSI::JSON::Node.new(jsi_document, JSI::JSON::Pointer.new(['x'])).modified_copy(&:dup) }
+      err = assert_raises(TypeError) { JSI::JSON::Node.new(jsi_document, JSI::JSON::Pointer.new(['x'])).jsi_modified_copy(&:dup) }
       assert_match(%r(\Abad subscript "x" with remaining subpath: \[\] for array: \[.*\]\z)m, err.message)
     end
     it 'raises subscripting from invalid subpath' do
-      err = assert_raises(TypeError) { JSI::JSON::Node.new(jsi_document, JSI::JSON::Pointer.new([0, 0, 'what'])).modified_copy(&:dup) }
+      err = assert_raises(TypeError) { JSI::JSON::Node.new(jsi_document, JSI::JSON::Pointer.new([0, 0, 'what'])).jsi_modified_copy(&:dup) }
       assert_match(%r(bad subscript: "what" with remaining subpath: \[\] for content: "b"\z)m, err.message)
     end
   end
