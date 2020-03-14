@@ -352,14 +352,14 @@ module JSI
     # @return [String] a string representing this JSI, indicating its class
     #   and inspecting its instance
     def inspect
-      "\#<#{object_group_text.join(' ')} #{jsi_instance.inspect}>"
+      "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
     # pretty-prints a representation this JSI to the given printer
     # @return [void]
     def pretty_print(q)
       q.text '#<'
-      q.text object_group_text.join(' ')
+      q.text jsi_object_group_text.join(' ')
       q.group_sub {
         q.nest(2) {
           q.breakable ' '
@@ -371,7 +371,7 @@ module JSI
     end
 
     # @return [Array<String>]
-    def object_group_text
+    def jsi_object_group_text
       class_name = self.class.name unless self.class.in_schema_classes
       class_txt = begin
         if class_name
@@ -393,8 +393,8 @@ module JSI
       end
 
       if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(jsi_node_content.class)
-        if jsi_node_content.respond_to?(:object_group_text)
-          content_txt = jsi_node_content.object_group_text
+        if jsi_node_content.respond_to?(:jsi_object_group_text)
+          content_txt = jsi_node_content.jsi_object_group_text
         else
           content_txt = [jsi_node_content.class.to_s]
         end

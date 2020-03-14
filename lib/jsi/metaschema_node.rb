@@ -169,12 +169,12 @@ module JSI
 
     # @return [String]
     def inspect
-      "\#<#{object_group_text.join(' ')} #{jsi_node_content.inspect}>"
+      "\#<#{jsi_object_group_text.join(' ')} #{jsi_node_content.inspect}>"
     end
 
     def pretty_print(q)
       q.text '#<'
-      q.text object_group_text.join(' ')
+      q.text jsi_object_group_text.join(' ')
       q.group_sub {
         q.nest(2) {
           q.breakable ' '
@@ -186,7 +186,7 @@ module JSI
     end
 
     # @return [Array<String>]
-    def object_group_text
+    def jsi_object_group_text
       if jsi_schemas.any?
         class_n_schemas = "#{self.class} (#{jsi_schemas.map { |s| s.jsi_ptr.uri }.join(' ')})"
       else
@@ -195,7 +195,7 @@ module JSI
       [
         class_n_schemas,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
-        *(jsi_node_content.respond_to?(:object_group_text) ? jsi_node_content.object_group_text : []),
+        *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : []),
       ].compact
     end
 
