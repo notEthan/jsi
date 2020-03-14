@@ -136,9 +136,9 @@ module JSI
     end
 
     # @return [String] basically the same #inspect as Hash, but has the
-    #   class name and, if responsive, self's #object_group_text
+    #   class name and, if responsive, self's #jsi_object_group_text
     def inspect
-      object_group_str = (respond_to?(:object_group_text) ? self.object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text) ? self.jsi_object_group_text : [self.class]).join(' ')
       "\#{<#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
     end
 
@@ -147,7 +147,7 @@ module JSI
     # pretty-prints a representation this node to the given printer
     # @return [void]
     def pretty_print(q)
-      object_group_str = (respond_to?(:object_group_text) ? object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#{<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {
@@ -212,9 +212,9 @@ module JSI
     end
 
     # @return [String] basically the same #inspect as Array, but has the
-    #   class name and, if responsive, self's #object_group_text
+    #   class name and, if responsive, self's #jsi_object_group_text
     def inspect
-      object_group_str = (respond_to?(:object_group_text) ? object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
       "\#[<#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
     end
 
@@ -223,7 +223,7 @@ module JSI
     # pretty-prints a representation this node to the given printer
     # @return [void]
     def pretty_print(q)
-      object_group_str = (respond_to?(:object_group_text) ? object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#[<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {

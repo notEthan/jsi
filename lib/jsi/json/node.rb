@@ -152,22 +152,22 @@ module JSI
 
       # meta-information about the object, outside the content. used by #inspect / #pretty_print
       # @return [Array<String>]
-      def object_group_text
+      def jsi_object_group_text
         [
           self.class.inspect,
           jsi_ptr.uri.to_s,
-        ] + (jsi_node_content.respond_to?(:object_group_text) ? jsi_node_content.object_group_text : [])
+        ] + (jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : [])
       end
 
       # a string representing this node
       def inspect
-        "\#<#{object_group_text.join(' ')} #{jsi_node_content.inspect}>"
+        "\#<#{jsi_object_group_text.join(' ')} #{jsi_node_content.inspect}>"
       end
 
       # pretty-prints a representation this node to the given printer
       def pretty_print(q)
         q.text '#<'
-        q.text object_group_text.join(' ')
+        q.text jsi_object_group_text.join(' ')
         q.group_sub {
           q.nest(2) {
             q.breakable ' '
