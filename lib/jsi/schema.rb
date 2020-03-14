@@ -21,6 +21,30 @@ module JSI
     class NotASchemaError < Error
     end
 
+    # extends any schema which uses the keyword '$id' to identify its canonical URI
+    module BigMoneyId
+      # @return [#to_str, nil] the contents of a $id keyword whose value is a string, or nil
+      def id
+        if schema_content.respond_to?(:to_hash) && schema_content['$id'].respond_to?(:to_str)
+          schema_content['$id']
+        else
+          nil
+        end
+      end
+    end
+
+    # extends any schema which uses the keyword 'id' to identify its canonical URI
+    module OldId
+      # @return [#to_str, nil] the contents of an id keyword whose value is a string, or nil
+      def id
+        if schema_content.respond_to?(:to_hash) && schema_content['id'].respond_to?(:to_str)
+          schema_content['id']
+        else
+          nil
+        end
+      end
+    end
+
     # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
     # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema
     # are themselves also schemas.
