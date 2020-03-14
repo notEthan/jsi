@@ -99,25 +99,31 @@ module JSI
     #
     # @param instance [Object] the instance to check any applicators against
     # @return [Set<JSI::BasicSchema>] matched applicator subschemas
-    def match_to_instance(instance)
+    def match_to_instance(instance, visited_refs: [])
       Set.new.tap do |schemas|
         if schema_content.respond_to?(:to_hash)
           if schema_content['$ref'].respond_to?(:to_str)
-            ptr.deref(document) do |deref_ptr|
-              schemas.merge((self / deref_ptr).match_to_instance(instance))
-            end
-          else
+            keyword = '$ref'
+            ref = SchemaRef.new(self, keyword)
+            schemas.merge(ref.deref_basic_schema.match_to_instance(instance, visited_refs: visited_refs + [ref]))
+          end
+          if schema_content['$recursiveRef'].respond_to?(:to_str)
+            keyword = '$recursiveRef'
+            ref = SchemaRef.new(self, keyword)
+            schemas.merge(ref.deref_basic_schema.match_to_instance(instance, visited_refs: visited_refs + [ref]))
+          end
+          unless ref
             schemas << self
           end
           if schema_content['allOf'].respond_to?(:to_ary)
             schema_content['allOf'].each_index do |i|
-              schemas.merge(self['allOf', i].match_to_instance(instance))
+              schemas.merge(self['allOf', i].match_to_instance(instance, visited_refs: visited_refs))
             end
           end
           if schema_content['anyOf'].respond_to?(:to_ary)
             schema_content['anyOf'].each_index do |i|
               if self['anyOf', i].valid?(instance)
-                schemas.merge(self['anyOf', i].match_to_instance(instance))
+                schemas.merge(self['anyOf', i].match_to_instance(instance, visited_refs: visited_refs))
               end
             end
           end
@@ -126,7 +132,7 @@ module JSI
               self['oneOf', i].valid?(instance)
             end
             if one_i
-              schemas.merge(self['oneOf', one_i].match_to_instance(instance))
+              schemas.merge(self['oneOf', one_i].match_to_instance(instance, visited_refs: visited_refs))
             end
           end
           # TODO dependencies
