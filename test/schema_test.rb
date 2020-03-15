@@ -51,7 +51,7 @@ describe JSI::Schema do
       assert_equal('https://schemas.jsi.unth.net/test/uses_pointer_in_fragment#/properties/foo', subschema.schema_id)
     end
     it 'uses a pointer in the fragment relative to the fragment of the root' do
-      schema = JSI::Schema.new({
+      schema = JSI::Schema.default_metaschema.new_jsi({
         '$id' => 'https://schemas.jsi.unth.net/test/id_has_pointer#/notroot',
         'properties' => {'foo' => {'type' => 'object'}},
       })
