@@ -50,7 +50,7 @@ module JSI
       JSI::Util.ycomb do |rec|
         proc do |node, base_id|
           if node.is_a?(JSI::Schema)
-            node.jsi_instance_schema_nodes.each do |schema_node|
+            [node].each do |schema_node|
               schema_node_id = schema_node.id
               if schema_node_id
                 base_id = base_id ? base_id.join(schema_node_id) : Addressable::URI.parse(schema_node_id)
