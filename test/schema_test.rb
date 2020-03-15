@@ -35,8 +35,8 @@ describe JSI::Schema do
       assert_nil(JSI::Schema.new({}).schema_id)
     end
     it 'uses a given id with a fragment' do
-      schema = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/given_id#'})
-      assert_equal('https://schemas.jsi.unth.net/test/given_id#', schema.schema_id)
+      schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/given_id_with_fragment#'})
+      assert_equal('https://schemas.jsi.unth.net/test/given_id_with_fragment#', schema.schema_id)
     end
     it 'uses a given id (adding a fragment)' do
       schema = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/given_id'})
@@ -44,19 +44,19 @@ describe JSI::Schema do
     end
     it 'uses a pointer in the fragment' do
       schema = JSI::Schema.new({
-        'id' => 'https://schemas.jsi.unth.net/test/given_id#',
+        'id' => 'https://schemas.jsi.unth.net/test/uses_pointer_in_fragment#',
         'properties' => {'foo' => {'type' => 'object'}},
       })
       subschema = schema['properties']['foo']
-      assert_equal('https://schemas.jsi.unth.net/test/given_id#/properties/foo', subschema.schema_id)
+      assert_equal('https://schemas.jsi.unth.net/test/uses_pointer_in_fragment#/properties/foo', subschema.schema_id)
     end
     it 'uses a pointer in the fragment relative to the fragment of the root' do
       schema = JSI::Schema.new({
-        'id' => 'https://schemas.jsi.unth.net/test/given_id#/notroot',
+        'id' => 'https://schemas.jsi.unth.net/test/id_has_pointer#/notroot',
         'properties' => {'foo' => {'type' => 'object'}},
       })
       subschema = schema['properties']['foo']
-      assert_equal('https://schemas.jsi.unth.net/test/given_id#/notroot/properties/foo', subschema.schema_id)
+      assert_equal('https://schemas.jsi.unth.net/test/id_has_pointer#/notroot/properties/foo', subschema.schema_id)
     end
   end
   describe '#jsi_schema_module' do
