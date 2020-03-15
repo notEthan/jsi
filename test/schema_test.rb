@@ -217,7 +217,7 @@ describe JSI::Schema do
           {
             :message => "instance type does not match `type` value",
             :keyword => "type",
-            :schema_ptr => JSI::SchemaPointer[], :schema_document => schema.jsi_document,
+            :schema_ptr => JSI::JSON::Pointer[], :schema_document => schema.jsi_document,
             :instance_ptr => JSI::JSON::Pointer[], :instance_document => ["no"],
           },
         ], result.validation_errors)
@@ -245,7 +245,7 @@ describe JSI::Schema do
           {
             :message => "self-referential schema structure",
             :keyword => "$ref",
-            :schema_ptr => JSI::SchemaPointer[], :schema_document => schema.jsi_document,
+            :schema_ptr => JSI::JSON::Pointer[], :schema_document => schema.jsi_document,
           },
         ], result.schema_errors)
       end
@@ -273,12 +273,12 @@ describe JSI::Schema do
           {
             :message => "self-referential schema structure",
             :keyword => "$ref",
-            :schema_ptr => JSI::SchemaPointer['definitions']['alice'], :schema_document => schema.jsi_document,
+            :schema_ptr => JSI::JSON::Pointer['definitions']['alice'], :schema_document => schema.jsi_document,
           },
           {
             :message => "self-referential schema structure",
             :keyword => "$ref",
-            :schema_ptr => JSI::SchemaPointer['definitions']['bob'], :schema_document => schema.jsi_document,
+            :schema_ptr => JSI::JSON::Pointer['definitions']['bob'], :schema_document => schema.jsi_document,
           },
         ], result.schema_errors)
       end
