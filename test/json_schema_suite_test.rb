@@ -40,7 +40,7 @@ describe 'JSON Schema Test Suite' do
                 describe(tests_desc.description) do
                   let(:schema) do
                     begin
-                      metaschema.new_jsi(JSI::Typelike.as_json(tests_desc['schema'])).tap(&:pretty_inspect)
+                      metaschema.new_jsi(JSI::Typelike.as_json(tests_desc['schema'])).tap(&:jsi_register_schema)
                     rescue JSI::Schema::IdHasFragment
                       skip('unsupported id with fragment')
                     end
