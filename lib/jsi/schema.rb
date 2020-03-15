@@ -65,13 +65,13 @@ module JSI
               unless metaschema
                 raise(NotImplementedError, "metaschema not supported: #{schema_object['$schema']}")
               end
-              metaschema.new_jsi(schema_object, schema_id: schema_id)
+              metaschema.new_jsi(schema_object).tap { |s| s.jsi_register_schema(schema_id: schema_id) }
             end
           else
-            default_metaschema.new_jsi(schema_object, schema_id: schema_id)
+            default_metaschema.new_jsi(schema_object).tap { |s| s.jsi_register_schema(schema_id: schema_id) }
           end
         elsif [true, false].include?(schema_object)
-          default_metaschema.new_jsi(schema_object, schema_id: schema_id)
+          default_metaschema.new_jsi(schema_object)
         else
           raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
         end
@@ -148,17 +148,13 @@ module JSI
     # side effects:
     # - if the instantiated JSI is a {JSI::Schema}, it is registered with `JSI.schema_registry` (a {JSI::SchemaRegistry})
     #
-    # @param schema_id [#to_str]
     # @return [JSI::Base] a JSI whose instance is the given instance and whose schemas are matched from this
     #   schema.
-    def new_jsi(other_instance, schema_id: nil, **a, &b)
-      JSI.class_for_schemas(match_to_instance(other_instance)).new(other_instance, a, &b).tap do |jsi|
-        if jsi.is_a?(Schema)
-          jsi.jsi_register_schema(schema_id: schema_id)
-        end
-      end
+    def new_jsi(other_instance, **a, &b)
+      JSI.class_for_schemas(match_to_instance(other_instance)).new(other_instance, a, &b)
     end
 
+    # @param schema_id [#to_str]
     def jsi_register_schema(schema_id: nil)
       JSI.schema_registry.register(self, schema_id: schema_id)
     end
