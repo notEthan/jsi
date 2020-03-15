@@ -25,7 +25,7 @@ module JSI
 
     def deref_basic_schema
       return @deref_basic_schema if instance_variable_defined?(:@deref_basic_schema)
-      return(@deref_basic_schema = JSI.registered_schemas.find_basic_schema(self))
+      return(@deref_basic_schema = JSI.schema_registry.find_basic_schema(self))
     end
 
     def deref_schema(ref_schema)
@@ -33,7 +33,7 @@ module JSI
       if ref[/\A#/]
         return(@deref_schema = JSI::JSON::Pointer.from_fragment(ref_uri.fragment).evaluate(ref_schema.jsi_root_node))
       end
-      return(@deref_schema = JSI.registered_schemas.find_schema(self))
+      return(@deref_schema = JSI.schema_registry.find_schema(self))
     end
 
     def jsi_fingerprint

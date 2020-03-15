@@ -146,7 +146,7 @@ module JSI
     # any parameters are passed to JSI::Base#initialize, but none are normally used.
     #
     # side effects:
-    # - if the instantiated JSI is a {JSI::Schema}, it is registered with `JSI.registered_schemas` (a {JSI::SchemaRegistry})
+    # - if the instantiated JSI is a {JSI::Schema}, it is registered with `JSI.schema_registry` (a {JSI::SchemaRegistry})
     #
     # @param schema_id [#to_str]
     # @return [JSI::Base] a JSI whose instance is the given instance and whose schemas are matched from this
@@ -160,7 +160,7 @@ module JSI
     end
 
     def jsi_register_schema(schema_id: nil)
-      JSI.registered_schemas.register(self, schema_id: schema_id)
+      JSI.schema_registry.register(self, schema_id: schema_id)
     end
 
     # @return [Boolean] does this schema itself describe a schema?

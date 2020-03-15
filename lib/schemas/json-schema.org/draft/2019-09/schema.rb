@@ -9,7 +9,7 @@ module JSI
   end
 
   schema_documents.each do |doc|
-    JSI.registered_schemas.register_document(doc['$id'], doc)
+    JSI.schema_registry.register_document(doc['$id'], doc)
   end
   draft201909schema = MetaschemaNode.new(draft201909content,
     root_basic_schema: JSI::BasicSchema::Draft201909.new(JSI::JSON::Pointer[], draft201909content),

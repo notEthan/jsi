@@ -14,7 +14,7 @@ JSI::Util.ycomb do |rec|
       if subpath == ['subSchemas.json']
         subSchemas_schema = JSI::Schema.new({'additionalProperties' => {'$ref' => JSI::Schema.default_metaschema.id}})
         subSchemas = subSchemas_schema.new_jsi(remote_content)
-        JSI.registered_schemas.register(subSchemas, schema_id: id)
+        JSI.schema_registry.register(subSchemas, schema_id: id)
       else
         JSI::Schema.new(remote_content, schema_id: id)
       end
