@@ -50,7 +50,7 @@ module JSI
       end
 
       instance_for_schema = jsi_document
-      basic_schema_init = Set[BasicSchema.new(root_schema_ptr, jsi_document)]
+      basic_schema_init = Set[root_basic_schema]
       basic_schemas = jsi_ptr.reference_tokens.inject(basic_schema_init) do |basic_schemas_under_tok, tok|
         subschemas_for_token = basic_schemas_under_tok.map do |basic_schema|
           if instance_for_schema.respond_to?(:to_ary)
@@ -102,10 +102,12 @@ module JSI
     attr_reader :jsi_document
     # ptr to this metaschema node. see PathedNode#jsi_ptr.
     attr_reader :jsi_ptr
+
+    attr_reader :root_basic_schema
+
     # ptr to the root of the metaschema in the jsi_document
     attr_reader :metaschema_root_ptr
-    # ptr to the schema of the root of the jsi_document
-    attr_reader :root_schema_ptr
+
     # JSI::Schemas describing this MetaschemaNode
     attr_reader :jsi_schemas
 
@@ -208,7 +210,7 @@ module JSI
     private
 
     def our_initialize_params
-      {jsi_ptr: jsi_ptr, metaschema_root_ptr: metaschema_root_ptr, root_schema_ptr: root_schema_ptr}
+      {jsi_ptr: jsi_ptr, metaschema_root_ptr: metaschema_root_ptr, root_basic_schema: root_basic_schema}
     end
 
     def new_node(params)
