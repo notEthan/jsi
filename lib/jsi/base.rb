@@ -104,6 +104,7 @@ module JSI
     # NOINSTANCE is a magic value passed to #initialize when instantiating a JSI
     # from a document and JSON Pointer.
     NOINSTANCE = Object.new.tap { |o| [:inspect, :to_s].each(&(-> (s, m) { o.define_singleton_method(m) { s } }.curry.([JSI::Base.name, 'NOINSTANCE'].join('::')))) }
+    private_constant :NOINSTANCE
 
     # initializes this JSI from the given instance - instance is most commonly
     # a parsed JSON document consisting of Hash, Array, or sometimes a basic
@@ -217,7 +218,7 @@ module JSI
           schema_value = token_schemas.any? { |token_schema| token_schema.describes_schema? }
 
           if complex_value || schema_value
-            JSI::SchemaClasses.class_for_schemas(token_schemas).new(Base::NOINSTANCE,
+            JSI::SchemaClasses.class_for_schemas(token_schemas).new(NOINSTANCE,
               jsi_document: @jsi_document,
               jsi_ptr: @jsi_ptr[token],
               jsi_root_node: @jsi_root_node,
@@ -290,7 +291,7 @@ module JSI
     def jsi_modified_copy(&block)
       if jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        self.class.new(Base::NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr)
+        self.class.new(NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr)
       else
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
