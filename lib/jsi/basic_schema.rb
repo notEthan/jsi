@@ -6,27 +6,6 @@ module JSI
     include Util::Memoize
     include Util::FingerprintHash
 
-    module BigMoneyId
-      def id
-        keyword = '$id'
-        if schema_content.respond_to?(:to_hash) && schema_content[keyword].respond_to?(:to_str)
-          schema_content[keyword]
-        else
-          nil
-        end
-      end
-    end
-
-    module Id
-      def id
-        keyword = 'id'
-        if schema_content.respond_to?(:to_hash) && schema_content[keyword].respond_to?(:to_str)
-          schema_content[keyword]
-        else
-          nil
-        end
-      end
-    end
 
     def id
       if schema_content.respond_to?(:to_hash)

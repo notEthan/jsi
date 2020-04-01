@@ -17,6 +17,28 @@ module JSI
     autoload :Draft07, 'jsi/schema/draft07'
     autoload :Draft201909, 'jsi/schema/draft201909'
 
+    module BigMoneyId
+      def id
+        keyword = '$id'
+        if schema_content.respond_to?(:to_hash) && schema_content[keyword].respond_to?(:to_str)
+          schema_content[keyword]
+        else
+          nil
+        end
+      end
+    end
+
+    module Id
+      def id
+        keyword = 'id'
+        if schema_content.respond_to?(:to_hash) && schema_content[keyword].respond_to?(:to_str)
+          schema_content[keyword]
+        else
+          nil
+        end
+      end
+    end
+
     include Util::Memoize
 
     # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
