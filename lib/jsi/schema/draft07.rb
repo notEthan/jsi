@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module JSI
-  class BasicSchema
-    class Draft07 < BasicSchema
+  module Schema
+    module Draft07
       include BigMoneyId
     end
   end

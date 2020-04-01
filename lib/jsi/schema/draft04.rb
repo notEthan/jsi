@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module JSI
-  class BasicSchema
-    class Draft04 < BasicSchema
+  module Schema
+    module Draft04
       include Id
     end
   end
