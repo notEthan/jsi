@@ -10,10 +10,13 @@ module JSI
   #
   # the JSI::Base class itself is not intended to be instantiated.
   class Base
-    include Util::Memoize
-    include Enumerable
     include PathedNode
     include Schema::SchemaAncestorNode
+    include Util::Memoize
+
+    # not every JSI::Base is necessarily an Enumerable, but it's better to include Enumerable on
+    # the class than to conditionally extend the instance.
+    include Enumerable
 
     # an exception raised when #[] is invoked on an instance which is not an array or hash
     class CannotSubscriptError < StandardError
