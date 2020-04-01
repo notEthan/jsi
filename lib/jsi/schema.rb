@@ -12,8 +12,6 @@ module JSI
     class NotASchemaError < Error
     end
 
-    include Util::Memoize
-
     # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
     # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema
     # are themselves also schemas.
