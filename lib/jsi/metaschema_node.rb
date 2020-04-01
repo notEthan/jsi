@@ -22,14 +22,7 @@ module JSI
   #
   # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
   # its schema is the metaschema.
-  class MetaschemaNode
-    include PathedNode
-    include Util::Memoize
-
-    # not every MetaschemaNode is actually an Enumerable, but it's better to include Enumerable on
-    # the class than to conditionally extend the instance.
-    include Enumerable
-
+  class MetaschemaNode < Base
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
     # @param root_basic_schema [JSI::BasicSchema] BasicSchema for the root of the metaschema in jsi_document
@@ -98,11 +91,6 @@ module JSI
       end
     end
 
-    # document containing the metaschema. see PathedNode#jsi_document.
-    attr_reader :jsi_document
-    # ptr to this metaschema node. see PathedNode#jsi_ptr.
-    attr_reader :jsi_ptr
-
     attr_reader :root_basic_schema
 
     # ptr to the root of the metaschema in the jsi_document
@@ -169,24 +157,6 @@ module JSI
       MetaschemaNode.new(jsi_ptr.modified_document_copy(jsi_document, &block), our_initialize_params)
     end
 
-    # @return [String]
-    def inspect
-      "\#<#{jsi_object_group_text.join(' ')} #{jsi_node_content.inspect}>"
-    end
-
-    def pretty_print(q)
-      q.text '#<'
-      q.text jsi_object_group_text.join(' ')
-      q.group_sub {
-        q.nest(2) {
-          q.breakable ' '
-          q.pp jsi_node_content
-        }
-      }
-      q.breakable ''
-      q.text '>'
-    end
-
     # @return [Array<String>]
     def jsi_object_group_text
       if jsi_schemas.any?
@@ -200,12 +170,6 @@ module JSI
         *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : []),
       ].compact
     end
-
-    # @return [Object] an opaque fingerprint of this MetaschemaNode for FingerprintHash
-    def jsi_fingerprint
-      {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
-    end
-    include Util::FingerprintHash
 
     private
 
