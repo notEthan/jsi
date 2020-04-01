@@ -22,16 +22,8 @@ module JSI
   #
   # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
   # the metaschema is one of its schemas.
-  class MetaschemaNode
+  class MetaschemaNode < Base
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
-
-    include PathedNode
-    include Schema::SchemaAncestorNode
-    include Util::Memoize
-
-    # not every MetaschemaNode is necessarily an Enumerable, but it's better to include Enumerable on
-    # the class than to conditionally extend the instance.
-    include Enumerable
 
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
@@ -132,11 +124,6 @@ module JSI
       end
     end
 
-    # document containing the metaschema. see PathedNode#jsi_document.
-    attr_reader :jsi_document
-    # ptr to this metaschema node. see PathedNode#jsi_ptr.
-    attr_reader :jsi_ptr
-
     # Set of modules to apply to schemas which are instances of (described by) the metaschema
     attr_reader :metaschema_instance_modules
 
@@ -202,24 +189,6 @@ module JSI
       MetaschemaNode.new(jsi_ptr.modified_document_copy(jsi_document, &block), our_initialize_params)
     end
 
-    # @return [String]
-    def inspect
-      "\#<#{jsi_object_group_text.join(' ')} #{jsi_node_content.inspect}>"
-    end
-
-    def pretty_print(q)
-      q.text '#<'
-      q.text jsi_object_group_text.join(' ')
-      q.group_sub {
-        q.nest(2) {
-          q.breakable ' '
-          q.pp jsi_node_content
-        }
-      }
-      q.breakable ''
-      q.text '>'
-    end
-
     # @private
     # @return [Array<String>]
     def jsi_object_group_text
@@ -239,7 +208,6 @@ module JSI
     def jsi_fingerprint
       {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
     end
-    include Util::FingerprintHash
 
     private
 
