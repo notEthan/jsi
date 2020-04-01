@@ -12,6 +12,11 @@ module JSI
     class NotASchemaError < Error
     end
 
+    autoload :Draft04, 'jsi/schema/draft04'
+    autoload :Draft06, 'jsi/schema/draft06'
+    autoload :Draft07, 'jsi/schema/draft07'
+    autoload :Draft201909, 'jsi/schema/draft201909'
+
     include Util::Memoize
 
     # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
