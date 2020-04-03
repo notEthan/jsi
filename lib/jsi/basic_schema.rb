@@ -68,54 +68,6 @@ module JSI
     end
 
 
-    # returns any applicator subschemas of this schema ($ref, oneOf, anyOf, allOf) which apply to the given instance
-    #
-    # @param instance [Object] the instance to check any applicators against
-    # @param visited_refs [Enumerable<JSI::SchemaRef>]
-    # @return [Set<JSI::BasicSchema>] matched applicator subschemas
-    def match_to_instance(instance, visited_refs: [])
-      Set.new.tap do |schemas|
-        if schema_content.respond_to?(:to_hash)
-          if schema_content['$ref'].respond_to?(:to_str)
-            keyword = '$ref'
-            ref = SchemaRef.new(self, keyword)
-            schemas.merge(ref.deref_basic_schema.match_to_instance(instance, visited_refs: visited_refs + [ref]))
-          end
-          if schema_content['$recursiveRef'].respond_to?(:to_str)
-            keyword = '$recursiveRef'
-            ref = SchemaRef.new(self, keyword)
-            schemas.merge(ref.deref_basic_schema.match_to_instance(instance, visited_refs: visited_refs + [ref]))
-          end
-          unless ref
-            schemas << self
-          end
-          if schema_content['allOf'].respond_to?(:to_ary)
-            schema_content['allOf'].each_index do |i|
-              schemas.merge(self['allOf', i].match_to_instance(instance, visited_refs: visited_refs))
-            end
-          end
-          if schema_content['anyOf'].respond_to?(:to_ary)
-            schema_content['anyOf'].each_index do |i|
-              if self['anyOf', i].valid?(instance)
-                schemas.merge(self['anyOf', i].match_to_instance(instance, visited_refs: visited_refs))
-              end
-            end
-          end
-          if schema_content['oneOf'].respond_to?(:to_ary)
-            one_i = schema_content['oneOf'].each_index.detect do |i|
-              self['oneOf', i].valid?(instance)
-            end
-            if one_i
-              schemas.merge(self['oneOf', one_i].match_to_instance(instance, visited_refs: visited_refs))
-            end
-          end
-          # TODO dependencies
-        else
-          schemas << self
-        end
-      end
-    end
-
     # indicates whether the given instance validates this schema
     #
     # @param instance_ptr [JSI::JSON::Pointer] a pointer to the instance to validate against the schema, in the instance_document

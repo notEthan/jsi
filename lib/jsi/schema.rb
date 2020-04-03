@@ -202,59 +202,49 @@ module JSI
       end
     end
 
-    # checks this schema for relevant applicators ($ref, allOf, anyOf, oneOf), and returns  an Enumerable
-    # containing each resulting JSI::Schema. if no applicators apply, the only schema returned will be self.
+    # checks this schema for applicators ($ref, allOf, etc.) which should be applied to the given instance.
+    # returns these as a Set of {JSI::Schema}s.
+    # the returned set will contain this schema itself, unless this schema contains a $ref or a $recursiveRef
+    # with no other keywords.
     #
-    # @param other_instance [Object] the instance to which to attempt to match *Of subschemas
-    # @return [Enumerable<JSI::Schema>] matched applicator subschemas
-    def match_to_instance(other_instance, visited_refs: [], matched: Set[])
+    # @param instance [Object] the instance to check any applicators against
+    # @param visited_refs [Enumerable<JSI::SchemaRef>]
+    # @return [Set<JSI::Schema>] matched applicator schemas
+    def match_to_instance(instance, visited_refs: [])
       Set.new.tap do |schemas|
-        schema = self
-
-        if schema.respond_to?(:to_hash)
-          if schema['$ref'].respond_to?(:to_str)
+        if schema_content.respond_to?(:to_hash)
+          if schema_content['$ref'].respond_to?(:to_str)
             keyword = '$ref'
-            ref = SchemaRef.new(own_basic_schema, keyword)
+            ref = SchemaRef.new(self, keyword)
 
-            if visited_refs.include?(ref)
-              schemas << self
-            else
-              deref_schema = ref.deref_schema(self)
-              schemas.merge(deref_schema.match_to_instance(other_instance, visited_refs: visited_refs + [ref]))
-            end
+            schemas.merge(ref.deref_basic_schema.match_to_instance(instance, visited_refs: visited_refs + [ref]))
           end
-          if schema['$recursiveRef'].respond_to?(:to_str)
+          if schema_content['$recursiveRef'].respond_to?(:to_str)
             keyword = '$recursiveRef'
-            ref = SchemaRef.new(own_basic_schema, keyword)
-            if visited_refs.include?(ref)
-              schemas << self
-            else
-              deref_schema = ref.deref_schema(self)
-              schemas.merge(deref_schema.match_to_instance(other_instance, visited_refs: visited_refs + [ref]))
-            end
+            ref = SchemaRef.new(self, keyword)
+            schemas.merge(ref.deref_basic_schema.match_to_instance(instance, visited_refs: visited_refs + [ref]))
           end
           unless ref
             schemas << self
           end
-          if schema['allOf'].respond_to?(:to_ary)
-            schema['allOf'].each_index do |i|
-              schemas.merge(schema['allOf'][i].match_to_instance(other_instance, visited_refs: visited_refs))
+          if schema_content['allOf'].respond_to?(:to_ary)
+            schema_content['allOf'].each_index do |i|
+              schemas.merge(subschema('allOf', i).match_to_instance(instance, visited_refs: visited_refs))
             end
           end
-          if schema['anyOf'].respond_to?(:to_ary)
-            schema['anyOf'].each_index do |i|
-              valid = schema['anyOf'][i].instance_valid?(other_instance)
-              if valid
-                schemas.merge(schema['anyOf'][i].match_to_instance(other_instance, visited_refs: visited_refs))
+          if schema_content['anyOf'].respond_to?(:to_ary)
+            schema_content['anyOf'].each_index do |i|
+              if subschema('anyOf', i).instance_valid?(instance)
+                schemas.merge(subschema('anyOf', i).match_to_instance(instance, visited_refs: visited_refs))
               end
             end
           end
-          if schema['oneOf'].respond_to?(:to_ary)
-            one_i = schema['oneOf'].each_index.detect do |i|
-              schema['oneOf'][i].instance_valid?(other_instance)
+          if schema_content['oneOf'].respond_to?(:to_ary)
+            one_i = schema_content['oneOf'].each_index.detect do |i|
+              subschema('oneOf', i).instance_valid?(instance)
             end
             if one_i
-              schemas.merge(schema['oneOf'][one_i].match_to_instance(other_instance, visited_refs: visited_refs))
+              schemas.merge(subschema('oneOf', one_i).match_to_instance(instance, visited_refs: visited_refs))
             end
           end
           # TODO dependencies
