@@ -26,7 +26,6 @@ module JSI
   autoload :JSON, 'jsi/json'
   autoload :SchemaRef, 'jsi/schema_ref'
   autoload :SchemaValidation, 'jsi/schema_validation'
-  autoload :BasicSchema, 'jsi/basic_schema'
   autoload :PathedNode, 'jsi/pathed_node'
   autoload :Typelike, 'jsi/typelike_modules'
   autoload :Hashlike, 'jsi/typelike_modules'
