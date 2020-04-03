@@ -107,6 +107,10 @@ module JSI
       alias_method :new, :from_object
     end
 
+    def schema_content
+      jsi_node_content
+    end
+
     # @return [String, nil] the id of this schema, if any is specified, according to the $id field
     #   or (with older json schema drafts) the id field.
     def id
