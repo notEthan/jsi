@@ -321,6 +321,7 @@ module JSI
               jsi_indicated_schemas: result_schema_indicated_schemas,
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
+              jsi_schema_dynamic_anchor_map: schema.jsi_schema_dynamic_anchor_map,
               jsi_schema_registry: schema.jsi_schema_registry,
               jsi_content_to_immutable: schema.jsi_content_to_immutable,
               jsi_root_node: schema.equal?(schema.jsi_root_node) ? nil : schema.jsi_root_node, # bad
