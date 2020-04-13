@@ -414,7 +414,8 @@ module JSI
           Schema.ensure_schema(ptr.evaluate(resource_root, as_jsi: true),
             msg: [
               "subschema is not a schema at pointer: #{ptr.pointer}"
-            ]
+            ],
+            reinstantiate_as: schema.jsi_schemas.select(&:describes_schema?)
           )
         end
       end
