@@ -165,6 +165,21 @@ module JSI
       is_a?(JSI::Schema::DescribesSchema)
     end
 
+    # returns a subschema of this Schema
+    #
+    # @param subptr [JSI::JSON::Pointer, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
+    # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
+    def subschema(subptr)
+      if subptr.respond_to?(:to_ary)
+        subptr = JSI::JSON::Pointer[*subptr]
+      end
+      unless subptr.is_a?(JSI::JSON::Pointer)
+        raise(TypeError, "param subptr must be an array or JSI::JSON::Pointer. got: #{subptr.inspect}")
+      end
+
+      subptr.evaluate(self)
+    end
+
     # checks this schema for applicators ($ref, allOf, etc.) which should be applied to the given instance.
     # returns these as a Set of {JSI::Schema}s.
     #
