@@ -1,4 +1,4 @@
-Copright © [Ethan](https://github.com/notEthan/)
+Copright © [Ethan](https://github.com/notEthan/) <ethan.jsi@unth.net>
 
 [<img align="right" src="https://github.com/notEthan/jsi/raw/master/resources/icons/AGPL-3.0.png">](https://www.gnu.org/licenses/agpl-3.0.html)
 
