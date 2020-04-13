@@ -226,6 +226,6 @@ Issues and pull requests are welcome on GitHub at https://github.com/notEthan/js
 
 [<img align="right" src="https://github.com/notEthan/jsi/raw/master/resources/icons/AGPL-3.0.png">](https://www.gnu.org/licenses/agpl-3.0.html)
 
-JSI is Open Source Software licensed under the terms of the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
+JSI is licensed under the terms of the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
 
 Unlike the MIT or BSD licenses more commonly used with Ruby gems, this license requires that if you modify JSI and propagate your changes, e.g. by including it in a web application, your modified version must be publicly available. The common path of forking on Github should satisfy this requirement.
