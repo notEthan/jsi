@@ -185,6 +185,22 @@ module JSI
       subptr.evaluate(self)
     end
 
+    # returns a schema in the same schema resource as this one (see #schema_resource_root) at the given
+    # pointer relative to the root of the schema resource.
+    #
+    # @param ptr [JSI::JSON::Pointer] a pointer to a schema from our schema resource root
+    # @return [JSI::Schema] the schema pointed to by ptr
+    def resource_root_subschema(ptr)
+      begin
+        schema = self
+        result_schema = ptr.evaluate(schema.schema_resource_root)
+        unless result_schema.is_a?(JSI::Schema)
+          raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{result_schema.pretty_inspect.chomp}")
+        end
+        result_schema
+      end
+    end
+
     # checks this schema for applicators ($ref, allOf, etc.) which should be applied to the given instance.
     # returns these as a Set of {JSI::Schema}s.
     #
@@ -194,7 +210,7 @@ module JSI
     # @return [Set<JSI::Schema>] matched applicator schemas
     def match_to_instance(other_instance)
       jsi_ptr.schema_match_ptrs_to_instance(jsi_document, other_instance).map do |ptr|
-        ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+        resource_root_subschema(ptr)
       end.to_set
     end
 
@@ -206,7 +222,7 @@ module JSI
     def subschemas_for_property_name(property_name)
       jsi_memoize(:subschemas_for_property_name, property_name) do |property_name|
         jsi_ptr.schema_subschema_ptrs_for_property_name(jsi_document, property_name).map do |ptr|
-          ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+          resource_root_subschema(ptr)
         end.to_set
       end
     end
@@ -219,7 +235,7 @@ module JSI
     def subschemas_for_index(index)
       jsi_memoize(:subschemas_for_index, index) do |index|
         jsi_ptr.schema_subschema_ptrs_for_index(jsi_document, index).map do |ptr|
-          ptr.evaluate(jsi_root_node).tap { |subschema| jsi_ensure_subschema_is_schema(subschema, ptr) }
+          resource_root_subschema(ptr)
         end.to_set
       end
     end
@@ -277,13 +293,6 @@ module JSI
     #   validation errors against its metaschema
     def validate_schema!
       ::JSON::Validator.validate!(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true)
-    end
-
-    private
-    def jsi_ensure_subschema_is_schema(subschema, ptr)
-      unless subschema.is_a?(JSI::Schema)
-        raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{subschema.pretty_inspect.chomp}")
-      end
     end
   end
 end
