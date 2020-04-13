@@ -23,15 +23,11 @@ module JSI
   # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
   # its schema is the metaschema.
   class MetaschemaNode < Base
-    # @param jsi_document the document containing the metaschema
-    # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
-    # @param root_basic_schema [JSI::BasicSchema] BasicSchema for the root of the metaschema in jsi_document
-    # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in jsi_document
-    def initialize(jsi_document, jsi_ptr: JSI::JSON::Pointer[], root_basic_schema: , metaschema_root_ptr: JSI::JSON::Pointer[])
+    def initialize(jsi_document, jsi_ptr: JSI::JSON::Pointer[], root_schema_ptrs: Set[JSI::JSON::Pointer[]], jsi_metaschema_module: , metaschema_root_ptr: JSI::JSON::Pointer[])
       @jsi_document = jsi_document
       @jsi_ptr = jsi_ptr
       raise(Bug, "root_basic_schema not BasicSchema") unless root_basic_schema.is_a?(BasicSchema)
-      @root_basic_schema = root_basic_schema
+      @root_schema_ptrs = root_basic_schema
       @metaschema_root_ptr = metaschema_root_ptr
 
       jsi_node_content = self.jsi_node_content
@@ -91,39 +87,25 @@ module JSI
       end
     end
 
-    attr_reader :root_basic_schema
+    attr_reader :xroot_basic_schema
 
     # ptr to the root of the metaschema in the jsi_document
-    attr_reader :metaschema_root_ptr
+    attr_reader :xmetaschema_root_ptr
 
     # JSI::Schemas describing this MetaschemaNode
-    attr_reader :jsi_schemas
+    attr_reader :xjsi_schemas
 
     # @return [MetaschemaNode] document root MetaschemaNode
-    def jsi_root_node
+    def xjsi_root_node
       new_node(jsi_ptr: JSI::JSON::Pointer[])
     end
 
     # @return [MetaschemaNode] parent MetaschemaNode
-    def jsi_parent_node
+    def xjsi_parent_node
       new_node(jsi_ptr: jsi_ptr.parent)
     end
 
-    # @param token [String, Integer, Object] the token to subscript
-    # @return [MetaschemaNode, Object] the node content's subscript value at the given token.
-    #   if there is a subschema defined for that token on this MetaschemaNode's schema,
-    #   returns that value as a MetaschemaNode instantiation of that subschema.
-    def [](token)
-      if respond_to?(:to_hash)
-        token_in_range = jsi_node_content_hash_pubsend(:key?, token)
-        value = jsi_node_content_hash_pubsend(:[], token)
-      elsif respond_to?(:to_ary)
-        token_in_range = jsi_node_content_ary_pubsend(:each_index).include?(token)
-        value = jsi_node_content_ary_pubsend(:[], token)
-      else
-        raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{jsi_node_content.pretty_inspect.chomp}")
-      end
-
+    def xsubscript(token)
       result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if token_in_range
           value_node = new_node(jsi_ptr: jsi_ptr[token])
@@ -141,24 +123,8 @@ module JSI
       result
     end
 
-    # if this MetaschemaNode is a $ref then the $ref is followed. otherwise this MetaschemaNode is returned.
-    # @return [MetaschemaNode]
-    def deref(&block)
-      jsi_ptr_deref do |deref_ptr|
-        return new_node(jsi_ptr: deref_ptr).tap(&(block || Util::NOOP))
-      end
-      return self
-    end
-
-    # @yield [Object] the node content of the instance. the block should result
-    #   in a (nondestructively) modified copy of this.
-    # @return [MetaschemaNode] modified copy of self
-    def jsi_modified_copy(&block)
-      MetaschemaNode.new(jsi_ptr.modified_document_copy(jsi_document, &block), our_initialize_params)
-    end
-
     # @return [Array<String>]
-    def jsi_object_group_text
+    def xjsi_object_group_text
       if jsi_schemas.any?
         class_n_schemas = "#{self.class} (#{jsi_schemas.map { |s| s.jsi_ptr.uri }.join(' ')})"
       else
@@ -173,11 +139,11 @@ module JSI
 
     private
 
-    def our_initialize_params
+    def xour_initialize_params
       {jsi_ptr: jsi_ptr, metaschema_root_ptr: metaschema_root_ptr, root_basic_schema: root_basic_schema}
     end
 
-    def new_node(params)
+    def xnew_node(params)
       MetaschemaNode.new(jsi_document, our_initialize_params.merge(params))
     end
   end

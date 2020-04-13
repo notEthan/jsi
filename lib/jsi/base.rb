@@ -125,6 +125,7 @@ module JSI
         jsi_root_node: nil,
         jsi_schema_resource_ancestors: [],
         jsi_schema_base_uri: nil,
+        jsi_schema_dynamic_scope: []
     )
       jsi_initialize_memos
 
@@ -183,6 +184,9 @@ module JSI
       elsif self.jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
       end
+
+      # decide whether this JSI is a schema - i.e. whether it is described by a (meta)schema which purports
+      # to describe schemas
       if !is_a?(JSI::Schema) && jsi_schemas.any?(&:describes_schema?)
         extend JSI::Schema
       end
@@ -230,8 +234,8 @@ module JSI
 
     # @param token [String, Integer, Object] the token to subscript
     # @return [JSI::Base, Object] the instance's subscript value at the given token.
-    #   if there is a subschema defined for that token on this JSI's schema,
-    #   returns that value as a JSI instantiation of that subschema.
+#   if there is a subschema defined for that token on this JSI's schema,
+#   returns that value as a JSI instantiation of that subschema.
     def [](token)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
@@ -262,6 +266,7 @@ module JSI
               jsi_root_node: @jsi_root_node,
               jsi_schema_resource_ancestors: @jsi_subschema_resource_ancestors,
               jsi_schema_base_uri: @jsi_schema_base_uri,
+#              jsi_schema_dynamic_scope: []
             )
           else
             value
@@ -307,20 +312,6 @@ module JSI
       end
     end
 
-    # if this JSI is a $ref then the $ref is followed. otherwise this JSI
-    # is returned.
-    #
-    # @yield [JSI::Base] if a block is given (optional), this will yield a deref'd JSI. if this
-    #   JSI is not a $ref object, the block is not called. if we are a $ref which cannot be followed
-    #   (e.g. a $ref to an external document, which is not yet supported), the block is not called.
-    # @return [JSI::Base, self]
-    def deref(&block)
-      jsi_ptr_deref do |deref_ptr|
-        deref_ptr.evaluate(jsi_root_node).tap(&(block || Util::NOOP))
-      end
-      return self
-    end
-
     # yields the content of the underlying instance. the block must result in
     # a modified copy of that (not destructively modifying the yielded content)
     # which will be used to instantiate a new instance of this JSI class with
@@ -337,13 +328,17 @@ module JSI
             jsi_metaschema_module: @jsi_metaschema_module,
             jsi_document: modified_document,
             jsi_ptr: @jsi_ptr,
+  #jsi_schema_resource_ancestors: @jsi_schema_resource_ancestors, # RM this would never be populated since ptr is the root, right
             jsi_schema_base_uri: @jsi_schema_base_uri,
+  #          jsi_schema_dynamic_scope: []
           )
         else
           self.class.new(NOINSTANCE,
             jsi_document: modified_document,
             jsi_ptr: @jsi_ptr,
+  #jsi_schema_resource_ancestors: @jsi_schema_resource_ancestors, # RM this would never be populated since ptr is the root, right
             jsi_schema_base_uri: @jsi_schema_base_uri,
+  #          jsi_schema_dynamic_scope: []
           )
         end
       else

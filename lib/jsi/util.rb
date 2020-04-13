@@ -81,7 +81,10 @@ module JSI
       end
     end
 
-    module Memoize
+    module XMemoize
+      def jsi_initialize_memos
+      end
+
       def jsi_memoize(key, *args_)
         @jsi_memos ||= {}
         @jsi_memos[key] ||= Hash.new do |h, args|
@@ -97,6 +100,56 @@ module JSI
             @jsi_memos[key].clear
           else
             @jsi_memos[key].delete(args)
+          end
+        end
+      end
+    end
+
+    module Memoize
+      def self.extended(object)
+        object.send(:jsi_initialize_memos)
+      end
+
+      private
+      def jsi_initialize_memos
+        # TODO something less silly?
+        @jsi_memo_mutexes_mutex = Mutex.new
+        @jsi_memo_mutexes = {}
+        @jsi_memos = {}
+      end
+
+      def jsi_memo_mutex(key)
+        unless @jsi_memo_mutexes.key?(key)
+          @jsi_memo_mutexes_mutex.synchronize do
+            # note: this ||= appears redundant with `unless @jsi_memo_mutexes.key?(key)`,
+            # but that check is not thread safe. this check is.
+            @jsi_memo_mutexes[key] ||= Mutex.new
+          end
+        end
+        @jsi_memo_mutexes[key]
+      end
+
+      def jsi_memoize(key, *args_)
+#STDERR.puts("locking #{object_id} #{respond_to?(:jsi_ptr) ? jsi_ptr : ''} #{key.inspect}" + (key == :[] ? " for #{args_.inspect}" : ''))
+#byebug if jsi_memo_mutex(key).locked?
+res=        jsi_memo_mutex(key).synchronize do
+          @jsi_memos[key] ||= Hash.new do |h, args|
+            h[args] = yield(*args)
+          end
+          @jsi_memos[key][args_]
+        end
+#STDERR.puts("unlocking #{object_id} #{respond_to?(:jsi_ptr) ? jsi_ptr : ''} #{key.inspect}")
+res
+      end
+
+      def jsi_clear_memo(key, *args)
+        jsi_memo_mutex(key).synchronize do
+          if @jsi_memos[key]
+            if args.empty?
+              @jsi_memos[key].clear
+            else
+              @jsi_memos[key].delete(args)
+            end
           end
         end
       end

@@ -1,15 +1,11 @@
 require_relative 'test_helper'
 
-describe JSI::MetaschemaNode do
+describe JSI::Metaschema do
   let(:jsi_document) { {'properties' => {'properties' => {'additionalProperties' => {'$ref' => '#'}}}} }
   let(:jsi_ptr) { JSI::JSON::Pointer[] }
-  let(:root_basic_schema) { JSI::BasicSchema.new(JSI::JSON::Pointer[], jsi_document) }
-  let(:metaschema_root_ptr) { JSI::JSON::Pointer[] }
   let(:subject) do
-    JSI::MetaschemaNode.new(jsi_document,
-      jsi_ptr: jsi_ptr,
-      root_basic_schema: root_basic_schema,
-      metaschema_root_ptr: jsi_ptr,
+    JSI::Metaschema.new(jsi_document,
+      jsi_metaschema_module: JSI::Schema::Draft201909,
     )
   end
   describe 'initialization' do
@@ -20,6 +16,13 @@ describe JSI::MetaschemaNode do
   describe 'json schema draft' do
     it 'type has a schema' do
       assert(JSI::JSONSchemaOrgDraft06.schema.type.jsi_schemas.any?)
+    end
+    describe '#jsi_schemas' do
+      let(:metaschema) { JSI::JSONSchemaOrgDraft06.schema }
+      it 'has jsi_schemas' do
+        assert_equal(Set[metaschema], metaschema.jsi_schemas)
+        assert_equal(Set[metaschema.properties['properties']], metaschema.properties.jsi_schemas)
+      end
     end
   end
 end

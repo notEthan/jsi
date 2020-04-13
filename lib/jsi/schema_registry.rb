@@ -12,13 +12,14 @@ module JSI
     def initialize
       @schemas = {}
       @schema_documents = {}
+      @schemas_mutex = Mutex.new
     end
 
     attr_reader :schemas
 
-    attr_reader :schema_documents
+    attr_reader :xschema_documents
 
-    def register_document(id, schema_document)
+    def xregister_document(id, schema_document)
       id = Addressable::URI.parse(id)
       if id.relative?
         raise(RelativeURIRegistration, "cannot register relative id URI #{id}. would you kindly pass an absolute URI in the `id` param?")
@@ -49,8 +50,11 @@ module JSI
 
       JSI::Util.ycomb do |rec|
         proc do |node, base_id|
+byebug if node.respond_to?(:to_hash) && node['$id'] =~ /scope_change_defs1/
           if node.is_a?(JSI::Schema)
-            [node].each do |schema_node|
+#            [node].each do |schema_node|
+            schema_node = node
+            begin
               schema_node_id = schema_node.id
               if schema_node_id
                 base_id = base_id ? base_id.join(schema_node_id) : Addressable::URI.parse(schema_node_id)
@@ -70,6 +74,7 @@ module JSI
           end
         end
       end.call(schema, schema_id ? Addressable::URI.parse(schema_id) : nil)
+      nil
     end
 
     def find_schema(schema_ref)
@@ -96,21 +101,13 @@ byebug
       end
     end
 
-    def find_basic_schema(schema_ref)
-#byebug if schema_ref.ref_uri.relative?
-      if schema_ref.ref_uri.fragment
-        # TODO error handling fragment with invalid pointer
-        ptr = JSI::JSON::Pointer.from_fragment(schema_ref.ref_uri.fragment)
-      else
-        ptr = JSI::JSON::Pointer[]
-      end
-      ref_root_uri = schema_ref.ref_uri.merge(fragment: nil)
 
+    def xfind_schema_document(schema_ref)
       if @schema_documents.key?(ref_root_uri)
-        schema_ref.basic_schema.class.new(ptr, @schema_documents[ref_root_uri])
+        schema_ref.schema.class.new(ptr, @schema_documents[ref_root_uri])
 #      elsif @schemas.key?(ref_root_uri)
       else
-        find_schema(schema_ref).own_basic_schema
+        find_schema(schema_ref).own_schema
 
 #byebug
 #        raise(SchemaNotFound, "id #{ref_root_uri} not in ids:\n#{(@schema_documents.keys | @schemas.keys).join("\n")}")
@@ -118,6 +115,7 @@ byebug
     end
 
     private
+    # @return [void]
     def register_single(schema, id)
       if id.relative?
         raise(RelativeURIRegistration, "cannot register relative id URI #{id}. would you kindly pass an absolute URI in the `id` param?")
@@ -127,14 +125,17 @@ byebug
         elsif id.fragment
           raise(Schema::IdHasFragment.new("schema id must not have a fragment. id: #{id}\nNOTE: a fragment is technically allowed in older JSON schema specifications. this is currently not supported, but support could be added. if you require this, please open an issue at https://github.com/notEthan/jsi/issues").tap { |e| e.id = id })
         end
-        if @schemas.key?(id)
-          if @schemas[id] != schema
-            raise(Collision, "id collision on #{id}. existing: \n#{@schemas[id].pretty_inspect.chomp}\nnew:\n#{schema.pretty_inspect.chomp}")
+        @schemas_mutex.synchronize do
+          if @schemas.key?(id)
+            if @schemas[id] != schema
+              raise(Collision, "id collision on #{id}. existing: \n#{@schemas[id].pretty_inspect.chomp}\nnew:\n#{schema.pretty_inspect.chomp}")
+            end
+          else
+            @schemas[id] = schema
           end
-        else
-          @schemas[id] = schema
         end
       end
+      nil
     end
   end
 end

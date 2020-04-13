@@ -46,6 +46,9 @@ module JSI
     # examples of a schema which describes a schema include the draft JSON Schema metaschemas and
     # the OpenAPI schema definition which describes "A deterministic version of a JSON Schema object."
     module DescribesSchema
+      def described_schemas_jsi_metaschema_module
+        @described_schemas_jsi_metaschema_module
+      end
     end
 
     class << self
@@ -109,6 +112,10 @@ module JSI
       jsi_node_content
     end
 
+    def base_uri
+      jsi_schema_base_uri
+    end
+
     # @return [String, nil] the id of this schema, if any is specified, according to the $id field
     #   or (with older json schema drafts) the id field.
     def id
@@ -126,6 +133,16 @@ module JSI
         end
       else
         nil # this schema's schema(s) do not describe an id property
+      end
+    end
+
+    def xid
+      if schema_content.respond_to?(:to_hash)
+        schema_content.key?('$id') && schema_content['$id'].respond_to?(:to_str) ? schema_content['$id'].to_str :
+          schema_content.key?('id') && schema_content['id'].respond_to?(:to_str) ? schema_content['id'].to_str :
+          nil
+      else
+        nil
       end
     end
 
@@ -193,11 +210,19 @@ module JSI
       is_a?(JSI::Schema::DescribesSchema)
     end
 
+    # @return [JSI::Schema]
+# generally a JSI::Metaschema
+    def described_by
+      @jsi_schema_described_by
+    end
+
     # returns a subschema of this Schema
     #
+# @param *tokens [Array[Object]] tokens appended to our ptr indicating the location of the subschema
     # @return [JSI::Schema] the subschema at the location indicated by *tokens
     def subschema(*tokens)
       if @jsi_subschema_resource_ancestors.last.is_a?(Metaschema)
+#schema_class = JSI.class_for_schemas(self.jsi_schemas.select(&:describes_schema?))
         schema_class = JSI.class_for_schemas(self.jsi_schemas)
         schema_class.new(Base.const_get(:NOINSTANCE),
           jsi_document: @jsi_document,
@@ -205,6 +230,7 @@ module JSI
           jsi_root_node: @jsi_root_node,
           jsi_schema_resource_ancestors: @jsi_subschema_resource_ancestors,
           jsi_schema_base_uri: @jsi_schema_uri || @jsi_schema_base_uri,
+  #        jsi_schema_dynamic_scope: []
         )
       else
         JSI::JSON::Pointer[*tokens].evaluate(self)
@@ -221,10 +247,28 @@ module JSI
     # @return [JSI::BasicSchema] the schema in our document at the given pointer
     def schema_from_resource_root(ptr)
       jsi_memoize(__method__, ptr) do |ptr|
+#        if ptr.respond_to?(:to_ary)
+#          ptr = JSI::JSON::Pointer[*ptr]
+#        end
 
         schema_resource_root = @jsi_schema_resource_ancestors.last || jsi_root_node
 
+use_evaluate = true
+#byebug
+        if use_evaluate
           ptr.evaluate(schema_resource_root)
+        else
+schema_class = self.class
+schema_class = schema_resource_root.class
+          schema_class.new(NOINSTANCE,
+            jsi_document: @jsi_document,
+            jsi_ptr: schema_resource_root.jsi_ptr + ptr,
+            jsi_root_node: jsi_root_node,
+    #        jsi_schema_resource_ancestors: [],
+            jsi_schema_base_uri: jsi_schema_uri || jsi_schema_base_uri,
+    #        jsi_schema_dynamic_scope: []
+          )
+        end
       end
     end
 
@@ -381,6 +425,14 @@ module JSI
       end
       internal_validate_instance(JSI::JSON::Pointer[], instance, validate_only: true).valid?
     end
+
+
+    # validates the given instance against this schema
+    #
+    # @param instance_ptr [JSI::JSON::Pointer] a pointer to the instance to validate against the schema, in the instance_document
+    # @param instance_document [#to_hash, #to_ary, Object] document containing the instance instance_ptr pointer points to
+    # @param validate_only [Boolean] whether to return a SchemaApplicationResult or a SchemaValidResult
+    # @return [SchemaApplicationResult, SchemaValidResult]
 
     def internal_validate_instance(instance_ptr, instance_document, validate_only: false, visited_refs: [])
       instance = instance_ptr.evaluate(instance_document)
