@@ -13,7 +13,7 @@ module JSI
       end
 
       if ref[/\A#/]
-        @deref_schema = schema.rename_this_subschema_from_root(JSI::JSON::Pointer.from_fragment(ref_uri.fragment))
+        @deref_schema = schema.schema_from_resource_root(JSI::JSON::Pointer.from_fragment(ref_uri.fragment))
       end
     end
 

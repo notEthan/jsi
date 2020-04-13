@@ -123,7 +123,11 @@ module JSI
         jsi_document: nil,
         jsi_ptr: nil,
         jsi_root_node: nil,
+        jsi_schema_resource_ancestors: [],
+        jsi_schema_base_uri: nil,
     )
+      jsi_initialize_memos
+
       unless respond_to?(:jsi_schemas)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.")
       end
@@ -150,22 +154,49 @@ module JSI
           if !jsi_root_node.jsi_ptr.root?
             raise(Bug, "jsi_root_node ptr #{jsi_root_node.jsi_ptr.inspect} is not root")
           end
+          if !jsi_root_node.jsi_document.__id__ == jsi_document.__id__
+            raise(Bug, "jsi_root_node.jsi_document != our jsi_document")
+          end
           @jsi_root_node = jsi_root_node
         end
       else
-        raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || jsi_root_node
+        raise(Bug, 'parameters without NOINSTANCE') if jsi_document || jsi_ptr || jsi_root_node
         @jsi_document = instance
         @jsi_ptr = JSI::JSON::Pointer[]
         @jsi_root_node = self
       end
+
+      raise(TypeError, "jsi_schema_base_uri is not a string: #{jsi_schema_base_uri.inspect}") if jsi_schema_base_uri && !jsi_schema_base_uri.respond_to?(:to_str)
+      @jsi_schema_base_uri = jsi_schema_base_uri
+
+      if jsi_schema_resource_ancestors
+        @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
+      else
+        @jsi_schema_resource_ancestors = []
+      end
+
+      raise(TypeError, "jsi_schema_dynamic_scope: #{jsi_schema_dynamic_scope.inspect}") unless jsi_schema_dynamic_scope.all? { |r| r.is_a?(JSI::SchemaRef) }
+      @jsi_schema_dynamic_scope = jsi_schema_dynamic_scope
 
       if self.jsi_instance.respond_to?(:to_hash)
         extend PathedHashNode
       elsif self.jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
       end
-      if jsi_schemas.any?(&:describes_schema?)
+      if !is_a?(JSI::Schema) && jsi_schemas.any?(&:describes_schema?)
         extend JSI::Schema
+      end
+
+      if is_a?(JSI::Schema)
+        if id
+          @jsi_schema_uri = jsi_schema_base_uri ? Addressable::URI.parse(jsi_schema_base_uri).join(id) : Addressable::URI.parse(id)
+        end
+
+        if id || @jsi_ptr.root?
+          @jsi_subschema_resource_ancestors = @jsi_schema_resource_ancestors + [self]
+        else
+          @jsi_subschema_resource_ancestors = @jsi_schema_resource_ancestors
+        end
       end
     end
 
@@ -177,6 +208,9 @@ module JSI
 
     # the JSI at the root of this JSI's document
     attr_reader :jsi_root_node
+
+    attr_reader :jsi_schema_base_uri
+    attr_reader :jsi_schema_uri
 
     # the instance of the json-schema
     alias_method :jsi_instance, :jsi_node_content
@@ -209,11 +243,11 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
+      result = jsi_memoize([:[], token], value, token_in_range) do |value, token_in_range|
         if respond_to?(:to_ary)
           token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_index(token) }.inject(Set.new, &:|)
         else
-          token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_property(token) }.inject(Set.new, &:|)
+          token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_property_name(token) }.inject(Set.new, &:|)
         end
         token_schemas = token_schemas.map { |schema| schema.match_to_instance(value) }.inject(Set.new, &:|)
 
@@ -226,6 +260,8 @@ module JSI
               jsi_document: @jsi_document,
               jsi_ptr: @jsi_ptr[token],
               jsi_root_node: @jsi_root_node,
+              jsi_schema_resource_ancestors: @jsi_subschema_resource_ancestors,
+              jsi_schema_base_uri: @jsi_schema_base_uri,
             )
           else
             value
@@ -295,7 +331,21 @@ module JSI
     def jsi_modified_copy(&block)
       if jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        self.class.new(NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr)
+
+        if is_a?(Metaschema)
+          self.class.new(NOINSTANCE,
+            jsi_metaschema_module: @jsi_metaschema_module,
+            jsi_document: modified_document,
+            jsi_ptr: @jsi_ptr,
+            jsi_schema_base_uri: @jsi_schema_base_uri,
+          )
+        else
+          self.class.new(NOINSTANCE,
+            jsi_document: modified_document,
+            jsi_ptr: @jsi_ptr,
+            jsi_schema_base_uri: @jsi_schema_base_uri,
+          )
+        end
       else
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
@@ -348,7 +398,7 @@ module JSI
           if schema_module_names.empty?
             class_name
           else
-            "#{class_name} (#{schema_names.join(', ')})"
+            "#{class_name} (#{schema_module_names.join(', ')})"
           end
         else
           schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_id }.compact
@@ -385,7 +435,7 @@ module JSI
     # @return [Object] an opaque fingerprint of this JSI for FingerprintHash. JSIs are equal
     #   if their instances are equal, and if the JSIs are of the same JSI class or subclass.
     def jsi_fingerprint
-      {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
+      {class: JSI::Base, jsi_document: jsi_document, jsi_ptr: jsi_ptr, jsi_schemas: jsi_schemas}
     end
     include Util::FingerprintHash
   end

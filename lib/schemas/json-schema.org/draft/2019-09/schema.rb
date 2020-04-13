@@ -36,8 +36,9 @@ require 'yaml'
 
 module JSI
   schema_content = ::YAML.safe_load(RESOURCES_PATH.join('json-schema.org/draft/2019-09/schema-unified.yaml').read)
-  JSONSchemaOrgDraft201909 = MetaschemaNode.new(schema_content,
-    root_basic_schema: JSI::BasicSchema::Draft201909.new(JSI::JSON::Pointer[], schema_content)
+
+  JSONSchemaOrgDraft201909 = Metaschema.new(schema_content,
+    jsi_metaschema_module: JSI::Schema::Draft201909,
 #  ).jsi_schema_module
   ).tap(&:jsi_register_schema).jsi_schema_module
 end
