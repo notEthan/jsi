@@ -789,6 +789,11 @@ module JSI
       }.freeze
     end
 
+    # @private
+    def jsi_next_schema_dynamic_anchor_map
+      jsi_schema_dynamic_anchor_map
+    end
+
     private
 
     BY_TOKEN = proc { |i| i[:token] }
