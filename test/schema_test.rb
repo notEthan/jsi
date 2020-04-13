@@ -22,8 +22,8 @@ describe JSI::Schema do
   end
   describe 'as an instance of metaschema' do
     let(:metaschema_jsi_module) { JSI::JSONSchemaOrgDraft04 }
-    let(:schema_object) { {'type' => 'array', 'items' => {'description' => 'items!'}} }
-    let(:schema) { metaschema_jsi_module.new_jsi(schema_object) }
+    let(:schema_content) { {'type' => 'array', 'items' => {'description' => 'items!'}} }
+    let(:schema) { metaschema_jsi_module.new_jsi(schema_content) }
     it '#[]' do
       schema_items = schema['items']
       assert_is_a(metaschema_jsi_module, schema_items)
@@ -60,7 +60,7 @@ describe JSI::Schema do
     end
   end
   describe '#schema_ids' do
-    let(:schema_object) do
+    let(:schema_content) do
       {
         "$id": "https://example.com/foo",
         "items": {
@@ -69,7 +69,7 @@ describe JSI::Schema do
         }
       }
     end
-    let(:schema) { JSI::Schema.new(schema_object) }
+    let(:schema) { JSI::Schema.new(schema_content) }
     it 'has both ids' do
       assert_equal([
         "https://example.com/bar#",

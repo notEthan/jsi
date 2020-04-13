@@ -1,10 +1,10 @@
 require_relative 'test_helper'
 
 describe JSI::JSICoder do
-  let(:schema_object) do
+  let(:schema_content) do
     {properties: {foo: {}, bar: {}}}
   end
-  let(:schema) { JSI::Schema.new(schema_object) }
+  let(:schema) { JSI::Schema.new(schema_content) }
   let(:options) { {} }
   let(:schema_instance_json_coder) { JSI::JSICoder.new(schema, options) }
   describe 'json' do
@@ -34,7 +34,7 @@ describe JSI::JSICoder do
         end
       end
       describe 'array schema' do
-        let(:schema_object) { {items: {properties: {foo: {}, bar: {}}}} }
+        let(:schema_content) { {items: {properties: {foo: {}, bar: {}}}} }
         it 'loads an array of hashes' do
           data = [{"foo" => "bar"}, {"foo" => "baz"}]
           assert_equal(schema.new_jsi([{'foo' => 'bar'}, {'foo' => 'baz'}]), schema_instance_json_coder.load(data))
@@ -74,7 +74,7 @@ describe JSI::JSICoder do
         end
       end
       describe 'array schema' do
-        let(:schema_object) { {items: {properties: {foo: {}, bar: {}}}} }
+        let(:schema_content) { {items: {properties: {foo: {}, bar: {}}}} }
         it 'dumps a schema_instance array' do
           schema_instances = schema.new_jsi([{foo: 'x', bar: 'y'}, {foo: 'z', bar: 'q'}])
           assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], schema_instance_json_coder.dump(schema_instances))
