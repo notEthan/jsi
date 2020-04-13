@@ -202,14 +202,30 @@ module JSI
       #   if the schema param is not a schema
       # @raise [NotASchemaError] if the schema param is not a schema
       # @return [Schema] the given schema
-      def ensure_schema(schema, msg: "indicated object is not a schema:")
+      def ensure_schema(schema, msg: "indicated object is not a schema:", reinstantiate_as: nil)
         if schema.is_a?(Schema)
           schema
         else
-          raise(NotASchemaError, [
-            *msg,
-            schema.pretty_inspect.chomp,
-          ].join("\n"))
+          if reinstantiate_as
+            # TODO warn; behavior is undefined and I hate this implementation
+
+            result_schema_schemas = schema.jsi_schemas + reinstantiate_as
+
+            result_schema_class = JSI::SchemaClasses.class_for_schemas(result_schema_schemas)
+
+            result_schema_class.new(Base::NOINSTANCE,
+              jsi_document: schema.jsi_document,
+              jsi_ptr: schema.jsi_ptr,
+              jsi_root_node: schema.jsi_root_node,
+              jsi_schema_base_uri: schema.jsi_schema_base_uri,
+              jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
+            )
+          else
+            raise(NotASchemaError, [
+              *msg,
+              schema.pretty_inspect.chomp,
+            ].join("\n"))
+          end
         end
       end
     end
