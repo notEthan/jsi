@@ -189,9 +189,22 @@ module JSI
       @jsi_schema_instance_modules = jsi_schema_instance_modules
     end
 
+    # a resource containing this schema.
+    #
+    # if any parent, or this schema itself, is a schema with an absolute uri (see #schema_absolute_uri),
+    # the resource root is the closest schema with an absolute uri.
+    #
+    # if no parent schema has an absolute uri, the schema_resource_root is the root of the document
+    # (our #jsi_root_node). in this case, the resource root may or may not be a schema itself.
+    #
     # @return [JSI::Base] resource containing this schema
     def schema_resource_root
-      jsi_root_node # TODO
+      jsi_subschema_resource_ancestors.reverse_each.detect(&:schema_resource_root?) || jsi_root_node
+    end
+
+    # @return [Boolean] is this schema the root of a schema resource?
+    def schema_resource_root?
+      jsi_ptr.root? || !!schema_absolute_uri
     end
 
     # returns a subschema of this Schema
