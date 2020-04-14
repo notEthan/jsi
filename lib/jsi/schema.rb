@@ -221,19 +221,21 @@ module JSI
 # @param *tokens [Array[Object]] tokens appended to our ptr indicating the location of the subschema
     # @return [JSI::Schema] the subschema at the location indicated by *tokens
     def subschema(*tokens)
-      if @jsi_subschema_resource_ancestors.last.is_a?(Metaschema)
+      tokens_ptr = JSI::JSON::Pointer[*tokens]
+if @jsi_subschema_resource_ancestors.any? && @jsi_subschema_resource_ancestors.last.is_a?(Metaschema)
 #schema_class = JSI.class_for_schemas(self.jsi_schemas.select(&:describes_schema?))
-        schema_class = JSI.class_for_schemas(self.jsi_schemas)
+schema_class = JSI.class_for_schemas(self.jsi_schemas)
+
         schema_class.new(Base.const_get(:NOINSTANCE),
           jsi_document: @jsi_document,
-          jsi_ptr: @jsi_ptr + JSI::JSON::Pointer[*tokens],
+          jsi_ptr: @jsi_ptr + tokens_ptr,
           jsi_root_node: @jsi_root_node,
           jsi_schema_resource_ancestors: @jsi_subschema_resource_ancestors,
           jsi_schema_base_uri: @jsi_schema_uri || @jsi_schema_base_uri,
   #        jsi_schema_dynamic_scope: []
         )
       else
-        JSI::JSON::Pointer[*tokens].evaluate(self)
+        tokens_ptr.evaluate(self)
       end
     end
 
