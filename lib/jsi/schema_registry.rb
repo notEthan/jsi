@@ -19,38 +19,13 @@ module JSI
 
     attr_reader :xschema_documents
 
-    def xregister_document(id, schema_document)
-      id = Addressable::URI.parse(id)
-      if id.relative?
-        raise(RelativeURIRegistration, "cannot register relative id URI #{id}. would you kindly pass an absolute URI in the `id` param?")
-      else
-        if id.fragment == ''
-          id.fragment = nil
-        elsif id.fragment
-          raise(Schema::IdHasFragment.new("schema id must not have a fragment. id: #{id}\nNOTE: a fragment is technically allowed in older JSON schema specifications. this is currently not supported, but support could be added. if you require this, please open an issue at https://github.com/notEthan/jsi/issues").tap { |e| e.id = id })
-        end
-        if @schema_documents.key?(id)
-          if @schema_documents[id] != schema_document
-            raise(Collision, "id collision on #{id}. existing: \n#{@schema_documents[id].pretty_inspect.chomp}\nnew:\n#{schema_documents.pretty_inspect.chomp}")
-          end
-        else
-          @schema_documents[id] = schema_document
-        end
-      end
-    end
-
     def register(schema, schema_id: nil)
-      #unless schema.is_a?(JSI::Schema)
-      #  raise(TypeError, "schema must be a JSI::Schema; got: #{schema.pretty_inspect}")
-      #end
-
       if schema_id && !(schema.is_a?(Schema) && schema.id)
         register_single(schema, Addressable::URI.parse(schema_id))
       end
 
       JSI::Util.ycomb do |rec|
         proc do |node, base_id|
-byebug if node.respond_to?(:to_hash) && node['$id'] =~ /scope_change_defs1/
           if node.is_a?(JSI::Schema)
 #            [node].each do |schema_node|
             schema_node = node
@@ -78,39 +53,31 @@ byebug if node.respond_to?(:to_hash) && node['$id'] =~ /scope_change_defs1/
     end
 
     def find_schema(schema_ref)
-#byebug if schema_ref.ref_uri.relative?
-      if schema_ref.ref_uri.fragment
+      if schema_ref.schema.base_uri
+        schema_uri = schema_ref.schema.base_uri.join(schema_ref.ref)
+      else
+        schema_uri = Addressable::URI.parse(schema_ref.ref)
+      end
+
+      if schema_uri.fragment
         # TODO error handling fragment with invalid pointer
-        ptr = JSI::JSON::Pointer.from_fragment(schema_ref.ref_uri.fragment)
+        ptr = JSI::JSON::Pointer.from_fragment(schema_uri.fragment)
       else
         ptr = JSI::JSON::Pointer[]
       end
-      ref_root_uri = schema_ref.ref_uri.merge(fragment: nil)
+      schema_uri = schema_uri.merge(fragment: nil)
 
-      if @schemas.key?(ref_root_uri)
-        ptr.evaluate(@schemas[ref_root_uri]).tap do |schema|
+      if @schemas.key?(schema_uri)
+        ptr.evaluate(@schemas[schema_uri]).tap do |schema|
           unless schema.is_a?(JSI::Schema)
 byebug
-ptr.evaluate(@schemas[ref_root_uri])
-            raise(JSI::Schema::NotASchemaError, "referenced schema is not a schema with id: #{id}: #{schema.pretty_inspect.chomp}")
+ptr.evaluate(@schemas[schema_uri])
+            raise(JSI::Schema::NotASchemaError, "referenced schema is not a schema: #{schema.pretty_inspect.chomp}")
           end
         end
       else
 byebug
-        raise(SchemaNotFound, "id #{ref_root_uri} not in ids:\n#{@schemas.keys.join("\n")}")
-      end
-    end
-
-
-    def xfind_schema_document(schema_ref)
-      if @schema_documents.key?(ref_root_uri)
-        schema_ref.schema.class.new(ptr, @schema_documents[ref_root_uri])
-#      elsif @schemas.key?(ref_root_uri)
-      else
-        find_schema(schema_ref).own_schema
-
-#byebug
-#        raise(SchemaNotFound, "id #{ref_root_uri} not in ids:\n#{(@schema_documents.keys | @schemas.keys).join("\n")}")
+        raise(SchemaNotFound, "id #{schema_uri} not in ids:\n#{@schemas.keys.join("\n")}")
       end
     end
 
@@ -121,7 +88,7 @@ byebug
         raise(RelativeURIRegistration, "cannot register relative id URI #{id}. would you kindly pass an absolute URI in the `id` param?")
       else
         if id.fragment == ''
-          id.fragment = nil
+          id = id.merge(fragment: nil)
         elsif id.fragment
           raise(Schema::IdHasFragment.new("schema id must not have a fragment. id: #{id}\nNOTE: a fragment is technically allowed in older JSON schema specifications. this is currently not supported, but support could be added. if you require this, please open an issue at https://github.com/notEthan/jsi/issues").tap { |e| e.id = id })
         end
