@@ -180,7 +180,7 @@ describe JSI::Schema do
   end
   describe 'stringification' do
     let(:schema) do
-      JSI::Schema.new({'$id' => 'https://schemas.jsi.unth.net/test/stringification', type: 'object'})
+      JSI::JSONSchemaOrgDraft06.new_jsi({'$id' => 'https://schemas.jsi.unth.net/test/stringification', 'type' => 'object'})
     end
 
     it '#inspect' do

@@ -54,7 +54,7 @@ module JSI
     class << self
       # @return [JSI::Schema] the default metaschema
       def default_metaschema
-        JSI::JSONSchemaOrgDraft06.schema
+        JSI::JSONSchemaOrgDraft201909.schema
       end
 
       # @return [Array<JSI::Schema>] supported metaschemas
