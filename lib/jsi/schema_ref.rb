@@ -5,16 +5,7 @@ module JSI
       @keyword = keyword
 
       @ref = schema.schema_content[keyword]
-
-      if schema.base_uri
-        @ref_uri = schema.base_uri.join(ref)
-      else
-        @ref_uri = Addressable::URI.parse(ref)
-      end
-
-      if ref[/\A#/]
-        @deref_schema = schema.schema_from_resource_root(JSI::JSON::Pointer.from_fragment(ref_uri.fragment))
-      end
+      @ref_uri = Addressable::URI.parse(ref)
     end
 
     attr_reader :schema
@@ -25,7 +16,12 @@ module JSI
 
     def deref_schema
       return @deref_schema if instance_variable_defined?(:@deref_schema)
-      return(@deref_schema = JSI.schema_registry.find_schema(self))
+
+      if ref_uri == Addressable::URI.new(fragment: ref_uri.fragment)
+        return(@deref_schema = schema.schema_from_resource_root(JSI::JSON::Pointer.from_fragment(ref_uri.fragment)))
+      else
+        return(@deref_schema = JSI.schema_registry.find_schema(self))
+      end
     end
 
     def jsi_fingerprint
