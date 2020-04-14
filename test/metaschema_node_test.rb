@@ -1,7 +1,20 @@
 require_relative 'test_helper'
 
 describe JSI::Metaschema do
-  let(:jsi_document) { {'properties' => {'properties' => {'additionalProperties' => {'$ref' => '#'}}}} }
+  let(:jsi_document) do
+    {
+      'properties' => {
+        'properties' => {
+          'additionalProperties' => {
+            '$ref' => '#'
+          }
+        },
+        'additionalProperties' => {
+          '$ref' => '#'
+        },
+      }
+    }
+  end
   let(:jsi_ptr) { JSI::JSON::Pointer[] }
   let(:subject) do
     JSI::Metaschema.new(jsi_document,
@@ -11,6 +24,12 @@ describe JSI::Metaschema do
   describe 'initialization' do
     it 'initializes' do
       subject
+    end
+    it 'acts like a metaschema' do
+      assert_is_a(subject.jsi_schema_module, subject)
+      assert_is_a(subject.properties['properties'].jsi_schema_module, subject.properties)
+      assert_is_a(subject.jsi_schema_module, subject.properties['properties'])
+      assert_is_a(subject.jsi_schema_module, subject.properties['properties'].additionalProperties)
     end
   end
   describe 'json schema draft' do
