@@ -486,7 +486,7 @@ schema_class = schema_resource_root.class
       end
 
       subschema_validate = proc do |subschema, subinstance_ptr|
-        subresult = subschema.internal_validate_instance(subinstance_ptr, instance_document, validate_only: validate_only, visited_refs: visited_refs)
+        subresult = subschema.internal_validate_instance(subinstance_ptr, instance_document, validate_only: validate_only)
         unless validate_only
           # subresult validation_errors do not necessarily go into our result (the caller handles that),
           # but schema_errors always do.
@@ -1139,7 +1139,7 @@ schema_class = schema_resource_root.class
           # If the instance is an object, this keyword validates if every property name in the instance validates against the provided schema. Note the property name that the schema is testing will always be a string.
           if instance.respond_to?(:to_hash)
             results = instance.keys.map do |property_name|
-              subschema('propertyNames').internal_validate_instance(JSI::JSON::Pointer[], property_name, validate_only: validate_only, visited_refs: visited_refs)
+              subschema('propertyNames').internal_validate_instance(JSI::JSON::Pointer[], property_name, validate_only: validate_only)
             end
             result_validate.(results.all?(&:valid?), 'instance object property names do not all validate against `propertyNames` schema value', keyword, results: results)
           end
