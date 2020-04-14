@@ -426,7 +426,11 @@ module JSI
     # @return [Object] an opaque fingerprint of this JSI for FingerprintHash. JSIs are equal
     #   if their instances are equal, and if the JSIs are of the same JSI class or subclass.
     def jsi_fingerprint
-      {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
+      {
+        class: jsi_class,
+        jsi_document: jsi_document,
+        jsi_ptr: jsi_ptr,
+      }
     end
     include Util::FingerprintHash
   end
