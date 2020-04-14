@@ -17,8 +17,6 @@ module JSI
 
     attr_reader :schemas
 
-    attr_reader :xschema_documents
-
     def register(schema, schema_id: nil)
       if schema_id && !(schema.is_a?(Schema) && schema.id)
         register_single(schema, Addressable::URI.parse(schema_id))
@@ -27,20 +25,16 @@ module JSI
       JSI::Util.ycomb do |rec|
         proc do |node, base_id|
           if node.is_a?(JSI::Schema)
-#            [node].each do |schema_node|
             schema_node = node
-            begin
-              schema_node_id = schema_node.id
-              if schema_node_id
-                base_id = base_id ? base_id.join(schema_node_id) : Addressable::URI.parse(schema_node_id)
+            if schema_node.id
+              base_id = base_id ? base_id.join(schema_node.id) : Addressable::URI.parse(schema_node.id)
 
-                register_single(node, base_id)
-              end
-              if schema_node.respond_to?(:to_hash)
-                schema_node.to_hash.values.each { |v| rec.call(v, base_id) }
-              elsif schema_node.respond_to?(:to_ary)
-                schema_node.to_ary.each { |e| rec.call(e, base_id) }
-              end
+              register_single(node, base_id)
+            end
+            if schema_node.respond_to?(:to_hash)
+              schema_node.to_hash.values.each { |v| rec.call(v, base_id) }
+            elsif schema_node.respond_to?(:to_ary)
+              schema_node.to_ary.each { |e| rec.call(e, base_id) }
             end
           elsif node.respond_to?(:to_hash)
             node.to_hash.values.each { |v| rec.call(v, base_id) }
