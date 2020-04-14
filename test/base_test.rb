@@ -48,7 +48,7 @@ describe JSI::Base do
   end
   describe 'module for schema .inspect' do
     it '.inspect' do
-      assert_equal("(JSI Schema Module: #)", JSI::SchemaClasses.module_for_schema(schema).inspect)
+      assert_equal("(JSI <JSI::JSONSchemaOrgDraft201909> Schema Module: #)", JSI::SchemaClasses.module_for_schema(schema).inspect)
     end
   end
   describe 'module for schema .schema' do

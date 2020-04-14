@@ -15,7 +15,8 @@ module JSI
       if name_from_ancestor
         "#{name_from_ancestor} (#{uri})"
       else
-        "(JSI Schema Module: #{uri})"
+        metaschema_names = schema.jsi_schemas.select(&:describes_schema?).map { |ms| ms.jsi_schema_module.name }
+        "(JSI <#{metaschema_names.join(', ')}> Schema Module: #{uri})"
       end
     end
 
