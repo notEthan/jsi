@@ -196,7 +196,7 @@ module JSI
           @jsi_schema_uri = jsi_schema_base_uri ? Addressable::URI.parse(jsi_schema_base_uri).join(id) : Addressable::URI.parse(id)
         end
 
-        if id || @jsi_ptr.root?
+        if id
           @jsi_subschema_resource_ancestors = @jsi_schema_resource_ancestors + [self]
         else
           @jsi_subschema_resource_ancestors = @jsi_schema_resource_ancestors
@@ -213,8 +213,22 @@ module JSI
     # the JSI at the root of this JSI's document
     attr_reader :jsi_root_node
 
+    # @return [Addressable::URI, nil] the base URI from which this schema's URI is resolved.
+    #   this may be the schema URI of a parent schema or the URI from which this schema was retrieved.
     attr_reader :jsi_schema_base_uri
+
+    # @return [Addressable::URI, nil] the URI of this schema, calculated from our $id or id field
+    #   resolved against our jsi_schema_base_uri
     attr_reader :jsi_schema_uri
+
+    # @return [Array<JSI::Schema>] an array of ancestors of this instance (parents in the jsi_document)
+    #   which are schema resources - that is, JSI::Schema instances with a jsi_schema_uri.
+    attr_reader :jsi_schema_resource_ancestors
+
+    # @return [Array<JSI::Schema>] an array of nodes which are schema resources for subschemas. this is
+    #   is a superset of jsi_schema_resource_ancestors which can include this instance, if this is a
+    #   JSI::Schema instance with a jsi_schema_uri.
+    attr_reader :jsi_subschema_resource_ancestors
 
     # the instance of the json-schema
     alias_method :jsi_instance, :jsi_node_content
@@ -264,8 +278,8 @@ module JSI
               jsi_document: @jsi_document,
               jsi_ptr: @jsi_ptr[token],
               jsi_root_node: @jsi_root_node,
-              jsi_schema_resource_ancestors: @jsi_subschema_resource_ancestors,
-              jsi_schema_base_uri: @jsi_schema_base_uri,
+              jsi_schema_resource_ancestors: is_a?(Schema) ? @jsi_subschema_resource_ancestors : @jsi_schema_resource_ancestors,
+              jsi_schema_base_uri: @jsi_schema_uri || @jsi_schema_base_uri,
 #              jsi_schema_dynamic_scope: []
             )
           else
@@ -430,7 +444,14 @@ module JSI
     # @return [Object] an opaque fingerprint of this JSI for FingerprintHash. JSIs are equal
     #   if their instances are equal, and if the JSIs are of the same JSI class or subclass.
     def jsi_fingerprint
-      {class: JSI::Base, jsi_document: jsi_document, jsi_ptr: jsi_ptr, jsi_schemas: jsi_schemas}
+      {
+        class: JSI::Base,
+        jsi_document: jsi_document,
+        jsi_ptr: jsi_ptr,
+        jsi_schemas: jsi_schemas,
+        jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
+        jsi_schema_base_uri: jsi_schema_base_uri,
+      }
     end
     include Util::FingerprintHash
   end
