@@ -36,22 +36,19 @@ describe 'JSON Schema Test Suite' do
           if path.directory?
             path.children(with_directory = false).each { |c| rec.call(subpath + [c.to_s]) }
           elsif path.file? && path.to_s =~ /\.json\z/
-puts subpath.inspect
-            next unless ['type.json'].include?(subpath.last)
-
             describe(subpath.join('/')) do
               JSONSchemaTestSchema.new_jsi(::JSON.parse(path.read)).map do |tests_desc|
                 describe(tests_desc.description) do
                   let(:schema) do
                     begin
-                      metaschema.new_jsi(JSI::Typelike.as_json(tests_desc['schema'])).tap(&:jsi_register_schema)
+                      metaschema.new_jsi(tests_desc.jsi_instance['schema']).tap(&:jsi_register_schema)
                     rescue JSI::Schema::IdHasFragment
                       skip('unsupported id with fragment')
                     end
                   end
                   tests_desc.tests.each do |test|
                     describe(test.description) do
-                      let(:jsi) { schema.new_jsi(JSI::Typelike.as_json(test.data)) }
+                      let(:jsi) { schema.new_jsi(test.jsi_instance['data']) }
                       it(test.valid ? 'is valid' : 'is invalid') do
                         result = jsi.jsi_validate
                         if test.valid != result.valid?
