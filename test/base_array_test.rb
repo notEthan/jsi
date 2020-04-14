@@ -65,7 +65,6 @@ describe 'JSI::Base array' do
     describe 'default value' do
       let(:instance) { [{'bar' => 3}] }
       it 'returns the default value' do
-byebug
         assert_is_a(schema.items.jsi_schema_module, subject[1])
         assert_equal({'foo' => 2}, subject[1].as_json)
       end

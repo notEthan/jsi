@@ -449,8 +449,10 @@ module JSI
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_schemas: jsi_schemas,
-        jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
-        jsi_schema_base_uri: jsi_schema_base_uri,
+#        jsi_root_node: jsi_root_node,
+#        jsi_schema_resource_ancestors: [],
+        jsi_schema_base_uri: @jsi_schema_base_uri,
+#        jsi_schema_dynamic_scope: [],
       }
     end
     include Util::FingerprintHash

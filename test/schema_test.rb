@@ -194,7 +194,7 @@ describe JSI::Schema do
     end
   end
   describe 'validation' do
-    let(:schema) { JSI::Schema.new({'$id' => 'https://schemas.jsi.unth.net/test/validation', type: 'object'}) }
+    let(:schema) { JSI::JSONSchemaOrgDraft06.new_jsi({'$id' => 'https://schemas.jsi.unth.net/test/validation', 'type' => 'object'}) }
     describe 'without errors' do
       let(:instance) { {'foo' => 'bar'} }
       it '#validate_instance' do
@@ -282,6 +282,37 @@ describe JSI::Schema do
           },
         ], result.schema_errors)
       end
+    end
+  end
+  describe 'a fragment pointing into another schema resource' do
+    let(:schema_content) do
+      {
+        '$id' => 'https://schemas.jsi.unth.net/test/schema/fragment_up_into_another_schema',
+        'contains' => {'const' => 'root'},
+        '$defs' => {
+          'a' => {
+            '$ref' => '#/$defs/b/$defs/c'
+          },
+          'b' => {
+            'contains' => {'const' => 'b'},
+            '$id' => 'b',
+            '$defs' => {
+              'c' => {
+                '$ref' => '#'
+              }
+            }
+          }
+        }
+      }
+    end
+    let(:schema) { JSI::Schema.new(schema_content) }
+    it "yeah that's cool" do
+      # should follow the ref from a via c to b as # refers to b, its the schema resource
+      a = schema['$defs']['a'].new_jsi(['b'])
+      # should not follow the ref from a via c to the root as if # refers to the document root
+      nota = schema['$defs']['a'].new_jsi(['root'])
+      assert(a.jsi_valid?)
+      assert(!nota.jsi_valid?)
     end
   end
 end

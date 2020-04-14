@@ -52,6 +52,7 @@ module JSI
       else
         schema_uri = Addressable::URI.parse(schema_ref.ref)
       end
+byebug if schema_uri.relative?
 
       if schema_uri.fragment
         # TODO error handling fragment with invalid pointer
