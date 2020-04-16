@@ -21,6 +21,10 @@ module JSI
     class NotASchemaError < Error
     end
 
+    # an exception raised when we are unable to resolve a schema reference
+    class ReferenceError < StandardError
+    end
+
     # extends any schema which uses the keyword '$id' to identify its canonical URI
     module BigMoneyId
       # @return [#to_str, nil] the contents of a $id keyword whose value is a string, or nil
