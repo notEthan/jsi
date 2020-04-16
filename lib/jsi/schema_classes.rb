@@ -73,8 +73,13 @@ module JSI
 
               extend SchemaModule
 
+              schema.jsi_schema_instance_modules.each do |mod|
+                include(mod)
+              end
+
               include JSI::SchemaClasses.accessor_module_for_schema(schema,
-                conflicting_modules: Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode],
+                conflicting_modules: Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode] +
+                  schema.jsi_schema_instance_modules,
               )
 
               if schema.describes_schema?

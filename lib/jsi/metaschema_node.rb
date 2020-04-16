@@ -77,6 +77,7 @@ module JSI
         end
         if schema_ptr == jsi_ptr
           extend Metaschema
+          self.jsi_schema_instance_modules = Set[JSI::Schema]
         end
       end
 
@@ -101,7 +102,7 @@ module JSI
         addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
 
         if !jsi_ptr.root? && [addtlPropsanyOf, addtlItemsanyOf].include?(jsi_ptr.parent)
-          extend JSI::Schema::DescribesSchema
+          self.jsi_schema_instance_modules = Set[JSI::Schema]
         end
       end
     end

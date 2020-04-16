@@ -174,7 +174,11 @@ module JSI
       end
 
       jsi_schemas.each do |schema|
-        if schema.describes_schema?
+        # if this JSI is a schema - i.e. if it is described by a (meta)schema which indicates it describes
+        # schemas - and the class doesn't already include JSI::Schema, extend self with JSI::Schema.
+        # this may be the case when a jsi schema module includes JSI::Schema::DescribesSchema without
+        # setting jsi_schema_instance_modules to include JSI::Schema
+        if !is_a?(JSI::Schema) && schema.describes_schema?
           extend JSI::Schema
         end
       end
@@ -433,6 +437,8 @@ module JSI
         class: jsi_class,
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
+        # only defined for JSI::Schema instances:
+        jsi_schema_instance_modules: is_a?(Schema) ? jsi_schema_instance_modules : nil,
       }
     end
     include Util::FingerprintHash

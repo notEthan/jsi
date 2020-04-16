@@ -50,8 +50,8 @@ module JSI
       # will be the {JSI::Schema.default_metaschema}.
       #
       # if the given schema_object is a JSI::Base but not already a JSI::Schema, an error
-      # will be raised. JSI::Base _should_ already extend a given instance with JSI::Schema
-      # when its schema describes a schema (by extending with JSI::Schema::DescribesSchema).
+      # will be raised. schemas which describe schemas must have JSI::Schema in their
+      # Schema#jsi_schema_instance_modules.
       #
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a schema, it is returned as-is.
@@ -162,7 +162,21 @@ module JSI
 
     # @return [Boolean] does this schema itself describe a schema?
     def describes_schema?
-      is_a?(JSI::Schema::DescribesSchema)
+      jsi_schema_instance_modules.any? { |m| m <= JSI::Schema } || is_a?(DescribesSchema)
+    end
+
+    # @return [Set<Module>] modules to apply to instances described by this schema. these modules are included
+    #   on this schema's {#jsi_schema_module}
+    def jsi_schema_instance_modules
+      return @jsi_schema_instance_modules if instance_variable_defined?(:@jsi_schema_instance_modules)
+      return Set[]
+    end
+
+    # @return [void]
+    def jsi_schema_instance_modules=(jsi_schema_instance_modules)
+      raise(TypeError) unless jsi_schema_instance_modules.is_a?(Set)
+      raise(TypeError) unless jsi_schema_instance_modules.all? { |m| m.is_a?(Module) }
+      @jsi_schema_instance_modules = jsi_schema_instance_modules
     end
 
     # checks this schema for applicators ($ref, allOf, etc.) which should be applied to the given instance.
