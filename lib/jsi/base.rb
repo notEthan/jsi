@@ -185,12 +185,6 @@ module JSI
         extend PathedArrayNode
       end
 
-      # decide whether this JSI is a schema - i.e. whether it is described by a (meta)schema which purports
-      # to describe schemas
-      if !is_a?(JSI::Schema) && jsi_schemas.any?(&:describes_schema?)
-        extend JSI::Schema
-      end
-
       if is_a?(JSI::Schema)
         if id
           @jsi_schema_uri = jsi_schema_base_uri ? Addressable::URI.parse(jsi_schema_base_uri).join(id) : Addressable::URI.parse(id)

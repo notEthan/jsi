@@ -19,7 +19,7 @@ describe JSI::Metaschema do
   let(:jsi_ptr) { JSI::JSON::Pointer[] }
   let(:subject) do
     JSI::Metaschema.new(jsi_document,
-      jsi_metaschema_module: JSI::Schema::Draft201909,
+      jsi_schema_instance_modules: Set[JSI::Schema::Draft201909],
     )
   end
   describe 'initialization' do

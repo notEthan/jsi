@@ -42,15 +42,6 @@ end
       end
     end
 
-    # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
-    # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema
-    # are themselves also schemas.
-    #
-    # examples of a schema which describes a schema include the draft JSON Schema metaschemas and
-    # the OpenAPI schema definition which describes "A deterministic version of a JSON Schema object."
-    module DescribesSchema
-      def described_schemas_jsi_metaschema_module
-        @described_schemas_jsi_metaschema_module
       end
     end
 
@@ -182,7 +173,7 @@ end
 
     # @return [Module] a module representing this schema. see {JSI::SchemaClasses.module_for_schema}.
     def jsi_schema_module
-      JSI::SchemaClasses.module_for_schema(self)
+      JSI::SchemaClasses.module_for_schema(self, schema_module_include: jsi_schema_instance_modules)
     end
 
     # @return [Class < JSI::Base] a JSI class for this one schema
@@ -211,13 +202,23 @@ end
 
     # @return [Boolean] does this schema itself describe a schema?
     def describes_schema?
-      is_a?(JSI::Schema::DescribesSchema)
+      jsi_schema_instance_modules.any? { |m| m <= JSI::Schema }
     end
 
-    # @return [JSI::Schema]
-# generally a JSI::Metaschema
-    def described_by
-      @jsi_schema_described_by
+    # @return [Set<Module>] modules to apply to instances described by this schema
+    def jsi_schema_instance_modules
+      if instance_variable_defined?(:@jsi_schema_instance_modules)
+        @jsi_schema_instance_modules
+      else
+        Set[]
+      end
+    end
+
+    # @return [void]
+    def jsi_schema_instance_modules=(jsi_schema_instance_modules)
+      raise(TypeError) unless jsi_schema_instance_modules.is_a?(Set)
+      raise(TypeError) unless jsi_schema_instance_modules.all? { |m| m.is_a?(Module) }
+      @jsi_schema_instance_modules = jsi_schema_instance_modules
     end
 
     # returns a subschema of this Schema

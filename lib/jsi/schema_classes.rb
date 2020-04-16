@@ -76,16 +76,23 @@ module JSI
       #
       # defines a singleton method #schema to access the {JSI::Schema} this module represents, and extends
       # the module with {JSI::SchemaModule}.
-      def module_for_schema(schema_object)
         schema = JSI::Schema.from_object(schema_object)
-        jsi_memoize(:module_for_schema, schema) do |schema|
+      def module_for_schema(schema, schema_module_include: Set[])
+        module_for_schema = jsi_memoize(:module_for_schema, schema, schema_module_include) do |schema, schema_module_include|
           Module.new.tap do |m|
             m.module_eval do
               define_singleton_method(:schema) { schema }
 
               extend SchemaModule
 
-              include JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode])
+              instance_conflicting_modules = Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode]
+
+              instance_conflicting_modules += schema.jsi_schema_instance_modules
+              schema.jsi_schema_instance_modules.each do |mod|
+                include(mod)
+              end
+
+              include JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: instance_conflicting_modules)
 
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
