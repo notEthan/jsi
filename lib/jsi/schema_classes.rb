@@ -3,6 +3,27 @@
 module JSI
   # JSI Schema Modules are extended with JSI::SchemaModule
   module SchemaModule
+=begin
+    class ConflictingDefinition < StandardError
+      def self.for(schema, existing_schema_module: , new_schema_module_include: )
+        msg = [
+          "conflicting module definition for schema",
+          "previously defined to include modules #{existing_schema_module.schema_module_include.to_a.inspect}",
+          "attempting to redefine with modules  #{new_schema_module_include.to_a.inspect}",
+        ].join("\n")
+byebug
+        new(msg).tap do |ex|
+          ex.schema = schema
+          ex.existing_schema_module = existing_schema_module
+          ex.new_schema_module_include = new_schema_module_include
+        end
+      end
+      attr_accessor :schema
+      attr_accessor :existing_schema_module
+      attr_accessor :new_schema_module_include
+    end
+=end
+
     # @return [String] absolute schema_id of the schema this module represents.
     #   see {Schema#schema_id}.
     def schema_id
@@ -76,13 +97,18 @@ module JSI
       #
       # defines a singleton method #schema to access the {JSI::Schema} this module represents, and extends
       # the module with {JSI::SchemaModule}.
-        schema = JSI::Schema.from_object(schema_object)
       def module_for_schema(schema, schema_module_include: Set[])
+        unless schema.is_a?(JSI::Schema)
+          raise(JSI::Schema::NotASchemaError, "not a schema: #{schema.pretty_inspect.chomp}")
+        end
         module_for_schema = jsi_memoize(:module_for_schema, schema, schema_module_include) do |schema, schema_module_include|
           Module.new.tap do |m|
             m.module_eval do
               define_singleton_method(:schema) { schema }
+              define_singleton_method(:schema_module_include) { schema_module_include }
 
+#byebug if schema.jsi_ptr == JSI::JSON::Pointer["definitions", "Schema"]
+#byebug if schema.jsi_ptr == JSI::JSON::Pointer["properties", "$vocabulary"]
               extend SchemaModule
 
               instance_conflicting_modules = Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode]
@@ -102,6 +128,15 @@ module JSI
             end
           end
         end
+=begin
+        unless module_for_schema.schema_module_include == schema_module_include
+          raise(SchemaModule::ConflictingDefinition.for(schema,
+            existing_schema_module: module_for_schema,
+            new_schema_module_include: schema_module_include,
+          ))
+        end
+=end
+        module_for_schema
       end
 
       # @param schema [JSI::Schema] a schema for which to define accessors for any described property names
@@ -122,6 +157,7 @@ module JSI
               end.inject(Set.new, &:|)
               accessors_to_define = schema.described_object_property_names.map(&:to_s) - conflicting_instance_methods.map(&:to_s)
               accessors_to_define.each do |property_name|
+#byebug if property_name == 'id'
                 define_method(property_name) do
                   self[property_name]
                 end

@@ -186,6 +186,7 @@ module JSI
       end
 
       if is_a?(JSI::Schema)
+byebug unless respond_to?(:id)
         if id
           @jsi_schema_uri = jsi_schema_base_uri ? Addressable::URI.parse(jsi_schema_base_uri).join(id) : Addressable::URI.parse(id)
         end
@@ -404,7 +405,25 @@ module JSI
             "#{class_name} (#{schema_module_names.join(', ')})"
           end
         else
-          schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_id }.compact
+          naming_methods = [
+            -> (schema) { schema.jsi_schema_module.name },
+            -> (schema) { schema.jsi_schema_module.name_from_ancestor },
+            -> (schema) { schema.schema_id },
+          ]
+          schema_names = []
+          naming_methods.each do |naming_method|
+            names = jsi_schemas.map(&naming_method)
+            unnamed, named = names.partition(&:nil?)
+            if named.any?
+              if unnamed.any?
+                schema_names = named + ["+#{unnamed.size}"]
+              else
+                schema_names = named
+              end
+              break
+            end
+          end
+
           if schema_names.empty?
             "JSI"
           else

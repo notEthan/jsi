@@ -67,6 +67,14 @@ class JSISpec < Minitest::Spec
 
     assert obj.is_a?(mod), msg
   end
+
+  def assert_included obj, collection, msg = nil
+    msg = message(msg) {
+      "Expected #{mu_pp(collection)} to include #{mu_pp(obj)}"
+    }
+    assert_respond_to collection, :include?
+    assert collection.include?(obj), msg
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec

@@ -131,7 +131,7 @@ module JSI
 
       def jsi_memoize(key, *args_)
 #STDERR.puts("locking #{object_id} #{respond_to?(:jsi_ptr) ? jsi_ptr : ''} #{key.inspect}" + (key == :[] ? " for #{args_.inspect}" : ''))
-#byebug if jsi_memo_mutex(key).locked?
+byebug if jsi_memo_mutex(key).locked?
 res=        jsi_memo_mutex(key).synchronize do
           @jsi_memos[key] ||= Hash.new do |h, args|
             h[args] = yield(*args)

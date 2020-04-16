@@ -3,6 +3,8 @@
 module JSI
   module Schema
     module Draft04
+      include JSI::Schema
+
       include Id
     end
   end

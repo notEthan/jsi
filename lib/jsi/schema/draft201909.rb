@@ -3,7 +3,10 @@
 module JSI
   module Schema
     module Draft201909
+      include JSI::Schema
+
       include BigMoneyId
+      include BigMoneyAnchor
     end
   end
 end

@@ -73,10 +73,6 @@ describe JSI::Base do
       # same module every time
       assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
     end
-    it 'returns a module from a hash' do
-
-      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.jsi_instance))
-    end
   end
   describe 'initialization' do
     describe 'on Base' do

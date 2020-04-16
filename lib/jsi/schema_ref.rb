@@ -18,7 +18,8 @@ module JSI
       return @deref_schema if instance_variable_defined?(:@deref_schema)
 
       if ref_uri == Addressable::URI.new(fragment: ref_uri.fragment)
-        return(@deref_schema = schema.schema_from_resource_root(JSI::JSON::Pointer.from_fragment(ref_uri.fragment)))
+        schema_resource_root = schema.jsi_subschema_resource_ancestors.last || schema.jsi_root_node
+        return(@deref_schema = schema_resource_root.subschema_from_fragment(ref_uri.fragment))
       else
         return(@deref_schema = JSI.schema_registry.find_schema(self))
       end

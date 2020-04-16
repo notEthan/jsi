@@ -12,8 +12,12 @@ module JSI
     class NotASchemaError < Error
     end
 
-class IdHasFragment < Error
-end
+    #
+    class UndefinedIdFragment < Error
+    end
+
+    class ReferenceError < Error
+    end
 
     autoload :Draft04, 'jsi/schema/draft04'
     autoload :Draft06, 'jsi/schema/draft06'
@@ -42,6 +46,15 @@ end
       end
     end
 
+    module BigMoneyAnchor
+      def anchor
+        keyword = '$anchor'
+        # TODO warn (error?) unless value =~ /\A[A-Za-z][A-Za-z0-9\-_:.]*\z/
+        if schema_content.respond_to?(:to_hash) && schema_content[keyword].respond_to?(:to_str)
+          schema_content[keyword]
+        else
+          nil
+        end
       end
     end
 
@@ -66,9 +79,7 @@ end
       # schemas are instantiated according to their '$schema' property if specified. otherwise their schema
       # will be the {JSI::Schema.default_metaschema}.
       #
-      # if the given schema_object is a JSI::Base but not already a JSI::Schema, an error
-      # will be raised. JSI::Base _should_ already extend a given instance with JSI::Schema
-      # when its schema describes a schema (by extending with JSI::Schema::DescribesSchema).
+      # if the given schema_object is a JSI::Base but not a JSI::Schema, an error will be raised.
       #
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a schema, it is returned as-is.
@@ -104,41 +115,27 @@ end
     end
 
     def schema_content
-      jsi_node_content
+return(@schema_content) if instance_variable_defined?(:@schema_content)
+return(@schema_content = jsi_node_content)
     end
 
     def base_uri
       jsi_schema_base_uri
     end
 
-    # @return [String, nil] the id of this schema, if any is specified, according to the $id field
-    #   or (with older json schema drafts) the id field.
-    def id
-      idk = %w($id id).detect { |k| jsi_schemas.any? { |s| s.described_object_property_names.include?(k) } }
-      if idk
-        content = jsi_node_content
-        if content.respond_to?(:to_hash) && content.key?(idk)
-          if content[idk].respond_to?(:to_str)
-            content[idk].to_str
-          else
-            nil # invalid non-string in the id field; ignore
-          end
-        else
-          nil # no id on this schema
-        end
-      else
-        nil # this schema's schema(s) do not describe an id property
-      end
+    # @return [Addressable::URI, nil] the canonical URI for this schema
+    def uri
+      jsi_schema_uri
     end
 
-    def xid
-      if schema_content.respond_to?(:to_hash)
-        schema_content.key?('$id') && schema_content['$id'].respond_to?(:to_str) ? schema_content['$id'].to_str :
-          schema_content.key?('id') && schema_content['id'].respond_to?(:to_str) ? schema_content['id'].to_str :
-          nil
-      else
-        nil
-      end
+    # @return [Addressable::URI, nil] URIs for this schema
+    def uris
+      jsi_subschema_resource_ancestors.map(&:uri).compact
+    end
+
+    # @return [#to_str, nil] the id of the schema - the value of the 'id' or '$id' schema keyword
+    def id
+      raise(NotImplementedError, "schema implementation must define #id")
     end
 
     # @return [String, nil] an absolute id for the schema, with a json pointer fragment. nil if
@@ -173,6 +170,8 @@ end
 
     # @return [Module] a module representing this schema. see {JSI::SchemaClasses.module_for_schema}.
     def jsi_schema_module
+#instance_modules
+#jsi_schema_instance_modules
       JSI::SchemaClasses.module_for_schema(self, schema_module_include: jsi_schema_instance_modules)
     end
 
@@ -227,9 +226,8 @@ end
     # @return [JSI::Schema] the subschema at the location indicated by *tokens
     def subschema(*tokens)
       tokens_ptr = JSI::JSON::Pointer[*tokens]
-#      schema_resource_root = @jsi_subschema_resource_ancestors.last || jsi_root_node
-#      if schema_resource_root.is_a?(Metaschema)
-if @jsi_subschema_resource_ancestors.any? && @jsi_subschema_resource_ancestors.last.is_a?(Metaschema)
+      schema_resource_root = @jsi_subschema_resource_ancestors.last || jsi_root_node
+      if schema_resource_root.is_a?(Metaschema)
 #schema_class = JSI.class_for_schemas(self.jsi_schemas.select(&:describes_schema?))
 
 # so if I have an items schema, which is a Schema and a properties/items
@@ -250,6 +248,20 @@ schema_class = JSI.class_for_schemas(self.jsi_schemas)
       end
     end
 
+    def subschema_from_fragment(fragment)
+      begin
+        schema_from_resource_root(JSI::JSON::Pointer.from_fragment(fragment))
+      rescue JSI::JSON::Pointer::PointerSyntaxError
+        #if fragment =~ /\A[A-Za-z][A-Za-z0-9\-_:.]*\z/
+        #  byebug
+        #  schema
+        #else
+        #  return(@deref_schema = )
+        #end
+        subschema_for_anchor(fragment)
+      end
+    end
+
     # returns a schema in the same document as this one at the given pointer relative to the root
     # of the schema resource.
     #
@@ -259,11 +271,9 @@ schema_class = JSI.class_for_schemas(self.jsi_schemas)
     # @param ptr [JSI::JSON::Pointer] pointer to a schema in our document
     # @return [JSI::BasicSchema] the schema in our document at the given pointer
     def schema_from_resource_root(ptr)
-      jsi_memoize(__method__, ptr) do |ptr|
+      #jsi_memoize(__method__, ptr) do |ptr|
         schema_resource_root = @jsi_subschema_resource_ancestors.last || jsi_root_node
-#byebug if ptr.inspect[/target/]
-        # TODO this is likely to stack overflow if schema_resource_root is a metaschema, but metaschemas
-        # don't use 
+        # TODO this seems possible to stack overflow in some case when schema_resource_root is a metaschema
 #byebug if schema_resource_root.is_a?(Metaschema) && !ptr.root?
         result_schema = ptr.evaluate(schema_resource_root)
 
@@ -271,9 +281,12 @@ schema_class = JSI.class_for_schemas(self.jsi_schemas)
           result_schema
         else
           # TODO warn; behavior is undefined and I hate this implementation
-schemas_for_whatever_this_is = result_schema.is_a?(Base) ? result_schema.jsi_schemas : Set.new
-schemas_for_whatever_this_is += self.jsi_schemas.select(&:describes_schema?)
-schema_class = JSI.class_for_schemas(schemas_for_whatever_this_is)
+
+          # TODO collect schemas for result_schema independent of evaluate
+          schemas_for_result_schema = result_schema.is_a?(Base) ? result_schema.jsi_schemas : Set.new
+          schemas_for_result_schema += self.jsi_schemas#.select(&:describes_schema?)
+byebug unless self.jsi_schemas.all?(&:describes_schema?)
+          schema_class = JSI.class_for_schemas(schemas_for_result_schema)
 
           schema_class.new(Base.const_get(:NOINSTANCE),
             jsi_document: @jsi_document,
@@ -284,6 +297,49 @@ schema_class = JSI.class_for_schemas(schemas_for_whatever_this_is)
     #        jsi_schema_dynamic_scope: []
           )
         end
+      #end
+    end
+
+    def subschemas
+      #jsi_memoize(:subschemas) do
+        JSI::Util.ycomb do |rec|
+          proc do |node|
+            Set[].tap do |out|
+              out << node if node.is_a?(JSI::Schema)
+
+              if node.respond_to?(:to_hash)
+                node.to_hash.values.each do |v|
+                  out.merge(rec.call(v))
+                end
+              elsif node.respond_to?(:to_ary)
+                node.to_ary.each do |e|
+                  out.merge(rec.call(e))
+                end
+              end
+            end
+          end
+        end.call(self)
+      #end
+    end
+
+    def subschemas_by_anchor
+      #return @subschemas_by_anchor if instance_variable_defined?(:@subschemas_by_anchor)
+      @subschemas_by_anchor = {}.tap do |sba|
+        subschemas.each do |subschema|
+          if subschema.anchor
+            sba[subschema.anchor] = subschema
+          end
+        end
+      end
+    end
+
+    def subschema_for_anchor(anchor)
+      if subschemas_by_anchor.key?(anchor)
+        subschemas_by_anchor[anchor]
+      else
+byebug
+subschemas_by_anchor
+        raise(ReferenceError, "could not find anchor #{anchor.inspect} in schema (#{self.class.inspect}):\n#{schema_content.pretty_inspect.chomp}")
       end
     end
 

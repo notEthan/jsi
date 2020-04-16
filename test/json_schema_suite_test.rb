@@ -40,11 +40,7 @@ describe 'JSON Schema Test Suite' do
               JSONSchemaTestSchema.new_jsi(::JSON.parse(path.read)).map do |tests_desc|
                 describe(tests_desc.description) do
                   let(:schema) do
-                    begin
-                      metaschema.new_jsi(tests_desc.jsi_instance['schema']).tap(&:jsi_register_schema)
-                    rescue JSI::Schema::IdHasFragment
-                      skip('unsupported id with fragment')
-                    end
+                    metaschema.new_jsi(tests_desc.jsi_instance['schema']).tap(&:jsi_register_schema)
                   end
                   tests_desc.tests.each do |test|
                     describe(test.description) do
@@ -52,10 +48,15 @@ describe 'JSON Schema Test Suite' do
                       it(test.valid ? 'is valid' : 'is invalid') do
                         result = jsi.jsi_validate
                         if test.valid != result.valid?
-                          if tests_desc.inspect[/uneval/]
-                            skip('unevaluated')
-                          elsif !test.valid && schema['format']
-                            skip('format validation')
+                          unsupported_keywords = [
+                            'format',
+                            'contentMediaType',
+                            'contentEncoding',
+                            'unevaluatedItems',
+                            'unevaluatedProperties',
+                          ].select { |kw| schema.subschemas.any? { |ss| ss.respond_to?(:to_hash) && ss.key?(kw) } }
+                          if unsupported_keywords.any?
+                            skip("unsupported keywords: #{unsupported_keywords.inspect}")
                           else
                             assert(false, {
                               valid: test.valid,

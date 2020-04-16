@@ -315,4 +315,135 @@ describe JSI::Schema do
       assert(!nota.jsi_valid?)
     end
   end
+  describe 'Appendix A. Schema identification examples' do
+    let(:schema_content) do
+      {
+        "$id": "https://example.com/root.json",
+        "$defs": {
+          "A": { "$anchor": "foo" },
+          "B": {
+            "$id": "other.json",
+            "$defs": {
+              "X": { "$anchor": "bar" },
+              "Y": {
+                "$id": "t/inner.json",
+                "$anchor": "bar"
+              }
+            }
+          },
+          "C": {
+            "$id": "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f"
+          }
+        }
+      }
+    end
+    let(:schema) { JSI::Schema.new(schema_content) }
+    it 'has some URIs' do
+      # # (document root)
+      #   canonical absolute-URI (and also base URI)
+      #     https://example.com/root.json
+      assert_equal(Addressable::URI.parse('https://example.com/root.json'),
+        schema.uri
+      )
+      #   canonical URI with pointer fragment
+      #     https://example.com/root.json#
+      assert_included(Addressable::URI.parse('https://example.com/root.json#'),
+        schema.uris
+      )
+
+      # #/$defs/A
+      #   base URI
+      #     https://example.com/root.json
+      #   canonical URI with plain fragment
+      #     https://example.com/root.json#foo
+      assert_included(Addressable::URI.parse('https://example.com/root.json#foo'),
+        schema.uris
+      )
+      #   canonical URI with pointer fragment
+      #     https://example.com/root.json#/$defs/A
+      assert_included(Addressable::URI.parse('https://example.com/root.json#/$defs/A'),
+        schema.uris
+      )
+
+      # #/$defs/B
+      #   base URI
+      #     https://example.com/other.json
+      assert_equal(Addressable::URI.parse('https://example.com/other.json'),
+        schema['$defs']['B'].uri
+      )
+      #   canonical URI with pointer fragment
+      #     https://example.com/other.json#
+      assert_included(Addressable::URI.parse('https://example.com/other.json#'),
+        schema.uris
+      )
+      #   non-canonical URI with fragment relative to root.json
+      #     https://example.com/root.json#/$defs/B
+      assert_included(Addressable::URI.parse('https://example.com/root.json#/$defs/B'),
+        schema.uris
+      )
+
+      # #/$defs/B/$defs/X
+      #   base URI
+      #     https://example.com/other.json
+      #   canonical URI with plain fragment
+      #     https://example.com/other.json#bar
+      assert_included(Addressable::URI.parse('https://example.com/other.json#bar'),
+        schema.uris
+      )
+      #   canonical URI with pointer fragment
+      #     https://example.com/other.json#/$defs/X
+      assert_included(Addressable::URI.parse('https://example.com/other.json#/$defs/X'),
+        schema.uris
+      )
+      #   non-canonical URI with fragment relative to root.json
+      #     https://example.com/root.json#/$defs/B/$defs/X
+      assert_included(Addressable::URI.parse('https://example.com/root.json#/$defs/B/$defs/X'),
+        schema.uris
+      )
+
+      # #/$defs/B/$defs/Y
+      #   base URI
+      #     https://example.com/t/inner.json
+      assert_equal(Addressable::URI.parse('https://example.com/t/inner.json'),
+        schema['$defs']['B']['$defs']['Y'].uri
+      )
+      #   canonical URI with plain fragment
+      #     https://example.com/t/inner.json#bar
+      assert_included(Addressable::URI.parse('https://example.com/t/inner.json#bar'),
+        schema.uris
+      )
+      #   canonical URI with pointer fragment
+      #     https://example.com/t/inner.json#
+      assert_included(Addressable::URI.parse('https://example.com/t/inner.json#'),
+        schema.uris
+      )
+      #   non-canonical URI with fragment relative to other.json
+      #     https://example.com/other.json#/$defs/Y
+      assert_included(Addressable::URI.parse('https://example.com/other.json#/$defs/Y'),
+        schema.uris
+      )
+      #   non-canonical URI with fragment relative to root.json
+      #     https://example.com/root.json#/$defs/B/$defs/Y
+      assert_included(Addressable::URI.parse('https://example.com/root.json#/$defs/B/$defs/Y'),
+        schema.uris
+      )
+
+      # #/$defs/C
+      #   base URI
+      #     urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f
+      assert_equal(Addressable::URI.parse('urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f'),
+        schema['$defs']['C'].uri
+      )
+      #   canonical URI with pointer fragment
+      #     urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f#
+      assert_included(Addressable::URI.parse('urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f#'),
+        schema.uris
+      )
+      #   non-canonical URI with fragment relative to root.json
+      #     https://example.com/root.json#/$defs/C
+      assert_included(Addressable::URI.parse('https://example.com/root.json#/$defs/C'),
+        schema.uris
+      )
+    end
+  end
 end

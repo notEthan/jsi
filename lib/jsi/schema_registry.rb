@@ -54,21 +54,15 @@ module JSI
       end
 byebug if schema_uri.relative?
 
-      if schema_uri.fragment
-        # TODO error handling fragment with invalid pointer
-        ptr = JSI::JSON::Pointer.from_fragment(schema_uri.fragment)
-      else
-        ptr = JSI::JSON::Pointer[]
-      end
+      fragment = schema_uri.fragment
       schema_uri = schema_uri.merge(fragment: nil)
 
       if @schemas.key?(schema_uri)
-        ptr.evaluate(@schemas[schema_uri]).tap do |schema|
-          unless schema.is_a?(JSI::Schema)
-byebug
-ptr.evaluate(@schemas[schema_uri])
-            raise(JSI::Schema::NotASchemaError, "referenced schema is not a schema: #{schema.pretty_inspect.chomp}")
-          end
+        schema = @schemas[schema_uri]
+        if fragment
+          schema.subschema_from_fragment(fragment)
+        else
+          schema
         end
       else
 byebug
@@ -85,12 +79,14 @@ byebug
         if id.fragment == ''
           id = id.merge(fragment: nil)
         elsif id.fragment
-          raise(Schema::IdHasFragment.new("schema id must not have a fragment. id: #{id}\nNOTE: a fragment is technically allowed in older JSON schema specifications. this is currently not supported, but support could be added. if you require this, please open an issue at https://github.com/notEthan/jsi/issues").tap { |e| e.id = id })
+byebug
+
+          raise(Schema::UndefinedIdFragment.new("schema id must not have a fragment. id: #{id}\nNOTE: a fragment is technically allowed in older JSON schema specifications. this is currently not supported, but support could be added. if you require this, please open an issue at https://github.com/notEthan/jsi/issues").tap { |e| e.id = id })
         end
         @schemas_mutex.synchronize do
           if @schemas.key?(id)
             if @schemas[id] != schema
-              raise(Collision, "id collision on #{id}. existing: \n#{@schemas[id].pretty_inspect.chomp}\nnew:\n#{schema.pretty_inspect.chomp}")
+              raise(Collision, "id collision on #{id}.\nexisting: \n#{@schemas[id].pretty_inspect.chomp}\nnew:\n#{schema.pretty_inspect.chomp}")
             end
           else
             @schemas[id] = schema
