@@ -268,7 +268,7 @@ module JSI
 
     # @return [Boolean] does this schema itself describe a schema?
     def describes_schema?
-      jsi_schema_instance_modules.any? { |m| m <= JSI::Schema } || is_a?(DescribesSchema)
+      jsi_schema_instance_modules.any? { |m| m <= JSI::Schema }
     end
 
     # @return [Set<Module>] modules to apply to instances described by this schema. these modules are included

@@ -177,16 +177,6 @@ module JSI
       elsif self.jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
       end
-
-      jsi_schemas.each do |schema|
-        # if this JSI is a schema - i.e. if it is described by a (meta)schema which indicates it describes
-        # schemas - and the class doesn't already include JSI::Schema, extend self with JSI::Schema.
-        # this may be the case when a jsi schema module includes JSI::Schema::DescribesSchema without
-        # setting jsi_schema_instance_modules to include JSI::Schema
-        if !is_a?(JSI::Schema) && schema.describes_schema?
-          extend JSI::Schema
-        end
-      end
     end
 
     # document containing the instance of this JSI
