@@ -2,6 +2,8 @@
 
 module JSI
   module Validation
+    autoload :Error, 'jsi/validation/error'
+
     autoload :Result, 'jsi/validation/result'
     autoload :FullResult, 'jsi/validation/result'
     autoload :ValidityResult, 'jsi/validation/result'
