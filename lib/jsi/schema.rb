@@ -587,7 +587,12 @@ subschemas_by_anchor
             else
 byebug unless schema_ref.deref_schema.is_a?(JSI::Schema)
               ref_result = schema_ref.deref_schema.internal_validate_instance(instance_ptr, instance_document, validate_only: validate_only, visited_refs: visited_refs + [schema_ref])
-              result_validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$ref` value', keyword, results: [ref_result])
+              result_validate.(
+                ref_result.valid?,
+                'instance is not valid against the schema pointed to by the `$ref` value',
+                keyword,
+                results: [ref_result],
+              )
             end
           else
             schema_error.("`$ref` is not a string", keyword)
@@ -605,7 +610,12 @@ byebug unless schema_ref.deref_schema.is_a?(JSI::Schema)
               schema_error.('self-referential schema structure', keyword)
             else
               ref_result = schema_ref.deref_schema.internal_validate_instance(instance_ptr, instance_document, validate_only: validate_only, visited_refs: visited_refs + [schema_ref])
-              result_validate.(ref_result.valid?, 'instance is not valid against the schema pointed to by the `$recursiveRef` value', keyword, results: [ref_result])
+              result_validate.(
+                ref_result.valid?,
+                'instance is not valid against the schema pointed to by the `$recursiveRef` value',
+                keyword,
+                results: [ref_result],
+              )
             end
           else
             schema_error.("`$recursiveRef` is not a string", keyword)
@@ -874,7 +884,12 @@ byebug unless schema_ref.deref_schema.is_a?(JSI::Schema)
                 subschema_validate.(subschema('contains'), instance_ptr[idx])
               end
 # TODO better info on what items passed/failed validation
-x              result_validate.(results.select(&:valid?).size <= value, 'instance array contains more items valid against the `contains` schema than the `maxContains` value', keyword, results: results)
+x              result_validate.(
+                results.select(&:valid?).size <= value,
+                'instance array contains more items valid against the `contains` schema than the `maxContains` value',
+                keyword,
+                results: results,
+              )
               validate.(results.select(&:valid?).size <= value, 'instance array contains more items valid against the `contains` schema than the `maxContains` value', keyword)
             end
           else
@@ -894,7 +909,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
               results = instance.each_index.map do |idx|
                 subschema_validate.(subschema('contains'), instance_ptr[idx])
               end
-              result_validate.(results.select(&:valid?).size >= value, 'instance array contains fewer items valid against the `contains` schema than the `minContains` value', keyword, results: results)
+              result_validate.(
+                results.select(&:valid?).size >= value,
+                'instance array contains fewer items valid against the `contains` schema than the `minContains` value',
+                keyword,
+                results: results,
+              )
             end
           else
             schema_error.('`minContains` is not a non-negative integer', keyword)
@@ -994,7 +1014,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
             allOf_results = value.each_index.map do |idx|
               subschema_validate.(subschema('allOf', idx), instance_ptr)
             end
-            result_validate.(allOf_results.all?(&:valid?), 'instance did not validate against all schemas defined by `allOf` value', keyword, results: allOf_results)
+            result_validate.(
+              allOf_results.all?(&:valid?),
+              'instance did not validate against all schemas defined by `allOf` value',
+              keyword,
+              results: allOf_results,
+            )
           else
             schema_error.('`allOf` is not an array', keyword)
           end
@@ -1010,7 +1035,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
             anyOf_results = value.each_index.map do |idx|
               subschema_validate.(subschema('anyOf', idx), instance_ptr)
             end
-            result_validate.(anyOf_results.any?(&:valid?), 'instance did not validate against any schemas defined by `anyOf` value', keyword, results: anyOf_results)
+            result_validate.(
+              anyOf_results.any?(&:valid?),
+              'instance did not validate against any schemas defined by `anyOf` value',
+              keyword,
+              results: anyOf_results,
+            )
           else
             schema_error.('`anyOf` is not an array', keyword)
           end
@@ -1027,10 +1057,20 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
               subschema_validate.(subschema('oneOf', idx), instance_ptr)
             end
             if oneOf_results.none?(&:valid?)
-              result_validate.(false, 'instance did not validate against any schemas defined by `oneOf` value', keyword, results: oneOf_results)
+              result_validate.(
+                false,
+                'instance did not validate against any schemas defined by `oneOf` value',
+                keyword,
+                results: oneOf_results,
+              )
             else
               # TODO better info on what schemas passed/failed validation
-              result_validate.(oneOf_results.select(&:valid?).size == 1, 'instance validated against multiple schemas defined by `oneOf` value', keyword, results: oneOf_results)
+              result_validate.(
+                oneOf_results.select(&:valid?).size == 1,
+                'instance validated against multiple schemas defined by `oneOf` value',
+                keyword,
+                results: oneOf_results,
+              )
             end
           else
             schema_error.('`oneOf` is not an array', keyword)
@@ -1060,12 +1100,22 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
           if if_valid
             if schema_content.key?('then')
               then_result = subschema_validate.(subschema('then'), instance_ptr)
-              result_validate.(then_result.valid?, 'instance did not validate against the schema defined by `then` value after validating against the schema defined by the `if` value', keyword, results: [then_result])
+              result_validate.(
+                then_result.valid?,
+                'instance did not validate against the schema defined by `then` value after validating against the schema defined by the `if` value',
+                keyword,
+                results: [then_result],
+              )
             end
           else
             if schema_content.key?('else')
               else_result = subschema_validate.(subschema('else'), instance_ptr)
-              result_validate.(else_result.valid?, 'instance did not validate against the schema defined by `else` value after not validating against the schema defined by the `if` value', keyword, results: [else_result])
+              result_validate.(
+                else_result.valid?,
+                'instance did not validate against the schema defined by `else` value after not validating against the schema defined by the `if` value',
+                keyword,
+                results: [else_result],
+              )
             end
           end
         end
@@ -1085,7 +1135,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
                   subschema_validate.(subschema('dependentSchemas', property_name), instance_ptr)
                 end
               end.compact
-              result_validate.(results.all?(&:valid?), 'instance object does not validate against all schemas corresponding to matched property names specified by the `dependentSchemas` value', keyword, results: results)
+              result_validate.(
+                results.all?(&:valid?),
+                'instance object does not validate against all schemas corresponding to matched property names specified by the `dependentSchemas` value',
+                keyword,
+                results: results,
+              )
             end
           else
             schema_error.('`dependentSchemas` is not an object', keyword)
@@ -1113,7 +1168,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
                   JSI::SchemaValidation::FullResult.new
                 end
               end
-              result_validate.(results.all?(&:valid?), 'instance array items did not all validate against corresponding `items` or `additionalItems` schema values', keyword, results: results)
+              result_validate.(
+                results.all?(&:valid?),
+                'instance array items did not all validate against corresponding `items` or `additionalItems` schema values',
+                keyword,
+                results: results,
+              )
             end
           else
             # If "items" is a schema, validation succeeds if all elements in the array successfully validate against that schema.
@@ -1121,7 +1181,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
               results = instance.each_index.map do |idx|
                 subschema_validate.(subschema('items'), instance_ptr[idx])
               end
-              result_validate.(results.all?(&:valid?), 'instance array items did not all validate against the `items` schema value', keyword, results: results)
+              result_validate.(
+                results.all?(&:valid?),
+                'instance array items did not all validate against the `items` schema value',
+                keyword,
+                results: results,
+              )
             end
           end
         end
@@ -1135,7 +1200,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
             results = instance.each_index.map do |idx|
               subschema_validate.(subschema('contains'), instance_ptr[idx])
             end
-            result_validate.(results.any?(&:valid?), 'instance array does not contain any items valid against the `contains` schema value', keyword, results: results)
+            result_validate.(
+              results.any?(&:valid?),
+              'instance array does not contain any items valid against the `contains` schema value',
+              keyword,
+              results: results,
+            )
           end
         end
 
@@ -1157,7 +1227,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
                   subschema_validate.(subschema('properties', property_name), instance_ptr[property_name])
                 end
               end.compact
-              result_validate.(results.all?(&:valid?), 'instance object properties do not all validate against corresponding `properties` schema values', keyword, results: results)
+              result_validate.(
+                results.all?(&:valid?),
+                'instance object properties do not all validate against corresponding `properties` schema values',
+                keyword,
+                results: results,
+              )
             end
           else
             schema_error.('`properties` is not an object', keyword)
@@ -1185,7 +1260,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
                   end
                 end.compact
               end.inject([], &:+)
-              result_validate.(results.all?(&:valid?), 'instance object properties do not all validate against corresponding `patternProperties` schema values', keyword, results: results)
+              result_validate.(
+                results.all?(&:valid?),
+                'instance object properties do not all validate against corresponding `patternProperties` schema values',
+                keyword,
+                results: results,
+              )
             end
           else
             schema_error.('`patternProperties` is not an object', keyword)
@@ -1203,7 +1283,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
                 subschema_validate.(subschema('additionalProperties'), instance_ptr[property_name])
               end
             end.compact
-            result_validate.(results.all?(&:valid?), 'additional instance object properties do not all validate against `additionalProperties` schema value', keyword, results: results)
+            result_validate.(
+              results.all?(&:valid?),
+              'additional instance object properties do not all validate against `additionalProperties` schema value',
+              keyword,
+              results: results,
+            )
           end
         end
 
@@ -1217,7 +1302,12 @@ x              result_validate.(results.select(&:valid?).size <= value, 'instanc
             results = instance.keys.map do |property_name|
               subschema('propertyNames').internal_validate_instance(JSI::JSON::Pointer[], property_name, validate_only: validate_only)
             end
-            result_validate.(results.all?(&:valid?), 'instance object property names do not all validate against `propertyNames` schema value', keyword, results: results)
+            result_validate.(
+              results.all?(&:valid?),
+              'instance object property names do not all validate against `propertyNames` schema value',
+              keyword,
+              results: results,
+            )
           end
         end
       else
