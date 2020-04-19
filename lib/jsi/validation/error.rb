@@ -48,6 +48,11 @@ module JSI
         yield(self)
         nil
       end
+
+      # @return [Object]
+      def instance
+        instance_ptr.evaluate(instance_document)
+      end
     end
   end
 end
