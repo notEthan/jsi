@@ -1,5 +1,18 @@
 module JSI
   class SchemaValidation
+    ValidationError = JSI::Util::AttrStruct[*%w(
+      message
+      keyword
+      schema
+      instance_ptr
+      instance_document
+    )]
+    class ValidationError
+      def instance_content
+        instance_ptr.evaluate(instance_document)
+      end
+    end
+
     class Result
       include Util::Virtual
 

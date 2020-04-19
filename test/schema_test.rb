@@ -214,12 +214,12 @@ describe JSI::Schema do
         result = schema.validate_instance(instance)
         assert_equal(false, result.valid?)
         assert_equal(Set[
-          {
+          JSI::SchemaValidation::ValidationError.new({
             :message => "instance type does not match `type` value",
             :keyword => "type",
-            :schema_ptr => JSI::JSON::Pointer[], :schema_document => schema.jsi_document,
+            :schema => schema,
             :instance_ptr => JSI::JSON::Pointer[], :instance_document => ["no"],
-          },
+          }),
         ], result.validation_errors)
         assert_equal(Set[], result.annotations)
         assert_equal(Set[], result.schema_errors)

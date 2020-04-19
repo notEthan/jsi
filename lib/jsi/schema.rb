@@ -548,14 +548,13 @@ subschemas_by_anchor
           results.each { |res| result.schema_errors.merge(res.schema_errors) }
           unless valid
             results.each { |res| result.validation_errors.merge(res.validation_errors) }
-            result.validation_errors << {
+            result.validation_errors << SchemaValidation::ValidationError.new({
               message: message,
               keyword: keyword,
-              schema_ptr: self.jsi_ptr,
-              schema_document: self.jsi_document,
+              schema: self,
               instance_ptr: instance_ptr,
               instance_document: instance_document,
-            }
+            })
           end
         end
       end
