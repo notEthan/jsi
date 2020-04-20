@@ -64,12 +64,12 @@ module JSI
       def initialize
         @validation_errors = Set.new
         @annotations = Set.new
-        @schema_errors = Set.new
+        @schema_issues = Set.new
       end
 
       attr_accessor :validation_errors
       attr_accessor :annotations
-      attr_accessor :schema_errors
+      attr_accessor :schema_issues
 
       def valid?
         validation_errors.empty?
@@ -78,10 +78,10 @@ module JSI
       def freeze
         @validation_errors.each(&:freeze)
         @annotations.each(&:freeze)
-        @schema_errors.each(&:freeze)
+        @schema_issues.each(&:freeze)
         @validation_errors.freeze
         @annotations.freeze
-        @schema_errors.freeze
+        @schema_issues.freeze
         super
       end
 
@@ -91,7 +91,7 @@ module JSI
         end
         validation_errors.merge(result.validation_errors)
         annotations.merge(result.annotations)
-        schema_errors.merge(result.schema_errors)
+        schema_issues.merge(result.schema_issues)
         self
       end
 

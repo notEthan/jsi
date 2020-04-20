@@ -202,7 +202,7 @@ describe JSI::Schema do
         assert_equal(true, result.valid?)
         assert_equal(Set[], result.validation_errors)
         assert_equal(Set[], result.annotations)
-        assert_equal(Set[], result.schema_errors)
+        assert_equal(Set[], result.schema_issues)
       end
       it '#instance_valid?' do
         assert_equal(true, schema.instance_valid?(instance))
@@ -222,7 +222,7 @@ describe JSI::Schema do
           }),
         ], result.validation_errors)
         assert_equal(Set[], result.annotations)
-        assert_equal(Set[], result.schema_errors)
+        assert_equal(Set[], result.schema_issues)
       end
       it '#instance_valid?' do
         assert_equal(false, schema.instance_valid?(instance))
@@ -242,12 +242,13 @@ describe JSI::Schema do
         assert_equal(Set[], result.validation_errors)
         assert_equal(Set[], result.annotations)
         assert_equal(Set[
-          JSI::SchemaValidation::SchemaError.new({
+          JSI::SchemaValidation::SchemaIssue.new({
+            level: :error,
             message: "self-referential schema structure",
             keyword: "$ref",
             schema: schema,
           }),
-        ], result.schema_errors)
+        ], result.schema_issues)
       end
     end
     describe 'mutually self-referential' do
@@ -265,17 +266,19 @@ describe JSI::Schema do
         assert_equal(Set[], result.validation_errors)
         assert_equal(Set[], result.annotations)
         assert_equal(Set[
-          JSI::SchemaValidation::SchemaError.new({
+          JSI::SchemaValidation::SchemaIssue.new({
+            level: :error,
             message: "self-referential schema structure",
             keyword: "$ref",
             schema: schema.allOf[0],
           }),
-          JSI::SchemaValidation::SchemaError.new({
+          JSI::SchemaValidation::SchemaIssue.new({
+            level: :error,
             message: "self-referential schema structure",
             keyword: "$ref",
             schema: schema.allOf[1],
           }),
-        ], result.schema_errors)
+        ], result.schema_issues)
       end
     end
   end

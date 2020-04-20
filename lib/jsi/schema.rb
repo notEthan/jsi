@@ -531,7 +531,7 @@ subschemas_by_anchor
         end
 
         schema_issue = proc do |level, message, keyword = nil|
-          result.schema_errors << SchemaValidation::SchemaIssue.new({
+          result.schema_issues << SchemaValidation::SchemaIssue.new({
             level: level,
             message: message,
             keyword: keyword,
@@ -552,7 +552,7 @@ subschemas_by_anchor
             return SchemaValidation::INVALID
           end
         else
-          results.each { |res| result.schema_errors.merge(res.schema_errors) }
+          results.each { |res| result.schema_issues.merge(res.schema_issues) }
           if valid
             results.select(&:valid?).each { |res| result.annotations.merge(res.annotations) }
           else
@@ -572,8 +572,8 @@ subschemas_by_anchor
         subresult = subschema.internal_validate_instance(subinstance_ptr, instance_document, validate_only: validate_only)
         unless validate_only
           # subresult validation_errors do not necessarily go into our result (the caller handles that),
-          # but schema_errors always do.
-          result.schema_errors.merge(subresult.schema_errors)
+          # but schema_issues always do.
+          result.schema_issues.merge(subresult.schema_issues)
         end
         subresult
       end
