@@ -6,12 +6,8 @@ module JSI
 
     # @param instance [Hash]
     # @param jsi_schema_module_modules [Set]
-#x @param jsi_schema_schema_module [Module < JSI::Schema] the schema module for this jsi schema. this
-#x   goes into jsi_schema_instance_modules, but is separated in order to allow this schema's jsi_schema_module
-#x   to extend the other jsi_schema_instance_modules without the jsi_schema_schema_module.
     def initialize(instance, jsi_schema_instance_modules: , jsi_schema_module_modules: Set[], **options)
       self.jsi_schema_instance_modules = jsi_schema_instance_modules
-#x + [jsi_schema_schema_module]
       self.jsi_schema_module_modules = jsi_schema_module_modules
 
       # this schema is an instance of itself, so the schema instance modules included for its instances

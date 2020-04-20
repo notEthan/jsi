@@ -349,6 +349,56 @@ describe JSI::Schema do
 #      refute_included(schema, a.jsi_schemas)
     end
   end
+
+  describe '' do
+    let(:schema_content) do
+      JSON.parse(%q(
+        {
+          "title": "Feature list",
+          "type": "array",
+          "items": [
+            {
+              "title": "Feature A",
+              "properties": {
+                "enabled": {
+                  "$ref": "#/$defs/enabledToggle",
+                  "default": true
+                }
+              }
+            },
+            {
+              "title": "Feature B",
+              "properties": {
+                "enabled": {
+                  "description": "If set to null, Feature B inherits the enabled value from Feature A",
+                  "$ref": "#/$defs/enabledToggle"
+                }
+              }
+            }
+          ],
+          "$defs": {
+            "enabledToggle": {
+              "title": "Enabled",
+              "description": "Whether the feature is enabled (true), disabled (false), or under automatic control (null)",
+              "type": [
+                "boolean",
+                "null"
+              ],
+              "default": null
+            }
+          }
+        }
+      ))
+    end
+    let(:schema) { JSI::Schema.new(schema_content) }
+    let(:instance) do
+      [
+        {'enabled' => true},
+        {'enabled' => nil},
+      ]
+    end
+  end
+
   describe 'Appendix A. Schema identification examples' do
     let(:schema_content) do
       {

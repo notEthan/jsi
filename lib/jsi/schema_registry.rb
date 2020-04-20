@@ -60,7 +60,7 @@ byebug if schema_uri.relative?
       if @schemas.key?(schema_uri)
         schema = @schemas[schema_uri]
         if fragment
-byebug
+#byebug
           schema.subschema_from_fragment(fragment)
         else
           schema

@@ -27,8 +27,8 @@ describe 'JSON Schema Test Suite' do
     drafts = [
 #      {name: 'draft4', metaschema: JSI::JSONSchemaOrgDraft04.schema},
 #      {name: 'draft6', metaschema: JSI::JSONSchemaOrgDraft06.schema},
-      {name: 'draft7', metaschema: JSI::JSONSchemaOrgDraft07.schema},
-#      {name: 'draft2019-09', metaschema: JSI::JSONSchemaOrgDraft201909.schema},
+      #{name: 'draft7', metaschema: JSI::JSONSchemaOrgDraft07.schema},
+      {name: 'draft2019-09', metaschema: JSI::JSONSchemaOrgDraft201909.schema},
     ]
     drafts.each do |name: , metaschema: |
       JSI::Util.ycomb do |rec|
@@ -47,8 +47,9 @@ describe 'JSON Schema Test Suite' do
                     describe(test.description) do
                       let(:jsi) { schema.new_jsi(test.jsi_instance['data']) }
                       it(test.valid ? 'is valid' : 'is invalid') do
-                        result = jsi.jsi_validate
-                        if test.valid != result.valid?
+                        #result = jsi.jsi_validate
+                        #assert_equal(result.valid?, jsi.jsi_valid?)
+                        if test.valid != jsi.jsi_validate.valid?
                           unsupported_keywords = [
                             'format',
                             'contentMediaType',

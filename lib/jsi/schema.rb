@@ -553,6 +553,7 @@ subschemas_by_anchor
         schema_error = Util::NOOP
       else
         result = SchemaValidation::FullResult.new
+
         result_annotate = proc do |keyword, value|
           result.annotations << SchemaValidation::Annotation.new({
             keyword: keyword,
