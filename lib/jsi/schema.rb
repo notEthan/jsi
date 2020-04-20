@@ -8,6 +8,7 @@ module JSI
   module Schema
     autoload :Application, 'jsi/schema/application'
     autoload :Validation, 'jsi/schema/validation'
+    autoload :Issue, 'jsi/schema/issue'
 
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
 
