@@ -226,11 +226,8 @@ return @schema_content = jsi_node_content
 
     # @return [Set<Module>] modules to apply to instances described by this schema
     def jsi_schema_instance_modules
-      if instance_variable_defined?(:@jsi_schema_instance_modules)
-        @jsi_schema_instance_modules
-      else
-        Set[]
-      end
+      return @jsi_schema_instance_modules if instance_variable_defined?(:@jsi_schema_instance_modules)
+      return @jsi_schema_instance_modules = Set[]
     end
 
     # @return [void]
@@ -242,11 +239,8 @@ return @schema_content = jsi_node_content
 
     # @return [Set<Module>] modules to extend this schema's jsi_schema_module
     def jsi_schema_module_modules
-      if instance_variable_defined?(:@jsi_schema_module_modules)
-        @jsi_schema_module_modules
-      else
-        Set[]
-      end
+      return @jsi_schema_module_modules if instance_variable_defined?(:@jsi_schema_module_modules)
+      return @jsi_schema_module_modules = Set[]
     end
 
     # @return [void]
