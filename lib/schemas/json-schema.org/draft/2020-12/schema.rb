@@ -50,4 +50,12 @@ module JSI
   end
   module JSONSchemaDraft202012::Content
   end
+
+  module JSONSchemaDraft202012
+    # `$defs` property reader
+    # @return [Base + JSONSchemaDraft202012::Defs, nil]
+    def defs
+      self['$defs']
+    end
+  end
 end
