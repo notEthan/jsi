@@ -14,20 +14,21 @@ module JSI
           # keyword's value, the child instance for that name successfully validates against the corresponding
           # schema.
           if result_builder.instance.respond_to?(:to_hash)
-            results = result_builder.instance.keys.map do |property_name|
+            results = {}
+            result_builder.instance.keys.each do |property_name|
               if value.key?(property_name)
                 evaluated_property_names << property_name
-                result_builder.child_subschema_validate(
+                results[property_name] = result_builder.child_subschema_validate(
                   ['properties', property_name],
                   [property_name],
                 )
               end
-            end.compact
+            end
             result_builder.validate(
-              results.all?(&:valid?),
+              results.values.all?(&:valid?),
               'instance object properties are not all valid against corresponding `properties` schema values',
               keyword: 'properties',
-              results: results,
+              results: results.values,
             )
           end
         else
@@ -45,27 +46,28 @@ module JSI
           # a property name in this keyword's value, the child instance for that name successfully validates
           # against each schema that corresponds to a matching regular expression.
           if result_builder.instance.respond_to?(:to_hash)
-            results = result_builder.instance.keys.map do |property_name|
-              value.keys.map do |value_property_pattern|
+            results = {}
+            result_builder.instance.keys.each do |property_name|
+              value.keys.each do |value_property_pattern|
                 begin
                   # TODO ECMA 262
                   if value_property_pattern.respond_to?(:to_str) && property_name.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name)
                     evaluated_property_names << property_name
-                    result_builder.child_subschema_validate(
+                    results[property_name] = result_builder.child_subschema_validate(
                       ['patternProperties', value_property_pattern],
                       [property_name],
                     )
                   end
                 rescue ::RegexpError
-                  nil
+                  result_builder.schema_error("`patternProperties` key #{property_name.inspect} is not a valid regular expression: #{e.message}", 'patternProperties')
                 end
-              end.compact
-            end.inject([], &:+)
+              end
+            end
             result_builder.validate(
-              results.all?(&:valid?),
+              results.values.all?(&:valid?),
               'instance object properties are not all valid against corresponding `patternProperties` schema values',
               keyword: 'patternProperties',
-              results: results,
+              results: results.values,
             )
           end
         else
@@ -77,19 +79,20 @@ module JSI
         value = schema_content['additionalProperties']
         # The value of "additionalProperties" MUST be a valid JSON Schema.
         if result_builder.instance.respond_to?(:to_hash)
-          results = result_builder.instance.keys.map do |property_name|
+          results = {}
+          result_builder.instance.keys.each do |property_name|
             if !evaluated_property_names.include?(property_name)
-              result_builder.child_subschema_validate(
+              results[property_name] = result_builder.child_subschema_validate(
                 ['additionalProperties'],
                 [property_name],
               )
             end
           end.compact
           result_builder.validate(
-            results.all?(&:valid?),
+            results.values.all?(&:valid?),
             'instance object additional properties are not all valid against `additionalProperties` schema value',
             keyword: 'additionalProperties',
-            results: results,
+            results: results.values,
           )
         end
       end
