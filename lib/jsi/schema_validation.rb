@@ -1,5 +1,19 @@
 module JSI
   class SchemaValidation
+    Annotation = JSI::Util::AttrStruct[*%w(
+      keyword
+      value
+      instance_ptr
+      instance_document
+      schema
+      dynamic_scope_or_refs_followed
+    )]
+    class Annotation
+      def instance_content
+        instance_ptr.evaluate(instance_document)
+      end
+    end
+
     ValidationError = JSI::Util::AttrStruct[*%w(
       message
       keyword
@@ -11,6 +25,15 @@ module JSI
       def instance_content
         instance_ptr.evaluate(instance_document)
       end
+    end
+
+    SchemaIssue = JSI::Util::AttrStruct[*%w(
+      level
+      message
+      keyword
+      schema
+    )]
+    class SchemaIssue
     end
 
     class Result

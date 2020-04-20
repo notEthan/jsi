@@ -170,8 +170,6 @@ return(@schema_content = jsi_node_content)
 
     # @return [Module] a module representing this schema. see {JSI::SchemaClasses.module_for_schema}.
     def jsi_schema_module
-#instance_modules
-#jsi_schema_instance_modules
       JSI::SchemaClasses.module_for_schema(self, schema_module_include: jsi_schema_instance_modules)
     end
 
@@ -233,6 +231,7 @@ return(@schema_content = jsi_node_content)
 # so if I have an items schema, which is a Schema and a properties/items
 # then its subschema, say additionalProperties, would also be a properties/items
 # write a test to validate self.jsi_schemas.select(&:describes_schema?)
+byebug unless self.jsi_schemas.all?(&:describes_schema?)
 schema_class = JSI.class_for_schemas(self.jsi_schemas)
 
         schema_class.new(Base.const_get(:NOINSTANCE),
@@ -281,6 +280,9 @@ schema_class = JSI.class_for_schemas(self.jsi_schemas)
           result_schema
         else
           # TODO warn; behavior is undefined and I hate this implementation
+          # note that
+          # - $id won't work
+          # - weird behavior is possible when the schema location is described by other schemas (e.g. $ref: #/properties?)
 
           # TODO collect schemas for result_schema independent of evaluate
           schemas_for_result_schema = result_schema.is_a?(Base) ? result_schema.jsi_schemas : Set.new
@@ -301,7 +303,7 @@ byebug unless self.jsi_schemas.all?(&:describes_schema?)
     end
 
     def subschemas
-      #jsi_memoize(:subschemas) do
+      jsi_memoize(:subschemas) do
         JSI::Util.ycomb do |rec|
           proc do |node|
             Set[].tap do |out|
@@ -319,11 +321,11 @@ byebug unless self.jsi_schemas.all?(&:describes_schema?)
             end
           end
         end.call(self)
-      #end
+      end
     end
 
     def subschemas_by_anchor
-      #return @subschemas_by_anchor if instance_variable_defined?(:@subschemas_by_anchor)
+      return @subschemas_by_anchor if instance_variable_defined?(:@subschemas_by_anchor)
       @subschemas_by_anchor = {}.tap do |sba|
         subschemas.each do |subschema|
           if subschema.anchor
@@ -513,40 +515,47 @@ subschemas_by_anchor
       instance = instance_ptr.evaluate(instance_document)
 
       if validate_only
-        result = JSI::SchemaValidation::VALID
-        annotate = Util::NOOP
+        result = SchemaValidation::VALID
+        result_annotate = Util::NOOP
         schema_error = Util::NOOP
       else
-        result = JSI::SchemaValidation::FullResult.new
-        annotate = proc do |keyword, annotation|
-          result.annotations << {
+        result = SchemaValidation::FullResult.new
+        result_annotate = proc do |keyword, value|
+          result.annotations << SchemaValidation::Annotation.new({
             keyword: keyword,
-            annotation: annotation,
-            schema_ptr: self.jsi_ptr,
-            schema_document: self.jsi_document,
+            value: value,
             instance_ptr: instance_ptr,
             instance_document: instance_document,
-          }
+            schema: self,
+          })
         end
 
-        schema_error = proc do |message, keyword = nil|
-          result.schema_errors << {
+        schema_issue = proc do |level, message, keyword = nil|
+          result.schema_errors << SchemaValidation::SchemaIssue.new({
+            level: level,
             message: message,
             keyword: keyword,
-            schema_ptr: self.jsi_ptr,
-            schema_document: self.jsi_document,
-          }
+            schema: self,
+          })
+        end
+        schema_error = proc do |message, keyword = nil|
+          schema_issue.(:error, message, keyword)
+        end
+        schema_warning = proc do |message, keyword = nil|
+          schema_issue.(:warning, message, keyword)
         end
       end
 
       result_validate = proc do |valid, message, keyword = nil, results: []|
         if validate_only
           unless valid
-            return JSI::SchemaValidation::INVALID
+            return SchemaValidation::INVALID
           end
         else
           results.each { |res| result.schema_errors.merge(res.schema_errors) }
-          unless valid
+          if valid
+            results.select(&:valid?).each { |res| result.annotations.merge(res.annotations) }
+          else
             results.each { |res| result.validation_errors.merge(res.validation_errors) }
             result.validation_errors << SchemaValidation::ValidationError.new({
               message: message,
@@ -830,7 +839,7 @@ byebug unless schema_ref.deref_schema.is_a?(JSI::Schema)
           if value.is_a?(Integer) && value >= 0
             if instance.respond_to?(:to_ary)
               # An array instance is valid against "maxItems" if its size is less than, or equal to, the value of this keyword.
-              result_validate.(instance.to_ary.size <= value, 'instance array size is not less than or equal to `maxItems` value', keyword)
+              result_validate.(instance.to_ary.size <= value, 'instance array size is greater than `maxItems` value', keyword)
             end
           else
             schema_error.('`maxItems` is not a non-negative integer', keyword)
@@ -845,7 +854,7 @@ byebug unless schema_ref.deref_schema.is_a?(JSI::Schema)
           if value.is_a?(Integer) && value >= 0
             if instance.respond_to?(:to_ary)
               # An array instance is valid against "minItems" if its size is greater than, or equal to, the value of this keyword.
-              result_validate.(instance.to_ary.size >= value, 'instance array size is not greater than or equal to `minItems` value', keyword)
+              result_validate.(instance.to_ary.size >= value, 'instance array size is less than `minItems` value', keyword)
             end
           else
             schema_error.('`minItems` is not a non-negative integer', keyword)
@@ -876,20 +885,24 @@ byebug unless schema_ref.deref_schema.is_a?(JSI::Schema)
           value = schema_content[keyword]
           # The value of this keyword MUST be a non-negative integer.
           if value.is_a?(Integer) && value >= 0
-            if instance.respond_to?(:to_ary)
-              # An array instance is valid against "maxContains" if the number of elements that are valid
-              # against the schema for "contains" is less than, or equal to, the value of this keyword.
-              results = instance.each_index.map do |idx|
-                subschema_validate.(subschema('contains'), instance_ptr[idx])
+            if schema_content.key?('contains')
+              if instance.respond_to?(:to_ary)
+                # An array instance is valid against "maxContains" if the number of elements that are valid
+                # against the schema for "contains" is less than, or equal to, the value of this keyword.
+                results = instance.each_index.map do |i|
+                  subschema_validate.(subschema('contains'), instance_ptr[i])
+                end
+  # TODO better info on what items passed/failed validation
+  x              result_validate.(
+                  results.select(&:valid?).size <= value,
+                  'instance array contains more items valid against the `contains` schema than the `maxContains` value',
+                  keyword,
+                  results: results,
+                )
+                validate.(results.select(&:valid?).size <= value, 'instance array contains more items valid against the `contains` schema than the `maxContains` value', keyword)
               end
-# TODO better info on what items passed/failed validation
-x              result_validate.(
-                results.select(&:valid?).size <= value,
-                'instance array contains more items valid against the `contains` schema than the `maxContains` value',
-                keyword,
-                results: results,
-              )
-              validate.(results.select(&:valid?).size <= value, 'instance array contains more items valid against the `contains` schema than the `maxContains` value', keyword)
+            else
+              schema_warning.('`maxContains` has no effect without adjacent `contains` keyword', keyword)
             end
           else
             schema_error.('`maxContains` is not a non-negative integer', keyword)
@@ -902,18 +915,26 @@ x              result_validate.(
           value = schema_content[keyword]
           # The value of this keyword MUST be a non-negative integer.
           if value.is_a?(Integer) && value >= 0
-            if instance.respond_to?(:to_ary)
-              # An array instance is valid against "minContains" if the number of elements that are valid
-              # against the schema for "contains" is greater than, or equal to, the value of this keyword.
-              results = instance.each_index.map do |idx|
-                subschema_validate.(subschema('contains'), instance_ptr[idx])
+if value < 1
+  schema_warning.('`minContains` value of 0 is specified without adjacent `contains` keyword', keyword)
+end
+            if schema_content.key?('contains')
+              if instance.respond_to?(:to_ary)
+                # An array instance is valid against "minContains" if the number of elements that are valid
+                # against the schema for "contains" is greater than, or equal to, the value of this keyword.
+# TODO have this be a result of 'contains' annotations rather than redundantly validating
+                results = instance.each_index.map do |i|
+                  subschema_validate.(subschema('contains'), instance_ptr[i])
+                end
+                result_validate.(
+                  results.select(&:valid?).size >= value,
+                  'instance array contains fewer items valid against the `contains` schema than the `minContains` value',
+                  keyword,
+                  results: results,
+                )
               end
-              result_validate.(
-                results.select(&:valid?).size >= value,
-                'instance array contains fewer items valid against the `contains` schema than the `minContains` value',
-                keyword,
-                results: results,
-              )
+            else
+              schema_warning.('`minContains` has no effect without adjacent `contains` keyword', keyword)
             end
           else
             schema_error.('`minContains` is not a non-negative integer', keyword)
@@ -999,6 +1020,67 @@ x              result_validate.(
           end
         end
 
+        # 7. A Vocabulary for Semantic Content With "format"
+        if schema_content.key?('format')
+          keyword = 'format'
+          value = schema_content[keyword]
+
+          result_annotate.(keyword, value)
+        end
+
+        # A Vocabulary for Basic Meta-Data Annotations https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.9
+
+        # string annotations
+
+        # "title" and "description" https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.9.1
+        %w(title description).each do |keyword|
+          if schema_content.key?(keyword)
+            value = schema_content[keyword]
+
+            if value.respond_to?(:to_str)
+              result_annotate.(keyword, value)
+            else
+              schema_error.("`#{keyword}` is not a string", keyword)
+            end
+          end
+        end
+
+        # boolean annotations
+
+        # "deprecated" https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.9.3
+        # "readOnly" and "writeOnly" https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.9.4
+        %w(deprecated readOnly writeOnly).each do |keyword|
+          if schema_content.key?(keyword)
+            value = schema_content[keyword]
+
+            if [true, false].include?(value)
+              result_annotate.(keyword, value)
+            else
+              schema_error.("`#{keyword}` is not a boolean", keyword)
+            end
+          end
+        end
+
+        # "default" https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.9.2
+        keyword = 'default'
+        if schema_content.key?(keyword)
+          value = schema_content[keyword]
+
+          result_annotate.(keyword, value)
+        end
+
+        # 9.5. "examples" https://json-schema.org/draft/2019-09/json-schema-validation.html#rfc.section.9.5
+        keyword = 'examples'
+        if schema_content.key?(keyword)
+          value = schema_content[keyword]
+
+          if value.respond_to?(:to_ary)
+            result_annotate.(keyword, value)
+          else
+            schema_error.("`#{keyword}` is not an array", keyword)
+          end
+        end
+
         # 9.2.  Keywords for Applying Subschemas in Place
 
         # 9.2.1.  Keywords for Applying Subschemas With Boolean Logic
@@ -1010,8 +1092,8 @@ x              result_validate.(
           # This keyword's value MUST be a non-empty array. Each item of the array MUST be a valid JSON Schema.
           if value.respond_to?(:to_ary)
             # An instance validates successfully against this keyword if it validates successfully against all schemas defined by this keyword's value.
-            allOf_results = value.each_index.map do |idx|
-              subschema_validate.(subschema('allOf', idx), instance_ptr)
+            allOf_results = value.each_index.map do |i|
+              subschema_validate.(subschema('allOf', i), instance_ptr)
             end
             result_validate.(
               allOf_results.all?(&:valid?),
@@ -1031,8 +1113,8 @@ x              result_validate.(
           # This keyword's value MUST be a non-empty array. Each item of the array MUST be a valid JSON Schema.
           if value.respond_to?(:to_ary)
             # An instance validates successfully against this keyword if it validates successfully against at least one schema defined by this keyword's value. Note that when annotations are being collected, all subschemas MUST be examined so that annotations are collected from each subschema that validates successfully.
-            anyOf_results = value.each_index.map do |idx|
-              subschema_validate.(subschema('anyOf', idx), instance_ptr)
+            anyOf_results = value.each_index.map do |i|
+              subschema_validate.(subschema('anyOf', i), instance_ptr)
             end
             result_validate.(
               anyOf_results.any?(&:valid?),
@@ -1052,8 +1134,8 @@ x              result_validate.(
           # This keyword's value MUST be a non-empty array. Each item of the array MUST be a valid JSON Schema.
           if value.respond_to?(:to_ary)
             # An instance validates successfully against this keyword if it validates successfully against exactly one schema defined by this keyword's value.
-            oneOf_results = value.each_index.map do |idx|
-              subschema_validate.(subschema('oneOf', idx), instance_ptr)
+            oneOf_results = value.each_index.map do |i|
+              subschema_validate.(subschema('oneOf', i), instance_ptr)
             end
             if oneOf_results.none?(&:valid?)
               result_validate.(
@@ -1117,6 +1199,13 @@ x              result_validate.(
               )
             end
           end
+        else
+          if schema_content.key?('then')
+            schema_warning.('`then` has no effect without adjacent `if` keyword', keyword)
+          end
+          if schema_content.key?('else')
+            schema_warning.('`else` has no effect without adjacent `if` keyword', keyword)
+          end
         end
 
         # 9.2.2.4. dependentSchemas
@@ -1158,35 +1247,79 @@ x              result_validate.(
           if value.respond_to?(:to_ary)
             # If "items" is an array of schemas, validation succeeds if each element of the instance validates against the schema at the same position, if any.
             if instance.respond_to?(:to_ary)
-              results = instance.each_index.map do |idx|
-                if idx < value.size
-                  subschema_validate.(subschema('items', idx), instance_ptr[idx])
+              items_annotation = nil
+              additionalItems_annotion = nil
+              results = instance.each_index.map do |i|
+                if i < value.size
+                  subschema_validate.(subschema('items', i), instance_ptr[i])
+                  items_annotation = i
                 elsif schema_content.key?('additionalItems')
-                  subschema_validate.(subschema('additionalItems'), instance_ptr[idx])
+                  subschema_validate.(subschema('additionalItems'), instance_ptr[i])
+                  additionalItems_annotion = true
                 else
                   JSI::SchemaValidation::FullResult.new
                 end
+              end
+              annotations = Set[]
+              if items_annotation
+                # This keyword produces an annotation value which is the largest index to which this keyword
+                # applied a subschema.
+                annotations << SchemaValidation::Annotation.new(
+                  keyword: 'items',
+                  value: items_annotation,
+                  instance_ptr: instance_ptr,
+                  instance_document: instance_document,
+                  schema: self,
+                )
+              end
+              if additionalItems_annotion
+                # If the "additionalItems" subschema is applied to any positions within the instance array,
+                # it produces an annotation result of boolean true, analogous to the single schema behavior
+                # of "items".
+                annotations << SchemaValidation::Annotation.new(
+                  keyword: 'additionalItems',
+                  value: additionalItems_annotion,
+                  instance_ptr: instance_ptr,
+                  instance_document: instance_document,
+                  schema: self,
+                )
               end
               result_validate.(
                 results.all?(&:valid?),
                 'instance array items did not all validate against corresponding `items` or `additionalItems` schema values',
                 keyword,
                 results: results,
+                annotations: annotations,
               )
             end
           else
             # If "items" is a schema, validation succeeds if all elements in the array successfully validate against that schema.
             if instance.respond_to?(:to_ary)
-              results = instance.each_index.map do |idx|
-                subschema_validate.(subschema('items'), instance_ptr[idx])
+              results = instance.each_index.map do |i|
+                subschema_validate.(subschema('items'), instance_ptr[i])
               end
               result_validate.(
                 results.all?(&:valid?),
                 'instance array items did not all validate against the `items` schema value',
                 keyword,
                 results: results,
+                # This keyword produces an annotation value ... The value MAY be a boolean true if a subschema
+                # was applied to every index of the instance, such as when "items" is a schema.
+                annotations: [
+                  SchemaValidation::Annotation.new(
+                    keyword: keyword,
+                    value: true,
+                    instance_ptr: instance_ptr,
+                    instance_document: instance_document,
+                    schema: self,
+                  )
+                ],
               )
             end
+          end
+        else
+          if schema_content.key?('additionalItems')
+            schema_warning.('`additionalItems` has no effect without adjacent `items` keyword', keyword)
           end
         end
 
@@ -1196,14 +1329,25 @@ x              result_validate.(
           value = schema_content[keyword]
           # An array instance is valid against "contains" if at least one of its elements is valid against the given schema. Note that when collecting annotations, the subschema MUST be applied to every array element even after the first match has been found. This is to ensure that all possible annotations are collected.
           if instance.respond_to?(:to_ary)
-            results = instance.each_index.map do |idx|
-              subschema_validate.(subschema('contains'), instance_ptr[idx])
+            results = instance.each_index.map do |i|
+              subschema_validate.(subschema('contains'), instance_ptr[i])
             end
             result_validate.(
               results.any?(&:valid?),
               'instance array does not contain any items valid against the `contains` schema value',
               keyword,
               results: results,
+              annotations: [
+                SchemaValidation::Annotation.new(
+                  keyword: keyword,
+                  value: results.each_index.select do |i|
+                    results[i].valid?
+                  end,
+                  instance_ptr: instance_ptr,
+                  instance_document: instance_document,
+                  schema: self,
+                )
+              ],
             )
           end
         end
@@ -1309,6 +1453,9 @@ x              result_validate.(
             )
           end
         end
+
+        'unevaluatedItems'
+        'unevaluatedProperties'
       else
         schema_error.('schema is neither a boolean nor an object')
       end

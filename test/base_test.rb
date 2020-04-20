@@ -284,12 +284,12 @@ describe JSI::Base do
         result = subject.jsi_validate
         assert_equal(false, result.valid?)
         assert_equal(Set[
-          {
-            :message => "instance type does not match `type` value",
-            :keyword => "type",
-            :schema_ptr => JSI::JSON::Pointer[], :schema_document => schema.jsi_document,
-            :instance_ptr => JSI::JSON::Pointer[], :instance_document => instance,
-          }
+          JSI::SchemaValidation::ValidationError.new({
+            message: "instance type does not match `type` value",
+            keyword: "type",
+            schema: schema,
+            instance_ptr: JSI::JSON::Pointer[], instance_document: instance,
+          }),
         ], result.validation_errors)
         assert_equal(Set[], result.annotations)
         assert_equal(Set[], result.schema_errors)
@@ -329,61 +329,61 @@ describe JSI::Base do
 
         it '#jsi_validate' do
           assert_equal(Set[
-            {
-              :message => "instance type does not match `type` value",
-              :keyword => "type",
-              :schema_ptr => JSI::JSON::Pointer["properties"]["foo"], :schema_document => schema_content,
-              :instance_ptr => JSI::JSON::Pointer["foo"], :instance_document => instance,
-            }
+            JSI::SchemaValidation::ValidationError.new({
+              message: "instance type does not match `type` value",
+              keyword: "type",
+              schema: schema["properties"]["foo"],
+              instance_ptr: JSI::JSON::Pointer["foo"], instance_document: instance,
+            }),
           ], subject.foo.jsi_validate.validation_errors)
           assert_equal(Set[], subject.bar.jsi_validate.validation_errors)
           assert_equal(Set[
-            {
-              :message => "instance type does not match `type` value",
-              :keyword => "type",
-              :schema_ptr => JSI::JSON::Pointer["properties"]["baz"], :schema_document => schema_content,
-              :instance_ptr => JSI::JSON::Pointer["baz"], :instance_document => instance,
-            }
+            JSI::SchemaValidation::ValidationError.new({
+              message: "instance type does not match `type` value",
+              keyword: "type",
+              schema: schema["properties"]["baz"],
+              instance_ptr: JSI::JSON::Pointer["baz"], instance_document: instance,
+            }),
           ], subject.baz.jsi_validate.validation_errors)
           assert_equal(Set[
-            {
-              :message => "instance validated against the schema defined by `not` value",
-              :keyword => "not",
-              :schema_ptr => JSI::JSON::Pointer["additionalProperties"], :schema_document => schema_content,
-              :instance_ptr => JSI::JSON::Pointer["more"], :instance_document => instance,
-            }
+            JSI::SchemaValidation::ValidationError.new({
+              message: "instance validated against the schema defined by `not` value",
+              keyword: "not",
+              schema: schema["additionalProperties"],
+              instance_ptr: JSI::JSON::Pointer["more"], instance_document: instance,
+            }),
           ], subject['more'].jsi_validate.validation_errors)
           assert_equal(Set[
-            {
-              :message => "instance type does not match `type` value",
-              :keyword => "type",
-              :schema_ptr => JSI::JSON::Pointer["properties", "foo"], :schema_document => schema_content,
-              :instance_ptr => JSI::JSON::Pointer["foo"], :instance_document => instance,
-            },
-            {
-              :message => "instance type does not match `type` value",
-              :keyword => "type",
-              :schema_ptr => JSI::JSON::Pointer["properties", "baz"], :schema_document => schema_content,
-              :instance_ptr => JSI::JSON::Pointer["baz"], :instance_document => instance,
-            },
-            {
-              :message => "instance object properties do not all validate against corresponding `properties` schema values",
-              :keyword => "properties",
-              :schema_ptr => JSI::JSON::Pointer[], :schema_document => schema_content,
-              :instance_ptr => JSI::JSON::Pointer[], :instance_document => instance,
-            },
-            {
-              :message => "instance validated against the schema defined by `not` value",
-              :keyword => "not",
-              :schema_ptr => JSI::JSON::Pointer["additionalProperties"], :schema_document => schema_content,
-              :instance_ptr => JSI::JSON::Pointer["more"], :instance_document => instance,
-            },
-            {
-              :message => "additional instance object properties do not all validate against `additionalProperties` schema value",
-              :keyword => "additionalProperties",
-              :schema_ptr => JSI::JSON::Pointer[], :schema_document => schema_content,
-              :instance_ptr => JSI::JSON::Pointer[], :instance_document => instance,
-            }
+            JSI::SchemaValidation::ValidationError.new({
+              message: "instance type does not match `type` value",
+              keyword: "type",
+              schema: schema["properties"]["foo"],
+              instance_ptr: JSI::JSON::Pointer["foo"], instance_document: instance,
+            }),
+            JSI::SchemaValidation::ValidationError.new({
+              message: "instance type does not match `type` value",
+              keyword: "type",
+              schema: schema["properties"]["baz"],
+              instance_ptr: JSI::JSON::Pointer["baz"], instance_document: instance,
+            }),
+            JSI::SchemaValidation::ValidationError.new({
+              message: "instance object properties do not all validate against corresponding `properties` schema values",
+              keyword: "properties",
+              schema: schema,
+              instance_ptr: JSI::JSON::Pointer[], instance_document: instance,
+            }),
+            JSI::SchemaValidation::ValidationError.new({
+              message: "instance validated against the schema defined by `not` value",
+              keyword: "not",
+              schema: schema["additionalProperties"],
+              instance_ptr: JSI::JSON::Pointer["more"], instance_document: instance,
+            }),
+            JSI::SchemaValidation::ValidationError.new({
+              message: "additional instance object properties do not all validate against `additionalProperties` schema value",
+              keyword: "additionalProperties",
+              schema: schema,
+              instance_ptr: JSI::JSON::Pointer[], instance_document: instance,
+            }),
           ], subject.jsi_validate.validation_errors)
         end
         it '#jsi_valid?' do

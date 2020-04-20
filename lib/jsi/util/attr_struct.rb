@@ -89,6 +89,10 @@ module JSI
         q.text '>'
       end
 
+def attributes
+  @attributes.dup.freeze
+end
+
       include FingerprintHash
       def jsi_fingerprint
         {class: self.class, attributes: @attributes}
