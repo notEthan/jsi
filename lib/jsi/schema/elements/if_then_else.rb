@@ -43,6 +43,10 @@ module JSI
             if_result = inplace_subschema_validate(['if'])
 
             if if_result.valid?
+              result.evaluated_tokens.merge(if_result.evaluated_tokens)
+            end
+
+            if if_result.valid?
               if keyword?('then')
                 then_result = inplace_subschema_validate(['then'])
                 inplace_results_validate(
