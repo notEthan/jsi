@@ -379,7 +379,7 @@ describe JSI::Base do
               instance_ptr: JSI::JSON::Pointer["more"], instance_document: instance,
             }),
             JSI::SchemaValidation::ValidationError.new({
-              message: "additional instance object properties do not all validate against `additionalProperties` schema value",
+              message: "additional instance object properties do not all validate against the `additionalProperties` schema value",
               keyword: "additionalProperties",
               schema: schema,
               instance_ptr: JSI::JSON::Pointer[], instance_document: instance,

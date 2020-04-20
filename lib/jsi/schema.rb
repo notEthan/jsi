@@ -58,6 +58,28 @@ module JSI
       end
     end
 
+    module BigMoneyDefs
+      def defs
+        keyword = '$defs'
+        if schema_content.respond_to?(:to_hash)
+          schema_content[keyword]
+        else
+          nil
+        end
+      end
+    end
+
+    module Definitions
+      def defs
+        keyword = 'definitions'
+        if schema_content.respond_to?(:to_hash)
+          schema_content[keyword]
+        else
+          nil
+        end
+      end
+    end
+
     class << self
       # @return [JSI::Schema] the default metaschema
       def default_metaschema
@@ -115,8 +137,8 @@ module JSI
     end
 
     def schema_content
-return(@schema_content) if instance_variable_defined?(:@schema_content)
-return(@schema_content = jsi_node_content)
+return @schema_content if instance_variable_defined?(:@schema_content)
+return @schema_content = jsi_node_content
     end
 
     def base_uri
@@ -170,7 +192,7 @@ return(@schema_content = jsi_node_content)
 
     # @return [Module] a module representing this schema. see {JSI::SchemaClasses.module_for_schema}.
     def jsi_schema_module
-      JSI::SchemaClasses.module_for_schema(self, schema_module_include: jsi_schema_instance_modules)
+      JSI::SchemaClasses.module_for_schema(self, schema_module_include: jsi_schema_instance_modules, schema_module_extend: jsi_schema_module_modules)
     end
 
     # @return [Class < JSI::Base] a JSI class for this one schema
@@ -216,6 +238,22 @@ return(@schema_content = jsi_node_content)
       raise(TypeError) unless jsi_schema_instance_modules.is_a?(Set)
       raise(TypeError) unless jsi_schema_instance_modules.all? { |m| m.is_a?(Module) }
       @jsi_schema_instance_modules = jsi_schema_instance_modules
+    end
+
+    # @return [Set<Module>] modules to extend this schema's jsi_schema_module
+    def jsi_schema_module_modules
+      if instance_variable_defined?(:@jsi_schema_module_modules)
+        @jsi_schema_module_modules
+      else
+        Set[]
+      end
+    end
+
+    # @return [void]
+    def jsi_schema_module_modules=(jsi_schema_module_modules)
+      raise(TypeError) unless jsi_schema_module_modules.is_a?(Set)
+      raise(TypeError) unless jsi_schema_module_modules.all? { |m| m.is_a?(Module) }
+      @jsi_schema_module_modules = jsi_schema_module_modules
     end
 
     # returns a subschema of this Schema
@@ -546,7 +584,7 @@ subschemas_by_anchor
         end
       end
 
-      result_validate = proc do |valid, message, keyword = nil, results: []|
+      result_validate = proc do |valid, message, keyword = nil, results: [], annotations: []|
         if validate_only
           unless valid
             return SchemaValidation::INVALID
@@ -555,6 +593,7 @@ subschemas_by_anchor
           results.each { |res| result.schema_issues.merge(res.schema_issues) }
           if valid
             results.select(&:valid?).each { |res| result.annotations.merge(res.annotations) }
+            result.annotations.merge(annotations)
           else
             results.each { |res| result.validation_errors.merge(res.validation_errors) }
             result.validation_errors << SchemaValidation::ValidationError.new({
@@ -1171,14 +1210,20 @@ end
         # 9.2.2. Keywords for Applying Subschemas Conditionally
 
         # 9.2.2.1. if
-        if schema_content.key?('if')
-          keyword = 'if'
+        keyword = 'if'
+        if schema_content.key?(keyword)
           value = schema_content[keyword]
 
           # This keyword's value MUST be a valid JSON Schema.
           # This validation outcome of this keyword's subschema has no direct effect on the overall validation result. Rather, it controls which of the "then" or "else" keywords are evaluated.
-          if_valid = subschema_validate.(subschema('if'), instance_ptr).valid?
-          if if_valid
+          if_result = subschema_validate.(subschema('if'), instance_ptr)
+
+          result.schema_issues.merge(if_result.schema_issues)
+          if if_result.valid?
+            result.annotations.merge(if_result.annotations)
+          end
+
+          if if_result.valid?
             if schema_content.key?('then')
               then_result = subschema_validate.(subschema('then'), instance_ptr)
               result_validate.(
@@ -1251,11 +1296,11 @@ end
               additionalItems_annotion = nil
               results = instance.each_index.map do |i|
                 if i < value.size
-                  subschema_validate.(subschema('items', i), instance_ptr[i])
                   items_annotation = i
+                  subschema_validate.(subschema('items', i), instance_ptr[i])
                 elsif schema_content.key?('additionalItems')
-                  subschema_validate.(subschema('additionalItems'), instance_ptr[i])
                   additionalItems_annotion = true
+                  subschema_validate.(subschema('additionalItems'), instance_ptr[i])
                 else
                   JSI::SchemaValidation::FullResult.new
                 end
@@ -1364,17 +1409,29 @@ end
           if value.respond_to?(:to_hash)
             # Validation succeeds if, for each name that appears in both the instance and as a name within this keyword's value, the child instance for that name successfully validates against the corresponding schema.
             if instance.respond_to?(:to_hash)
-              results = instance.keys.map do |property_name|
+              results = {}
+              instance.keys.each do |property_name|
                 if value.key?(property_name)
                   evaluated_property_names << property_name
-                  subschema_validate.(subschema('properties', property_name), instance_ptr[property_name])
+                  results[property_name] = subschema_validate.(subschema('properties', property_name), instance_ptr[property_name])
                 end
-              end.compact
+              end
               result_validate.(
-                results.all?(&:valid?),
+                results.values.all?(&:valid?),
                 'instance object properties do not all validate against corresponding `properties` schema values',
                 keyword,
-                results: results,
+                results: results.values,
+                annotations: [
+                  SchemaValidation::Annotation.new(
+                    keyword: keyword,
+                    value: results.keys.select do |property_name|
+                      results[property_name].valid?
+                    end,
+                    instance_ptr: instance_ptr,
+                    instance_document: instance_document,
+                    schema: self,
+                  )
+                ],
               )
             end
           else
@@ -1390,24 +1447,36 @@ end
           if value.respond_to?(:to_hash)
             # Validation succeeds if, for each instance name that matches any regular expressions that appear as a property name in this keyword's value, the child instance for that name successfully validates against each schema that corresponds to a matching regular expression.
             if instance.respond_to?(:to_hash)
-              results = instance.keys.map do |property_name|
-                value.keys.map do |value_property_pattern|
+              results = {}
+              instance.keys.each do |property_name|
+                value.keys.each do |value_property_pattern|
                   begin
                     # TODO ECMA 262
                     if value_property_pattern.respond_to?(:to_str) && property_name.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name)
                       evaluated_property_names << property_name
-                      subschema_validate.(subschema('patternProperties', value_property_pattern), instance_ptr[property_name])
+                      results[property_name] = subschema_validate.(subschema('patternProperties', value_property_pattern), instance_ptr[property_name])
                     end
                   rescue RegexpError
                     nil
                   end
-                end.compact
-              end.inject([], &:+)
+                end
+              end
               result_validate.(
-                results.all?(&:valid?),
+                results.values.all?(&:valid?),
                 'instance object properties do not all validate against corresponding `patternProperties` schema values',
                 keyword,
-                results: results,
+                results: results.values,
+                annotations: [
+                  SchemaValidation::Annotation.new(
+                    keyword: keyword,
+                    value: results.keys.select do |property_name|
+                      results[property_name].valid?
+                    end,
+                    instance_ptr: instance_ptr,
+                    instance_document: instance_document,
+                    schema: self,
+                  )
+                ],
               )
             end
           else
@@ -1421,16 +1490,28 @@ end
           value = schema_content[keyword]
           # The value of "additionalProperties" MUST be a valid JSON Schema.
           if instance.respond_to?(:to_hash)
-            results = instance.keys.map do |property_name|
+            results = {}
+            instance.keys.each do |property_name|
               if !evaluated_property_names.include?(property_name)
-                subschema_validate.(subschema('additionalProperties'), instance_ptr[property_name])
+                results[property_name] = subschema_validate.(subschema('additionalProperties'), instance_ptr[property_name])
               end
             end.compact
             result_validate.(
-              results.all?(&:valid?),
-              'additional instance object properties do not all validate against `additionalProperties` schema value',
+              results.values.all?(&:valid?),
+              'additional instance object properties do not all validate against the `additionalProperties` schema value',
               keyword,
-              results: results,
+              results: results.values,
+              annotations: [
+                SchemaValidation::Annotation.new(
+                  keyword: keyword,
+                  value: results.keys.select do |property_name|
+                    results[property_name].valid?
+                  end,
+                  instance_ptr: instance_ptr,
+                  instance_document: instance_document,
+                  schema: self,
+                )
+              ],
             )
           end
         end
@@ -1447,15 +1528,109 @@ end
             end
             result_validate.(
               results.all?(&:valid?),
-              'instance object property names do not all validate against `propertyNames` schema value',
+              'instance object property names do not all validate against the `propertyNames` schema value',
               keyword,
               results: results,
             )
           end
         end
 
-        'unevaluatedItems'
-        'unevaluatedProperties'
+        # 9.3.1.3. unevaluatedItems
+        # The value of "unevaluatedItems" MUST be a valid JSON Schema.
+
+        # The behavior of this keyword depends on the annotation results of adjacent keywords that apply to the instance location being validated. Specifically, the annotations from "items" and "additionalItems", which can come from those keywords when they are adjacent to the "unevaluatedItems" keyword. Those two annotations, as well as "unevaluatedItems", can also result from any and all adjacent in-place applicator keywords. This includes but is not limited to the in-place applicators defined in this document.
+
+        # If an "items" annotation is present, and its annotation result is a number, and no "additionalItems" or "unevaluatedItems" annotation is present, then validation succeeds if every instance element at an index greater than the "items" annotation validates against "unevaluatedItems".
+
+        # Otherwise, if any "items", "additionalItems", or "unevaluatedItems" annotations are present with a value of boolean true, then "unevaluatedItems" MUST be ignored. However, if none of these annotations are present, "unevaluatedItems" MUST be applied to all locations in the array.
+
+        # This means that "items", "additionalItems", and all in-place applicators MUST be evaluated before this keyword can be evaluated. Authors of extension keywords MUST NOT define an in-place applicator that would need to be evaluated before this keyword.
+
+        # If the "unevaluatedItems" subschema is applied to any positions within the instance array, it produces an annotation result of boolean true, analogous to the single schema behavior of "items". If any "unevaluatedItems" keyword from any subschema applied to the same instance location produces an annotation value of true, then the combined result from these keywords is also true.
+
+        # Omitting this keyword has the same assertion behavior as an empty schema.
+
+        # Implementations that do not collect annotations MUST raise an error upon encountering this keyword.
+
+
+
+        keyword = 'unevaluatedItems'
+        if schema_content.key?(keyword)
+          value = schema_content[keyword]
+          # The value of "unevaluatedItems" MUST be a valid JSON Schema.
+          if instance.respond_to?(:to_ary)
+            items_annotations = result.annotations.select do |annotation|
+              annotation.instance_ptr == instance_ptr &&
+                ['items', 'additionalItems', 'unevaluatedItems'].include?(annotation.keyword)
+            end
+
+            results = {}
+            instance.each_index do |i|
+              evaluated = items_annotations.any? do |ann|
+                # true annotation value results from schema-form items, additionalItems, or unevaluatedItems.
+                # integer annotation value results from array-form items
+                ann.value == true || i <= ann.value
+              end
+              if !evaluated
+                results[i] = subschema_validate.(subschema(keyword), instance_ptr[i])
+              end
+            end
+
+            result_validate.(
+              results.values.all?(&:valid?),
+              "unevaluated instance array items did not all validate against the `#{keyword}` schema value",
+              keyword,
+              results: results.values,
+              annotations: [
+                SchemaValidation::Annotation.new(
+                  keyword: keyword,
+                  value: true,
+                  instance_ptr: instance_ptr,
+                  instance_document: instance_document,
+                  schema: self,
+                )
+              ],
+            )
+          end
+        end
+
+        keyword = 'unevaluatedProperties'
+        if schema_content.key?(keyword)
+          value = schema_content[keyword]
+          # The value of "unevaluatedProperties" MUST be a valid JSON Schema.
+          if instance.respond_to?(:to_hash)
+            properties_annotations = result.annotations.select do |annotation|
+              annotation.instance_ptr == instance_ptr &&
+                ['properties', 'patternProperties', 'additionalProperties', 'unevaluatedProperties'].include?(annotation.keyword)
+            end
+
+            results = {}
+            instance.keys.each do |property_name|
+              evaluated = properties_annotations.any? { |ann| ann.value.include?(property_name) }
+              if !evaluated
+                results[property_name] = subschema_validate.(subschema(keyword), instance_ptr[property_name])
+              end
+            end
+
+            result_validate.(
+              results.values.all?(&:valid?),
+              "unevaluated instance object properties do not all validate against the `#{keyword}` schema value",
+              keyword,
+              results: results.values,
+              annotations: [
+                SchemaValidation::Annotation.new(
+                  keyword: keyword,
+                  value: results.keys.select do |property_name|
+                    results[property_name].valid?
+                  end,
+                  instance_ptr: instance_ptr,
+                  instance_document: instance_document,
+                  schema: self,
+                )
+              ],
+            )
+          end
+        end
       else
         schema_error.('schema is neither a boolean nor an object')
       end

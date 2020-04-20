@@ -39,5 +39,78 @@ module JSI
 
   JSONSchemaOrgDraft201909 = Metaschema.new(schema_content,
     jsi_schema_instance_modules: Set[JSI::Schema::Draft201909],
+    jsi_schema_module_modules: Set[
+      Schema::BigMoneyId,
+      Schema::BigMoneyAnchor,
+      Schema::BigMoneyDefs,
+    ],
   ).tap(&:jsi_register_schema).jsi_schema_module
+
+  module JSONSchemaOrgDraft201909
+    Definitions = properties['definitions']
+    Dependencies = properties['dependencies']
+    Id = properties['id']
+    Schema = properties['schema']
+    Anchor = properties['anchor']
+    Ref = properties['ref']
+    RecursiveRef = properties['recursiveRef']
+    RecursiveAnchor = properties['recursiveAnchor']
+    Vocabulary = properties['vocabulary']
+    Comment = properties['comment']
+    Defs = properties['defs']
+    AdditionalItems = properties['additionalItems']
+    UnevaluatedItems = properties['unevaluatedItems']
+    Items = properties['items']
+    Contains = properties['contains']
+    AdditionalProperties = properties['additionalProperties']
+    UnevaluatedProperties = properties['unevaluatedProperties']
+    Properties = properties['properties']
+    PatternProperties = properties['patternProperties']
+    DependentSchemas = properties['dependentSchemas']
+    PropertyNames = properties['propertyNames']
+    If = properties['if']
+    Then = properties['then']
+    Else = properties['else']
+    AllOf = properties['allOf']
+    AnyOf = properties['anyOf']
+    OneOf = properties['oneOf']
+    Not = properties['not']
+    MultipleOf = properties['multipleOf']
+    Maximum = properties['maximum']
+    ExclusiveMaximum = properties['exclusiveMaximum']
+    Minimum = properties['minimum']
+    ExclusiveMinimum = properties['exclusiveMinimum']
+    MaxLength = properties['maxLength']
+    MinLength = properties['minLength']
+    Pattern = properties['pattern']
+    MaxItems = properties['maxItems']
+    MinItems = properties['minItems']
+    UniqueItems = properties['uniqueItems']
+    MaxContains = properties['maxContains']
+    MinContains = properties['minContains']
+    MaxProperties = properties['maxProperties']
+    MinProperties = properties['minProperties']
+    Required = properties['required']
+    DependentRequired = properties['dependentRequired']
+    Const = properties['const']
+    Enum = properties['enum']
+    Type = properties['type']
+    Title = properties['title']
+    Description = properties['description']
+    Default = properties['default']
+    Deprecated = properties['deprecated']
+    ReadOnly = properties['readOnly']
+    WriteOnly = properties['writeOnly']
+    Examples = properties['examples']
+    Format = properties['format']
+    ContentMediaType = properties['contentMediaType']
+    ContentEncoding = properties['contentEncoding']
+    ContentSchema = properties['contentSchema']
+
+    SchemaArray = defs['schemaArray']
+    NonNegativeInteger = defs['nonNegativeInteger']
+    NonNegativeIntegerDefault0 = defs['nonNegativeIntegerDefault0']
+    SimpleTypes = defs['simpleTypes']
+    StringArray = defs['stringArray']
+  end
 end

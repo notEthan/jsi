@@ -67,9 +67,9 @@ module JSI
         @schema_issues = Set.new
       end
 
-      attr_accessor :validation_errors
-      attr_accessor :annotations
-      attr_accessor :schema_issues
+      attr_reader :validation_errors
+      attr_reader :annotations
+      attr_reader :schema_issues
 
       def valid?
         validation_errors.empty?

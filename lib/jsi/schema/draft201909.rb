@@ -7,6 +7,7 @@ module JSI
 
       include BigMoneyId
       include BigMoneyAnchor
+      include BigMoneyDefs
     end
   end
 end

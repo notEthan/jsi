@@ -91,9 +91,7 @@ properties:
   additionalProperties:
     "$recursiveRef": "#"
   unevaluatedProperties:
-    type: object
-    additionalProperties:
-      "$recursiveRef": "#"
+    "$recursiveRef": "#"
   properties:
     type: object
     additionalProperties:

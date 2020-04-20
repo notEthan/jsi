@@ -30,6 +30,10 @@ byebug
       schema.schema_id
     end
 
+    def schema_content
+      schema.schema_content
+    end
+
     # @return [String]
     def inspect
       uri = schema.schema_id || schema.jsi_ptr.uri
@@ -97,11 +101,11 @@ byebug
       #
       # defines a singleton method #schema to access the {JSI::Schema} this module represents, and extends
       # the module with {JSI::SchemaModule}.
-      def module_for_schema(schema, schema_module_include: Set[])
+      def module_for_schema(schema, schema_module_include: Set[], schema_module_extend: Set[])
         unless schema.is_a?(JSI::Schema)
           raise(JSI::Schema::NotASchemaError, "not a schema: #{schema.pretty_inspect.chomp}")
         end
-        module_for_schema = jsi_memoize(:module_for_schema, schema, schema_module_include) do |schema, schema_module_include|
+        module_for_schema = jsi_memoize(:module_for_schema, schema, schema_module_include, schema_module_extend) do |schema, schema_module_include, schema_module_extend|
           Module.new.tap do |m|
             m.module_eval do
               define_singleton_method(:schema) { schema }
@@ -111,19 +115,26 @@ byebug
 #byebug if schema.jsi_ptr == JSI::JSON::Pointer["properties", "$vocabulary"]
               extend SchemaModule
 
-              instance_conflicting_modules = Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode]
-
-              instance_conflicting_modules += schema.jsi_schema_instance_modules
-              schema.jsi_schema_instance_modules.each do |mod|
+              schema_module_include.each do |mod|
                 include(mod)
               end
 
-              include JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: instance_conflicting_modules)
+              schema_module_extend.each do |mod|
+                extend(mod)
+              end
+
+              include JSI::SchemaClasses.accessor_module_for_schema(schema,
+                conflicting_modules: Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode] +
+                  schema_module_include
+              )
 
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
               schema.jsi_schemas.each do |schema_schema|
-                extend(JSI::SchemaClasses.accessor_module_for_schema(schema_schema, conflicting_modules: [Module, SchemaModule, SchemaModulePossibly], setters: false))
+                extend(JSI::SchemaClasses.accessor_module_for_schema(schema_schema,
+                  conflicting_modules: Set[Module, SchemaModule, SchemaModulePossibly] + schema_module_extend,
+                  setters: false,
+                ))
               end
             end
           end

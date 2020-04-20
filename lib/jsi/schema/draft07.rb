@@ -6,6 +6,7 @@ module JSI
       include JSI::Schema
 
       include BigMoneyId
+      include Definitions
     end
   end
 end

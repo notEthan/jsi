@@ -4,6 +4,7 @@ module JSI
   # JSI::Util classes, modules, constants, and methods are INTERNAL and will be added and removed without warning. do not rely on them.
   module Util
     autoload :AttrStruct, 'jsi/util/attr_struct'
+#    autoload :TokenValue, 'jsi/util/token_value'
 
     # a proc which does nothing
     NOOP = -> (*_) { }
