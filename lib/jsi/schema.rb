@@ -553,8 +553,9 @@ subschemas_by_anchor
       instance = instance_ptr.evaluate(instance_document)
 
       if validate_only
-        result = SchemaValidation::VALID
+        result = SchemaValidation::AnnotatedValidityResult.new
         result_annotate = Util::NOOP
+        schema_warning = Util::NOOP
         schema_error = Util::NOOP
       else
         result = SchemaValidation::FullResult.new
@@ -585,15 +586,16 @@ subschemas_by_anchor
       end
 
       result_validate = proc do |valid, message, keyword = nil, results: [], annotations: []|
-        if validate_only
-          unless valid
-            return SchemaValidation::INVALID
+        if valid
+          results.select(&:valid?).each { |res| result.annotations.merge(res.annotations) }
+          result.annotations.merge(annotations)
+
+          unless validate_only
+            results.each { |res| result.schema_issues.merge(res.schema_issues) }
           end
         else
-          results.each { |res| result.schema_issues.merge(res.schema_issues) }
-          if valid
-            results.select(&:valid?).each { |res| result.annotations.merge(res.annotations) }
-            result.annotations.merge(annotations)
+          if validate_only
+            return SchemaValidation::INVALID
           else
             results.each { |res| result.validation_errors.merge(res.validation_errors) }
             result.validation_errors << SchemaValidation::ValidationError.new({
@@ -1120,11 +1122,11 @@ end
           end
         end
 
-        # 9.2.  Keywords for Applying Subschemas in Place
+        # json-schema-core 9.2.  Keywords for Applying Subschemas in Place
 
-        # 9.2.1.  Keywords for Applying Subschemas With Boolean Logic
+        # json-schema-core 9.2.1.  Keywords for Applying Subschemas With Boolean Logic
 
-        # 9.2.1.1. allOf
+        # json-schema-core 9.2.1.1. allOf
         if schema_content.key?('allOf')
           keyword = 'allOf'
           value = schema_content[keyword]
@@ -1145,7 +1147,7 @@ end
           end
         end
 
-        # 9.2.1.2. anyOf
+        # json-schema-core 9.2.1.2. anyOf
         if schema_content.key?('anyOf')
           keyword = 'anyOf'
           value = schema_content[keyword]
@@ -1166,7 +1168,7 @@ end
           end
         end
 
-        # 9.2.1.3. oneOf
+        # json-schema-core 9.2.1.3. oneOf
         if schema_content.key?('oneOf')
           keyword = 'oneOf'
           value = schema_content[keyword]
@@ -1197,7 +1199,7 @@ end
           end
         end
 
-        # 9.2.1.4. not
+        # json-schema-core 9.2.1.4. not
         if schema_content.key?('not')
           keyword = 'not'
           value = schema_content[keyword]
@@ -1207,9 +1209,9 @@ end
           result_validate.(!not_valid, 'instance validated against the schema defined by `not` value', keyword)
         end
 
-        # 9.2.2. Keywords for Applying Subschemas Conditionally
+        # json-schema-core 9.2.2. Keywords for Applying Subschemas Conditionally
 
-        # 9.2.2.1. if
+        # json-schema-core 9.2.2.1. if
         keyword = 'if'
         if schema_content.key?(keyword)
           value = schema_content[keyword]
@@ -1218,7 +1220,9 @@ end
           # This validation outcome of this keyword's subschema has no direct effect on the overall validation result. Rather, it controls which of the "then" or "else" keywords are evaluated.
           if_result = subschema_validate.(subschema('if'), instance_ptr)
 
-          result.schema_issues.merge(if_result.schema_issues)
+          unless validate_only
+            result.schema_issues.merge(if_result.schema_issues)
+          end
           if if_result.valid?
             result.annotations.merge(if_result.annotations)
           end
@@ -1253,7 +1257,7 @@ end
           end
         end
 
-        # 9.2.2.4. dependentSchemas
+        # json-schema-core 9.2.2.4. dependentSchemas
         if schema_content.key?('dependentSchemas')
           keyword = 'dependentSchemas'
           value = schema_content[keyword]
@@ -1280,11 +1284,13 @@ end
           end
         end
 
-        # 9.3. Keywords for Applying Subschemas to Child Instances
+        # json-schema-core 9.3. Keywords for Applying Subschemas to Child Instances
 
-        # 9.3.1. Keywords for Applying Subschemas to Arrays
+        # json-schema-core 9.3.1. Keywords for Applying Subschemas to Arrays
 
-        # 9.3.1.1. items
+# evaluated_indices = Set.new
+
+        # json-schema-core 9.3.1.1. items
         if schema_content.key?('items')
           keyword = 'items'
           value = schema_content[keyword]
@@ -1294,15 +1300,14 @@ end
             if instance.respond_to?(:to_ary)
               items_annotation = nil
               additionalItems_annotion = nil
-              results = instance.each_index.map do |i|
+              results = {}
+              instance.each_index do |i|
                 if i < value.size
                   items_annotation = i
-                  subschema_validate.(subschema('items', i), instance_ptr[i])
+                  results[i] = subschema_validate.(subschema('items', i), instance_ptr[i])
                 elsif schema_content.key?('additionalItems')
                   additionalItems_annotion = true
-                  subschema_validate.(subschema('additionalItems'), instance_ptr[i])
-                else
-                  JSI::SchemaValidation::FullResult.new
+                  results[i] = subschema_validate.(subschema('additionalItems'), instance_ptr[i])
                 end
               end
               annotations = Set[]
@@ -1330,10 +1335,10 @@ end
                 )
               end
               result_validate.(
-                results.all?(&:valid?),
+                results.values.all?(&:valid?),
                 'instance array items did not all validate against corresponding `items` or `additionalItems` schema values',
                 keyword,
-                results: results,
+                results: results.values,
                 annotations: annotations,
               )
             end
@@ -1368,40 +1373,41 @@ end
           end
         end
 
-        # 9.3.1.4. contains
+        # json-schema-core 9.3.1.4. contains
         if schema_content.key?('contains')
           keyword = 'contains'
           value = schema_content[keyword]
           # An array instance is valid against "contains" if at least one of its elements is valid against the given schema. Note that when collecting annotations, the subschema MUST be applied to every array element even after the first match has been found. This is to ensure that all possible annotations are collected.
           if instance.respond_to?(:to_ary)
-            results = instance.each_index.map do |i|
-              subschema_validate.(subschema('contains'), instance_ptr[i])
+            results = {}
+            instance.each_index do |i|
+              results[i] = subschema_validate.(subschema('contains'), instance_ptr[i])
             end
             result_validate.(
-              results.any?(&:valid?),
+              results.values.any?(&:valid?),
               'instance array does not contain any items valid against the `contains` schema value',
               keyword,
-              results: results,
-              annotations: [
-                SchemaValidation::Annotation.new(
-                  keyword: keyword,
-                  value: results.each_index.select do |i|
-                    results[i].valid?
-                  end,
-                  instance_ptr: instance_ptr,
-                  instance_document: instance_document,
-                  schema: self,
-                )
-              ],
+              results: results.values,
+#              annotations: [
+#                SchemaValidation::Annotation.new(
+#                  keyword: keyword,
+#                  value: results.each_index.select do |i|
+#                    results[i].valid?
+#                  end,
+#                  instance_ptr: instance_ptr,
+#                  instance_document: instance_document,
+#                  schema: self,
+#                )
+#              ],
             )
           end
         end
 
-        # 9.3.2. Keywords for Applying Subschemas to Objects
+        # json-schema-core 9.3.2. Keywords for Applying Subschemas to Objects
 
         evaluated_property_names = Set.new
 
-        # 9.3.2.1. properties
+        # json-schema-core 9.3.2.1. properties
         if schema_content.key?('properties')
           keyword = 'properties'
           value = schema_content[keyword]
@@ -1439,7 +1445,7 @@ end
           end
         end
 
-        # 9.3.2.2. patternProperties
+        # json-schema-core 9.3.2.2. patternProperties
         if schema_content.key?('patternProperties')
           keyword = 'patternProperties'
           value = schema_content[keyword]
@@ -1484,7 +1490,7 @@ end
           end
         end
 
-        # 9.3.2.3. additionalProperties
+        # json-schema-core 9.3.2.3. additionalProperties
         if schema_content.key?('additionalProperties')
           keyword = 'additionalProperties'
           value = schema_content[keyword]
@@ -1516,7 +1522,7 @@ end
           end
         end
 
-        # 9.3.2.5. propertyNames
+        # json-schema-core 9.3.2.5. propertyNames
         if schema_content.key?('propertyNames')
           keyword = 'propertyNames'
           value = schema_content[keyword]
@@ -1535,25 +1541,7 @@ end
           end
         end
 
-        # 9.3.1.3. unevaluatedItems
-        # The value of "unevaluatedItems" MUST be a valid JSON Schema.
-
-        # The behavior of this keyword depends on the annotation results of adjacent keywords that apply to the instance location being validated. Specifically, the annotations from "items" and "additionalItems", which can come from those keywords when they are adjacent to the "unevaluatedItems" keyword. Those two annotations, as well as "unevaluatedItems", can also result from any and all adjacent in-place applicator keywords. This includes but is not limited to the in-place applicators defined in this document.
-
-        # If an "items" annotation is present, and its annotation result is a number, and no "additionalItems" or "unevaluatedItems" annotation is present, then validation succeeds if every instance element at an index greater than the "items" annotation validates against "unevaluatedItems".
-
-        # Otherwise, if any "items", "additionalItems", or "unevaluatedItems" annotations are present with a value of boolean true, then "unevaluatedItems" MUST be ignored. However, if none of these annotations are present, "unevaluatedItems" MUST be applied to all locations in the array.
-
-        # This means that "items", "additionalItems", and all in-place applicators MUST be evaluated before this keyword can be evaluated. Authors of extension keywords MUST NOT define an in-place applicator that would need to be evaluated before this keyword.
-
-        # If the "unevaluatedItems" subschema is applied to any positions within the instance array, it produces an annotation result of boolean true, analogous to the single schema behavior of "items". If any "unevaluatedItems" keyword from any subschema applied to the same instance location produces an annotation value of true, then the combined result from these keywords is also true.
-
-        # Omitting this keyword has the same assertion behavior as an empty schema.
-
-        # Implementations that do not collect annotations MUST raise an error upon encountering this keyword.
-
-
-
+        # json-schema-core 9.3.1.3. unevaluatedItems
         keyword = 'unevaluatedItems'
         if schema_content.key?(keyword)
           value = schema_content[keyword]
@@ -1581,6 +1569,8 @@ end
               "unevaluated instance array items did not all validate against the `#{keyword}` schema value",
               keyword,
               results: results.values,
+              # If the "unevaluatedItems" subschema is applied to any positions within the instance array, it
+              # produces an annotation result of boolean true, analogous to the single schema behavior of "items".
               annotations: [
                 SchemaValidation::Annotation.new(
                   keyword: keyword,
@@ -1594,6 +1584,7 @@ end
           end
         end
 
+        # json-schema-core 9.3.2.4. unevaluatedProperties
         keyword = 'unevaluatedProperties'
         if schema_content.key?(keyword)
           value = schema_content[keyword]

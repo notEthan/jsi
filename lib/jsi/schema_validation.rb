@@ -114,5 +114,17 @@ module JSI
     VALID = ValidityResult.new(true).freeze
 
     INVALID = ValidityResult.new(false).freeze
+
+    class AnnotatedValidityResult < Result
+      def initialize
+        @annotations = Set.new
+      end
+
+      attr_reader :annotations
+
+      def valid?
+        true
+      end
+    end
   end
 end
