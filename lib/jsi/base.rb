@@ -121,7 +121,11 @@ module JSI
     #   the path of this instance in the `jsi_document` param. `jsi_ptr` must be passed
     #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
     # @param jsi_root_node [JSI::Base] for internal use, specifies the JSI at the root of the document
-    def initialize(instance, jsi_document: nil, jsi_ptr: nil, jsi_root_node: nil)
+    def initialize(instance,
+        jsi_document: nil,
+        jsi_ptr: nil,
+        jsi_root_node: nil
+    )
       unless respond_to?(:jsi_schemas)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.")
       end
