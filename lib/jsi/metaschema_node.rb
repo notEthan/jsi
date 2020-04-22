@@ -48,6 +48,8 @@ module JSI
         root_schema_ptr: JSI::JSON::Pointer[],
         jsi_schema_base_uri: nil
     )
+      jsi_initialize_memos
+
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
       @metaschema_instance_modules = metaschema_instance_modules

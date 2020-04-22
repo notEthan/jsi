@@ -145,6 +145,8 @@ module JSI
         raise(TypeError, "assigning another JSI::Base instance to a #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
       end
 
+      jsi_initialize_memos
+
       if instance == NOINSTANCE
         self.jsi_document = jsi_document
         self.jsi_ptr = jsi_ptr

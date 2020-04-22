@@ -39,6 +39,9 @@ module JSI
       unless respond_to?(:metaschema_instance_modules)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #metaschema_instance_modules")
       end
+
+      jsi_initialize_memos
+
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri

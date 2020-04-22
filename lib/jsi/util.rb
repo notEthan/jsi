@@ -128,6 +128,15 @@ module JSI
     end
 
     module Memoize
+      def self.extended(object)
+        object.send(:jsi_initialize_memos)
+      end
+
+      private
+
+      def jsi_initialize_memos
+      end
+
       def jsi_memoize(key, *args_)
         @jsi_memos ||= {}
         @jsi_memos[key] ||= Hash.new do |h, args|
