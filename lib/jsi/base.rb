@@ -131,7 +131,9 @@ module JSI
     def initialize(instance,
         jsi_document: nil,
         jsi_ptr: nil,
-        jsi_root_node: nil
+        jsi_root_node: nil,
+        jsi_schema_base_uri: nil,
+        jsi_schema_resource_ancestors: []
     )
       unless respond_to?(:jsi_schemas)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.")
@@ -167,6 +169,9 @@ module JSI
         @jsi_ptr = JSI::JSON::Pointer[]
         @jsi_root_node = self
       end
+
+      self.jsi_schema_base_uri = jsi_schema_base_uri
+      self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
       if self.jsi_instance.respond_to?(:to_hash)
         extend PathedHashNode
@@ -333,6 +338,8 @@ module JSI
         self.class.new(Base::NOINSTANCE,
           jsi_document: modified_document,
           jsi_ptr: @jsi_ptr,
+          jsi_schema_base_uri: @jsi_schema_base_uri,
+          jsi_schema_resource_ancestors: @jsi_schema_resource_ancestors, # this can only be empty but included for consistency
         )
       else
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
