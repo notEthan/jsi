@@ -261,6 +261,8 @@ module JSI
               jsi_document: @jsi_document,
               jsi_ptr: @jsi_ptr[token],
               jsi_root_node: @jsi_root_node,
+              jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
+              jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
             )
           else
             value
