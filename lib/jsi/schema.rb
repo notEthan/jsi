@@ -95,6 +95,14 @@ module JSI
       jsi_node_content
     end
 
+    # @return [Addressable::URI, nil] the URI of this schema, calculated from our $id or id field
+    #   resolved against our jsi_schema_base_uri
+    def schema_absolute_uri
+      if respond_to?(:id_without_fragment) && id_without_fragment
+        jsi_schema_base_uri ? Addressable::URI.parse(jsi_schema_base_uri).join(id_without_fragment) : Addressable::URI.parse(id_without_fragment)
+      end
+    end
+
     # @return [String, nil] an absolute id for the schema, with a json pointer fragment. nil if
     #   no parent of this schema defines an id.
     def schema_id
@@ -321,6 +329,28 @@ module JSI
     #   validation errors against its metaschema
     def validate_schema!
       ::JSON::Validator.validate!(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true)
+    end
+
+    # @private
+    # @return [Addressable::URI, nil] the base URI for any subschemas below this schema.
+    #   this is always an absolute URI (with no fragment).
+    def jsi_subschema_base_uri
+      if schema_absolute_uri
+        schema_absolute_uri
+      else
+        jsi_schema_base_uri
+      end
+    end
+
+    # @private
+    # @return [Array<JSI::Schema>] schema resources which are ancestors of any subschemas below this schema.
+    #   this may include this JSI if this is a schema resource root.
+    def jsi_subschema_resource_ancestors
+      if schema_resource_root?
+        jsi_schema_resource_ancestors + [self]
+      else
+        jsi_schema_resource_ancestors
+      end
     end
   end
 end
