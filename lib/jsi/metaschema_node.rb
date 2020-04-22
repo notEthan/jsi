@@ -107,6 +107,7 @@ module JSI
         else
           new_node(
             jsi_ptr: bootstrap_schema.jsi_ptr,
+            jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
           )
         end
       end.to_set
@@ -151,13 +152,14 @@ module JSI
       else
         new_node(
           jsi_ptr: JSI::JSON::Pointer[],
+          jsi_schema_base_uri: nil,
         )
       end
     end
 
     # @return [MetaschemaNode] parent MetaschemaNode
     def jsi_parent_node
-      new_node(jsi_ptr: jsi_ptr.parent)
+      jsi_ptr.parent.evaluate(jsi_root_node)
     end
 
     # @param token [String, Integer, Object] the token to subscript
@@ -177,7 +179,10 @@ module JSI
 
       result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if token_in_range
-          value_node = new_node(jsi_ptr: jsi_ptr[token])
+          value_node = new_node(
+            jsi_ptr: jsi_ptr[token],
+            jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
+          )
 
           if value_node.is_a?(Schema) || value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
             value_node
