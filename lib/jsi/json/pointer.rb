@@ -47,6 +47,7 @@ module JSI
       #
       # @param fragment [String] a fragment containing a pointer (starting with #)
       # @return [JSI::JSON::Pointer]
+      # @raise [JSI::JSON::Pointer::PointerSyntaxError] when the fragment does not contain a pointer with valid pointer syntax
       def self.from_fragment(fragment)
         fragment = Addressable::URI.unescape(fragment)
         match = fragment.match(/\A#/)
@@ -72,6 +73,7 @@ module JSI
       # @param pointer_string [String] a pointer string
       # @param type (for internal use) indicates the original representation of the pointer
       # @return [JSI::JSON::Pointer]
+      # @raise [JSI::JSON::Pointer::PointerSyntaxError] when the pointer_string does not have valid pointer syntax
       def self.from_pointer(pointer_string, type: 'pointer')
         tokens = pointer_string.split('/', -1).map! do |piece|
           piece.gsub('~1', '/').gsub('~0', '~')
