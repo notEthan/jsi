@@ -61,12 +61,17 @@ module JSI
 
               extend SchemaModule
 
-              include JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode])
+              include JSI::SchemaClasses.accessor_module_for_schema(schema,
+                conflicting_modules: Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode],
+              )
 
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
               schema.jsi_schemas.each do |schema_schema|
-                extend(JSI::SchemaClasses.accessor_module_for_schema(schema_schema, conflicting_modules: [Module, SchemaModule, SchemaModulePossibly], setters: false))
+                extend JSI::SchemaClasses.accessor_module_for_schema(schema_schema,
+                  conflicting_modules: Set[Module, SchemaModule, SchemaModulePossibly],
+                  setters: false,
+                )
               end
             end
           end
