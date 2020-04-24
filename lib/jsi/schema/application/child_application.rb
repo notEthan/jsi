@@ -8,26 +8,24 @@ module JSI
     # @param property_name [String] the property name for which to find subschemas
     # @return [Set<JSI::Schema>] subschemas of this schema for the given property_name
     def subschemas_for_property_name(property_name)
-      begin
-        ptr = self
-        schema = ptr.evaluate(document)
-        Set.new.tap do |ptrs|
-          if schema.respond_to?(:to_hash)
+      jsi_memoize(__method__, property_name) do |property_name|
+        Set.new.tap do |subschemas|
+          if schema_content.respond_to?(:to_hash)
             apply_additional = true
-            if schema.key?('properties') && schema['properties'].respond_to?(:to_hash) && schema['properties'].key?(property_name)
+            if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
               apply_additional = false
-              ptrs << ptr['properties'][property_name]
+              subschemas << subschema(['properties', property_name])
             end
-            if schema['patternProperties'].respond_to?(:to_hash)
-              schema['patternProperties'].each_key do |pattern|
+            if schema_content['patternProperties'].respond_to?(:to_hash)
+              schema_content['patternProperties'].each_key do |pattern|
                 if property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
                   apply_additional = false
-                  ptrs << ptr['patternProperties'][pattern]
+                  subschemas << subschema(['patternProperties', pattern])
                 end
               end
             end
-            if apply_additional && schema.key?('additionalProperties')
-              ptrs << ptr['additionalProperties']
+            if apply_additional && schema_content.key?('additionalProperties')
+              subschemas << subschema(['additionalProperties'])
             end
           end
         end
@@ -40,19 +38,17 @@ module JSI
     # @param index [Integer] the array index for which to find subschemas
     # @return [Set<JSI::Schema>] subschemas of this schema for the given array index
     def subschemas_for_index(index)
-      begin
-        ptr = self
-        schema = ptr.evaluate(document)
-        Set.new.tap do |ptrs|
-          if schema.respond_to?(:to_hash)
-            if schema['items'].respond_to?(:to_ary)
-              if schema['items'].each_index.to_a.include?(idx)
-                ptrs << ptr['items'][idx]
-              elsif schema.key?('additionalItems')
-                ptrs << ptr['additionalItems']
+      jsi_memoize(__method__, index) do |idx|
+        Set.new.tap do |subschemas|
+          if schema_content.respond_to?(:to_hash)
+            if schema_content['items'].respond_to?(:to_ary)
+              if schema_content['items'].each_index.to_a.include?(idx)
+                subschemas << subschema(['items', idx])
+              elsif schema_content.key?('additionalItems')
+                subschemas << subschema(['additionalItems'])
               end
-            elsif schema.key?('items')
-              ptrs << ptr['items']
+            elsif schema_content.key?('items')
+              subschemas << subschema(['items'])
             end
           end
         end
