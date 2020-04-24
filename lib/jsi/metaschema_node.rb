@@ -81,7 +81,7 @@ module JSI
         if schema.node_ptr == node_ptr
           extend Metaschema
         end
-        extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [Metaschema, Schema, MetaschemaNode, PathedArrayNode, PathedHashNode]))
+        extend schema.jsi_schema_module
       end
 
       # workarounds
