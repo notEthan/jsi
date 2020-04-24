@@ -43,6 +43,8 @@ module JSI
         end
 
         element.add_action(:inplace_applicate) do
+          ref, resolved_schema = *instance_exec(&resolve_dynamicRef) || next
+          resolved_schema.each_inplace_applicator_schema(instance, visited_refs: visited_refs + [ref], &block)
         end
 
         element.add_action(:validate) do
