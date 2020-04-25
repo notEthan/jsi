@@ -152,6 +152,25 @@ describe JSI::Base do
       end
     end
   end
+
+  describe '#jsi_schemas' do
+    let(:schema_content) do
+      {
+        "type" => "object",
+        "properties" => {
+          "phone" => {
+            "type" => "array",
+          }
+        }
+      }
+    end
+    let(:instance) { {'phone' => [{}]} }
+    it 'has jsi_schemas' do
+      assert_equal(Set[schema], subject.jsi_schemas)
+      assert_equal(Set[schema.properties['phone']], subject.phone.jsi_schemas)
+    end
+  end
+
   describe '#jsi_parent_nodes, #jsi_parent_node' do
     let(:schema_content) { {'properties' => {'foo' => {'properties' => {'bar' => {'properties' => {'baz' => {}}}}}}} }
     let(:instance) { {'foo' => {'bar' => {'baz' => {}}}} }
