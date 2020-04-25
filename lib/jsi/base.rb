@@ -13,6 +13,8 @@ module JSI
     include Util::Memoize
     include Enumerable
     include PathedNode
+    class CannotSubscriptError < StandardError
+    end
 
     class << self
       # JSI::Base.new_jsi behaves the same as .new, and is defined for compatibility so you may call #new_jsi
@@ -199,7 +201,7 @@ module JSI
         token_in_range = node_content_ary_pubsend(:each_index).include?(token)
         value = node_content_ary_pubsend(:[], token)
       else
-        raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
+        raise(CannotSubscriptError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
       result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
