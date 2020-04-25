@@ -685,7 +685,8 @@ module JSI
     # @api private
     def jsi_fingerprint
       {
-        class: jsi_class,
+        class: JSI::Base,
+        jsi_schemas: jsi_schemas,
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
