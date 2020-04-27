@@ -61,40 +61,45 @@ module JSI
       end
 
       instance_for_schemas = jsi_document
-      schema_ptrs = jsi_ptr.reference_tokens.inject(Set.new << root_schema_ptr) do |ptrs, tok|
-        if instance_for_schemas.respond_to?(:to_ary)
-          subschema_ptrs_for_token = ptrs.map do |ptr|
-            ptr.schema_subschema_ptrs_for_index(jsi_document, tok)
-          end.inject(Set.new, &:|)
-        else
-          subschema_ptrs_for_token = ptrs.map do |ptr|
-            ptr.schema_subschema_ptrs_for_property_name(jsi_document, tok)
-          end.inject(Set.new, &:|)
-        end
-        instance_for_schemas = instance_for_schemas[tok]
-        ptrs_for_instance = subschema_ptrs_for_token.map do |ptr|
-          ptr.schema_match_ptrs_to_instance(jsi_document, instance_for_schemas)
+      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(metaschema_instance_modules)
+      root_bootstrap_schema = bootstrap_schema_class.new(
+        jsi_document,
+        jsi_ptr: root_schema_ptr,
+      )
+      our_bootstrap_schemas = jsi_ptr.reference_tokens.inject(Set[root_bootstrap_schema]) do |bootstrap_schemas, tok|
+        subschemas_for_token = bootstrap_schemas.map do |bootstrap_schema|
+          if instance_for_schemas.respond_to?(:to_ary)
+            bootstrap_schema.subschemas_for_index(tok)
+          else
+            bootstrap_schema.subschemas_for_property_name(tok)
+          end
         end.inject(Set.new, &:|)
-        ptrs_for_instance
+        instance_for_schemas = instance_for_schemas[tok]
+        bootstrap_schemas_for_instance = subschemas_for_token.map do |bootstrap_schema|
+          bootstrap_schema.match_to_instance(instance_for_schemas)
+        end.inject(Set.new, &:|)
+        bootstrap_schemas_for_instance
       end
 
-      schema_ptrs.each do |schema_ptr|
-        if schema_ptr == metaschema_root_ptr
+      our_bootstrap_schemas.each do |bootstrap_schema|
+        if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           metaschema_instance_modules.each do |metaschema_instance_module|
             extend metaschema_instance_module
           end
         end
-        if schema_ptr == jsi_ptr
+        if bootstrap_schema.jsi_ptr == jsi_ptr
           extend Metaschema
           self.jsi_schema_instance_modules = metaschema_instance_modules
         end
       end
 
-      @jsi_schemas = schema_ptrs.map do |schema_ptr|
-        if schema_ptr == jsi_ptr
+      @jsi_schemas = our_bootstrap_schemas.map do |bootstrap_schema|
+        if bootstrap_schema.jsi_ptr == jsi_ptr
           self
         else
-          new_node(jsi_ptr: schema_ptr)
+          new_node(
+            jsi_ptr: bootstrap_schema.jsi_ptr,
+          )
         end
       end.to_set
 
