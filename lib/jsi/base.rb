@@ -108,7 +108,11 @@ module JSI
 
     # NOINSTANCE is a magic value passed to #initialize when instantiating a JSI
     # from a document and JSON Pointer.
-    NOINSTANCE = Object.new.tap { |o| [:inspect, :to_s].each(&(-> (s, m) { o.define_singleton_method(m) { s } }.curry.([JSI::Base.name, 'NOINSTANCE'].join('::')))) }
+    #
+    # @private
+    NOINSTANCE = Object.new
+    [:inspect, :to_s].each(&(-> (s, m) { NOINSTANCE.define_singleton_method(m) { s } }.curry.("#{JSI::Base}::NOINSTANCE")))
+    NOINSTANCE.freeze
 
     # initializes this JSI from the given instance - instance is most commonly
     # a parsed JSON document consisting of Hash, Array, or sometimes a basic
