@@ -165,6 +165,11 @@ module JSI
       is_a?(JSI::Schema::DescribesSchema)
     end
 
+    # @return [JSI::Base] resource containing this schema
+    def schema_resource_root
+      jsi_root_node # TODO
+    end
+
     # returns a subschema of this Schema
     #
     # @param subptr [JSI::JSON::Pointer, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
