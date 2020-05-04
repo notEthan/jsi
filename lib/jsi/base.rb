@@ -326,7 +326,10 @@ module JSI
     def modified_copy(&block)
       if node_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        self.class.new(Base::NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr)
+        self.class.new(Base::NOINSTANCE,
+          jsi_document: modified_document,
+          jsi_ptr: @jsi_ptr,
+        )
       else
         modified_jsi_root_node = @jsi_root_node.modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
