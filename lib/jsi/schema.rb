@@ -45,6 +45,43 @@ module JSI
       end
     end
 
+    # extends any schema which defines an anchor as a URI fragment in the schema id
+    module IdWithAnchor
+      # @return [Addressable::URI, nil] a URI for the schema's id, unless the id defines an anchor in its
+      #   fragment. nil if the schema defines no id.
+      # @raise [Schema::IdFragmentUndefined] when the id defines an anchor fragment attached to a URI which
+      #   is not the same as the schema's base URI
+      def id_without_fragment
+        if id
+          id_uri = Addressable::URI.parse(id)
+          if id_uri.merge(fragment: nil).empty?
+            # fragment-only id is just an anchor
+            # e.g. #foo
+            nil
+          elsif id_uri.fragment == nil
+            # no fragment
+            # e.g. http://localhost:1234/bar
+            id_uri
+          elsif id_uri.fragment == ''
+            # empty fragment
+            # e.g. http://json-schema.org/draft-07/schema#
+            id_uri.merge(fragment: nil)
+          elsif jsi_schema_base_uri && jsi_schema_base_uri.join(id_uri).merge(fragment: nil) == jsi_schema_base_uri
+            # the id, resolved against the base uri, consists of the base uri plus an anchor fragment.
+            # so there's no non-fragment id.
+            # e.g. base uri is http://localhost:1234/bar
+            #        and id is http://localhost:1234/bar#foo
+            nil
+          else
+            # e.g. http://localhost:1234/bar#foo
+            id_uri.merge(fragment: nil)
+          end
+        else
+          nil
+        end
+      end
+    end
+
     # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
     # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema
     # are themselves also schemas.
