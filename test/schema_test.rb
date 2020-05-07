@@ -131,6 +131,22 @@ describe JSI::Schema do
         })
         assert_nil(schema.items.schema_absolute_uri)
       end
+      describe 'externally supplied base uri' do
+        it 'schema with relative ids' do
+          schema = metaschema.new_schema({
+            'id' => 'root_relative',
+            'properties' => {
+              'relative' => {'id' => 'nested_relative'},
+              'absolute' => {'id' => 'http://jsi/test/d4/ignore_external_base_uri/nested_absolute'},
+              'none' => {},
+            },
+          }, base_uri: 'http://jsi/test/d4/external_base_uri/1')
+          assert_equal(Addressable::URI.parse('http://jsi/test/d4/external_base_uri/root_relative'), schema.schema_absolute_uri)
+          assert_equal(Addressable::URI.parse('http://jsi/test/d4/external_base_uri/nested_relative'), schema.properties['relative'].schema_absolute_uri)
+          assert_equal(Addressable::URI.parse('http://jsi/test/d4/ignore_external_base_uri/nested_absolute'), schema.properties['absolute'].schema_absolute_uri)
+          assert_nil(schema.properties['none'].schema_absolute_uri)
+        end
+      end
     end
     describe 'draft 6' do
       let(:metaschema) { JSI::JSONSchemaOrgDraft06 }
@@ -208,6 +224,28 @@ describe JSI::Schema do
           'items' => {'$id' => ''},
         })
         assert_nil(schema.items.schema_absolute_uri)
+      end
+      describe 'externally supplied base uri' do
+        it 'schema with relative ids' do
+          schema = metaschema.new_schema({
+            '$id' => 'root_relative',
+            'properties' => {
+              'relative' => {'$id' => 'nested_relative'},
+              'absolute' => {'$id' => 'http://jsi/test/d6/ignore_external_base_uri/nested_absolute'},
+              'none' => {},
+            },
+          }, base_uri: 'http://jsi/test/d6/external_base_uri/0')
+          assert_equal(Addressable::URI.parse('http://jsi/test/d6/external_base_uri/root_relative'), schema.schema_absolute_uri)
+          assert_equal(Addressable::URI.parse('http://jsi/test/d6/external_base_uri/nested_relative'), schema.properties['relative'].schema_absolute_uri)
+          assert_equal(Addressable::URI.parse('http://jsi/test/d6/ignore_external_base_uri/nested_absolute'), schema.properties['absolute'].schema_absolute_uri)
+          assert_nil(schema.properties['none'].schema_absolute_uri)
+        end
+      end
+    end
+    describe 'externally supplied base uri with JSI.new_schema' do
+      it 'resolves' do
+        schema = JSI.new_schema({'$id' => 'tehschema'}, base_uri: 'http://jsi/test/schema_absolute_uri/schema.new_base/0')
+        assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/schema.new_base/tehschema'), schema.schema_absolute_uri)
       end
     end
   end
