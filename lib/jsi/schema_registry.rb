@@ -12,6 +12,10 @@ module JSI
     class NonAbsoluteURIRegistration < StandardError
     end
 
+    # an exception raised when a URI we are looking for has not been registered
+    class ResourceNotFound < StandardError
+    end
+
     def initialize
       @resources = {}
       @resources_mutex = Mutex.new
@@ -42,6 +46,24 @@ module JSI
         end
       end.call(resource)
       nil
+    end
+
+    # @param uri [Addressable::URI, #to_str]
+    # @return [JSI::Base]
+    # @raise [JSI::SchemaRegistry::ResourceNotFound]
+    def find(uri)
+      uri = Addressable::URI.parse(uri)
+      if uri.fragment
+        raise(ArgumentError, "SchemaRegistry only registers absolute URIs; cannot find URI with fragment: #{uri}")
+      end
+      if uri.relative?
+        raise(ArgumentError, "SchemaRegistry only registers absolute URIs; cannot find relative URI: #{uri}")
+      end
+      registered_uris = @resources.keys
+      if !registered_uris.include?(uri)
+        raise(ResourceNotFound, "URI #{uri} has no registered resource. registered URIs:\n#{registered_uris.join("\n")}")
+      end
+      @resources[uri]
     end
 
     private
