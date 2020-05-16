@@ -222,11 +222,12 @@ module JSI
     end
 
     # @param token [String, Integer, Object] the token to subscript
+    # @param as_jsi [:auto, true, false]
     # @return [JSI::Base, Object] the instance's subscript value at the given token.
     #   if this JSI's schemas define subschemas which apply for the given token, and the value is complex,
     #   returns the subscript value as a JSI instantiation of those subschemas. otherwise, the plain instance
     #   value is returned.
-    def [](token)
+    def [](token, as_jsi: :auto)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
         value = jsi_node_content_hash_pubsend(:[], token)
@@ -241,10 +242,17 @@ module JSI
         subinstance_schemas = jsi_subinstance_schemas_memos[token: token, value: value]
 
         if token_in_range
-          complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-          schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
+          value_as_jsi = if [true, false].include?(as_jsi)
+            as_jsi
+          elsif as_jsi == :auto
+            complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+            schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
+            complex_value || schema_value
+          else
+            raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
+          end
 
-          if complex_value || schema_value
+          if value_as_jsi
             jsi_subinstance_memos[token: token, subinstance_schemas: subinstance_schemas]
           else
             value
@@ -260,7 +268,7 @@ module JSI
           if defaults.size == 1
             # use the default value
             # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
-            dup.tap { |o| o[token] = defaults.first }[token]
+            dup.tap { |o| o[token] = defaults.first }[token, as_jsi: as_jsi]
           else
             # I kind of want to just return nil here. the preferred mechanism for
             # a JSI's default value should be its schema. but returning nil ignores
