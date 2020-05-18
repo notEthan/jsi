@@ -20,6 +20,13 @@ module JSI
     # examples of a schema which describes a schema include the draft JSON Schema metaschemas and
     # the OpenAPI schema definition which describes "A deterministic version of a JSON Schema object."
     module DescribesSchema
+      # instantiates the given schema content as a JSI Schema.
+      #
+      # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
+      #   are this schema.
+      def new_schema(schema_content)
+        new_jsi(schema_content)
+      end
     end
 
     class << self
@@ -63,13 +70,13 @@ module JSI
               unless metaschema
                 raise(NotImplementedError, "metaschema not supported: #{schema_object['$schema']}")
               end
-              metaschema.new_jsi(schema_object)
+              metaschema.new_schema(schema_object)
             end
           else
-            default_metaschema.new_jsi(schema_object)
+            default_metaschema.new_schema(schema_object)
           end
         elsif [true, false].include?(schema_object)
-          default_metaschema.new_jsi(schema_object)
+          default_metaschema.new_schema(schema_object)
         else
           raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
         end
