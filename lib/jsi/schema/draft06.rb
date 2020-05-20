@@ -3,6 +3,7 @@
 module JSI
   module Schema
     module Draft06
+      include Schema
     end
   end
 end
