@@ -4,6 +4,8 @@ module JSI
   module Schema::Validation
     autoload :Core, 'jsi/schema/validation/core'
 
+    autoload :Draft06, 'jsi/schema/validation/draft06'
+
     # ref application
     autoload :Ref, 'jsi/schema/validation/ref'
 
