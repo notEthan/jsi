@@ -8,6 +8,7 @@ module JSI
       include IdWithAnchor
       include IntegerAllows0Fraction
       include Schema::Application::Draft06
+      include Schema::Validation::Draft06
     end
   end
 end
