@@ -47,6 +47,10 @@ module JSI
 
     # a full result of validating an instance against its schemas, with each validation error
     class FullResult < Result
+      # @private
+      class Builder < Result::Builder
+      end
+
       def initialize
         @validation_errors = Set.new
         @schema_issues = Set.new
@@ -92,6 +96,10 @@ module JSI
 
     # a result indicating only whether an instance is valid against its schemas
     class ValidityResult < Result
+      # @private
+      class Builder < Result::Builder
+      end
+
       def initialize(valid)
         @valid = valid
       end
