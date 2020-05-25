@@ -7,6 +7,23 @@ module JSI
     class Result
       include Util::Virtual
 
+      Builder = Util::AttrStruct[*%w(
+        result
+        schema
+        instance_ptr
+        instance_document
+        validate_only
+        visited_refs
+      )]
+
+      # @private
+      # a structure used to build a Result. virtual base class.
+      class Builder
+        def instance
+          instance_ptr.evaluate(instance_document)
+        end
+      end
+
       # @return [Boolean] is the instance valid against its schemas?
       def valid?
         # :nocov:
