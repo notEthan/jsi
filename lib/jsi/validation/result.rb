@@ -24,6 +24,17 @@ module JSI
         end
       end
 
+      def builder(schema, instance_ptr, instance_document, validate_only, visited_refs)
+        self.class::Builder.new(
+          result: self,
+          schema: schema,
+          instance_ptr: instance_ptr,
+          instance_document: instance_document,
+          validate_only: validate_only,
+          visited_refs: visited_refs,
+        )
+      end
+
       # @return [Boolean] is the instance valid against its schemas?
       def valid?
         # :nocov:
