@@ -28,6 +28,7 @@ module JSI
 
     # object validation
     autoload :Required,    'jsi/schema/validation/required'
+    autoload :Dependencies, 'jsi/schema/validation/dependencies'
 
     # array validation
 
