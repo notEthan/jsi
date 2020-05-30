@@ -13,36 +13,38 @@ module JSI
     def match_to_instance(instance, visited_refs: [])
       SchemaSet.build do |schemas|
         if schema_content.respond_to?(:to_hash)
+          ref_only = false
           if schema_content['$ref'].respond_to?(:to_str)
             ref = jsi_memoize(:ref) { Schema::Ref.new(schema_content['$ref'], self) }
             unless visited_refs.include?(ref)
+              ref_only = true
               schemas.merge(ref.deref_schema.match_to_instance(instance, visited_refs: visited_refs + [ref]))
             end
           end
-          unless ref
+          if !ref_only
             schemas << self
-          end
-          if schema_content['allOf'].respond_to?(:to_ary)
-            schema_content['allOf'].each_index do |i|
-              schemas.merge(subschema(['allOf', i]).match_to_instance(instance, visited_refs: visited_refs))
-            end
-          end
-          if schema_content['anyOf'].respond_to?(:to_ary)
-            schema_content['anyOf'].each_index do |i|
-              if subschema(['anyOf', i]).validate_instance(instance)
-                schemas.merge(subschema(['anyOf', i]).match_to_instance(instance, visited_refs: visited_refs))
+            if schema_content['allOf'].respond_to?(:to_ary)
+              schema_content['allOf'].each_index do |i|
+                schemas.merge(subschema(['allOf', i]).match_to_instance(instance, visited_refs: visited_refs))
               end
             end
-          end
-          if schema_content['oneOf'].respond_to?(:to_ary)
-            one_i = schema_content['oneOf'].each_index.detect do |i|
-              subschema(['oneOf', i]).validate_instance(instance)
+            if schema_content['anyOf'].respond_to?(:to_ary)
+              schema_content['anyOf'].each_index do |i|
+                if subschema(['anyOf', i]).validate_instance(instance)
+                  schemas.merge(subschema(['anyOf', i]).match_to_instance(instance, visited_refs: visited_refs))
+                end
+              end
             end
-            if one_i
-              schemas.merge(subschema(['oneOf', one_i]).match_to_instance(instance, visited_refs: visited_refs))
+            if schema_content['oneOf'].respond_to?(:to_ary)
+              one_i = schema_content['oneOf'].each_index.detect do |i|
+                subschema(['oneOf', i]).validate_instance(instance)
+              end
+              if one_i
+                schemas.merge(subschema(['oneOf', one_i]).match_to_instance(instance, visited_refs: visited_refs))
+              end
             end
+            # TODO dependencies
           end
-          # TODO dependencies
         else
           schemas << self
         end
