@@ -242,18 +242,18 @@ module JSI
 
       result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if respond_to?(:to_ary)
-          token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_index(token) }.inject(Set.new, &:|)
+          subinstance_schemas = jsi_schemas.map { |schema| schema.subschemas_for_index(token) }.inject(Set.new, &:|)
         else
-          token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_property_name(token) }.inject(Set.new, &:|)
+          subinstance_schemas = jsi_schemas.map { |schema| schema.subschemas_for_property_name(token) }.inject(Set.new, &:|)
         end
-        token_schemas = token_schemas.map { |schema| schema.match_to_instance(value) }.inject(Set.new, &:|)
+        subinstance_schemas = subinstance_schemas.map { |schema| schema.match_to_instance(value) }.inject(Set.new, &:|)
 
         if token_in_range
-          complex_value = token_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-          schema_value = token_schemas.any? { |token_schema| token_schema.describes_schema? }
+          complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+          schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
 
           if complex_value || schema_value
-            JSI::SchemaClasses.class_for_schemas(token_schemas).new(Base::NOINSTANCE,
+            JSI::SchemaClasses.class_for_schemas(subinstance_schemas).new(Base::NOINSTANCE,
               jsi_document: @jsi_document,
               jsi_ptr: @jsi_ptr[token],
               jsi_root_node: @jsi_root_node,
@@ -263,9 +263,9 @@ module JSI
           end
         else
           defaults = Set.new
-          token_schemas.each do |token_schema|
-            if token_schema.respond_to?(:to_hash) && token_schema.key?('default')
-              defaults << token_schema['default']
+          subinstance_schemas.each do |subinstance_schema|
+            if subinstance_schema.respond_to?(:to_hash) && subinstance_schema.key?('default')
+              defaults << subinstance_schema['default']
             end
           end
 
