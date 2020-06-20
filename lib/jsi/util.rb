@@ -84,6 +84,60 @@ module JSI
       end
     end
 
+    class MemoMap
+      Result = Util::AttrStruct[*%w(
+        value
+        inputs
+      )]
+
+      class Result
+      end
+
+      def initialize(key_by: nil, &block)
+        @key_by = key_by
+        @block = block
+
+        # each result has its own mutex to update its memoized value thread-safely
+        @result_mutexes = {}
+        # another mutex to thread-safely initialize each result mutex
+        @result_mutexes_mutex = Mutex.new
+
+        @results = {}
+      end
+
+      def [](*inputs)
+        if @key_by
+          key = @key_by.call(*inputs)
+        else
+          key = inputs
+        end
+        result_mutex = @result_mutexes_mutex.synchronize do
+          @result_mutexes[key] ||= Mutex.new
+        end
+
+        result_mutex.synchronize do
+          if @results.key?(key)
+            existing_result = @results[key]
+
+            if inputs == existing_result.inputs
+              existing_result.value
+            else
+              store_value(key, inputs)
+            end
+          else
+            store_value(key, inputs)
+          end
+        end
+      end
+
+      private
+      def store_value(key, inputs)
+        value = @block.call(*inputs)
+        @results[key] = Result.new(value: value, inputs: inputs)
+        value
+      end
+    end
+
     module Memoize
       def jsi_memoize(key, *args_)
         @jsi_memos ||= {}
