@@ -243,26 +243,15 @@ module JSI
         raise(CannotSubscriptError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
-        if respond_to?(:to_ary)
-          subinstance_schemas = jsi_schemas.map { |schema| schema.subschemas_for_index(token) }.inject(Set.new, &:|)
-        else
-          subinstance_schemas = jsi_schemas.map { |schema| schema.subschemas_for_property_name(token) }.inject(Set.new, &:|)
-        end
-        subinstance_schemas = subinstance_schemas.map { |schema| schema.match_to_instance(value) }.inject(Set.new, &:|)
+      begin
+        subinstance_schemas = jsi_subinstance_schemas_memos[token: token, value: value]
 
         if token_in_range
           complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
           schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
 
           if complex_value || schema_value
-            JSI::SchemaClasses.class_for_schemas(subinstance_schemas).new(Base::NOINSTANCE,
-              jsi_document: @jsi_document,
-              jsi_ptr: @jsi_ptr[token],
-              jsi_root_node: @jsi_root_node,
-              jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
-              jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
-            )
+            jsi_subinstance_memos[token: token, subinstance_schemas: subinstance_schemas]
           else
             value
           end
@@ -287,7 +276,6 @@ module JSI
           end
         end
       end
-      result
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.
@@ -299,7 +287,6 @@ module JSI
       unless respond_to?(:to_hash) || respond_to?(:to_ary)
         raise(NoMethodError, "cannot assign subcript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
       end
-      jsi_clear_memo(:[])
       if value.is_a?(Base)
         self[token] = value.jsi_instance
       else
@@ -453,5 +440,34 @@ module JSI
       }
     end
     include Util::FingerprintHash
+
+    private
+
+    def jsi_subinstance_schemas_memos
+      jsi_memomap(:subinstance_schemas, key_by: -> (i) { i[:token] }) do |token: , value: |
+        jsi_schemas.map do |schema|
+          if respond_to?(:to_ary)
+            subschemas = schema.subschemas_for_index(token)
+          elsif respond_to?(:to_hash)
+            subschemas = schema.subschemas_for_property_name(token)
+          else
+            raise(Bug, 'jsi_subinstance_schemas_memos: not array or hash')
+          end
+          subschemas.map { |subschema| subschema.match_to_instance(value) }.inject(Set.new, &:|)
+        end.inject(Set.new, &:|)
+      end
+    end
+
+    def jsi_subinstance_memos
+      jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , subinstance_schemas: |
+        JSI::SchemaClasses.class_for_schemas(subinstance_schemas).new(Base::NOINSTANCE,
+          jsi_document: @jsi_document,
+          jsi_ptr: @jsi_ptr[token],
+          jsi_root_node: @jsi_root_node,
+          jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
+          jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
+        )
+      end
+    end
   end
 end
