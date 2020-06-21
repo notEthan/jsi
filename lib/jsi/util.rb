@@ -154,10 +154,6 @@ module JSI
       def jsi_memoize(name, *inputs, &block)
         jsi_memomap(name, &block)[*inputs]
       end
-
-      def jsi_clear_memo(name)
-        @jsi_memomaps.delete(name)
-      end
     end
 
     module Virtual
