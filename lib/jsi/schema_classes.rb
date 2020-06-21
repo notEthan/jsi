@@ -70,7 +70,7 @@ module JSI
       def class_for_schemas(schemas)
         schemas = SchemaSet.ensure_schema_set(schemas)
 
-        jsi_memoize(:class_for_schemas, schemas) do |schemas|
+        jsi_memoize(:class_for_schemas, schemas: schemas) do |schemas: |
           Class.new(Base).instance_exec(schemas) do |schemas|
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
@@ -105,7 +105,7 @@ module JSI
       # @return [Module]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
-        jsi_memoize(:module_for_schema, schema) do |schema|
+        jsi_memoize(:module_for_schema, schema: schema) do |schema: |
           Module.new.tap do |m|
             m.module_eval do
               define_singleton_method(:schema) { schema }
@@ -147,7 +147,7 @@ module JSI
       # @return [Module]
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         Schema.ensure_schema(schema)
-        jsi_memoize(:accessor_module_for_schema, schema, conflicting_modules, setters) do |schema, conflicting_modules, setters|
+        jsi_memoize(:accessor_module_for_schema, schema: schema, conflicting_modules: conflicting_modules, setters: setters) do |schema: , conflicting_modules: , setters: |
           Module.new.tap do |m|
             m.module_eval do
               conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
