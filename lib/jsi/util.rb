@@ -151,23 +151,12 @@ module JSI
         @jsi_memomaps[name]
       end
 
-      def jsi_memoize(key, *args_)
-        @jsi_memos ||= {}
-        @jsi_memos[key] ||= Hash.new do |h, args|
-          h[args] = yield(*args)
-        end
-        @jsi_memos[key][args_]
+      def jsi_memoize(name, *inputs, &block)
+        jsi_memomap(name, &block)[*inputs]
       end
 
-      def jsi_clear_memo(key, *args)
-        @jsi_memos ||= {}
-        if @jsi_memos[key]
-          if args.empty?
-            @jsi_memos[key].clear
-          else
-            @jsi_memos[key].delete(args)
-          end
-        end
+      def jsi_clear_memo(name)
+        @jsi_memomaps.delete(name)
       end
     end
 
