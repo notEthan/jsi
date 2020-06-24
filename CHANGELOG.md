@@ -1,3 +1,9 @@
+# v0.4.0
+
+- a JSI::Base has multiple jsi_schemas https://github.com/notEthan/jsi/pull/88
+  - JSI.class_for_schemas replaces JSI.class_for_schema
+- fix uri/fragment nomenclature https://github.com/notEthan/jsi/pull/89
+
 # v0.3.0
 
 - a schema is a JSI instance of a metaschema
@@ -5,6 +11,7 @@
 - module JSI::Metaschema
 - class JSI::MetaschemaNode
 - JSI::JSON::Node breaking changes
+- module SimpleWrap https://github.com/notEthan/jsi/pull/87
 
 # v0.2.1
 
