@@ -11,7 +11,7 @@ base = {
 NamedHashInstance = JSI.class_for_schema(base)
 NamedIdHashInstance = JSI.class_for_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base))
 
-describe JSI::BaseHash do
+describe 'JSI::Base hash' do
   let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
   let(:schema_content) do
     {

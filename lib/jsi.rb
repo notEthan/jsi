@@ -23,8 +23,6 @@ module JSI
   autoload :Arraylike, 'jsi/typelike_modules'
   autoload :Schema, 'jsi/schema'
   autoload :Base, 'jsi/base'
-  autoload :BaseArray, 'jsi/base'
-  autoload :BaseHash, 'jsi/base'
   autoload :Metaschema, 'jsi/metaschema'
   autoload :MetaschemaNode, 'jsi/metaschema_node'
   autoload :SchemaClasses, 'jsi/schema_classes'

@@ -131,9 +131,9 @@ module JSI
       end
 
       if self.jsi_instance.respond_to?(:to_hash)
-        extend BaseHash
+        extend PathedHashNode
       elsif self.jsi_instance.respond_to?(:to_ary)
-        extend BaseArray
+        extend PathedArrayNode
       end
       if self.schema.describes_schema?
         extend JSI::Schema
@@ -157,7 +157,7 @@ module JSI
     alias_method :jsi_instance, :node_content
     alias_method :instance, :node_content
 
-    # each is overridden by BaseHash or BaseArray when appropriate. the base
+    # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base
     # #each is not actually implemented, along with all the methods of Enumerable.
     def each
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
@@ -396,15 +396,5 @@ module JSI
     def class_for_schema(schema)
       JSI.class_for_schema(schema)
     end
-  end
-
-  # module extending a {JSI::Base} object when its instance is Hash-like (responds to #to_hash)
-  module BaseHash
-    include PathedHashNode
-  end
-
-  # module extending a {JSI::Base} object when its instance is Array-like (responds to #to_ary)
-  module BaseArray
-    include PathedArrayNode
   end
 end
