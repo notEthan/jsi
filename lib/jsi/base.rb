@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'jsi/typelike_modules'
-
 module JSI
   # the base class for representing and instantiating a JSON Schema.
   #
@@ -13,9 +10,11 @@ module JSI
   # are dynamically created for schemas using {JSI.class_for_schema}, and these
   # are what are used to instantiate and represent JSON schema instances.
   class Base
-    include Memoize
+    include Util::Memoize
     include Enumerable
     include PathedNode
+    class CannotSubscriptError < StandardError
+    end
 
     class << self
       # JSI::Base.new_jsi behaves the same as .new, and is defined for compatibility so you may call #new_jsi
@@ -126,7 +125,7 @@ module JSI
       else
         raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || jsi_root_node
         @jsi_document = instance
-        @jsi_ptr = JSI::JSON::Pointer.new([])
+        @jsi_ptr = JSI::JSON::Pointer[]
         @jsi_root_node = self
       end
 
@@ -153,7 +152,7 @@ module JSI
     alias_method :node_ptr, :jsi_ptr
     alias_method :document_root_node, :jsi_root_node
 
-    # the instance of the json-schema
+    # the instance of the json-schema - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :node_content
     alias_method :instance, :node_content
 
@@ -202,10 +201,10 @@ module JSI
         token_in_range = node_content_ary_pubsend(:each_index).include?(token)
         value = node_content_ary_pubsend(:[], token)
       else
-        raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
+        raise(CannotSubscriptError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
-      jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
+      result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if respond_to?(:to_ary)
           token_schema = schema.subschema_for_index(token)
         else
@@ -243,6 +242,7 @@ module JSI
           end
         end
       end
+      result
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.
@@ -387,7 +387,7 @@ module JSI
     def jsi_fingerprint
       {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
     end
-    include FingerprintHash
+    include Util::FingerprintHash
 
     private
 

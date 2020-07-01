@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'addressable/uri'
-
 module JSI
   module JSON
     # a JSON Pointer, as described by RFC 6901 https://tools.ietf.org/html/rfc6901
@@ -47,6 +45,7 @@ module JSI
       #
       # @param fragment [String] a fragment containing a pointer (starting with #)
       # @return [JSI::JSON::Pointer]
+      # @raise [JSI::JSON::Pointer::PointerSyntaxError] when the fragment does not contain a pointer with valid pointer syntax
       def self.from_fragment(fragment)
         from_pointer(Addressable::URI.unescape(fragment), type: 'fragment')
       end
@@ -66,6 +65,7 @@ module JSI
       # @param pointer_string [String] a pointer string
       # @param type (for internal use) indicates the original representation of the pointer
       # @return [JSI::JSON::Pointer]
+      # @raise [JSI::JSON::Pointer::PointerSyntaxError] when the pointer_string does not have valid pointer syntax
       def self.from_pointer(pointer_string, type: 'pointer')
         tokens = pointer_string.split('/', -1).map! do |piece|
           piece.gsub('~1', '/').gsub('~0', '~')
@@ -398,7 +398,7 @@ module JSI
 
       # @return [String] string representation of this Pointer
       def inspect
-        "#<#{self.class.inspect} #{representation_s}>"
+        "#{self.class.name}[#{reference_tokens.map(&:inspect).join(", ")}]"
       end
 
       alias_method :to_s, :inspect
@@ -407,20 +407,7 @@ module JSI
       def jsi_fingerprint
         {class: JSI::JSON::Pointer, reference_tokens: reference_tokens}
       end
-      include FingerprintHash
-
-      private
-
-      # @return [String] a representation of this pointer based on @type
-      def representation_s
-        if @type == 'fragment'
-          "fragment: #{fragment}"
-        elsif @type == 'pointer'
-          "pointer: #{pointer}"
-        else
-          "reference_tokens: #{reference_tokens.inspect}"
-        end
-      end
+      include Util::FingerprintHash
     end
   end
 end

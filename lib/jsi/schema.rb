@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Schema represents a JSON Schema. initialized from a Hash-like schema
-  # object, JSI::Schema is a relatively simple class to abstract useful methods
-  # applied to a JSON Schema.
+  # JSI::Schema is a module which extends instances which represent JSON schemas.
+  #
+  # the content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
+  # expected to be a Hash (JSON object) or a Boolean.
   module Schema
     class Error < StandardError
     end
@@ -11,8 +12,6 @@ module JSI
     # an exception raised when a thing is expected to be a JSI::Schema, but is not
     class NotASchemaError < Error
     end
-
-    include Memoize
 
     # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
     # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema

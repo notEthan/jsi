@@ -29,7 +29,7 @@ module JSI
   # this module is just a namespace for schema classes.
   module SchemaClasses
     class << self
-      include Memoize
+      include Util::Memoize
 
       # see {JSI.class_for_schema}
       def class_for_schema(schema_object)
@@ -78,6 +78,9 @@ module JSI
       # @return [Module] a module of accessors (setters and getters) for described property names of the given
       #   schema
       def accessor_module_for_schema(schema, conflicting_modules: )
+        unless schema.is_a?(JSI::Schema)
+          raise(JSI::Schema::NotASchemaError, "not a schema: #{schema.pretty_inspect.chomp}")
+        end
         jsi_memoize(:accessor_module_for_schema, schema, conflicting_modules) do |schema, conflicting_modules|
           Module.new.tap do |m|
             m.module_eval do

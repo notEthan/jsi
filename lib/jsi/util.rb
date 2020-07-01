@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module JSI
+  # JSI::Util classes, modules, constants, and methods are INTERNAL and will be added and removed without warning.
+  # do not rely on them.
   module Util
     # a proc which does nothing
     NOOP = -> (*_) { }
@@ -16,7 +18,7 @@ module JSI
     # the return if you need to ensure it is not the same instance as the
     # argument instance.
     #
-    # @param hash [#to_hash] the hash from which to convert symbol keys to strings
+    # @param hashlike [#to_hash] the hash from which to convert symbol keys to strings
     # @return [same class as the param `hash`, or Hash if the former cannot be done] a
     #    hash(-like) instance containing no symbol keys
     def stringify_symbol_keys(hashlike)
@@ -65,43 +67,42 @@ module JSI
       proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
     end
     module_function :ycomb
-  end
-  public
-  extend Util
 
-  module FingerprintHash
-    # overrides BasicObject#==
-    def ==(other)
-      object_id == other.object_id || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == self.jsi_fingerprint)
-    end
-
-    alias_method :eql?, :==
-
-    # overrides Kernel#hash
-    def hash
-      jsi_fingerprint.hash
-    end
-  end
-
-  module Memoize
-    def jsi_memoize(key, *args_)
-      @jsi_memos ||= {}
-      @jsi_memos[key] ||= Hash.new do |h, args|
-        h[args] = yield(*args)
+    module FingerprintHash
+      # overrides BasicObject#==
+      def ==(other)
+        object_id == other.object_id || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == self.jsi_fingerprint)
       end
-      @jsi_memos[key][args_]
+
+      alias_method :eql?, :==
+
+      # overrides Kernel#hash
+      def hash
+        jsi_fingerprint.hash
+      end
     end
 
-    def jsi_clear_memo(key, *args)
-      @jsi_memos ||= {}
-      if @jsi_memos[key]
-        if args.empty?
-          @jsi_memos[key].clear
-        else
-          @jsi_memos[key].delete(args)
+    module Memoize
+      def jsi_memoize(key, *args_)
+        @jsi_memos ||= {}
+        @jsi_memos[key] ||= Hash.new do |h, args|
+          h[args] = yield(*args)
+        end
+        @jsi_memos[key][args_]
+      end
+
+      def jsi_clear_memo(key, *args)
+        @jsi_memos ||= {}
+        if @jsi_memos[key]
+          if args.empty?
+            @jsi_memos[key].clear
+          else
+            @jsi_memos[key].delete(args)
+          end
         end
       end
     end
   end
-  extend Memoize
+  public
+  extend Util
 end

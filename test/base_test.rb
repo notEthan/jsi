@@ -375,7 +375,7 @@ describe JSI::Base do
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
         it 'errors' do
-          err = assert_raises(NoMethodError) { subject.foo }
+          err = assert_raises(JSI::Base::CannotSubscriptError) { subject.foo }
           assert_equal(%q(cannot subcript (using token: "foo") from instance: nil), err.message)
         end
       end
