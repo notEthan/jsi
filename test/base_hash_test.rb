@@ -8,8 +8,8 @@ base = {
     'bar' => {},
   },
 }
-NamedHashInstance = JSI.class_for_schema(base)
-NamedIdHashInstance = JSI.class_for_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base))
+NamedHashInstance = JSI::Schema.new(base).jsi_schema_class
+NamedIdHashInstance = JSI::Schema.new({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base)).jsi_schema_class
 
 describe 'JSI::Base hash' do
   let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }

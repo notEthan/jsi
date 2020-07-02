@@ -41,10 +41,10 @@ module JSI
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
-  # @return [Class subclassing JSI::Base] a JSI class which represents the
-  #   given schema. instances of the class represent JSON Schema instances
-  #   for the given schema.
-  def self.class_for_schema(*a, &b)
-    SchemaClasses.class_for_schema(*a, &b)
+  # @param schemas [Enumerable<JSI::Schema, #to_hash, Boolean>] schemas to represent with the class
+  # @return [Class subclassing JSI::Base] a JSI class which represents the given schemas.
+  #   an instance of the class represents a JSON Schema instance described by all of the given schemas.
+  def self.class_for_schemas(*schemas)
+    SchemaClasses.class_for_schemas(*schemas)
   end
 end

@@ -31,14 +31,14 @@ module JSI
     class << self
       include Util::Memoize
 
-      # see {JSI.class_for_schema}
-      def class_for_schema(schema_object)
-        jsi_memoize(:class_for_schema, JSI::Schema.from_object(schema_object)) do |schema|
-          Class.new(Base).instance_exec(schema) do |schema|
-            define_singleton_method(:schema) { schema }
-            define_method(:schema) { schema }
-            include(schema.jsi_schema_module)
-
+      # see {JSI.class_for_schemas}
+      def class_for_schemas(schema_objects)
+        schemas = schema_objects.map { |schema_object| JSI::Schema.from_object(schema_object) }.to_set
+        jsi_memoize(:class_for_schemas, schemas) do |schemas|
+          Class.new(Base).instance_exec(schemas) do |schemas|
+            define_singleton_method(:jsi_class_schemas) { schemas }
+            define_method(:jsi_schemas) { schemas }
+            schemas.each { |schema| include(schema.jsi_schema_module) }
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
 
@@ -65,7 +65,9 @@ module JSI
 
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
-              extend(JSI::SchemaClasses.accessor_module_for_schema(schema.schema, conflicting_modules: [Module, SchemaModule, SchemaModulePossibly]))
+              schema.jsi_schemas.each do |schema_schema|
+                extend(JSI::SchemaClasses.accessor_module_for_schema(schema_schema, conflicting_modules: [Module, SchemaModule, SchemaModulePossibly]))
+              end
             end
           end
         end
@@ -146,7 +148,9 @@ module JSI
         raise(TypeError, "cannot instantiate NotASchemaModule for a JSI::Schema node: #{node.pretty_inspect.chomp}")
       end
       @possibly_schema_node = node
-      extend(JSI::SchemaClasses.accessor_module_for_schema(node.schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly]))
+      node.jsi_schemas.each do |schema|
+        extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly]))
+      end
     end
 
     include SchemaModulePossibly
