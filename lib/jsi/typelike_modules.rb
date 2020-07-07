@@ -115,7 +115,7 @@ module JSI
       end
       self_respondingto_key = self.respond_to?(:key?) ? self : to_hash
       other.to_hash.each_pair do |key, value|
-        if block_given? && self_respondingto_key.key?(key)
+        if block && self_respondingto_key.key?(key)
           value = yield(key, self[key], value)
         end
         self[key] = value

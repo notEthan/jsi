@@ -121,7 +121,11 @@ module JSI
     #   the path of this instance in the `jsi_document` param. `jsi_ptr` must be passed
     #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
     # @param jsi_root_node [JSI::Base] for internal use, specifies the JSI at the root of the document
-    def initialize(instance, jsi_document: nil, jsi_ptr: nil, jsi_root_node: nil)
+    def initialize(instance,
+        jsi_document: nil,
+        jsi_ptr: nil,
+        jsi_root_node: nil
+    )
       unless respond_to?(:jsi_schemas)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.")
       end
@@ -249,7 +253,11 @@ module JSI
           schema_value = token_schemas.any? { |token_schema| token_schema.describes_schema? }
 
           if complex_value || schema_value
-            JSI::SchemaClasses.class_for_schemas(token_schemas).new(Base::NOINSTANCE, jsi_document: @jsi_document, jsi_ptr: @jsi_ptr[token], jsi_root_node: @jsi_root_node)
+            JSI::SchemaClasses.class_for_schemas(token_schemas).new(Base::NOINSTANCE,
+              jsi_document: @jsi_document,
+              jsi_ptr: @jsi_ptr[token],
+              jsi_root_node: @jsi_root_node,
+            )
           else
             value
           end
@@ -318,7 +326,10 @@ module JSI
     def modified_copy(&block)
       if node_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        self.class.new(Base::NOINSTANCE, jsi_document: modified_document, jsi_ptr: @jsi_ptr)
+        self.class.new(Base::NOINSTANCE,
+          jsi_document: modified_document,
+          jsi_ptr: @jsi_ptr,
+        )
       else
         modified_jsi_root_node = @jsi_root_node.modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
@@ -418,7 +429,11 @@ module JSI
     # @return [Object] an opaque fingerprint of this JSI for FingerprintHash. JSIs are equal
     #   if their instances are equal, and if the JSIs are of the same JSI class or subclass.
     def jsi_fingerprint
-      {class: jsi_class, jsi_document: jsi_document, jsi_ptr: jsi_ptr}
+      {
+        class: jsi_class,
+        jsi_document: jsi_document,
+        jsi_ptr: jsi_ptr,
+      }
     end
     include Util::FingerprintHash
   end
