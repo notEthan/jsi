@@ -509,8 +509,8 @@ describe JSI::Base do
   end
   describe '#as_json' do
     it '#as_json' do
-      assert_equal({'a' => 'b'}, JSI::Schema.new({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
-      assert_equal(['a', 'b'], JSI::Schema.new({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
+      assert_equal({'a' => 'b'}, JSI.new_schema({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
+      assert_equal(['a', 'b'], JSI.new_schema({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
       assert_equal(['a'], JSI.new_schema({}).new_jsi(['a']).as_json(some_option: true))
     end
   end
