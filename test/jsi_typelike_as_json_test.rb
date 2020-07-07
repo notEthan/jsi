@@ -32,7 +32,7 @@ describe JSI::Typelike do
       assert_equal('json object (hash) cannot be keyed with: nil', err.message)
 
       # schema
-      schema = JSI::Schema.from_object({'type' => 'array'})
+      schema = JSI.new_schema({'type' => 'array'})
       assert_equal({'type' => 'array'}, JSI::Typelike.as_json(schema))
 
       # JSI

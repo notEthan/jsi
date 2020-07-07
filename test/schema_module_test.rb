@@ -2,7 +2,7 @@ require_relative 'test_helper'
 
 describe 'JSI::SchemaModule' do
   let(:schema_content) { {'properties' => {'foo' => {'items' => {'type' => 'string'}}}} }
-  let(:schema) { JSI::Schema.new(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content) }
   let(:schema_module) { schema.jsi_schema_module }
   describe 'accessors and subscripts' do
     it 'returns schemas using accessors and subscripts' do

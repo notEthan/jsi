@@ -1,18 +1,17 @@
 require_relative 'test_helper'
 
 describe JSI::Schema do
-  describe 'new' do
+  describe 'new_schema' do
     it 'initializes from a hash' do
-      schema = JSI::Schema.new({'type' => 'object'})
+      schema = JSI.new_schema({'type' => 'object'})
       assert_equal({'type' => 'object'}, schema.jsi_instance)
     end
     it 'cannot instantiate from some unknown object' do
-      err = assert_raises(TypeError) { JSI::Schema.new(Object.new) }
+      err = assert_raises(TypeError) { JSI.new_schema(Object.new) }
       assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
     end
-    it 'instantiating a schema from schema returns that schema' do
-      # this is kinda dumb, but Schema.new now just aliases Schema.from_object, so this is the behavior
-      assert_equal(JSI::Schema.new({}), JSI::Schema.new(JSI::Schema.new({})))
+    it 'instantiating a schema from a schema returns that schema' do
+      assert_equal(JSI.new_schema({}), JSI.new_schema(JSI.new_schema({})))
     end
   end
   describe 'as an instance of metaschema' do
@@ -27,18 +26,18 @@ describe JSI::Schema do
   end
   describe '#schema_id' do
     it "hasn't got one" do
-      assert_nil(JSI::Schema.new({}).schema_id)
+      assert_nil(JSI.new_schema({}).schema_id)
     end
     it 'uses a given id with a fragment' do
-      schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/given_id_with_fragment#'})
+      schema = JSI.new_schema({'id' => 'https://schemas.jsi.unth.net/test/given_id_with_fragment#'})
       assert_equal('https://schemas.jsi.unth.net/test/given_id_with_fragment#', schema.schema_id)
     end
     it 'uses a given id (adding a fragment)' do
-      schema = JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/given_id'})
+      schema = JSI.new_schema({id: 'https://schemas.jsi.unth.net/test/given_id'})
       assert_equal('https://schemas.jsi.unth.net/test/given_id#', schema.schema_id)
     end
     it 'uses a pointer in the fragment' do
-      schema = JSI::Schema.new({
+      schema = JSI.new_schema({
         'id' => 'https://schemas.jsi.unth.net/test/uses_pointer_in_fragment#',
         'properties' => {'foo' => {'type' => 'object'}},
       })
@@ -46,7 +45,7 @@ describe JSI::Schema do
       assert_equal('https://schemas.jsi.unth.net/test/uses_pointer_in_fragment#/properties/foo', subschema.schema_id)
     end
     it 'uses a pointer in the fragment relative to the fragment of the root' do
-      schema = JSI::Schema.new({
+      schema = JSI.new_schema({
         'id' => 'https://schemas.jsi.unth.net/test/id_has_pointer#/notroot',
         'properties' => {'foo' => {'type' => 'object'}},
       })
@@ -56,20 +55,20 @@ describe JSI::Schema do
   end
   describe '#jsi_schema_module' do
     it 'returns the module for the schema' do
-      schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module'})
+      schema = JSI.new_schema({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module'})
       assert_is_a(JSI::SchemaModule, schema.jsi_schema_module)
       assert_equal(schema, schema.jsi_schema_module.schema)
     end
   end
   describe '#jsi_schema_class' do
     it 'returns the class for the schema' do
-      schema = JSI::Schema.new({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
+      schema = JSI.new_schema({'id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
       assert_equal(JSI.class_for_schemas([schema]), schema.jsi_schema_class)
     end
   end
   describe '#subschemas_for_property_name' do
     let(:schema) do
-      JSI::Schema.new({
+      JSI.new_schema({
         properties: {
           foo: {description: 'foo'},
           baz: {description: 'baz'},
@@ -81,7 +80,7 @@ describe JSI::Schema do
       })
     end
     it 'has no subschemas' do
-      assert_empty(JSI::Schema.new({}).subschemas_for_property_name('no'))
+      assert_empty(JSI.new_schema({}).subschemas_for_property_name('no'))
     end
     it 'has a subschema by property' do
       subschemas = schema.subschemas_for_property_name('foo').to_a
@@ -112,10 +111,10 @@ describe JSI::Schema do
   end
   describe '#subschemas_for_index' do
     it 'has no subschemas' do
-      assert_empty(JSI::Schema.new({}).subschemas_for_index(0))
+      assert_empty(JSI.new_schema({}).subschemas_for_index(0))
     end
     it 'has a subschema for items' do
-      schema = JSI::Schema.new({
+      schema = JSI.new_schema({
         items: {description: 'items!'}
       })
       first_subschemas = schema.subschemas_for_index(0).to_a
@@ -128,7 +127,7 @@ describe JSI::Schema do
       assert_equal('items!', last_subschemas[0].description)
     end
     it 'has a subschema for each item by index' do
-      schema = JSI::Schema.new({
+      schema = JSI.new_schema({
         items: [{description: 'item one'}, {description: 'item two'}]
       })
       first_subschemas = schema.subschemas_for_index(0).to_a
@@ -141,7 +140,7 @@ describe JSI::Schema do
       assert_equal('item two', last_subschemas[0].description)
     end
     it 'has a subschema by additional items' do
-      schema = JSI::Schema.new({
+      schema = JSI.new_schema({
         items: [{description: 'item one'}],
         additionalItems: {description: "mo' crap"},
       })
@@ -157,7 +156,7 @@ describe JSI::Schema do
   end
   describe 'stringification' do
     let(:schema) do
-      JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/stringification', type: 'object'})
+      JSI.new_schema({id: 'https://schemas.jsi.unth.net/test/stringification', type: 'object'})
     end
 
     it '#inspect' do
@@ -171,7 +170,7 @@ describe JSI::Schema do
     end
   end
   describe 'validation' do
-    let(:schema) { JSI::Schema.new({id: 'https://schemas.jsi.unth.net/test/validation', type: 'object'}) }
+    let(:schema) { JSI.new_schema({id: 'https://schemas.jsi.unth.net/test/validation', type: 'object'}) }
     describe 'without errors' do
       let(:instance) { {'foo' => 'bar'} }
       it '#fully_validate_instance' do

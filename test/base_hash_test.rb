@@ -8,8 +8,8 @@ base = {
     'bar' => {},
   },
 }
-NamedHashInstance = JSI::Schema.new(base).jsi_schema_class
-NamedIdHashInstance = JSI::Schema.new({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base)).jsi_schema_class
+NamedHashInstance = JSI.new_schema(base).jsi_schema_class
+NamedIdHashInstance = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base)).jsi_schema_class
 
 describe 'JSI::Base hash' do
   let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
@@ -23,7 +23,7 @@ describe 'JSI::Base hash' do
       },
     }
   end
-  let(:schema) { JSI::Schema.new(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
 
   describe '#[] with a schema default that is a basic type' do

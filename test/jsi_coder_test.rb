@@ -4,7 +4,7 @@ describe JSI::JSICoder do
   let(:schema_content) do
     {properties: {foo: {}, bar: {}}}
   end
-  let(:schema) { JSI::Schema.new(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content) }
   let(:options) { {} }
   let(:schema_instance_json_coder) { JSI::JSICoder.new(schema, options) }
   describe 'json' do

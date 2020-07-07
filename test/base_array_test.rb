@@ -9,8 +9,8 @@ base = {
     {'type' => 'array', 'items' => {}},
   ],
 }
-NamedArrayInstance = JSI::Schema.new(base).jsi_schema_class
-NamedIdArrayInstance = JSI::Schema.new({'$id' => 'https://schemas.jsi.unth.net/test/base/named_array_schema'}.merge(base)).jsi_schema_class
+NamedArrayInstance = JSI.new_schema(base).jsi_schema_class
+NamedIdArrayInstance = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_array_schema'}.merge(base)).jsi_schema_class
 
 describe 'JSI::Base array' do
   let(:instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
@@ -25,7 +25,7 @@ describe 'JSI::Base array' do
       ],
     }
   end
-  let(:schema) { JSI::Schema.new(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
 
   describe '#[] with a default that is a basic type' do
