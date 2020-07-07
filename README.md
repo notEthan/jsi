@@ -32,7 +32,7 @@ Using that schema, we instantiate a JSI::Schema to represent it:
 
 ```ruby
 # this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
-contact_schema = JSI::Schema.new({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
+contact_schema = JSI.new_schema({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
 We name the module that JSI will use when instantiating a contact. Named modules are better to work with, and JSI will indicate the names of schema modules in its `#inspect` output.

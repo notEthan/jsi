@@ -55,7 +55,7 @@ module JSI
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a schema, it is returned as-is.
       # @return [JSI::Schema] a JSI::Schema representing the given schema_object
-      def from_object(schema_object)
+      def new_schema(schema_object)
         if schema_object.is_a?(Schema)
           schema_object
         elsif schema_object.is_a?(JSI::Base)
@@ -82,7 +82,11 @@ module JSI
         end
       end
 
-      alias_method :new, :from_object
+      # @deprecated
+      alias_method :new, :new_schema
+
+      # @deprecated
+      alias_method :from_object, :new_schema
     end
 
     # the underlying JSON data used to instantiate this JSI::Schema.

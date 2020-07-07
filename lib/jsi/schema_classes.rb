@@ -33,7 +33,7 @@ module JSI
 
       # see {JSI.class_for_schemas}
       def class_for_schemas(schema_objects)
-        schemas = schema_objects.map { |schema_object| JSI::Schema.from_object(schema_object) }.to_set
+        schemas = schema_objects.map { |schema_object| JSI.new_schema(schema_object) }.to_set
         jsi_memoize(:class_for_schemas, schemas) do |schemas|
           Class.new(Base).instance_exec(schemas) do |schemas|
             define_singleton_method(:jsi_class_schemas) { schemas }
@@ -53,7 +53,7 @@ module JSI
       # defines a singleton method #schema to access the {JSI::Schema} this module represents, and extends
       # the module with {JSI::SchemaModule}.
       def module_for_schema(schema_object)
-        schema = JSI::Schema.from_object(schema_object)
+        schema = JSI.new_schema(schema_object)
         jsi_memoize(:module_for_schema, schema) do |schema|
           Module.new.tap do |m|
             m.module_eval do

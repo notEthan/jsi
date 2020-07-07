@@ -41,6 +41,16 @@ module JSI
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
+  # instantiates a given schema object as a JSI::Schema.
+  #
+  # see {JSI::Schema.new_schema}
+  #
+  # @param (see JSI::Schema.new_schema)
+  # @return (see JSI::Schema.new_schema)
+  def self.new_schema(schema_object)
+    JSI::Schema.new_schema(schema_object)
+  end
+
   # @param schemas [Enumerable<JSI::Schema, #to_hash, Boolean>] schemas to represent with the class
   # @return [Class subclassing JSI::Base] a JSI class which represents the given schemas.
   #   an instance of the class represents a JSON Schema instance described by all of the given schemas.
