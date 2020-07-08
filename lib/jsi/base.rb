@@ -1,18 +1,20 @@
 # frozen_string_literal: true
 
 module JSI
-  # the base class for representing and instantiating a JSON Schema.
+  # JSI::Base is the class from which JSI schema classes inherit. a JSON schema instance is represented as a
+  # ruby instance of such a subclass of JSI::Base.
   #
-  # a class inheriting from JSI::Base represents a JSON Schema. an instance of
-  # that class represents a JSON schema instance.
+  # instances are described by a set of one or more JSON schemas. JSI dynamically creates a subclass of
+  # JSI::Base for each set of JSON schemas which describe a schema instance that is to be instantiated.
+  # a JSI instance of such a subclass represents a JSON schema instance described by that set of schemas.
   #
-  # as such, JSI::Base itself is not intended to be instantiated - subclasses
-  # are dynamically created for schemas using {JSI.class_for_schema}, and these
-  # are what are used to instantiate and represent JSON schema instances.
+  # the JSI::Base class itself is not intended to be instantiated.
   class Base
     include Util::Memoize
     include Enumerable
     include PathedNode
+
+    # an exception raised when #[] is invoked on an instance which is not an array or hash
     class CannotSubscriptError < StandardError
     end
 
@@ -32,8 +34,8 @@ module JSI
         @in_schema_classes
       end
 
-      # @return [String] a string representing the class, indicating the schemas represented by their module
-      #   name or a URI
+      # @return [String] a string indicating a class name if one is defined, as well as the schema module name
+      #   and/or schema URI of each schema the class represents.
       def inspect
         if !respond_to?(:jsi_class_schemas)
           super
@@ -112,7 +114,7 @@ module JSI
     # a parsed JSON document consisting of Hash, Array, or sometimes a basic
     # type, but this is in no way enforced and a JSI may wrap any object.
     #
-    # @param instance [Object] the JSON Schema instance being represented
+    # @param instance [Object] the JSON Schema instance to be represented as a JSI
     # @param jsi_document [Object] for internal use. the instance may be specified as a
     #   node in the `jsi_document` param, pointed to by `jsi_ptr`. the param `instance`
     #   MUST be `NOINSTANCE` to use the jsi_document + jsi_ptr form. `jsi_document` MUST
@@ -230,18 +232,18 @@ module JSI
 
       result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
         if respond_to?(:to_ary)
-          token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_index(token) }.inject(Set.new, &:|)
+          subinstance_schemas = jsi_schemas.map { |schema| schema.subschemas_for_index(token) }.inject(Set.new, &:|)
         else
-          token_schemas = jsi_schemas.map { |schema| schema.subschemas_for_property_name(token) }.inject(Set.new, &:|)
+          subinstance_schemas = jsi_schemas.map { |schema| schema.subschemas_for_property_name(token) }.inject(Set.new, &:|)
         end
-        token_schemas = token_schemas.map { |schema| schema.match_to_instance(value) }.inject(Set.new, &:|)
+        subinstance_schemas = subinstance_schemas.map { |schema| schema.match_to_instance(value) }.inject(Set.new, &:|)
 
         if token_in_range
-          complex_value = token_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-          schema_value = token_schemas.any? { |token_schema| token_schema.describes_schema? }
+          complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+          schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
 
           if complex_value || schema_value
-            JSI::SchemaClasses.class_for_schemas(token_schemas).new(Base::NOINSTANCE,
+            JSI::SchemaClasses.class_for_schemas(subinstance_schemas).new(Base::NOINSTANCE,
               jsi_document: @jsi_document,
               jsi_ptr: @jsi_ptr[token],
               jsi_root_node: @jsi_root_node,
@@ -251,9 +253,9 @@ module JSI
           end
         else
           defaults = Set.new
-          token_schemas.each do |token_schema|
-            if token_schema.respond_to?(:to_hash) && token_schema.key?('default')
-              defaults << token_schema['default']
+          subinstance_schemas.each do |subinstance_schema|
+            if subinstance_schema.respond_to?(:to_hash) && subinstance_schema.key?('default')
+              defaults << subinstance_schema['default']
             end
           end
 
