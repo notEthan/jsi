@@ -133,15 +133,15 @@ module JSI
       JSI.class_for_schemas(Set[self])
     end
 
-    # instantiates the given other_instance as a JSI::Base class for schemas matched from this schema to the
-    # other_instance.
+    # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the
+    # instance.
     #
     # any parameters are passed to JSI::Base#initialize, but none are normally used.
     #
     # @return [JSI::Base] a JSI whose instance is the given instance and whose schemas are matched from this
     #   schema.
-    def new_jsi(other_instance, *a, &b)
-      JSI.class_for_schemas(match_to_instance(other_instance)).new(other_instance, *a, &b)
+    def new_jsi(instance, *a, &b)
+      JSI.class_for_schemas(match_to_instance(instance)).new(instance, *a, &b)
     end
 
     # @return [Boolean] does this schema itself describe a schema?
