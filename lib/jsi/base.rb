@@ -13,6 +13,8 @@ module JSI
     include Util::Memoize
     include Enumerable
     include PathedNode
+
+    # an exception raised when #[] is invoked on an instance which is not an array or hash
     class CannotSubscriptError < StandardError
     end
 
