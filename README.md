@@ -123,13 +123,13 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 ## Terminology and Concepts
 
-- `JSI::Base` is the base class for each JSI class representing a JSON Schema.
-- a "JSI class" is a subclass of `JSI::Base` representing a JSON schema.
-- a "JSI schema module" is a module representing a schema, included on a JSI class.
+- `JSI::Base` is the base class for each JSI class representing instances of JSON Schemas.
+- a "JSI schema module" is a module which represents one schema. Instances of that schema are extended with its JSI schema module.
+- a "JSI schema class" is a subclass of `JSI::Base` representing one or more JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
-  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI class. it has a method `#jsi_instance` which contains the underlying data.
-- a schema refers to a JSON schema. `JSI::Schema` is a module which extends schemas. A schema is usually a `JSI::Base` instance, and that schema JSI's schema is a metaschema (see the sections on Metaschemas below).
+  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_instance`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
+- a schema refers to a JSON schema. in JSI a schema is typically a JSI instance which is described by a metaschema (see the sections on Metaschemas below). a JSI schema is extended by the `JSI::Schema` module.
 
 ## JSI and Object Oriented Programming
 
