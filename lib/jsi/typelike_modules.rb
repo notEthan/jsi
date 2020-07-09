@@ -106,7 +106,7 @@ module JSI
     # the same as Hash#update
     # @param other [#to_hash] the other hash to update this hash from
     # @yield [key, oldval, newval] for entries with duplicate keys, the value of each duplicate key
-    #   is determined by calling the block with the key, its value in hsh and its value in other_hash.
+    #   is determined by calling the block with the key, its value in self and its value in other.
     # @return self, updated with other
     # @raise [TypeError] when `other` does not respond to #to_hash
     def update(other, &block)
@@ -128,7 +128,7 @@ module JSI
     # the same as Hash#merge
     # @param other [#to_hash] the other hash to merge into this
     # @yield [key, oldval, newval] for entries with duplicate keys, the value of each duplicate key
-    #   is determined by calling the block with the key, its value in hsh and its value in other_hash.
+    #   is determined by calling the block with the key, its value in self and its value in other.
     # @return duplicate of this hash with the other hash merged in
     # @raise [TypeError] when `other` does not respond to #to_hash
     def merge(other, &block)
