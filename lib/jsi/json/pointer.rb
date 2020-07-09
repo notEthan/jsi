@@ -97,6 +97,10 @@ module JSI
           if value.respond_to?(:to_ary)
             if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
               token = token.to_i
+            elsif token == '-'
+              # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
+              # expected to raise an error condition.
+              raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
             end
             unless token.is_a?(Integer)
               raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
