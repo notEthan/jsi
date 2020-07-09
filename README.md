@@ -160,11 +160,19 @@ bill.phone_numbers
 
 Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers. You can alternatively use `[]` and `[]=` with the same effect.
 
-You can also add methods to a subschema using the same method `#jsi_schema_module` which we used to define the `Contact` module above.
+Working with subschemas is just about as easy as with root schemas.
+
+You can subscript or use property accessors on a JSI schema module to refer to the schema modules of its subschemas, e.g.:
 
 ```ruby
-phone_schema = Contact.schema.properties['phone'].items
-phone_schema.jsi_schema_module.module_eval do
+Contact.properties['phone'].items
+# => (JSI Schema Module: #/properties/phone/items)
+```
+
+Opening a subschema module with module_eval, you can add methods to instances of the subschema.
+
+```ruby
+Contact.properties['phone'].items.module_eval do
   def number_with_dashes
     number.split(//).join('-')
   end
@@ -173,18 +181,30 @@ bill.phone.first.number_with_dashes
 # => "5-5-5"
 ```
 
-If you want to name the module, this works:
+A recommended convention for naming subschemas is to define them in the namespace of the module of their
+parent schema. The module can then be opened to add methods to the subschema's module.
 
 ```ruby
-ContactPhone = Contact.schema.properties['phone'].items.jsi_schema_module
+module Contact
+  Phone = properties['phone'].items
+  module Phone
+    def number_with_dashes
+      number.split(//).join('-')
+    end
+  end
+end
+```
+
+However, that is only a convention, and a flat namespace works fine too.
+
+```ruby
+ContactPhone = Contact.properties['phone'].items
 module ContactPhone
   def number_with_dashes
     number.split(//).join('-')
   end
 end
 ```
-
-Either syntax is slightly cumbersome and a better syntax is in the works.
 
 ## Metaschemas
 
