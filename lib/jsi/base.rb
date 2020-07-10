@@ -306,6 +306,11 @@ module JSI
       return self
     end
 
+    # @return [Set<Module>] the set of JSI schema modules corresponding to the schemas that describe this JSI
+    def jsi_schema_modules
+      jsi_schemas.map(&:jsi_schema_module).to_set
+    end
+
     # yields the content of the underlying instance. the block must result in
     # a modified copy of that (not destructively modifying the yielded content)
     # which will be used to instantiate a new instance of this JSI class with
