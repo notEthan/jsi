@@ -2,7 +2,7 @@
 
 module JSI
   module JSON
-    # a JSON Pointer, as described by RFC 6901 https://tools.ietf.org/html/rfc6901
+    # a representation to work with JSON Pointer, as described by RFC 6901 https://tools.ietf.org/html/rfc6901
     class Pointer
       class Error < StandardError
       end
@@ -11,19 +11,19 @@ module JSI
       class ReferenceError < Error
       end
 
-      # instantiates a Pointer from any given reference tokens.
+      # instantiates a Pointer from the given reference tokens.
       #
-      #     >> JSI::JSON::Pointer[]
-      #     => #<JSI::JSON::Pointer reference_tokens: []>
-      #     >> JSI::JSON::Pointer['a', 'b']
-      #     => #<JSI::JSON::Pointer reference_tokens: ["a", "b"]>
-      #     >> JSI::JSON::Pointer['a']['b']
-      #     => #<JSI::JSON::Pointer reference_tokens: ["a", "b"]>
+      #     JSI::JSON::Pointer[]
       #
-      # note in the last example that you can conveniently chain the class .[] method
-      # with the instance #[] method.
+      # instantes a root pointer.
       #
-      # @param *reference_tokens any number of reference tokens
+      #     JSI::JSON::Pointer['a', 'b']
+      #     JSI::JSON::Pointer['a']['b']
+      #
+      # are both ways to instantiate a pointer with reference tokens ['a', 'b']. the latter example chains the
+      # class .[] method with the instance #[] method.
+      #
+      # @param reference_tokens any number of reference tokens
       # @return [JSI::JSON::Pointer]
       def self.[](*reference_tokens)
         new(reference_tokens)
@@ -31,49 +31,41 @@ module JSI
 
       # parse a URI-escaped fragment and instantiate as a JSI::JSON::Pointer
       #
-      #     ptr = JSI::JSON::Pointer.from_fragment('/foo/bar')
-      #     => #<JSI::JSON::Pointer fragment: /foo/bar>
-      #     ptr.reference_tokens
-      #     => ["foo", "bar"]
+      #     JSI::JSON::Pointer.from_fragment('/foo/bar')
+      #     => JSI::JSON::Pointer["foo", "bar"]
       #
       # with URI escaping:
       #
-      #     ptr = JSI::JSON::Pointer.from_fragment('/foo%20bar')
-      #     => #<JSI::JSON::Pointer fragment: /foo%20bar>
-      #     ptr.reference_tokens
-      #     => ["foo bar"]
+      #     JSI::JSON::Pointer.from_fragment('/foo%20bar')
+      #     => JSI::JSON::Pointer["foo bar"]
       #
-      # @param fragment [String] a fragment containing a pointer (starting with #)
+      # @param fragment [String] a fragment containing a pointer
       # @return [JSI::JSON::Pointer]
-      # @raise [JSI::JSON::Pointer::PointerSyntaxError] when the fragment does not contain a pointer with valid pointer syntax
+      # @raise [JSI::JSON::Pointer::PointerSyntaxError] when the fragment does not contain a pointer with
+      #   valid pointer syntax
       def self.from_fragment(fragment)
-        from_pointer(Addressable::URI.unescape(fragment), type: 'fragment')
+        from_pointer(Addressable::URI.unescape(fragment))
       end
 
       # parse a pointer string and instantiate as a JSI::JSON::Pointer
       #
-      #     ptr1 = JSI::JSON::Pointer.from_pointer('/foo')
-      #     => #<JSI::JSON::Pointer pointer: /foo>
-      #     ptr1.reference_tokens
-      #     => ["foo"]
+      #     JSI::JSON::Pointer.from_pointer('/foo')
+      #     => JSI::JSON::Pointer["foo"]
       #
-      #     ptr2 = JSI::JSON::Pointer.from_pointer('/foo~0bar/baz~1qux')
-      #     => #<JSI::JSON::Pointer pointer: /foo~0bar/baz~1qux>
-      #     ptr2.reference_tokens
-      #     => ["foo~bar", "baz/qux"]
+      #     JSI::JSON::Pointer.from_pointer('/foo~0bar/baz~1qux')
+      #     => JSI::JSON::Pointer["foo~bar", "baz/qux"]
       #
       # @param pointer_string [String] a pointer string
-      # @param type (for internal use) indicates the original representation of the pointer
       # @return [JSI::JSON::Pointer]
       # @raise [JSI::JSON::Pointer::PointerSyntaxError] when the pointer_string does not have valid pointer syntax
-      def self.from_pointer(pointer_string, type: 'pointer')
+      def self.from_pointer(pointer_string)
         tokens = pointer_string.split('/', -1).map! do |piece|
           piece.gsub('~1', '/').gsub('~0', '~')
         end
         if tokens[0] == ''
-          new(tokens[1..-1], type: type)
+          new(tokens[1..-1])
         elsif tokens.empty?
-          new(tokens, type: type)
+          new(tokens)
         else
           raise(PointerSyntaxError, "Invalid pointer syntax in #{pointer_string.inspect}: pointer must begin with /")
         end
@@ -82,13 +74,11 @@ module JSI
       # initializes a JSI::JSON::Pointer from the given reference_tokens.
       #
       # @param reference_tokens [Array<Object>]
-      # @param type [String, Symbol] one of 'pointer' or 'fragment'
-      def initialize(reference_tokens, type: nil)
+      def initialize(reference_tokens)
         unless reference_tokens.respond_to?(:to_ary)
           raise(TypeError, "reference_tokens must be an array. got: #{reference_tokens.inspect}")
         end
         @reference_tokens = reference_tokens.to_ary.map(&:freeze).freeze
-        @type = type.is_a?(Symbol) ? type.to_s : type
       end
 
       attr_reader :reference_tokens
@@ -104,6 +94,10 @@ module JSI
           if value.respond_to?(:to_ary)
             if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
               token = token.to_i
+            elsif token == '-'
+              # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
+              # expected to raise an error condition.
+              raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
             end
             unless token.is_a?(Integer)
               raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
@@ -134,12 +128,13 @@ module JSI
         Addressable::URI.escape(pointer)
       end
 
-      # @return [Addressable::URI] a URI consisting only of a pointer fragment
+      # @return [Addressable::URI] a URI consisting of a fragment containing this pointer's fragment string
+      #   representation
       def uri
         Addressable::URI.new(fragment: fragment)
       end
 
-      # @return [Boolean] whether this pointer points to the root (has an empty array of reference_tokens)
+      # @return [Boolean] whether this is a root pointer, indicated by an empty array of reference_tokens
       def root?
         reference_tokens.empty?
       end
@@ -150,7 +145,7 @@ module JSI
         if root?
           raise(ReferenceError, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
         else
-          Pointer.new(reference_tokens[0...-1], type: @type)
+          Pointer.new(reference_tokens[0...-1])
         end
       end
 
@@ -166,7 +161,7 @@ module JSI
         unless ancestor_ptr.contains?(self)
           raise(ReferenceError, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
-        Pointer.new(reference_tokens[ancestor_ptr.reference_tokens.size..-1], type: @type)
+        Pointer.new(reference_tokens[ancestor_ptr.reference_tokens.size..-1])
       end
 
       # @param ptr [JSI::JSON::Pointer]
@@ -175,7 +170,7 @@ module JSI
         unless ptr.is_a?(JSI::JSON::Pointer)
           raise(TypeError, "ptr must be a JSI::JSON::Pointer; got: #{ptr.inspect}")
         end
-        Pointer.new(reference_tokens + ptr.reference_tokens, type: @type)
+        Pointer.new(reference_tokens + ptr.reference_tokens)
       end
 
       # @param n [Integer]
@@ -185,7 +180,7 @@ module JSI
         unless (0..reference_tokens.size).include?(n)
           raise(ArgumentError, "n not in range (0..#{reference_tokens.size}): #{n.inspect}")
         end
-        Pointer.new(reference_tokens.take(n), type: @type)
+        Pointer.new(reference_tokens.take(n))
       end
 
       # appends the given token to this Pointer's reference tokens and returns the result
@@ -193,7 +188,7 @@ module JSI
       # @param token [Object]
       # @return [JSI::JSON::Pointer] pointer to a child node of this pointer with the given token
       def [](token)
-        Pointer.new(reference_tokens + [token], type: @type)
+        Pointer.new(reference_tokens + [token])
       end
 
       # given this Pointer points to a schema in the given document, returns a set of pointers
@@ -389,11 +384,11 @@ module JSI
         # HAX for how google does refs and ids
         if document['schemas'].respond_to?(:to_hash)
           if document['schemas'][ref]
-            return Pointer.new(['schemas', ref], type: 'hax').tap(&block)
+            return Pointer.new(['schemas', ref]).tap(&block)
           end
           document['schemas'].each do |k, schema|
             if schema['id'] == ref
-              return Pointer.new(['schemas', k], type: 'hax').tap(&block)
+              return Pointer.new(['schemas', k]).tap(&block)
             end
           end
         end
@@ -402,14 +397,14 @@ module JSI
         return self
       end
 
-      # @return [String] string representation of this Pointer
+      # @return [String] a string representation of this Pointer
       def inspect
         "#{self.class.name}[#{reference_tokens.map(&:inspect).join(", ")}]"
       end
 
       alias_method :to_s, :inspect
 
-      # pointers are equal if the reference_tokens are equal, regardless of @type
+      # pointers are equal if the reference_tokens are equal
       def jsi_fingerprint
         {class: JSI::JSON::Pointer, reference_tokens: reference_tokens}
       end

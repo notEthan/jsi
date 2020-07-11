@@ -78,6 +78,13 @@ module JSI
       alias_method :new, :from_object
     end
 
+    # the underlying JSON data used to instantiate this JSI::Schema.
+    # this is an alias for PathedNode#jsi_node_content, named for clarity in the context of working with
+    # a schema.
+    def schema_content
+      jsi_node_content
+    end
+
     # @return [String, nil] an absolute id for the schema, with a json pointer fragment. nil if
     #   no parent of this schema defines an id.
     def schema_id
@@ -195,11 +202,11 @@ module JSI
     def described_object_property_names
       jsi_memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
-          if jsi_node_content.respond_to?(:to_hash) && jsi_node_content['properties'].respond_to?(:to_hash)
-            property_names.merge(jsi_node_content['properties'].keys)
+          if schema_content.respond_to?(:to_hash) && schema_content['properties'].respond_to?(:to_hash)
+            property_names.merge(schema_content['properties'].keys)
           end
-          if jsi_node_content.respond_to?(:to_hash) && jsi_node_content['required'].respond_to?(:to_ary)
-            property_names.merge(jsi_node_content['required'].to_ary)
+          if schema_content.respond_to?(:to_hash) && schema_content['required'].respond_to?(:to_ary)
+            property_names.merge(schema_content['required'].to_ary)
           end
         end
       end

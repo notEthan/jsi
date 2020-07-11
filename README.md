@@ -123,13 +123,13 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 ## Terminology and Concepts
 
-- `JSI::Base` is the base class for each JSI class representing a JSON Schema.
-- a "JSI class" is a subclass of `JSI::Base` representing a JSON schema.
-- a "JSI schema module" is a module representing a schema, included on a JSI class.
+- `JSI::Base` is the base class for each JSI class representing instances of JSON Schemas.
+- a "JSI schema module" is a module which represents one schema. Instances of that schema are extended with its JSI schema module.
+- a "JSI schema class" is a subclass of `JSI::Base` representing one or more JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
-  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI class. it has a method `#jsi_instance` which contains the underlying data.
-- a schema refers to a JSON schema. `JSI::Schema` is a module which extends schemas. A schema is usually a `JSI::Base` instance, and that schema JSI's schema is a metaschema (see the sections on Metaschemas below).
+  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_instance`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
+- a schema refers to a JSON schema. in JSI a schema is typically a JSI instance which is described by a metaschema (see the sections on Metaschemas below). a JSI schema is extended by the `JSI::Schema` module.
 
 ## JSI and Object Oriented Programming
 
@@ -160,11 +160,19 @@ bill.phone_numbers
 
 Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers. You can alternatively use `[]` and `[]=` with the same effect.
 
-You can also add methods to a subschema using the same method `#jsi_schema_module` which we used to define the `Contact` module above.
+Working with subschemas is just about as easy as with root schemas.
+
+You can subscript or use property accessors on a JSI schema module to refer to the schema modules of its subschemas, e.g.:
 
 ```ruby
-phone_schema = Contact.schema.properties['phone'].items
-phone_schema.jsi_schema_module.module_eval do
+Contact.properties['phone'].items
+# => (JSI Schema Module: #/properties/phone/items)
+```
+
+Opening a subschema module with module_eval, you can add methods to instances of the subschema.
+
+```ruby
+Contact.properties['phone'].items.module_eval do
   def number_with_dashes
     number.split(//).join('-')
   end
@@ -173,10 +181,24 @@ bill.phone.first.number_with_dashes
 # => "5-5-5"
 ```
 
-If you want to name the module, this works:
+A recommended convention for naming subschemas is to define them in the namespace of the module of their
+parent schema. The module can then be opened to add methods to the subschema's module.
 
 ```ruby
-ContactPhone = Contact.schema.properties['phone'].items.jsi_schema_module
+module Contact
+  Phone = properties['phone'].items
+  module Phone
+    def number_with_dashes
+      number.split(//).join('-')
+    end
+  end
+end
+```
+
+However, that is only a convention, and a flat namespace works fine too.
+
+```ruby
+ContactPhone = Contact.properties['phone'].items
 module ContactPhone
   def number_with_dashes
     number.split(//).join('-')
@@ -184,13 +206,11 @@ module ContactPhone
 end
 ```
 
-Either syntax is slightly cumbersome and a better syntax is in the works.
-
 ## Metaschemas
 
 A metaschema is a schema which describes schemas. Likewise, a schema is an instance of a metaschema.
 
-In JSI, a schema is generally a JSI::Base instance whose schema is a metaschema.
+In JSI, a schema is generally a JSI::Base instance whose schemas include a metaschema.
 
 A self-descriptive metaschema - most commonly one of the JSON schema draft metaschemas - is an object whose schema is itself. This is instantiated in JSI as a JSI::MetaschemaNode (not a JSI::Base).
 

@@ -112,13 +112,13 @@ module JSI
     end
   end
 
-  # a JSI::Schema module and a JSI::NotASchemaModule are both a SchemaModulePossibly.
+  # a JSI Schema module and a JSI::NotASchemaModule are both a SchemaModulePossibly.
   # this module provides a #[] method.
   module SchemaModulePossibly
     attr_reader :possibly_schema_node
 
     # subscripting a JSI schema module or a NotASchemaModule will subscript the node, and
-    # if the result is a JSI::Schema, return a JSI::Schema class; if it is a PathedNode,
+    # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a PathedNode,
     # return a NotASchemaModule; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
@@ -137,7 +137,10 @@ module JSI
 
   # a schema module is a module which represents a schema. a NotASchemaModule represents
   # a node in a schema's document which is not a schema, such as the 'properties'
-  # node (which contains schemas but is not a schema).
+  # object (which contains schemas but is not a schema).
+  #
+  # instances of this class act as a stand-in to allow users to subscript or call property accessors on
+  # schema modules to refer to their subschemas' schema modules.
   #
   # a NotASchemaModule is extended with the module_for_schema of the node's schema.
   #

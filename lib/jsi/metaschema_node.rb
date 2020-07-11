@@ -185,6 +185,7 @@ module JSI
       q.text '>'
     end
 
+    # @private
     # @return [Array<String>]
     def jsi_object_group_text
       if jsi_schemas.any?

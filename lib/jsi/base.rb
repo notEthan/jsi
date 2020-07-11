@@ -108,7 +108,11 @@ module JSI
 
     # NOINSTANCE is a magic value passed to #initialize when instantiating a JSI
     # from a document and JSON Pointer.
-    NOINSTANCE = Object.new.tap { |o| [:inspect, :to_s].each(&(-> (s, m) { o.define_singleton_method(m) { s } }.curry.([JSI::Base.name, 'NOINSTANCE'].join('::')))) }
+    #
+    # @private
+    NOINSTANCE = Object.new
+    [:inspect, :to_s].each(&(-> (s, m) { NOINSTANCE.define_singleton_method(m) { s } }.curry.("#{JSI::Base}::NOINSTANCE")))
+    NOINSTANCE.freeze
 
     # initializes this JSI from the given instance - instance is most commonly
     # a parsed JSON document consisting of Hash, Array, or sometimes a basic
@@ -306,6 +310,11 @@ module JSI
       return self
     end
 
+    # @return [Set<Module>] the set of JSI schema modules corresponding to the schemas that describe this JSI
+    def jsi_schema_modules
+      jsi_schemas.map(&:jsi_schema_module).to_set
+    end
+
     # yields the content of the underlying instance. the block must result in
     # a modified copy of that (not destructively modifying the yielded content)
     # which will be used to instantiate a new instance of this JSI class with
@@ -324,7 +333,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
         end
-        self.class.new(Base::NOINSTANCE, jsi_document: modified_jsi_root_node.jsi_document, jsi_ptr: @jsi_ptr, jsi_root_node: modified_jsi_root_node)
+        @jsi_ptr.evaluate(modified_jsi_root_node)
       end
     end
 
@@ -372,6 +381,7 @@ module JSI
       q.text '>'
     end
 
+    # @private
     # @return [Array<String>]
     def jsi_object_group_text
       class_name = self.class.name unless self.class.in_schema_classes

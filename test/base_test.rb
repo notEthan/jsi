@@ -152,6 +152,25 @@ describe JSI::Base do
       end
     end
   end
+
+  describe '#jsi_schemas' do
+    let(:schema_content) do
+      {
+        "type" => "object",
+        "properties" => {
+          "phone" => {
+            "type" => "array",
+          }
+        }
+      }
+    end
+    let(:instance) { {'phone' => [{}]} }
+    it 'has jsi_schemas' do
+      assert_equal(Set[schema], subject.jsi_schemas)
+      assert_equal(Set[schema.properties['phone']], subject.phone.jsi_schemas)
+    end
+  end
+
   describe '#jsi_parent_nodes, #jsi_parent_node' do
     let(:schema_content) { {'properties' => {'foo' => {'properties' => {'bar' => {'properties' => {'baz' => {}}}}}}} }
     let(:instance) { {'foo' => {'bar' => {'baz' => {}}}} }
@@ -228,6 +247,37 @@ describe JSI::Base do
         # interesting side effect
         assert(subject.respond_to?(:to_hash))
         assert(!modified.respond_to?(:to_hash))
+      end
+    end
+    describe 'resulting in a different type below the root' do
+      let(:schema_content) { {items: {}} }
+      let(:instance) { [{}] }
+      it 'changes type' do
+        modified = subject.jsi_modified_copy do |o|
+          o.map(&:to_s)
+        end
+        assert_equal(schema.new_jsi(['{}']), modified)
+      end
+      it 'changes from a jsi to a basic type' do
+        mod = subject[0].jsi_modified_copy { |o| o.to_s }
+        assert_equal('{}', mod)
+      end
+    end
+    describe 'resulting in a different schema' do
+      let(:schema_content) { {items: {oneOf: [{type: 'object'}, {type: 'array'}]}} }
+      let(:instance) { [{}] }
+      it 'changes schemas' do
+        modified = subject.jsi_modified_copy do |o|
+          o.map(&:to_a)
+        end
+        assert_equal([[]], modified.jsi_instance)
+        assert_equal([{}], subject.jsi_instance)
+        assert_equal(Set[schema.items, schema.items.oneOf[1]], modified.first.jsi_schemas)
+        assert_equal(Set[schema.items, schema.items.oneOf[0]], subject.first.jsi_schemas)
+        assert(!modified.first.respond_to?(:to_hash))
+        assert(modified.first.respond_to?(:to_ary))
+        assert(subject.first.respond_to?(:to_hash))
+        assert(!subject.first.respond_to?(:to_ary))
       end
     end
   end
