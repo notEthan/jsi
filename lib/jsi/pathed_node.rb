@@ -55,7 +55,7 @@ module JSI
     include Hashlike
 
     # @param method_name [String, Symbol]
-    # @param *a, &b are passed to the invocation of method_name
+    # @param a arguments and block are passed to the invocation of method_name
     # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_hash
     def jsi_node_content_hash_pubsend(method_name, *a, &b)
       if jsi_node_content.respond_to?(method_name)
@@ -97,7 +97,7 @@ module JSI
     include Arraylike
 
     # @param method_name [String, Symbol]
-    # @param *a, &b are passed to the invocation of method_name
+    # @param a arguments and block are passed to the invocation of method_name
     # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_ary
     def jsi_node_content_ary_pubsend(method_name, *a, &b)
       if jsi_node_content.respond_to?(method_name)
