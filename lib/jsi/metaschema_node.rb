@@ -32,16 +32,21 @@ module JSI
 
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
+    # @param metaschema_instance_modules [Set<Module>] modules which implement the functionality of the
+    #   schema, to be applied to every schema instance of the metaschema. this must include JSI::Schema
+    #   directly or indirectly.
     # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in the jsi_document
     # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema describing the root of the jsi_document
     def initialize(
         jsi_document,
         jsi_ptr: JSI::JSON::Pointer[],
+        metaschema_instance_modules: ,
         metaschema_root_ptr: JSI::JSON::Pointer[],
         root_schema_ptr: JSI::JSON::Pointer[]
     )
       @jsi_document = jsi_document
       @jsi_ptr = jsi_ptr
+      @metaschema_instance_modules = metaschema_instance_modules
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
 
@@ -73,11 +78,13 @@ module JSI
 
       schema_ptrs.each do |schema_ptr|
         if schema_ptr == metaschema_root_ptr
-          extend JSI::Schema
+          metaschema_instance_modules.each do |metaschema_instance_module|
+            extend metaschema_instance_module
+          end
         end
         if schema_ptr == jsi_ptr
           extend Metaschema
-          self.jsi_schema_instance_modules = Set[JSI::Schema]
+          self.jsi_schema_instance_modules = metaschema_instance_modules
         end
       end
 
@@ -102,7 +109,7 @@ module JSI
         addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
 
         if !jsi_ptr.root? && [addtlPropsanyOf, addtlItemsanyOf].include?(jsi_ptr.parent)
-          self.jsi_schema_instance_modules = Set[JSI::Schema]
+          self.jsi_schema_instance_modules = metaschema_instance_modules
         end
       end
     end
@@ -111,6 +118,10 @@ module JSI
     attr_reader :jsi_document
     # ptr to this metaschema node. see PathedNode#jsi_ptr.
     attr_reader :jsi_ptr
+
+    # Set of modules to apply to schemas which are instances of (described by) the metaschema
+    attr_reader :metaschema_instance_modules
+
     # ptr to the root of the metaschema in the jsi_document
     attr_reader :metaschema_root_ptr
     # ptr to the schema of the root of the jsi_document
@@ -220,6 +231,7 @@ module JSI
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
+        metaschema_instance_modules: metaschema_instance_modules,
         metaschema_root_ptr: metaschema_root_ptr,
         root_schema_ptr: root_schema_ptr,
       }
