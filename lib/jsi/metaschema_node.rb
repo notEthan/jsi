@@ -4,7 +4,7 @@ module JSI
   # a MetaschemaNode is a PathedNode whose jsi_document contains a metaschema.
   # as with any PathedNode the jsi_ptr points to the content of a node.
   # the root of the metaschema is pointed to by metaschema_root_ptr.
-  # the schema of the root of the document is pointed to by root_schema_ptr.
+  # the schema describing the root of the document is pointed to by root_schema_ptr.
   #
   # like JSI::Base, this class represents an instance of a schema, an instance
   # which may itself be a schema. unlike JSI::Base, the document containing the
@@ -21,7 +21,7 @@ module JSI
   # if the MetaschemaNode's schema is its self, it will be extended with JSI::Metaschema.
   #
   # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
-  # its schema is the metaschema.
+  # the metaschema is one of its schemas.
   class MetaschemaNode
     include PathedNode
     include Util::Memoize
