@@ -59,6 +59,21 @@ module JSI
         end
       end
 
+      # @private
+      # @param modules [Set<Module>] metaschema instance modules
+      # @return [Class] a subclass of MetaschemaNode::BootstrapSchema with the given modules included
+      def bootstrap_schema_class(modules)
+        jsi_memoize(__method__, modules) do |modules|
+          Class.new(MetaschemaNode::BootstrapSchema).instance_exec(modules) do |modules|
+            define_singleton_method(:metaschema_instance_modules) { modules }
+            define_method(:metaschema_instance_modules) { modules }
+            modules.each { |mod| include(mod) }
+
+            self
+          end
+        end
+      end
+
       # a module for the given schema, with accessor methods for any object property names the schema
       # identifies (see {JSI::Schema#described_object_property_names}).
       #

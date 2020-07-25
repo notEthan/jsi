@@ -20,6 +20,9 @@ module JSI
       unless jsi_ptr.is_a?(JSI::JSON::Pointer)
         raise(TypeError, "jsi_ptr is not a JSI::JSON::Pointer: #{jsi_ptr.inspect}")
       end
+      unless respond_to?(:metaschema_instance_modules)
+        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #metaschema_instance_modules")
+      end
       @jsi_ptr = jsi_ptr
       @jsi_document = jsi_document
     end
@@ -59,6 +62,7 @@ module JSI
     def object_group_text
       [
         self.class.name || MetaschemaNode::BootstrapSchema.name,
+        "(#{metaschema_instance_modules.map(&:inspect).join(', ')})",
         jsi_ptr.uri,
       ]
     end
@@ -69,6 +73,7 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
+        metaschema_instance_modules: metaschema_instance_modules,
       }
     end
   end
