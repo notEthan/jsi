@@ -53,9 +53,9 @@ module JSI
         extend PathedArrayNode
       end
 
-      instance_for_schema = jsi_document
+      instance_for_schemas = jsi_document
       schema_ptrs = jsi_ptr.reference_tokens.inject(Set.new << root_schema_ptr) do |ptrs, tok|
-        if instance_for_schema.respond_to?(:to_ary)
+        if instance_for_schemas.respond_to?(:to_ary)
           subschema_ptrs_for_token = ptrs.map do |ptr|
             ptr.schema_subschema_ptrs_for_index(jsi_document, tok)
           end.inject(Set.new, &:|)
@@ -64,9 +64,9 @@ module JSI
             ptr.schema_subschema_ptrs_for_property_name(jsi_document, tok)
           end.inject(Set.new, &:|)
         end
-        instance_for_schema = instance_for_schema[tok]
+        instance_for_schemas = instance_for_schemas[tok]
         ptrs_for_instance = subschema_ptrs_for_token.map do |ptr|
-          ptr.schema_match_ptrs_to_instance(jsi_document, instance_for_schema)
+          ptr.schema_match_ptrs_to_instance(jsi_document, instance_for_schemas)
         end.inject(Set.new, &:|)
         ptrs_for_instance
       end
