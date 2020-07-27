@@ -40,6 +40,7 @@ module JSI
         jsi_document,
         jsi_ptr: Ptr[],
         jsi_schema_base_uri: nil,
+        jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_registry: nil
     )
       raise(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
@@ -47,7 +48,7 @@ module JSI
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
-      self.jsi_schema_resource_ancestors = Util::EMPTY_ARY
+      self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_registry = jsi_schema_registry
 
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
