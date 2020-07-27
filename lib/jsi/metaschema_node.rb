@@ -45,13 +45,19 @@ module JSI
         jsi_ptr: JSI::JSON::Pointer[],
         metaschema_instance_modules: ,
         metaschema_root_ptr: JSI::JSON::Pointer[],
-        root_schema_ptr: JSI::JSON::Pointer[]
+        root_schema_ptr: JSI::JSON::Pointer[],
+        jsi_schema_base_uri: nil
     )
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
       @metaschema_instance_modules = metaschema_instance_modules
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
+
+      if jsi_ptr.root? && jsi_schema_base_uri
+        raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
+      end
+      self.jsi_schema_base_uri = jsi_schema_base_uri
 
       jsi_node_content = self.jsi_node_content
 
@@ -66,6 +72,7 @@ module JSI
       root_bootstrap_schema = bootstrap_schema_class.new(
         jsi_document,
         jsi_ptr: root_schema_ptr,
+        jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
       )
       our_bootstrap_schemas = jsi_ptr.reference_tokens.inject(Set[root_bootstrap_schema]) do |bootstrap_schemas, tok|
         subschemas_for_token = bootstrap_schemas.map do |bootstrap_schema|
@@ -248,6 +255,7 @@ module JSI
         metaschema_instance_modules: metaschema_instance_modules,
         metaschema_root_ptr: metaschema_root_ptr,
         root_schema_ptr: root_schema_ptr,
+        jsi_schema_base_uri: jsi_schema_base_uri,
       }
     end
 
