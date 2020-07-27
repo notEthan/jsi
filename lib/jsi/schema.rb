@@ -220,6 +220,7 @@ module JSI
           self.class.new(
             jsi_document,
             jsi_ptr: jsi_ptr + subptr,
+            jsi_schema_base_uri: jsi_subschema_base_uri,
           )
         else
           subptr.evaluate(self)
@@ -245,6 +246,7 @@ module JSI
           result_schema = schema.class.new(
             schema.jsi_document,
             jsi_ptr: ptr,
+            jsi_schema_base_uri: nil,
           )
         else
           result_schema = ptr.evaluate(schema.schema_resource_root)

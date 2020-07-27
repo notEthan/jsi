@@ -33,13 +33,15 @@ module JSI
     # @param jsi_document [#to_hash, #to_ary, Boolean, Object] document containing the schema
     def initialize(
         jsi_document,
-        jsi_ptr: JSI::JSON::Pointer[]
+        jsi_ptr: JSI::JSON::Pointer[],
+        jsi_schema_base_uri: nil
     )
       unless respond_to?(:metaschema_instance_modules)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #metaschema_instance_modules")
       end
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
+      self.jsi_schema_base_uri = jsi_schema_base_uri
     end
 
     # document containing the schema content
