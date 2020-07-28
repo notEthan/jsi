@@ -34,7 +34,31 @@ module JSI
     end
 
     def jsi_schema_resource_ancestors=(jsi_schema_resource_ancestors)
-      @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
+      if jsi_schema_resource_ancestors
+        unless jsi_schema_resource_ancestors.respond_to?(:to_ary)
+          raise(TypeError, "jsi_schema_resource_ancestors must be an array; got: #{jsi_schema_resource_ancestors.inspect}")
+        end
+        # sanity check the ancestors are in order
+        last_anc_ptr = nil
+        jsi_schema_resource_ancestors.each do |anc|
+          if last_anc_ptr.nil?
+            # pass
+          elsif last_anc_ptr == anc.jsi_ptr
+            raise(Bug, "duplicate ancestors in #{jsi_schema_resource_ancestors.pretty_inspect}")
+          elsif !last_anc_ptr.contains?(anc.jsi_ptr)
+            raise(Bug, "ancestor ptr #{anc.jsi_ptr} not contained by previous: #{last_anc_ptr} in #{jsi_schema_resource_ancestors.pretty_inspect}")
+          end
+          if anc.jsi_ptr == jsi_ptr
+            raise(Bug, "ancestor is self")
+          elsif !anc.jsi_ptr.contains?(jsi_ptr)
+            raise(Bug, "ancestor does not contain self")
+          end
+        end
+
+        @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors.to_ary.freeze
+      else
+        @jsi_schema_resource_ancestors = [].freeze
+      end
     end
   end
 end
