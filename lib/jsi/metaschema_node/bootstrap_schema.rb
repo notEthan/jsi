@@ -11,6 +11,18 @@ module JSI
     include Util::Memoize
     include Util::FingerprintHash
 
+    class << self
+      def inspect
+        if self == MetaschemaNode::BootstrapSchema
+          name
+        else
+          "#{name || MetaschemaNode::BootstrapSchema.name} (#{metaschema_instance_modules.map(&:inspect).join(', ')})"
+        end
+      end
+
+      alias_method :to_s, :inspect
+    end
+
     # @param jsi_ptr [JSI::JSON::Pointer] pointer to the schema in the document
     # @param jsi_document [#to_hash, #to_ary, Boolean, Object] document containing the schema
     def initialize(
