@@ -10,6 +10,7 @@ module JSI
   class MetaschemaNode::BootstrapSchema
     include Util::Memoize
     include Util::FingerprintHash
+    include Schema::SchemaAncestorNode
 
     class << self
       def inspect

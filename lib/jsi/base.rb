@@ -13,6 +13,7 @@ module JSI
     include Util::Memoize
     include Enumerable
     include PathedNode
+    include Schema::SchemaAncestorNode
 
     # an exception raised when #[] is invoked on an instance which is not an array or hash
     class CannotSubscriptError < StandardError

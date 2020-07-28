@@ -26,6 +26,7 @@ module JSI
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
 
     include PathedNode
+    include Schema::SchemaAncestorNode
     include Util::Memoize
 
     # not every MetaschemaNode is actually an Enumerable, but it's better to include Enumerable on
