@@ -200,7 +200,14 @@ module JSI
     def resource_root_subschema(ptr)
       begin
         schema = self
-        result_schema = ptr.evaluate(schema.schema_resource_root)
+        if schema.is_a?(MetaschemaNode::BootstrapSchema)
+          result_schema = schema.class.new(
+            schema.jsi_document,
+            jsi_ptr: ptr,
+          )
+        else
+          result_schema = ptr.evaluate(schema.schema_resource_root)
+        end
         unless result_schema.is_a?(JSI::Schema)
           raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{result_schema.pretty_inspect.chomp}")
         end
