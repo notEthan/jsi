@@ -139,7 +139,13 @@ module JSI
 
     # @return [MetaschemaNode] document root MetaschemaNode
     def jsi_root_node
-      new_node(jsi_ptr: JSI::JSON::Pointer[])
+      if jsi_ptr.root?
+        self
+      else
+        new_node(
+          jsi_ptr: JSI::JSON::Pointer[],
+        )
+      end
     end
 
     # @return [MetaschemaNode] parent MetaschemaNode
