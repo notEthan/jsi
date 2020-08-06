@@ -48,6 +48,13 @@ module JSI
         end
 
         unless schema_resource_root
+          schema_resource_root = JSI::Schema.supported_metaschemas.detect do |metaschema|
+            # HAX until the schema registry
+            %w(id $id).any? { |k| metaschema.key?(k) && Addressable::URI.parse(metaschema[k]) == ref_uri_nofrag }
+          end
+        end
+
+        unless schema_resource_root
           raise(Schema::ReferenceError, [
             "cannot find schema by ref: #{ref}",
             "from schema: #{ref_schema.pretty_inspect.chomp}",
