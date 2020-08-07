@@ -47,4 +47,66 @@ describe JSI::MetaschemaNode do
       end
     end
   end
+  describe 'metaschema outside the root, document is an instance of a schema in the document' do
+    let(:jsi_document) do
+      YAML.load(<<~YAML
+        schemas:
+          JsonSchema:
+            id: JsonSchema
+            properties:
+              additionalProperties:
+                "$ref": JsonSchema
+              properties:
+                additionalProperties:
+                  "$ref": JsonSchema
+          Document:
+            id: Document
+            type: object
+            properties:
+              schemas:
+                type: object
+                additionalProperties:
+                  "$ref": JsonSchema
+        YAML
+      )
+    end
+    let(:metaschema_root_ptr) { JSI::JSON::Pointer['schemas', 'JsonSchema'] }
+    let(:root_schema_ptr) { JSI::JSON::Pointer['schemas', 'Document'] }
+    it 'acts like a metaschema' do
+      assert_is_a(root_node.schemas['Document'].jsi_schema_module, root_node)
+      assert_is_a(root_node.schemas['Document'].properties['schemas'].jsi_schema_module, root_node.schemas)
+      assert_is_a(metaschema.jsi_schema_module, root_node.schemas['Document'])
+      assert_is_a(metaschema.properties['properties'].jsi_schema_module, root_node.schemas['Document'].properties)
+      assert_is_a(metaschema.jsi_schema_module, root_node.schemas['Document'].properties['schemas'])
+
+      assert_metaschema_behaves
+    end
+  end
+  describe 'metaschema outside the root, document is a schema' do
+    let(:jsi_document) do
+      YAML.load(<<~YAML
+        $defs:
+          JsonSchema:
+            properties:
+              additionalProperties:
+                "$ref": "#/$defs/JsonSchema"
+              properties:
+                additionalProperties:
+                  "$ref": "#/$defs/JsonSchema"
+              $defs:
+                additionalProperties:
+                  "$ref": "#/$defs/JsonSchema"
+        YAML
+      )
+    end
+    let(:jsi_ptr) { JSI::JSON::Pointer[] }
+    let(:metaschema_root_ptr) { JSI::JSON::Pointer['$defs', 'JsonSchema'] }
+    let(:root_schema_ptr) { JSI::JSON::Pointer['$defs', 'JsonSchema'] }
+    it 'acts like a metaschema' do
+      assert_is_a(metaschema.jsi_schema_module, root_node)
+      assert_is_a(metaschema.properties['$defs'].jsi_schema_module, root_node['$defs'])
+
+      assert_metaschema_behaves
+    end
+  end
 end
