@@ -1,6 +1,14 @@
 require_relative 'test_helper'
 
 describe JSI::MetaschemaNode do
+  let(:root_node) do
+    JSI::MetaschemaNode.new(jsi_document,
+      metaschema_root_ptr: metaschema_root_ptr,
+      root_schema_ptr: root_schema_ptr,
+    )
+  end
+  let(:metaschema) { metaschema_root_ptr.evaluate(root_node) }
+
   describe 'basic' do
     let(:jsi_document) do
       YAML.load(<<~YAML
@@ -14,21 +22,13 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:jsi_ptr) { JSI::JSON::Pointer[] }
     let(:metaschema_root_ptr) { JSI::JSON::Pointer[] }
     let(:root_schema_ptr) { JSI::JSON::Pointer[] }
-    let(:subject) do
-      JSI::MetaschemaNode.new(jsi_document,
-        jsi_ptr: jsi_ptr,
-        metaschema_root_ptr: jsi_ptr,
-        root_schema_ptr: jsi_ptr,
-      )
-    end
     it 'acts like a metaschema' do
-      assert_is_a(subject.jsi_schema_module, subject)
-      assert_is_a(subject.properties['properties'].jsi_schema_module, subject.properties)
-      assert_is_a(subject.jsi_schema_module, subject.properties['properties'])
-      assert_is_a(subject.jsi_schema_module, subject.properties['properties'].additionalProperties)
+      assert_is_a(metaschema.jsi_schema_module, metaschema)
+      assert_is_a(metaschema.properties['properties'].jsi_schema_module, metaschema.properties)
+      assert_is_a(metaschema.jsi_schema_module, metaschema.properties['properties'])
+      assert_is_a(metaschema.jsi_schema_module, metaschema.properties['properties'].additionalProperties)
     end
   end
   describe 'json schema draft' do
