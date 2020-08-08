@@ -38,6 +38,9 @@ module JSI
         unless jsi_schema_resource_ancestors.respond_to?(:to_ary)
           raise(TypeError, "jsi_schema_resource_ancestors must be an array; got: #{jsi_schema_resource_ancestors.inspect}")
         end
+        unless jsi_schema_resource_ancestors.all? { |a| a.is_a?(Schema) }
+          raise(Schema::NotASchemaError, "jsi_schema_resource_ancestors are not all schemas")
+        end
         # sanity check the ancestors are in order
         last_anc_ptr = nil
         jsi_schema_resource_ancestors.each do |anc|
