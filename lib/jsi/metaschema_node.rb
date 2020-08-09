@@ -71,6 +71,15 @@ module JSI
         ptrs_for_instance
       end
 
+      schema_ptrs.each do |schema_ptr|
+        if schema_ptr == metaschema_root_ptr
+          extend JSI::Schema
+        end
+        if schema_ptr == jsi_ptr
+          extend Metaschema
+        end
+      end
+
       @jsi_schemas = schema_ptrs.map do |schema_ptr|
         if schema_ptr == jsi_ptr
           self
@@ -80,12 +89,6 @@ module JSI
       end.to_set
 
       @jsi_schemas.each do |schema|
-        if schema.jsi_ptr == metaschema_root_ptr
-          extend JSI::Schema
-        end
-        if schema.jsi_ptr == jsi_ptr
-          extend Metaschema
-        end
         extend schema.jsi_schema_module
       end
 
