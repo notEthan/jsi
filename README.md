@@ -244,7 +244,7 @@ Issues and pull requests are welcome on GitHub at https://github.com/notEthan/js
 
 ## License
 
-[<img align="right" src="https://github.com/notEthan/jsi/raw/master/resources/icons/AGPL-3.0.png">](https://www.gnu.org/licenses/agpl-3.0.html)
+[<img align="right" src="https://github.com/notEthan/jsi/raw/v0.3.0/resources/icons/AGPL-3.0.png">](https://www.gnu.org/licenses/agpl-3.0.html)
 
 JSI is licensed under the terms of the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
 
