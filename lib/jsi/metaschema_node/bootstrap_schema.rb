@@ -4,6 +4,11 @@ module JSI
   # @private
   # internal class to bootstrap a metaschema. represents a schema without the complexity of JSI::Base. the
   # schema is represented but schemas describing the schema are not.
+  #
+  # this class is to only be instantiated on nodes in the document that are known to be schemas.
+  # Schema#subschema and Schema#resource_root_subschema are the intended mechanisms to instantiate subschemas
+  # and resolve references. #[] and #jsi_root_node are not implemented.
+  #
   # metaschema instance modules are attached to generated subclasses of BootstrapSchema by
   # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
