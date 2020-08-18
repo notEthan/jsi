@@ -56,6 +56,7 @@ module JSI
 
     # object validation
     autoload(:REQUIRED,    'jsi/schema/elements/required')
+    autoload(:DEPENDENT_REQUIRED, 'jsi/schema/elements/dependent_required')
     autoload(:MAX_PROPERTIES, 'jsi/schema/elements/object_validation')
     autoload(:MIN_PROPERTIES, 'jsi/schema/elements/object_validation')
 
