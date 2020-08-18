@@ -15,6 +15,7 @@ module JSI
     autoload :AnyOf, 'jsi/schema/validation/someof'
     autoload :OneOf, 'jsi/schema/validation/someof'
     autoload :Not,  'jsi/schema/validation/not'
+    autoload :IfThenElse, 'jsi/schema/validation/ifthenelse'
 
     # child subschema application
     autoload :Items,    'jsi/schema/validation/items'
