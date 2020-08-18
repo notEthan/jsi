@@ -33,6 +33,7 @@ module JSI
     # in-place subschema application
     autoload(:IF_THEN_ELSE, 'jsi/schema/elements/if_then_else')
     autoload(:DEPENDENCIES, 'jsi/schema/elements/dependencies')
+    autoload(:DEPENDENT_SCHEMAS, 'jsi/schema/elements/dependent_schemas')
     autoload(:ALL_OF, 'jsi/schema/elements/some_of')
     autoload(:ANY_OF, 'jsi/schema/elements/some_of')
     autoload(:ONE_OF, 'jsi/schema/elements/some_of')
