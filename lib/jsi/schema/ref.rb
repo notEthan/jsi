@@ -28,7 +28,11 @@ module JSI
       ref_uri_nofrag = ref_uri.merge(fragment: nil)
 
       if ref_uri_nofrag.empty?
-        schema_resource_root = ref_schema.schema_resource_root
+        # the URI only consists of a fragment (or is empty).
+        # for a fragment pointer, resolve using Schema#resource_root_subschema on the ref_schema.
+        # for a fragment anchor, bootstrap does not support anchors; otherwise use the ref_schema's schema_resource_root.
+        schema_resource_root = ref_schema.is_a?(MetaschemaNode::BootstrapSchema) ? nil : ref_schema.schema_resource_root
+        resolve_fragment_ptr = ref_schema.method(:resource_root_subschema)
       else
         # find the schema_resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.
         schema_resource_root = nil
@@ -60,6 +64,14 @@ module JSI
             "from schema: #{ref_schema.pretty_inspect.chomp}",
           ].join("\n"))
         end
+
+        if schema_resource_root.is_a?(Schema)
+          resolve_fragment_ptr = schema_resource_root.method(:resource_root_subschema)
+        else
+          # Note: reinstantiate_nonschemas_as_schemas, implemented in Schema#resource_root_subschema, is not
+          # implemented for remote refs when the schema_resource_root is not a schema.
+          resolve_fragment_ptr = -> (ptr) { ptr.evaluate(schema_resource_root) }
+        end
       end
 
       fragment = ref_uri.fragment
@@ -72,7 +84,7 @@ module JSI
       end
 
       if ptr_from_fragment
-        result_schema = ptr_from_fragment.evaluate(schema_resource_root)
+        result_schema = resolve_fragment_ptr.call(ptr_from_fragment)
       elsif fragment.nil?
         result_schema = schema_resource_root
       else
