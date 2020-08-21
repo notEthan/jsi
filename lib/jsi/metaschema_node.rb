@@ -179,12 +179,9 @@ module JSI
         raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{jsi_node_content.pretty_inspect.chomp}")
       end
 
-      result = jsi_memoize(:[], token, value, token_in_range) do |token, value, token_in_range|
+      begin
         if token_in_range
-          value_node = new_node(
-            jsi_ptr: jsi_ptr[token],
-            jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
-          )
+          value_node = jsi_subinstance_memos[token]
 
           if value_node.is_a?(Schema) || value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
             value_node
@@ -196,7 +193,6 @@ module JSI
           nil
         end
       end
-      result
     end
 
     # if this MetaschemaNode is a $ref then the $ref is followed. otherwise this MetaschemaNode is returned.
@@ -268,6 +264,15 @@ module JSI
 
     def new_node(params)
       MetaschemaNode.new(jsi_document, our_initialize_params.merge(params))
+    end
+
+    def jsi_subinstance_memos
+      jsi_memomap(:subinstance) do |token|
+        new_node(
+          jsi_ptr: jsi_ptr[token],
+          jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
+        )
+      end
     end
   end
 end
