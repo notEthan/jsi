@@ -27,7 +27,7 @@ module JSI
               when 'number'
                 instance.is_a?(Numeric)
               when 'integer'
-                instance.is_a?(Integer) || (instance.is_a?(Numeric) && instance % 1.0 == 0.0)
+                internal_integer?(instance)
               else
                 result_builder.schema_error("`type` is not one of: null, boolean, object, array, string, number, or integer", 'type')
               end
