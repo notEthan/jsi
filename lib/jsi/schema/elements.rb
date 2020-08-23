@@ -40,6 +40,7 @@ module JSI
     # child subschema application
     autoload(:ITEMS, 'jsi/schema/elements/items')
     autoload(:CONTAINS, 'jsi/schema/elements/contains')
+    autoload(:CONTAINS_MINMAX, 'jsi/schema/elements/contains_minmax')
     autoload(:PROPERTIES, 'jsi/schema/elements/properties')
 
     # property names subschema application

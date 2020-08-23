@@ -2,7 +2,7 @@
 
 module JSI
   module Schema::Elements
-    CONTAINS = element_map do
+    CONTAINS_MINMAX = element_map do
       Schema::Element.new(keyword: 'contains') do |element|
         element.add_action(:subschema) do
           if keyword?('contains')
@@ -54,6 +54,6 @@ module JSI
           end
         end # element.add_action(:validate)
       end # Schema::Element.new
-    end # CONTAINS = element_map
+    end # CONTAINS_MINMAX = element_map
   end # module Schema::Elements
 end
