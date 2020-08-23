@@ -33,6 +33,13 @@ module JSI
             )
           end
         end
+      else
+        if schema_content.key?('then')
+          result_builder.schema_warning('`then` has no effect without adjacent `if` keyword', 'then')
+        end
+        if schema_content.key?('else')
+          result_builder.schema_warning('`else` has no effect without adjacent `if` keyword', 'else')
+        end
       end
     end
   end
