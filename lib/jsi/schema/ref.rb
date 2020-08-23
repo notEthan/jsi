@@ -76,13 +76,6 @@ module JSI
           end
         end
 
-        unless schema_resource_root
-          schema_resource_root = JSI::Schema.supported_metaschemas.detect do |metaschema|
-            # HAX until the schema registry
-            %w(id $id).any? { |k| metaschema.key?(k) && Addressable::URI.parse(metaschema[k]) == ref_uri_nofrag }
-          end
-        end
-
         check_schema_resource_root.call
 
         if schema_resource_root.is_a?(Schema)
