@@ -14,6 +14,25 @@ describe JSI::MetaschemaNode do
     assert_is_a(metaschema.properties['properties'].jsi_schema_module, metaschema.properties)
     assert_is_a(metaschema.jsi_schema_module, metaschema.properties['properties'])
     assert_is_a(metaschema.jsi_schema_module, metaschema.properties['properties'].additionalProperties)
+
+    schema = metaschema.new_schema({
+      'properties' => {
+        'foo' => {},
+      },
+      'additionalProperties' => {},
+    })
+    assert_is_a(metaschema.jsi_schema_module, schema)
+    assert_is_a(JSI::Schema, schema)
+    assert_is_a(metaschema.properties['properties'].jsi_schema_module, schema.properties)
+    assert_is_a(metaschema.jsi_schema_module, schema.properties['foo'])
+    assert_is_a(JSI::Schema, schema.properties['foo'])
+    assert_is_a(metaschema.jsi_schema_module, schema.additionalProperties)
+    assert_is_a(JSI::Schema, schema.additionalProperties)
+
+    instance = schema.new_jsi({'foo' => [], 'bar' => []})
+    assert_is_a(schema.jsi_schema_module, instance)
+    assert_is_a(schema.properties['foo'].jsi_schema_module, instance.foo)
+    assert_is_a(schema.additionalProperties.jsi_schema_module, instance['bar'])
   end
 
   describe 'basic' do
