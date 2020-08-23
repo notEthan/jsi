@@ -102,6 +102,26 @@ module JSI
       end
     end
 
+    # @private
+    module IntegerAllows0Fraction
+      # @private
+      # @param value
+      # @return [Boolean] is value an integer?
+      def internal_integer?(value)
+        value.is_a?(Integer) || (value.is_a?(Numeric) && value % 1.0 == 0.0)
+      end
+    end
+
+    # @private
+    module IntegerDisallows0Fraction
+      # @private
+      # @param value
+      # @return [Boolean] is value an integer?
+      def internal_integer?(value)
+        value.is_a?(Integer)
+      end
+    end
+
     # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
     # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema
     # are themselves also schemas.
