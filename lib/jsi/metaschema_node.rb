@@ -32,8 +32,8 @@ module JSI
 
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
-    # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in jsi_document
-    # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema of the root of the jsi_document
+    # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in the jsi_document
+    # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema describing the root of the jsi_document
     def initialize(jsi_document, jsi_ptr: JSI::JSON::Pointer[], metaschema_root_ptr: JSI::JSON::Pointer[], root_schema_ptr: JSI::JSON::Pointer[])
       @jsi_document = jsi_document
       @jsi_ptr = jsi_ptr
