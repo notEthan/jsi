@@ -196,7 +196,7 @@ module JSI
     # @private
     # @return [Array<String>]
     def jsi_object_group_text
-      if jsi_schemas.any?
+      if jsi_schemas && jsi_schemas.any?
         class_n_schemas = "#{self.class} (#{jsi_schemas.map { |s| s.jsi_ptr.uri }.join(' ')})"
       else
         class_n_schemas = self.class.to_s
