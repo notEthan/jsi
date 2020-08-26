@@ -110,6 +110,20 @@ describe JSI::Schema do
         })
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag'), schema.items.schema_absolute_uri)
       end
+      it 'nested schema with id with empty fragment' do
+        schema = metaschema.new_schema({
+          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_id_empty_frag_base',
+          'items' => {'id' => '#'},
+        })
+        assert_nil(schema.items.schema_absolute_uri)
+      end
+      it 'nested schema with empty id' do
+        schema = metaschema.new_schema({
+          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_empty_id_base',
+          'items' => {'id' => ''},
+        })
+        assert_nil(schema.items.schema_absolute_uri)
+      end
     end
     describe 'draft 6' do
       let(:metaschema) { JSI::JSONSchemaOrgDraft06 }
@@ -166,6 +180,20 @@ describe JSI::Schema do
           'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag#nested_anchor'},
         })
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag'), schema.items.schema_absolute_uri)
+      end
+      it 'nested schema with id with empty fragment' do
+        schema = metaschema.new_schema({
+          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_id_empty_frag_base',
+          'items' => {'$id' => '#'},
+        })
+        assert_nil(schema.items.schema_absolute_uri)
+      end
+      it 'nested schema with empty id' do
+        schema = metaschema.new_schema({
+          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_empty_id_base',
+          'items' => {'$id' => ''},
+        })
+        assert_nil(schema.items.schema_absolute_uri)
       end
     end
   end
