@@ -103,6 +103,13 @@ describe JSI::Schema do
         })
         assert_nil(schema.items.schema_absolute_uri)
       end
+      it 'nested schema with anchor id on the base after resolution' do
+        schema = metaschema.new_schema({
+          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_anchor_on_base_rel',
+          'items' => {'id' => 'nested_w_anchor_on_base_rel#nested_anchor'},
+        })
+        assert_nil(schema.items.schema_absolute_uri)
+      end
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
           'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag_base',
@@ -171,6 +178,13 @@ describe JSI::Schema do
         schema = metaschema.new_schema({
           '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_on_base',
           'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_on_base#nested_anchor'},
+        })
+        assert_nil(schema.items.schema_absolute_uri)
+      end
+      it 'nested schema with anchor id on the base after resolution' do
+        schema = metaschema.new_schema({
+          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_on_base_rel',
+          'items' => {'$id' => 'nested_w_anchor_on_base_rel#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
       end
