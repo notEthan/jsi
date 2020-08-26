@@ -128,4 +128,32 @@ describe JSI::MetaschemaNode do
       assert_metaschema_behaves
     end
   end
+  describe 'metaschema outside the root on schemas, document is a schema' do
+    let(:jsi_document) do
+      YAML.load(<<~YAML
+        schemas:
+          JsonSchema:
+            id: JsonSchema
+            properties:
+              additionalProperties:
+                "$ref": JsonSchema
+              properties:
+                additionalProperties:
+                  "$ref": JsonSchema
+              schemas:
+                additionalProperties:
+                  "$ref": JsonSchema
+        YAML
+      )
+    end
+    let(:jsi_ptr) { JSI::JSON::Pointer[] }
+    let(:metaschema_root_ptr) { JSI::JSON::Pointer['schemas', 'JsonSchema'] }
+    let(:root_schema_ptr) { JSI::JSON::Pointer['schemas', 'JsonSchema'] }
+    it 'acts like a metaschema' do
+      assert_is_a(metaschema.jsi_schema_module, root_node)
+      assert_is_a(metaschema.properties['schemas'].jsi_schema_module, root_node.schemas)
+
+      assert_metaschema_behaves
+    end
+  end
 end
