@@ -19,6 +19,21 @@ module JSI
 
     attr_reader :ref_schema
 
+    # @return [String]
+    def inspect
+      %Q(\#<#{self.class.name} #{ref}>)
+    end
+
+    # pretty-prints a representation of self to the given printer
+    # @return [void]
+    def pretty_print(q)
+      q.text '#<'
+      q.text self.class.name
+      q.text ' '
+      q.text ref
+      q.text '>'
+    end
+
     # @private
     def jsi_fingerprint
       {class: self.class, ref: ref, ref_schema: ref_schema}
