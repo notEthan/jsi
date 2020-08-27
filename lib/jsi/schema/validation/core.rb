@@ -19,6 +19,10 @@ module JSI
       result_builder = result.builder(self, instance_ptr, instance_document, validate_only, visited_refs)
 
       catch(:jsi_validation_result) do
+        # note: true/false are not valid as schemas in draft 4; they are only values of
+        # additionalProperties / additionalItems. since their behavior is undefined, though,
+        # it's fine for them to behave the same as boolean schemas in later drafts.
+        # I don't care about draft 4 to implement a different structuring for that.
         if schema_content == true
           # noop
         elsif schema_content == false
