@@ -66,7 +66,15 @@ module JSI
       @resources[uri]
     end
 
-    private
+    def dup
+      self.class.new.tap do |reg|
+        @resources.each do |uri, resource|
+          reg.register_single(uri, resource)
+        end
+      end
+    end
+
+    protected
     # @param uri [Addressable::URI]
     # @param resource [JSI::Base]
     # @return [void]
