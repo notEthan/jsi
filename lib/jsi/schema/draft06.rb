@@ -6,6 +6,7 @@ module JSI
       include Schema
       include BigMoneyId
       include IdWithAnchor
+      include IntegerAllows0Fraction
       include Schema::Application::Draft06
     end
   end
