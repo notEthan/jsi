@@ -25,6 +25,8 @@ end.call([])
 describe 'JSON Schema Test Suite' do
   describe 'validity' do
     drafts = [
+      {name: 'draft4', metaschema: JSI::JSONSchemaOrgDraft04.schema},
+      {name: 'draft6', metaschema: JSI::JSONSchemaOrgDraft06.schema},
     ]
     drafts.each do |name: , metaschema: |
       JSI::Util.ycomb do |rec|
