@@ -134,10 +134,13 @@ module JSI
         Addressable::URI.new(fragment: fragment)
       end
 
-      # @return [Boolean] whether this is a root pointer, indicated by an empty array of reference_tokens
-      def root?
+      # @return [Boolean] whether this pointer is empty, i.e. it has no reference tokens
+      def empty?
         reference_tokens.empty?
       end
+
+      # @return [Boolean] whether this is a root pointer, indicated by an empty array of reference_tokens
+      alias_method :root?, :empty?
 
       # @return [JSI::JSON::Pointer] pointer to the parent of where this pointer points
       # @raise [JSI::JSON::Pointer::ReferenceError] if this pointer has no parent (points to the root)

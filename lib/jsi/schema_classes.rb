@@ -28,9 +28,9 @@ module JSI
 
   # this module is just a namespace for schema classes.
   module SchemaClasses
-    class << self
-      include Util::Memoize
+    extend Util::Memoize
 
+    class << self
       # see {JSI.class_for_schemas}
       def class_for_schemas(schema_objects)
         schemas = schema_objects.map { |schema_object| JSI.new_schema(schema_object) }.to_set

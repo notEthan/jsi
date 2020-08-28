@@ -144,7 +144,7 @@ module JSI
 
     alias_method :to_s, :inspect
 
-    # pretty-prints a representation this node to the given printer
+    # pretty-prints a representation of this hashlike to the given printer
     # @return [void]
     def pretty_print(q)
       object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
@@ -220,7 +220,7 @@ module JSI
 
     alias_method :to_s, :inspect
 
-    # pretty-prints a representation this node to the given printer
+    # pretty-prints a representation of this arraylike to the given printer
     # @return [void]
     def pretty_print(q)
       object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
