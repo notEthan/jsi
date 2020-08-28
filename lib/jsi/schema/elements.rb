@@ -43,6 +43,7 @@ module JSI
     autoload(:CONTAINS_MINMAX, 'jsi/schema/elements/contains_minmax')
     autoload(:PROPERTIES, 'jsi/schema/elements/properties')
     autoload(:UNEVALUATED_PROPERTIES, 'jsi/schema/elements/unevaluated_properties')
+    autoload(:UNEVALUATED_ITEMS, 'jsi/schema/elements/unevaluated_items')
 
     # property names subschema application
     autoload(:PROPERTY_NAMES, 'jsi/schema/elements/property_names')
