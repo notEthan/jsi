@@ -26,6 +26,18 @@ module JSI
     end
   end
 
+  # a module to extend the JSI Schema Module of a schema which describes other schemas
+  module DescribesSchemaModule
+    # instantiates the given schema content as a JSI Schema.
+    #
+    # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
+    # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
+    #   consist of this module's schema.
+    def new_schema(schema_content, *a)
+      schema.new_schema(schema_content, *a)
+    end
+  end
+
   # this module is just a namespace for schema classes.
   module SchemaClasses
     class << self
@@ -64,6 +76,10 @@ module JSI
               include JSI::SchemaClasses.accessor_module_for_schema(schema,
                 conflicting_modules: Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode],
               )
+
+              if schema.describes_schema?
+                extend DescribesSchemaModule
+              end
 
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
