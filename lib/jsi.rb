@@ -47,8 +47,8 @@ module JSI
   #
   # @param (see JSI::Schema.new_schema)
   # @return (see JSI::Schema.new_schema)
-  def self.new_schema(schema_object)
-    JSI::Schema.new_schema(schema_object)
+  def self.new_schema(schema_object, *a)
+    JSI::Schema.new_schema(schema_object, *a)
   end
 
   # @param schemas [Enumerable<JSI::Schema, #to_hash, Boolean>] schemas to represent with the class
