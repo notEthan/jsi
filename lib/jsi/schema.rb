@@ -12,6 +12,7 @@ module JSI
   # typically a Hash (JSON object) or a boolean.
   module Schema
     autoload(:Element, 'jsi/schema/element')
+    autoload(:Vocabulary, 'jsi/schema/vocabulary')
 
     autoload :Application, 'jsi/schema/application'
     autoload :Validation, 'jsi/schema/validation'
