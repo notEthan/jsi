@@ -342,7 +342,9 @@ module JSI
             jsi_schema_base_uri: jsi_subschema_base_uri,
           )
         else
-          subptr.evaluate(self)
+          Schema.ensure_schema(subptr.evaluate(self), msg: [
+            "subschema is not a schema at pointer: #{subptr.pointer}"
+          ])
         end
       end
     end
