@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module JSI
-  schema_content = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-06/schema.json').read)
-  JSONSchemaOrgDraft06 = MetaschemaNode.new(schema_content,
+  metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-06/schema.json').read)
+  JSONSchemaOrgDraft06 = MetaschemaNode.new(metaschema_document,
     metaschema_instance_modules: [JSI::Schema::Draft06],
   ).jsi_schema_module
 
