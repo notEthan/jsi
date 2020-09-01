@@ -6,6 +6,7 @@ module JSI
 
     autoload :Draft04, 'jsi/schema/validation/draft04'
     autoload :Draft06, 'jsi/schema/validation/draft06'
+    autoload :Draft07, 'jsi/schema/validation/draft07'
 
     # ref application
     autoload :Ref, 'jsi/schema/validation/ref'
