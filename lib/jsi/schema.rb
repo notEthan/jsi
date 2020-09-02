@@ -275,25 +275,14 @@ module JSI
     # @return [Array<Addressable::URI>] URIs which refer to this schema
     def schema_uris
       jsi_memoize(:schema_uris) do
-        parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select { |node| node.is_a?(Schema) && node.id }
+        parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
+          resource.is_a?(Schema) && resource.schema_absolute_uri
+        end
 
-        schema_uris = parent_schemas.map do |parent_schema|
-          parent_auri = Addressable::URI.parse(parent_schema.id)
-
+        parent_schemas.map do |parent_schema|
           relative_ptr = self.jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
-
-          if parent_auri.fragment
-            # this is not valid (unless the fragment is empty).
-            # per the spec: "$id" MUST NOT contain a non-empty fragment, and SHOULD NOT contain an empty fragment.
-            # we could (should?) throw an error, but for the moment I'll just add onto the existing $id fragment.
-            parent_ptr = Ptr.from_fragment(parent_auri.fragment)
-            relative_ptr = parent_ptr + relative_ptr
-            parent_auri.fragment = nil
-          end
-
-          parent_auri.merge(fragment: relative_ptr.fragment)
-        end.compact
-        schema_uris
+          parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
+        end
       end
     end
 

@@ -44,13 +44,13 @@ describe JSI::Schema do
       subschema = schema['properties']['foo']
       assert_equal('https://schemas.jsi.unth.net/test/uses_pointer_in_fragment#/properties/foo', subschema.schema_id)
     end
-    it 'uses a pointer in the fragment relative to the fragment of the root' do
+    it 'uses a pointer in the fragment, ignoring a pointer in the fragment of the root id' do
       schema = JSI.new_schema({
         '$id' => 'https://schemas.jsi.unth.net/test/id_has_pointer#/notroot',
         'properties' => {'foo' => {'type' => 'object'}},
       })
       subschema = schema['properties']['foo']
-      assert_equal('https://schemas.jsi.unth.net/test/id_has_pointer#/notroot/properties/foo', subschema.schema_id)
+      assert_equal('https://schemas.jsi.unth.net/test/id_has_pointer#/properties/foo', subschema.schema_id)
     end
   end
   describe '#schema_uris' do
