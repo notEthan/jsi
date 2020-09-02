@@ -28,6 +28,7 @@ describe 'JSON Schema Test Suite' do
     drafts = [
       {name: 'draft4', metaschema: JSI::JSONSchemaOrgDraft04.schema},
       {name: 'draft6', metaschema: JSI::JSONSchemaOrgDraft06.schema},
+      {name: 'draft7', metaschema: JSI::JSONSchemaOrgDraft07.schema},
     ]
     drafts.each do |name: , metaschema: |
       JSI::Util.ycomb do |rec|
