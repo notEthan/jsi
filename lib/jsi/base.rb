@@ -296,7 +296,7 @@ module JSI
 
     # @return [Set<Module>] the set of JSI schema modules corresponding to the schemas that describe this JSI
     def jsi_schema_modules
-      jsi_schemas.map(&:jsi_schema_module).to_set
+      jsi_schemas.map(&:jsi_schema_module).to_set.freeze
     end
 
     # yields the content of the underlying instance. the block must result in
@@ -440,7 +440,7 @@ module JSI
             raise(Bug, 'jsi_subinstance_schemas_memos: not array or hash')
           end
           subschemas.map { |subschema| subschema.match_to_instance(value) }.inject(Set.new, &:|)
-        end.inject(Set.new, &:|)
+        end.inject(Set.new, &:|).freeze
       end
     end
 

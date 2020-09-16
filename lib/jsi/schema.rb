@@ -275,7 +275,7 @@ module JSI
     #   on this schema's {#jsi_schema_module}
     def jsi_schema_instance_modules
       return @jsi_schema_instance_modules if instance_variable_defined?(:@jsi_schema_instance_modules)
-      return Set[]
+      return Set[].freeze
     end
 
     # @return [void]
@@ -381,7 +381,7 @@ module JSI
           if schema_content.respond_to?(:to_hash) && schema_content['required'].respond_to?(:to_ary)
             property_names.merge(schema_content['required'].to_ary)
           end
-        end
+        end.freeze
       end
     end
 

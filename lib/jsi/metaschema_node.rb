@@ -112,7 +112,7 @@ module JSI
             jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
           )
         end
-      end.to_set
+      end.to_set.freeze
 
       @jsi_schemas.each do |schema|
         extend schema.jsi_schema_module
