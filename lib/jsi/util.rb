@@ -116,25 +116,14 @@ module JSI
         end
 
         result_mutex.synchronize do
-          if @results.key?(key)
-            existing_result = @results[key]
-
-            if inputs == existing_result.inputs
-              existing_result.value
-            else
-              store_value(key, inputs)
-            end
+          if @results.key?(key) && inputs == @results[key].inputs
+            @results[key].value
           else
-            store_value(key, inputs)
+            value = @block.call(*inputs)
+            @results[key] = Result.new(value: value, inputs: inputs)
+            value
           end
         end
-      end
-
-      private
-      def store_value(key, inputs)
-        value = @block.call(*inputs)
-        @results[key] = Result.new(value: value, inputs: inputs)
-        value
       end
     end
 
