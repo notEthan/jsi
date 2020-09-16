@@ -49,7 +49,7 @@ module JSI
     # @return [Hash] a hash in which each key is a key of the jsi_node_content hash and
     #   each value is the result of self[key] (see #[]).
     def to_hash
-      {}.tap { |h| each_key { |k| h[k] = self[k] } }
+      {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k] } }
     end
 
     include Hashlike
