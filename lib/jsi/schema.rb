@@ -207,10 +207,11 @@ module JSI
     # returns a schema in the same schema resource as this one (see #schema_resource_root) at the given
     # pointer relative to the root of the schema resource.
     #
-    # @param ptr [JSI::JSON::Pointer] a pointer to a schema from our schema resource root
+    # @param ptr [JSI::JSON::Pointer, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
       begin
+        ptr = JSI::JSON::Pointer.ary_ptr(ptr)
         schema = self
         if schema.is_a?(MetaschemaNode::BootstrapSchema)
           result_schema = schema.class.new(
