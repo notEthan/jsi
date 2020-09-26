@@ -35,14 +35,11 @@ module JSI
         jsi_document,
         jsi_ptr: JSI::JSON::Pointer[]
     )
-      unless jsi_ptr.is_a?(JSI::JSON::Pointer)
-        raise(TypeError, "jsi_ptr is not a JSI::JSON::Pointer: #{jsi_ptr.inspect}")
-      end
       unless respond_to?(:metaschema_instance_modules)
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #metaschema_instance_modules")
       end
-      @jsi_ptr = jsi_ptr
-      @jsi_document = jsi_document
+      self.jsi_ptr = jsi_ptr
+      self.jsi_document = jsi_document
     end
 
     # document containing the schema content

@@ -146,11 +146,8 @@ module JSI
       end
 
       if instance == NOINSTANCE
-        @jsi_document = jsi_document
-        unless jsi_ptr.is_a?(JSI::JSON::Pointer)
-          raise(TypeError, "jsi_ptr must be a JSI::JSON::Pointer; got: #{jsi_ptr.inspect}")
-        end
-        @jsi_ptr = jsi_ptr
+        self.jsi_document = jsi_document
+        self.jsi_ptr = jsi_ptr
         if @jsi_ptr.root?
           raise(Bug, "jsi_root_node cannot be specified for root JSI") if jsi_root_node
           @jsi_root_node = self

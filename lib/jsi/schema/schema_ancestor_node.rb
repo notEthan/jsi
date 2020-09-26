@@ -19,6 +19,17 @@ module JSI
 
     private
 
+    def jsi_document=(jsi_document)
+      @jsi_document = jsi_document
+    end
+
+    def jsi_ptr=(jsi_ptr)
+      unless jsi_ptr.is_a?(JSI::JSON::Pointer)
+        raise(TypeError, "jsi_ptr must be a JSI::JSON::Pointer; got: #{jsi_ptr.inspect}")
+      end
+      @jsi_ptr = jsi_ptr
+    end
+
     def jsi_schema_base_uri=(jsi_schema_base_uri)
       if jsi_schema_base_uri
         unless jsi_schema_base_uri.respond_to?(:to_str)
