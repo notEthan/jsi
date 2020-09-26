@@ -28,7 +28,7 @@ module JSI
     include PathedNode
     include Util::Memoize
 
-    # not every MetaschemaNode is actually an Enumerable, but it's better to include Enumerable on
+    # not every MetaschemaNode is necessarily an Enumerable, but it's better to include Enumerable on
     # the class than to conditionally extend the instance.
     include Enumerable
 
