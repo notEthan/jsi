@@ -25,4 +25,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "minitest-around"
   spec.add_development_dependency "minitest-reporters"
   spec.add_development_dependency "scorpio", "~> 0.5"
+  spec.add_development_dependency "activesupport"
 end

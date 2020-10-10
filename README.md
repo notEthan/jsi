@@ -237,7 +237,7 @@ See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize 
 
 ## Keying Hashes (JSON Objects)
 
-Unlike Ruby, JSON only supports string keys. It is recommended to use strings as hash keys for all JSI instances, but JSI does not enforce this, nor does it do any key conversion. It should be possible to use ActiveSupport::HashWithIndifferentAccess as the instance of a JSI in order to gain the benefits that offers over a plain hash. This is not tested behavior, but JSI should behave correctly with any instance that responds to #to_hash.
+Unlike Ruby, JSON only supports string keys. It is recommended to use strings as hash keys for all JSI instances, but JSI does not enforce this, nor does it do any key conversion. You may also use [ActiveSupport::HashWithIndifferentAccess](https://api.rubyonrails.org/classes/ActiveSupport/HashWithIndifferentAccess.html) as the instance of a JSI in order to gain the benefits that offers over a plain hash. Note that activesupport is not a dependency of jsi and would be required separately for this.
 
 ## Contributing
 
