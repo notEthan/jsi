@@ -64,15 +64,11 @@ module JSI
         elsif schema_object.respond_to?(:to_hash)
           schema_object = JSI.deep_stringify_symbol_keys(schema_object)
           if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
-            if schema_object['$schema'] == schema_object['$id'] || schema_object['$schema'] == schema_object['id']
-              MetaschemaNode.new(schema_object)
-            else
-              metaschema = supported_metaschemas.detect { |ms| schema_object['$schema'] == ms['$id'] || schema_object['$schema'] == ms['id'] }
-              unless metaschema
-                raise(NotImplementedError, "metaschema not supported: #{schema_object['$schema']}")
-              end
-              metaschema.new_schema(schema_object)
+            metaschema = supported_metaschemas.detect { |ms| schema_object['$schema'] == ms['$id'] || schema_object['$schema'] == ms['id'] }
+            unless metaschema
+              raise(NotImplementedError, "metaschema not supported: #{schema_object['$schema']}")
             end
+            metaschema.new_schema(schema_object)
           else
             default_metaschema.new_schema(schema_object)
           end

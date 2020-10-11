@@ -31,7 +31,7 @@ properties:
 Using that schema, we instantiate a JSI::Schema to represent it:
 
 ```ruby
-# this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
+# this would usually load YAML or JSON; it's inlined for copypastability.
 contact_schema = JSI.new_schema({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
@@ -54,7 +54,7 @@ nickname: big b
 So, if we construct an instance like:
 
 ```ruby
-# this would usually use a YAML.load/JSON.parse/whatever; it's inlined for copypastability.
+# this would usually load YAML or JSON; it's inlined for copypastability.
 bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
 # => #{<JSI (Contact)>
 #   "name" => "bill",
@@ -77,7 +77,7 @@ bill.name
 # => "bill"
 ```
 
-but also nested accessors - #phone is an instance of its array-type schema, and each phone item is an instance of another object-type schema with location and number accessors:
+but also nested accessors - `#phone` is an instance of its array-type schema, and each phone item is an instance of another object-type schema with `#location` and `#number` accessors:
 
 ```ruby
 bill.phone.map(&:location)
@@ -91,7 +91,7 @@ bill.validate
 # => true
 ```
 
-... and validations on the nested schema instances (#phone here), showing in this example validation failure:
+... and validations on the nested schema instances (`#phone` here), showing in this example validation failure:
 
 ```ruby
 bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
@@ -111,10 +111,11 @@ These validations are done by the [`json-schema` gem](https://github.com/ruby-js
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with `#[]` or, say, `#transform_values`:
 
 ```ruby
-# note that #size here is actually referring to multiple different methods; for name and nickname
-# it is String#size but for phone it is Array#size.
+# note that #size here is actually referring to multiple different methods;
+# for name and nickname it is String#size but for phone it is Array#size.
 bill.transform_values(&:size)
 # => {"name" => 4, "phone" => 1, "nickname" => 5}
+
 bill['nickname']
 # => "big b"
 ```
@@ -124,7 +125,7 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 ## Terminology and Concepts
 
 - `JSI::Base` is the base class for each JSI class representing instances of JSON Schemas.
-- a "JSI schema module" is a module which represents one schema. Instances of that schema are extended with its JSI schema module.
+- a "JSI schema module" is a module which represents one schema. Instances of that schema are extended with its JSI schema module. applications may reopen these modules to add functionality to JSI instances described by a given schema.
 - a "JSI schema class" is a subclass of `JSI::Base` representing one or more JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
@@ -236,7 +237,7 @@ See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize 
 
 ## Keying Hashes (JSON Objects)
 
-Unlike Ruby, JSON only supports string keys. It is recommended to use strings as hash keys for all JSI instances, but JSI does not enforce this, nor does it do any key conversion. It should be possible to use ActiveSupport::HashWithIndifferentAccess as the instance of a JSI in order to gain the benefits that offers over a plain hash. This is not tested behavior, but JSI should behave correctly with any instance that responds to #to_hash.
+Unlike Ruby, JSON only supports string keys. It is recommended to use strings as hash keys for all JSI instances, but JSI does not enforce this, nor does it do any key conversion. You may also use [ActiveSupport::HashWithIndifferentAccess](https://api.rubyonrails.org/classes/ActiveSupport/HashWithIndifferentAccess.html) as the instance of a JSI in order to gain the benefits that offers over a plain hash. Note that activesupport is not a dependency of jsi and would be required separately for this.
 
 ## Contributing
 
@@ -244,7 +245,7 @@ Issues and pull requests are welcome on GitHub at https://github.com/notEthan/js
 
 ## License
 
-[<img align="right" src="https://github.com/notEthan/jsi/raw/master/resources/icons/AGPL-3.0.png">](https://www.gnu.org/licenses/agpl-3.0.html)
+[<img align="right" src="https://github.com/notEthan/jsi/raw/v0.3.0/resources/icons/AGPL-3.0.png">](https://www.gnu.org/licenses/agpl-3.0.html)
 
 JSI is licensed under the terms of the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
 

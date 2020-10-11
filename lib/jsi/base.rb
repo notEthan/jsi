@@ -366,7 +366,7 @@ module JSI
       "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
-    # pretty-prints a representation this JSI to the given printer
+    # pretty-prints a representation of this JSI to the given printer
     # @return [void]
     def pretty_print(q)
       q.text '#<'

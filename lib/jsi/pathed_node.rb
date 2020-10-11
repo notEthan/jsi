@@ -49,13 +49,13 @@ module JSI
     # @return [Hash] a hash in which each key is a key of the jsi_node_content hash and
     #   each value is the result of self[key] (see #[]).
     def to_hash
-      {}.tap { |h| each_key { |k| h[k] = self[k] } }
+      {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k] } }
     end
 
     include Hashlike
 
     # @param method_name [String, Symbol]
-    # @param *a, &b are passed to the invocation of method_name
+    # @param a arguments and block are passed to the invocation of method_name
     # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_hash
     def jsi_node_content_hash_pubsend(method_name, *a, &b)
       if jsi_node_content.respond_to?(method_name)
@@ -97,7 +97,7 @@ module JSI
     include Arraylike
 
     # @param method_name [String, Symbol]
-    # @param *a, &b are passed to the invocation of method_name
+    # @param a arguments and block are passed to the invocation of method_name
     # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_ary
     def jsi_node_content_ary_pubsend(method_name, *a, &b)
       if jsi_node_content.respond_to?(method_name)

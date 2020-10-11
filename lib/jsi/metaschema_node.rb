@@ -4,7 +4,7 @@ module JSI
   # a MetaschemaNode is a PathedNode whose jsi_document contains a metaschema.
   # as with any PathedNode the jsi_ptr points to the content of a node.
   # the root of the metaschema is pointed to by metaschema_root_ptr.
-  # the schema of the root of the document is pointed to by root_schema_ptr.
+  # the schema describing the root of the document is pointed to by root_schema_ptr.
   #
   # like JSI::Base, this class represents an instance of a schema, an instance
   # which may itself be a schema. unlike JSI::Base, the document containing the
@@ -21,7 +21,7 @@ module JSI
   # if the MetaschemaNode's schema is its self, it will be extended with JSI::Metaschema.
   #
   # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
-  # its schema is the metaschema.
+  # the metaschema is one of its schemas.
   class MetaschemaNode
     include PathedNode
     include Util::Memoize
@@ -32,9 +32,14 @@ module JSI
 
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
-    # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in jsi_document
-    # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema of the root of the jsi_document
-    def initialize(jsi_document, jsi_ptr: JSI::JSON::Pointer[], metaschema_root_ptr: JSI::JSON::Pointer[], root_schema_ptr: JSI::JSON::Pointer[])
+    # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in the jsi_document
+    # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema describing the root of the jsi_document
+    def initialize(
+        jsi_document,
+        jsi_ptr: JSI::JSON::Pointer[],
+        metaschema_root_ptr: JSI::JSON::Pointer[],
+        root_schema_ptr: JSI::JSON::Pointer[]
+    )
       @jsi_document = jsi_document
       @jsi_ptr = jsi_ptr
       @metaschema_root_ptr = metaschema_root_ptr
@@ -48,9 +53,9 @@ module JSI
         extend PathedArrayNode
       end
 
-      instance_for_schema = jsi_document
+      instance_for_schemas = jsi_document
       schema_ptrs = jsi_ptr.reference_tokens.inject(Set.new << root_schema_ptr) do |ptrs, tok|
-        if instance_for_schema.respond_to?(:to_ary)
+        if instance_for_schemas.respond_to?(:to_ary)
           subschema_ptrs_for_token = ptrs.map do |ptr|
             ptr.schema_subschema_ptrs_for_index(jsi_document, tok)
           end.inject(Set.new, &:|)
@@ -59,11 +64,20 @@ module JSI
             ptr.schema_subschema_ptrs_for_property_name(jsi_document, tok)
           end.inject(Set.new, &:|)
         end
-        instance_for_schema = instance_for_schema[tok]
+        instance_for_schemas = instance_for_schemas[tok]
         ptrs_for_instance = subschema_ptrs_for_token.map do |ptr|
-          ptr.schema_match_ptrs_to_instance(jsi_document, instance_for_schema)
+          ptr.schema_match_ptrs_to_instance(jsi_document, instance_for_schemas)
         end.inject(Set.new, &:|)
         ptrs_for_instance
+      end
+
+      schema_ptrs.each do |schema_ptr|
+        if schema_ptr == metaschema_root_ptr
+          extend JSI::Schema
+        end
+        if schema_ptr == jsi_ptr
+          extend Metaschema
+        end
       end
 
       @jsi_schemas = schema_ptrs.map do |schema_ptr|
@@ -75,12 +89,6 @@ module JSI
       end.to_set
 
       @jsi_schemas.each do |schema|
-        if schema.jsi_ptr == metaschema_root_ptr
-          extend JSI::Schema
-        end
-        if schema.jsi_ptr == jsi_ptr
-          extend Metaschema
-        end
         extend schema.jsi_schema_module
       end
 
@@ -188,7 +196,7 @@ module JSI
     # @private
     # @return [Array<String>]
     def jsi_object_group_text
-      if jsi_schemas.any?
+      if jsi_schemas && jsi_schemas.any?
         class_n_schemas = "#{self.class} (#{jsi_schemas.map { |s| s.jsi_ptr.uri }.join(' ')})"
       else
         class_n_schemas = self.class.to_s
@@ -209,7 +217,11 @@ module JSI
     private
 
     def our_initialize_params
-      {jsi_ptr: jsi_ptr, metaschema_root_ptr: metaschema_root_ptr, root_schema_ptr: root_schema_ptr}
+      {
+        jsi_ptr: jsi_ptr,
+        metaschema_root_ptr: metaschema_root_ptr,
+        root_schema_ptr: root_schema_ptr,
+      }
     end
 
     def new_node(params)
