@@ -240,8 +240,13 @@ module JSI
     # @param ptr [JSI::JSON::Pointer, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-      begin
-        ptr = JSI::JSON::Pointer.ary_ptr(ptr)
+      resource_root_subschema_map[JSI::JSON::Pointer.ary_ptr(ptr)]
+    end
+
+    private
+
+    def resource_root_subschema_map
+      jsi_memomap(:resource_root_subschema_map) do |ptr|
         schema = self
         if schema.schema_resource_root?
           result_schema = schema.subschema(ptr)
@@ -264,6 +269,8 @@ module JSI
         result_schema
       end
     end
+
+    public
 
     # @return [Set] any object property names this schema indicates may be present on its instances.
     #   this includes any keys of this schema's "properties" object and any entries of this schema's
