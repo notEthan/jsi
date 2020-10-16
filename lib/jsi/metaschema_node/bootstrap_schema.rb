@@ -109,6 +109,7 @@ module JSI
         jsi_ptr: ptr,
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
+        jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map,
         jsi_schema_registry: jsi_schema_registry,
       )
     end
