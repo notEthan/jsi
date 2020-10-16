@@ -218,8 +218,13 @@ module JSI
     # @param subptr [JSI::JSON::Pointer, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
     def subschema(subptr)
-      subptr = JSI::JSON::Pointer.ary_ptr(subptr)
-      begin
+      subschema_map[JSI::JSON::Pointer.ary_ptr(subptr)]
+    end
+
+    private
+
+    def subschema_map
+      jsi_memomap(:subschema) do |subptr|
         if subptr.empty?
           self
         elsif is_a?(MetaschemaNode::BootstrapSchema)
@@ -233,6 +238,8 @@ module JSI
         end
       end
     end
+
+    public
 
     # returns a schema in the same schema resource as this one (see #schema_resource_root) at the given
     # pointer relative to the root of the schema resource.
