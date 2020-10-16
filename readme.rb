@@ -9,7 +9,29 @@ require 'jsi'
 puts "creating a schema and assigning its schema module to a constant"
 puts
 
-contact_schema = JSI::Schema.new({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
+contact_schema = JSI::Schema.new({
+  "description" => "A Contact",
+  "type" => "object",
+  "properties" => {
+    "name" => {
+      "type" => "string",
+    },
+    "phone" => {
+      "type" => "array",
+      "items" => {
+        "type" => "object",
+        "properties" => {
+          "location" => {
+            "type" => "string",
+          },
+          "number" => {
+            "type" => "string",
+          }
+        }
+      }
+    }
+  }
+})
 
 print 'contact_schema: '
 pp contact_schema
@@ -27,7 +49,16 @@ puts
 puts "creating and using an instance described by the schema"
 puts
 
-bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
+bill = Contact.new_jsi({
+  "name" => "bill",
+  "phone" => [
+    {
+      "location" => "home",
+      "number" => "555",
+    }
+  ],
+  "nickname" => "big b",
+})
 
 print 'bill: '
 pp bill
