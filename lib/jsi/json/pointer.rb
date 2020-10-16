@@ -11,6 +11,16 @@ module JSI
       class ReferenceError < Error
       end
 
+      # @param ary_ptr [#to_ary, JSI::JSON::Pointer] an array of reference tokens, or a pointer
+      # @return [JSI::JSON::Pointer] a pointer with the given reference tokens, or the given pointer
+      def self.ary_ptr(ary_ptr)
+        if ary_ptr.is_a?(Pointer)
+          ary_ptr
+        else
+          new(ary_ptr)
+        end
+      end
+
       # instantiates a Pointer from the given reference tokens.
       #
       #     JSI::JSON::Pointer[]
