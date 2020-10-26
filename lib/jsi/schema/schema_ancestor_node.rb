@@ -97,7 +97,11 @@ module JSI
       @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
     end
 
-    attr_writer(:jsi_schema_dynamic_anchor_map)
+    def jsi_schema_dynamic_anchor_map=(dynamic_anchor_map)
+      #chkbug fail if !dynamic_anchor_map.is_a?(Schema::DynamicAnchorMap)
+      #chkbug fail if !dynamic_anchor_map.frozen?
+      @jsi_schema_dynamic_anchor_map = dynamic_anchor_map
+    end
 
     attr_writer(:jsi_schema_registry)
 
