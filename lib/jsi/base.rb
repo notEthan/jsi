@@ -114,12 +114,14 @@ module JSI
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
     # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
+    # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     def initialize(jsi_document,
         jsi_ptr: Ptr[],
         jsi_indicated_schemas: ,
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
+        jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         jsi_schema_registry: ,
         jsi_content_to_immutable: ,
         jsi_root_node: nil
@@ -131,6 +133,7 @@ module JSI
       self.jsi_indicated_schemas = jsi_indicated_schemas
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
+      self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       self.jsi_schema_registry = jsi_schema_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
       if @jsi_ptr.root?
@@ -779,6 +782,8 @@ module JSI
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
         jsi_schema_base_uri: jsi_schema_base_uri,
+        # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
+        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         # different registries mean references may resolve to different resources so must not be equal
         jsi_schema_registry: jsi_schema_registry,
       }.freeze

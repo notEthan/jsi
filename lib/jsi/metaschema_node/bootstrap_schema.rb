@@ -42,6 +42,7 @@ module JSI
         jsi_ptr: Ptr[],
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
+        jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         jsi_schema_registry: nil
     )
       fail(Bug, "no #dialect") unless respond_to?(:dialect)
@@ -50,6 +51,7 @@ module JSI
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
+      self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       self.jsi_schema_registry = jsi_schema_registry
 
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
@@ -141,6 +143,7 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
+        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         jsi_schema_registry: jsi_schema_registry,
       }.freeze
     end

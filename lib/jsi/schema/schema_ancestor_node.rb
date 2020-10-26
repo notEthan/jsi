@@ -28,6 +28,10 @@ module JSI
     # @return [Array<JSI::Schema>]
     attr_reader :jsi_schema_resource_ancestors
 
+    # @return [Schema::DynamicAnchorMap]
+    # @api private
+    attr_reader(:jsi_schema_dynamic_anchor_map)
+
     # See {SchemaSet#new_jsi} param `schema_registry`
     # @return [SchemaRegistry, nil]
     attr_reader(:jsi_schema_registry)
@@ -92,6 +96,8 @@ module JSI
 
       @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
     end
+
+    attr_writer(:jsi_schema_dynamic_anchor_map)
 
     attr_writer(:jsi_schema_registry)
 
