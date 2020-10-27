@@ -13,7 +13,7 @@ module JSI
       Set.new.tap do |schemas|
         if schema_content.respond_to?(:to_hash)
           if schema_content['$ref'].respond_to?(:to_str)
-            ref = Schema::Ref.new(schema_content['$ref'], self)
+            ref = jsi_memoize(:ref) { Schema::Ref.new(schema_content['$ref'], self) }
             schemas.merge(ref.deref_schema.match_to_instance(instance))
           end
           unless ref
