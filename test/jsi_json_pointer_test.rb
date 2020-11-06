@@ -91,11 +91,31 @@ describe JSI::JSON::Pointer do
       assert_equal("Invalid pointer syntax in \"this does not begin with slash\": pointer must begin with /", err.message)
     end
   end
-  describe 'initialize' do
-    describe 'invalid reference_tokens' do
+  describe 'initialization' do
+    describe 'new with invalid reference_tokens' do
       it 'raises' do
         err = assert_raises(TypeError) { JSI::JSON::Pointer.new({}) }
         assert_equal("reference_tokens must be an array. got: {}", err.message)
+      end
+    end
+    describe '.[]' do
+      it 'initializates' do
+        assert_equal(JSI::JSON::Pointer.new(['a']), JSI::JSON::Pointer['a'])
+      end
+    end
+    describe 'ary_ptr given an ary' do
+      it 'instantiates' do
+        assert_equal(JSI::JSON::Pointer.new(['a']), JSI::JSON::Pointer.ary_ptr(['a']))
+      end
+    end
+    describe 'ary_ptr given a pointer' do
+      it 'returns it' do
+        assert_equal(JSI::JSON::Pointer.new(['a']), JSI::JSON::Pointer.ary_ptr(JSI::JSON::Pointer['a']))
+      end
+    end
+    describe 'ary_ptr given something invalid' do
+      it 'raises' do
+        assert_raises(TypeError) { JSI::JSON::Pointer.ary_ptr({'a' => 'b'}) }
       end
     end
   end
