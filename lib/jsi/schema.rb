@@ -6,6 +6,8 @@ module JSI
   # the content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
   # expected to be a Hash (JSON object) or a Boolean.
   module Schema
+    autoload :Application, 'jsi/schema/application'
+
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
 
     autoload :Draft04, 'jsi/schema/draft04'
