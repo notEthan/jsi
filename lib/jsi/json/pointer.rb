@@ -177,13 +177,17 @@ module JSI
         Pointer.new(reference_tokens[ancestor_ptr.reference_tokens.size..-1])
       end
 
-      # @param ptr [JSI::JSON::Pointer]
+      # @param ptr [JSI::JSON::Pointer, #to_ary]
       # @return [JSI::JSON::Pointer] a pointer with the reference tokens of this one plus the given ptr's.
       def +(ptr)
-        unless ptr.is_a?(JSI::JSON::Pointer)
-          raise(TypeError, "ptr must be a JSI::JSON::Pointer; got: #{ptr.inspect}")
+        if ptr.is_a?(JSI::JSON::Pointer)
+          ptr_reference_tokens = ptr.reference_tokens
+        elsif ptr.respond_to?(:to_ary)
+          ptr_reference_tokens = ptr
+        else
+          raise(TypeError, "ptr must be a JSI::JSON::Pointer or Array of reference_tokens; got: #{ptr.inspect}")
         end
-        Pointer.new(reference_tokens + ptr.reference_tokens)
+        Pointer.new(self.reference_tokens + ptr_reference_tokens)
       end
 
       # @param n [Integer]
