@@ -189,7 +189,7 @@ module JSI
 
     # see {Base#jsi_child}
     def jsi_child(token, as_jsi: )
-      child_node = root_descendent_node(jsi_ptr[token])
+      child_node = root_descendent_node(jsi_ptr[token], dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map)
 
       jsi_child_as_jsi(child_node.jsi_node_content, child_node.jsi_schemas, as_jsi) do
         child_node
