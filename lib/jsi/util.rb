@@ -84,24 +84,75 @@ module JSI
       end
     end
 
-    module Memoize
-      def jsi_memoize(key, *args_)
-        @jsi_memos ||= {}
-        @jsi_memos[key] ||= Hash.new do |h, args|
-          h[args] = yield(*args)
-        end
-        @jsi_memos[key][args_]
+    class MemoMap
+      Result = Util::AttrStruct[*%w(
+        value
+        inputs
+      )]
+
+      class Result
       end
 
-      def jsi_clear_memo(key, *args)
-        @jsi_memos ||= {}
-        if @jsi_memos[key]
-          if args.empty?
-            @jsi_memos[key].clear
+      def initialize(key_by: nil, &block)
+        @key_by = key_by
+        @block = block
+
+        # each result has its own mutex to update its memoized value thread-safely
+        @result_mutexes = {}
+        # another mutex to thread-safely initialize each result mutex
+        @result_mutexes_mutex = Mutex.new
+
+        @results = {}
+      end
+
+      def [](*inputs)
+        if @key_by
+          key = @key_by.call(*inputs)
+        else
+          key = inputs
+        end
+        result_mutex = @result_mutexes_mutex.synchronize do
+          @result_mutexes[key] ||= Mutex.new
+        end
+
+        result_mutex.synchronize do
+          if @results.key?(key) && inputs == @results[key].inputs
+            @results[key].value
           else
-            @jsi_memos[key].delete(args)
+            value = @block.call(*inputs)
+            @results[key] = Result.new(value: value, inputs: inputs)
+            value
           end
         end
+      end
+    end
+
+    module Memoize
+      def self.extended(object)
+        object.send(:jsi_initialize_memos)
+      end
+
+      private
+
+      def jsi_initialize_memos
+        @jsi_memomaps_mutex = Mutex.new
+        @jsi_memomaps = {}
+      end
+
+      # @return [Util::MemoMap]
+      def jsi_memomap(name, **options, &block)
+        unless @jsi_memomaps.key?(name)
+          @jsi_memomaps_mutex.synchronize do
+            # note: this ||= appears redundant with `unless @jsi_memomaps.key?(name)`,
+            # but that check is not thread safe. this check is.
+            @jsi_memomaps[name] ||= Util::MemoMap.new(**options, &block)
+          end
+        end
+        @jsi_memomaps[name]
+      end
+
+      def jsi_memoize(name, *inputs, &block)
+        jsi_memomap(name, &block)[*inputs]
       end
     end
 
