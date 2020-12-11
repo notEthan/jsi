@@ -4,6 +4,8 @@ module JSI
   # JSI::Util classes, modules, constants, and methods are INTERNAL and will be added and removed without warning.
   # do not rely on them.
   module Util
+    autoload :AttrStruct, 'jsi/util/attr_struct'
+
     # a proc which does nothing
     NOOP = -> (*_) { }
 
@@ -100,6 +102,25 @@ module JSI
             @jsi_memos[key].delete(args)
           end
         end
+      end
+    end
+
+    module Virtual
+      class InstantiationError < StandardError
+      end
+
+      # this virtual class is not intended to be instantiated except by its subclasses, which override #initialize
+      def initialize
+        # :nocov:
+        raise(InstantiationError, "cannot instantiate virtual class #{self.class}")
+        # :nocov:
+      end
+
+      # virtual_method is used to indicate that the method calling it must be implemented on the (non-virtual) subclass
+      def virtual_method
+        # :nocov:
+        raise(Bug, "class #{self.class} must implement #{caller_locations.first.label}")
+        # :nocov:
       end
     end
   end

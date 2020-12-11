@@ -6,7 +6,13 @@ module JSI
   # the content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
   # expected to be a Hash (JSON object) or a Boolean.
   module Schema
+    autoload :Application, 'jsi/schema/application'
+
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
+
+    autoload :Draft04, 'jsi/schema/draft04'
+    autoload :Draft06, 'jsi/schema/draft06'
+    autoload :Draft07, 'jsi/schema/draft07'
 
     class Error < StandardError
     end
@@ -231,10 +237,11 @@ module JSI
     # returns a schema in the same schema resource as this one (see #schema_resource_root) at the given
     # pointer relative to the root of the schema resource.
     #
-    # @param ptr [JSI::JSON::Pointer] a pointer to a schema from our schema resource root
+    # @param ptr [JSI::JSON::Pointer, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
       begin
+        ptr = JSI::JSON::Pointer.ary_ptr(ptr)
         schema = self
         if schema.schema_resource_root?
           result_schema = schema.subschema(ptr)
@@ -255,45 +262,6 @@ module JSI
           raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{result_schema.pretty_inspect.chomp}")
         end
         result_schema
-      end
-    end
-
-    # checks this schema for applicators ($ref, allOf, etc.) which should be applied to the given instance.
-    # returns these as a Set of {JSI::Schema}s.
-    #
-    # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
-    #
-    # @param other_instance [Object] the instance to check any applicators against
-    # @return [Set<JSI::Schema>] matched applicator schemas
-    def match_to_instance(other_instance)
-      jsi_ptr.schema_match_ptrs_to_instance(jsi_document, other_instance).map do |ptr|
-        resource_root_subschema(ptr)
-      end.to_set
-    end
-
-    # returns a set of subschemas of this schema for the given property name, from keywords
-    #   `properties`, `patternProperties`, and `additionalProperties`.
-    #
-    # @param property_name [String] the property name for which to find subschemas
-    # @return [Set<JSI::Schema>] subschemas of this schema for the given property_name
-    def subschemas_for_property_name(property_name)
-      jsi_memoize(:subschemas_for_property_name, property_name) do |property_name|
-        jsi_ptr.schema_subschema_ptrs_for_property_name(jsi_document, property_name).map do |ptr|
-          resource_root_subschema(ptr)
-        end.to_set
-      end
-    end
-
-    # returns a set of subschemas of this schema for the given array index, from keywords
-    #   `items` and `additionalItems`.
-    #
-    # @param index [Integer] the array index for which to find subschemas
-    # @return [Set<JSI::Schema>] subschemas of this schema for the given array index
-    def subschemas_for_index(index)
-      jsi_memoize(:subschemas_for_index, index) do |index|
-        jsi_ptr.schema_subschema_ptrs_for_index(jsi_document, index).map do |ptr|
-          resource_root_subschema(ptr)
-        end.to_set
       end
     end
 
