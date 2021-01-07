@@ -25,6 +25,16 @@ module JSI
     def deref_schema
       return @deref_schema if instance_variable_defined?(:@deref_schema)
 
+      schema_resource_root = nil
+      check_schema_resource_root = -> {
+        unless schema_resource_root
+          raise(Schema::ReferenceError, [
+            "cannot find schema by ref: #{ref}",
+            "from schema: #{ref_schema.pretty_inspect.chomp}",
+          ].join("\n"))
+        end
+      }
+
       ref_uri_nofrag = ref_uri.merge(fragment: nil)
 
       if ref_uri_nofrag.empty?
@@ -58,12 +68,7 @@ module JSI
           end
         end
 
-        unless schema_resource_root
-          raise(Schema::ReferenceError, [
-            "cannot find schema by ref: #{ref}",
-            "from schema: #{ref_schema.pretty_inspect.chomp}",
-          ].join("\n"))
-        end
+        check_schema_resource_root.call
 
         if schema_resource_root.is_a?(Schema)
           resolve_fragment_ptr = schema_resource_root.method(:resource_root_subschema)
@@ -86,6 +91,7 @@ module JSI
       if ptr_from_fragment
         result_schema = resolve_fragment_ptr.call(ptr_from_fragment)
       elsif fragment.nil?
+        check_schema_resource_root.call
         result_schema = schema_resource_root
       else
         # TODO find an anchor that resembles the fragment
