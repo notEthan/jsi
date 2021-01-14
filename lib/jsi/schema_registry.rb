@@ -61,7 +61,7 @@ module JSI
       end
       registered_uris = @resources.keys
       if !registered_uris.include?(uri)
-        raise(ResourceNotFound, "URI #{uri} has no registered resource. registered URIs:\n#{registered_uris.join("\n")}")
+        raise(ResourceNotFound, "URI #{uri} is not registered. registered URIs:\n#{registered_uris.join("\n")}")
       end
       @resources[uri]
     end
