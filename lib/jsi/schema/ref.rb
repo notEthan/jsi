@@ -6,7 +6,7 @@ module JSI
   class Schema::Ref
     # @param ref [String] a reference URI
     # @param ref_schema [JSI::Schema] a schema from which the reference originated
-    def initialize(ref, ref_schema)
+    def initialize(ref, ref_schema = nil)
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Addressable::URI.parse(ref)
@@ -38,6 +38,13 @@ module JSI
       ref_uri_nofrag = ref_uri.merge(fragment: nil)
 
       if ref_uri_nofrag.empty?
+        unless ref_schema
+          raise(Schema::ReferenceError, [
+            "cannot find schema by ref: #{ref}",
+            "with no ref schema",
+          ].join("\n"))
+        end
+
         # the URI only consists of a fragment (or is empty).
         # for a fragment pointer, resolve using Schema#resource_root_subschema on the ref_schema.
         # for a fragment anchor, bootstrap does not support anchors; otherwise use the ref_schema's schema_resource_root.
@@ -49,7 +56,7 @@ module JSI
 
         unless schema_resource_root
           # HAX for how google does refs and ids
-          if ref_schema.jsi_document.respond_to?(:to_hash) && ref_schema.jsi_document['schemas'].respond_to?(:to_hash)
+          if ref_schema && ref_schema.jsi_document.respond_to?(:to_hash) && ref_schema.jsi_document['schemas'].respond_to?(:to_hash)
             if ref_schema.jsi_document['schemas'][ref]
               schema_resource_root = ref_schema.resource_root_subschema(['schemas', ref])
             end
