@@ -85,3 +85,6 @@ module JSI
     @schema_registry = SchemaRegistry.new
   end
 end
+
+JSI.schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
+JSI.schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaOrgDraft06.schema }
