@@ -18,6 +18,7 @@ module JSI
 
     def initialize
       @resources = {}
+      @autoload_uris = {}
       @resources_mutex = Mutex.new
     end
 
@@ -48,12 +49,28 @@ module JSI
       nil
     end
 
+    # takes a URI identifying a schema to be loaded by the given block
+    # when a reference to the URI is followed.
+    #
+    # @param uri [Addressable::URI]
+    # @yieldreturn [JSI::Base] a document containing the schema identified by the given uri
+    # @return [void]
+    def autoload_uri(uri, &block)
+      uri = Addressable::URI.parse(uri)
+      ensure_uri_absolute(uri)
+      @autoload_uris[uri] = block
+      nil
+    end
+
     # @param uri [Addressable::URI, #to_str]
     # @return [JSI::Base]
     # @raise [JSI::SchemaRegistry::ResourceNotFound]
     def find(uri)
       uri = Addressable::URI.parse(uri)
       ensure_uri_absolute(uri)
+      if @autoload_uris.key?(uri) && !@resources.key?(uri)
+        register(@autoload_uris[uri].call)
+      end
       registered_uris = @resources.keys
       if !registered_uris.include?(uri)
         raise(ResourceNotFound, "URI #{uri} is not registered. registered URIs:\n#{registered_uris.join("\n")}")
@@ -65,6 +82,9 @@ module JSI
       self.class.new.tap do |reg|
         @resources.each do |uri, resource|
           reg.register_single(uri, resource)
+        end
+        @autoload_uris.each do |uri, autoload|
+          reg.autoload_uri(uri, &autoload)
         end
       end
     end
