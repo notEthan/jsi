@@ -56,7 +56,7 @@ module JSI
 
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
-        elsif ref_schema.jsi_subschema_base_uri && ref_schema.jsi_subschema_base_uri.absolute? # TODO the second check is redundant unless jsi_subschema_base_uri may be relative
+        elsif ref_schema && ref_schema.jsi_subschema_base_uri && ref_schema.jsi_subschema_base_uri.absolute? # TODO the last check is redundant unless jsi_subschema_base_uri may be relative
           ref_abs_uri = ref_schema.jsi_subschema_base_uri.join(ref_uri_nofrag)
         else
           ref_abs_uri = nil
