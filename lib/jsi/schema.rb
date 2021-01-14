@@ -146,14 +146,6 @@ module JSI
         JSI::JSONSchemaOrgDraft06.schema
       end
 
-      # @return [Array<JSI::Schema>] supported metaschemas
-      def supported_metaschemas
-        [
-          JSI::JSONSchemaOrgDraft04.schema,
-          JSI::JSONSchemaOrgDraft06.schema,
-        ]
-      end
-
       # instantiates a given schema object as a JSI Schema.
       #
       # schemas are instantiated according to their '$schema' property if specified. otherwise their schema
@@ -174,9 +166,9 @@ module JSI
           raise(NotASchemaError, "the given schema_object is a JSI::Base, but is not a JSI::Schema: #{schema_object.pretty_inspect.chomp}")
         elsif schema_object.respond_to?(:to_hash)
           if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
-            metaschema = supported_metaschemas.detect { |ms| schema_object['$schema'] == ms['$id'] || schema_object['$schema'] == ms['id'] }
-            unless metaschema
-              raise(NotImplementedError, "metaschema not supported: #{schema_object['$schema']}")
+            metaschema = Schema::Ref.new(schema_object['$schema']).deref_schema
+            unless metaschema.is_a?(Schema) && metaschema.describes_schema?
+              raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
             metaschema.new_schema(schema_object, base_uri: base_uri)
           else
