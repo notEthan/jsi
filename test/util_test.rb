@@ -52,4 +52,15 @@ describe JSI::Util do
       assert_equal(expected, actual)
     end
   end
+  describe 'AttrStruct' do
+    Foo = JSI::Util::AttrStruct[*%w(bar)]
+    it 'structs' do
+      foo = Foo.new(bar: 'bar')
+      assert_equal('bar', foo.bar)
+      foo.bar = 'baar'
+      assert_equal('baar', foo.bar)
+      assert_equal(foo, Foo.new(bar: 'baar'))
+      refute_equal(foo, Foo.new(bar: 'baaar'))
+    end
+  end
 end

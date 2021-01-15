@@ -30,15 +30,15 @@ module JSI
 
           Class.new(AttrStruct).tap do |klass|
             klass.define_singleton_method(:attribute_keys) { attribute_keys }
-            klass.define_method(:attribute_keys) { attribute_keys }
+            klass.send(:define_method, :attribute_keys) { attribute_keys }
             attribute_keys.each do |attribute_key|
               # reader
-              klass.define_method(attribute_key) do
+              klass.send(:define_method, attribute_key) do
                 @attributes[attribute_key]
               end
 
               # writer
-              klass.define_method("#{attribute_key}=") do |value|
+              klass.send(:define_method, "#{attribute_key}=") do |value|
                 @attributes[attribute_key] = value
               end
             end
