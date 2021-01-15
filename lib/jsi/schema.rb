@@ -161,9 +161,23 @@ module JSI
     end
 
     class << self
-      # @return [JSI::Schema] the default metaschema
+      # an application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
+      #
+      # @return [nil, #new_schema]
       def default_metaschema
-        JSI::JSONSchemaOrgDraft06.schema
+        return @default_metaschema if instance_variable_defined?(:@default_metaschema)
+        return nil
+      end
+
+      # sets an application-wide default metaschema used by {JSI.new_schema}
+      #
+      # @param default_metaschema [#new_schema] the default metaschema. this may be a metaschema or a
+      #   metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`).
+      def default_metaschema=(default_metaschema)
+        unless default_metaschema.respond_to?(:new_schema)
+          raise(TypeError, "given default_metaschema does not respond to #new_schema")
+        end
+        @default_metaschema = default_metaschema
       end
 
       # instantiates a given schema object as a JSI Schema.
