@@ -176,7 +176,7 @@ module JSI
       # @return [nil, #new_schema]
       def default_metaschema
         return @default_metaschema if instance_variable_defined?(:@default_metaschema)
-        return JSONSchemaOrgDraft07
+        return nil
       end
 
       # sets an application-wide default metaschema used by {JSI.new_schema}
