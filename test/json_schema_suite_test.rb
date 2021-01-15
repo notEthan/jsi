@@ -13,11 +13,14 @@ JSI::Util.ycomb do |rec|
       remote_content = ::JSON.parse(path.read)
       uri = File.join('http://localhost:1234/', *subpath)
       if subpath == ['subSchemas.json']
-        subSchemas_schema = JSI.new_schema({'additionalProperties' => {'$ref' => JSI::Schema.default_metaschema.id}})
+        subSchemas_schema = JSI.new_schema({
+          '$schema' => 'http://json-schema.org/draft-07/schema',
+          'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
+        })
         subSchemas = subSchemas_schema.new_jsi(remote_content, base_uri: uri)
         JSI.schema_registry.register(subSchemas)
       else
-        JSI.new_schema(remote_content, base_uri: uri)
+        JSI.new_schema(remote_content, base_uri: uri, default_metaschema: JSI::JSONSchemaOrgDraft07)
       end
     end
   end
