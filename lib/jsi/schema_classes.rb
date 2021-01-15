@@ -45,7 +45,8 @@ module JSI
     class << self
       # see {JSI.class_for_schemas}
       def class_for_schemas(schema_objects)
-        schemas = schema_objects.map { |schema_object| JSI.new_schema(schema_object) }.to_set.freeze
+        schemas = SchemaSet.new(schema_objects) { |schema_object| JSI.new_schema(schema_object) }
+
         jsi_memoize(:class_for_schemas, schemas) do |schemas|
           Class.new(Base).instance_exec(schemas) do |schemas|
             define_singleton_method(:jsi_class_schemas) { schemas }

@@ -6,10 +6,10 @@ module JSI
     #   `properties`, `patternProperties`, and `additionalProperties`.
     #
     # @param property_name [String] the property name for which to find subschemas
-    # @return [Set<JSI::Schema>] subschemas of this schema for the given property_name
+    # @return [JSI::SchemaSet] subschemas of this schema for the given property_name
     def subschemas_for_property_name(property_name)
       jsi_memoize(__method__, property_name) do |property_name|
-        Set.new.tap do |subschemas|
+        SchemaSet.build do |subschemas|
           if schema_content.respond_to?(:to_hash)
             apply_additional = true
             if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
@@ -28,7 +28,7 @@ module JSI
               subschemas << subschema(['additionalProperties'])
             end
           end
-        end.freeze
+        end
       end
     end
 
@@ -36,10 +36,10 @@ module JSI
     #   `items` and `additionalItems`.
     #
     # @param index [Integer] the array index for which to find subschemas
-    # @return [Set<JSI::Schema>] subschemas of this schema for the given array index
+    # @return [JSI::SchemaSet] subschemas of this schema for the given array index
     def subschemas_for_index(index)
       jsi_memoize(__method__, index) do |idx|
-        Set.new.tap do |subschemas|
+        SchemaSet.build do |subschemas|
           if schema_content.respond_to?(:to_hash)
             if schema_content['items'].respond_to?(:to_ary)
               if schema_content['items'].each_index.to_a.include?(idx)
@@ -51,7 +51,7 @@ module JSI
               subschemas << subschema(['items'])
             end
           end
-        end.freeze
+        end
       end
     end
   end

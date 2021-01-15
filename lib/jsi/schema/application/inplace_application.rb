@@ -8,9 +8,9 @@ module JSI
     # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
     #
     # @param instance [Object] the instance to check any applicators against
-    # @return [Set<JSI::Schema>] matched applicator schemas
+    # @return [JSI::SchemaSet] matched applicator schemas
     def match_to_instance(instance)
-      Set.new.tap do |schemas|
+      SchemaSet.build do |schemas|
         if schema_content.respond_to?(:to_hash)
           if schema_content['$ref'].respond_to?(:to_str)
             ref = Schema::Ref.new(schema_content['$ref'], self)
@@ -43,7 +43,7 @@ module JSI
         else
           schemas << self
         end
-      end.freeze
+      end
     end
   end
 end

@@ -68,18 +68,18 @@ module JSI
         jsi_ptr: root_schema_ptr,
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
       )
-      our_bootstrap_schemas = jsi_ptr.reference_tokens.inject(Set[root_bootstrap_schema]) do |bootstrap_schemas, tok|
+      our_bootstrap_schemas = jsi_ptr.reference_tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_schemas, tok|
         subschemas_for_token = bootstrap_schemas.map do |bootstrap_schema|
           if instance_for_schemas.respond_to?(:to_ary)
             bootstrap_schema.subschemas_for_index(tok)
           else
             bootstrap_schema.subschemas_for_property_name(tok)
           end
-        end.inject(Set.new, &:|)
+        end.inject(SchemaSet[], &:|)
         instance_for_schemas = instance_for_schemas[tok]
         bootstrap_schemas_for_instance = subschemas_for_token.map do |bootstrap_schema|
           bootstrap_schema.match_to_instance(instance_for_schemas)
-        end.inject(Set.new, &:|)
+        end.inject(SchemaSet[], &:|)
         bootstrap_schemas_for_instance
       end
 
@@ -95,7 +95,7 @@ module JSI
         end
       end
 
-      @jsi_schemas = our_bootstrap_schemas.map do |bootstrap_schema|
+      @jsi_schemas = SchemaSet.new(our_bootstrap_schemas) do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == jsi_ptr
           self
         else
@@ -104,7 +104,7 @@ module JSI
             jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
           )
         end
-      end.to_set.freeze
+      end
 
       @jsi_schemas.each do |schema|
         extend schema.jsi_schema_module
