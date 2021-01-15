@@ -5,7 +5,7 @@ require_relative 'test_helper'
 # the behavior described in these tests is not officially supported, but is not expected to break.
 
 describe 'unsupported behavior' do
-  let(:schema) { JSI.new_schema(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
 

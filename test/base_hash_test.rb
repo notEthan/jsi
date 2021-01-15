@@ -1,6 +1,7 @@
 require_relative 'test_helper'
 
 base = {
+  '$schema' => 'http://json-schema.org/draft-07/schema#',
   'description' => 'named hash schema',
   'type' => 'object',
   'properties' => {
@@ -25,7 +26,7 @@ describe 'JSI::Base hash' do
       },
     }
   end
-  let(:schema) { JSI.new_schema(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:subject) { schema.new_jsi(instance) }
 
   describe '#[] with a schema default that is a basic type' do
