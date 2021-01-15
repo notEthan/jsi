@@ -30,6 +30,7 @@ module JSI
   autoload :Hashlike, 'jsi/typelike_modules'
   autoload :Arraylike, 'jsi/typelike_modules'
   autoload :Schema, 'jsi/schema'
+  autoload :SchemaSet, 'jsi/schema_set'
   autoload :Base, 'jsi/base'
   autoload :Metaschema, 'jsi/metaschema'
   autoload :MetaschemaNode, 'jsi/metaschema_node'
