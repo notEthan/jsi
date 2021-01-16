@@ -40,6 +40,20 @@ module JSI
       freeze
     end
 
+    # instantiates the given instance as a JSI. its schemas are the applicators from the schemas in this
+    # SchemaSet which apply to the given instance.
+    #
+    # @param instance [Object] the JSON Schema instance to be represented as a JSI
+    # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are matched
+    #   from this set's schemas.
+    def new_jsi(instance)
+      applied_schemas = SchemaSet.build do |set|
+        each { |schema| set.merge(schema.match_to_instance(instance)) }
+      end
+
+      JSI.class_for_schemas(applied_schemas).new(instance)
+    end
+
     def inspect
       "#{self.class}[#{map(&:inspect).join(", ")}]"
     end
