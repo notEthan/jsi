@@ -52,6 +52,16 @@ module JSI
     JSI::Schema.new_schema(schema_object, *a)
   end
 
+  # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+  #
+  # see {JSI::Schema.new_schema}
+  #
+  # @param (see JSI::Schema.new_schema)
+  # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
+  def self.new_schema_module(schema_object, *a)
+    JSI::Schema.new_schema(schema_object, *a).jsi_schema_module
+  end
+
   # @param schemas [Enumerable<JSI::Schema, #to_hash, Boolean>] schemas to represent with the class
   # @return [Class subclassing JSI::Base] a JSI class which represents the given schemas.
   #   an instance of the class represents a JSON Schema instance described by all of the given schemas.
