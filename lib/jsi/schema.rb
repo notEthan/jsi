@@ -111,13 +111,19 @@ module JSI
     module DescribesSchema
       # instantiates the given schema content as a JSI Schema.
       #
-      # the schema will be registered with `JSI.schema_registry`.
+      # the schema is instantiated after recursively converting any symbol hash keys in the structure
+      # to strings. note that this is in contrast to {JSI::Schema#new_jsi}, which does not alter its
+      # given instance.
+      #
+      # the schema will be registered with the `JSI.schema_registry`.
       #
       # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   consist of this schema.
       def new_schema(schema_content, base_uri: nil)
-        new_jsi(schema_content, jsi_schema_base_uri: base_uri).tap(&:register_schema)
+        new_jsi(JSI.deep_stringify_symbol_keys(schema_content),
+          jsi_schema_base_uri: base_uri,
+        ).tap(&:register_schema)
       end
     end
 
@@ -153,7 +159,6 @@ module JSI
         elsif schema_object.is_a?(JSI::Base)
           raise(NotASchemaError, "the given schema_object is a JSI::Base, but is not a JSI::Schema: #{schema_object.pretty_inspect.chomp}")
         elsif schema_object.respond_to?(:to_hash)
-          schema_object = JSI.deep_stringify_symbol_keys(schema_object)
           if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
             metaschema = supported_metaschemas.detect { |ms| schema_object['$schema'] == ms['$id'] || schema_object['$schema'] == ms['id'] }
             unless metaschema
