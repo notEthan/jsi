@@ -69,13 +69,22 @@ module JSI
     def new_jsi(instance,
         base_uri: nil
     )
-      applied_schemas = SchemaSet.build do |set|
-        each { |schema| set.merge(schema.inplace_applicator_schemas(instance)) }
-      end
+      applied_schemas = inplace_applicator_schemas(instance)
 
       JSI::SchemaClasses.class_for_schemas(applied_schemas).new(instance,
         jsi_schema_base_uri: base_uri,
       )
+    end
+
+    # a set of inplace applicator schemas of each schema in this set which apply to the given instance.
+    # (see {Schema::Application::InplaceApplication#inplace_applicator_schemas})
+    #
+    # @param instance (see Schema::Application::InplaceApplication#inplace_applicator_schemas)
+    # @return [JSI::SchemaSet]
+    def inplace_applicator_schemas(instance)
+      SchemaSet.build do |set|
+        each { |schema| set.merge(schema.inplace_applicator_schemas(instance)) }
+      end
     end
 
     def inspect
