@@ -6,6 +6,15 @@ module JSI
   # any schema instance is described by a set of schemas.
   class SchemaSet < ::Set
     class << self
+      # builds a SchemaSet from a mutable Set which is added to by the given block
+      #
+      # @yield [Set] a Set to which the block may add schemas
+      # @return [SchemaSet]
+      def build
+        mutable_set = Set.new
+        yield mutable_set
+        new(mutable_set)
+      end
     end
 
     # initializes a SchemaSet from the given enum and freezes it.
