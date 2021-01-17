@@ -125,6 +125,16 @@ module JSI
           jsi_schema_base_uri: base_uri,
         ).tap(&:register_schema)
       end
+
+      # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+      #
+      # see {.new_schema}
+      #
+      # @param (see .new_schema)
+      # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
+      def self.new_schema_module(schema_content, *a)
+        new_schema(schema_content, *a).jsi_schema_module
+      end
     end
 
     class << self
