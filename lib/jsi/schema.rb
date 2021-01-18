@@ -154,7 +154,7 @@ module JSI
         ]
       end
 
-      # instantiates a given schema object as a JSI::Schema.
+      # instantiates a given schema object as a JSI Schema.
       #
       # schemas are instantiated according to their '$schema' property if specified. otherwise their schema
       # will be the {JSI::Schema.default_metaschema}.

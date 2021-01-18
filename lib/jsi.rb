@@ -43,7 +43,7 @@ module JSI
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
-  # instantiates a given schema object as a JSI::Schema.
+  # instantiates a given schema object as a JSI Schema.
   #
   # see {JSI::Schema.new_schema}
   #
