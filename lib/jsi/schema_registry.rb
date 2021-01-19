@@ -81,7 +81,7 @@ module JSI
     def register_single(uri, resource)
       @resources_mutex.synchronize do
         if uri.relative? || uri.fragment
-          raise(NonAbsoluteURIRegistration, "cannot register URI which is not absolute: #{id}")
+          raise(NonAbsoluteURIRegistration, "cannot register URI which is not absolute: #{uri}")
         end
         if @resources.key?(uri)
           if @resources[uri] != resource
