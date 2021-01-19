@@ -197,7 +197,7 @@ module JSI
 
     # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base #each
     # is not actually implemented, along with all the methods of Enumerable.
-    def each
+    def each(*_)
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
     end
 

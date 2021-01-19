@@ -27,22 +27,24 @@ module JSI
     #
     # returns an Enumerator if no block is given.
     #
+    # @param a arguments are passed to `#[]`
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator] returns an Enumerator if invoked without a block; otherwise self
-    def each(&block)
+    def each(*a, &block)
       return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
-        jsi_node_content_hash_pubsend(:each_key) { |k| yield k, self[k] }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield k, self[k, *a] }
       else
-        jsi_node_content_hash_pubsend(:each_key) { |k| yield [k, self[k]] }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield [k, self[k, *a]] }
       end
       self
     end
 
+    # @param a arguments are passed to `#[]`
     # @return [Hash] a hash in which each key is a key of the jsi_node_content hash and
     #   each value is the result of self[key] (see #[]).
-    def to_hash
-      {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k] } }
+    def to_hash(*a)
+      {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k, *a] } }
     end
 
     include Hashlike
@@ -73,18 +75,20 @@ module JSI
     #
     # returns an Enumerator if no block is given.
     #
+    # @param a arguments are passed to `#[]`
     # @yield [Object] each element of this array node
     # @return [self, Enumerator] returns an Enumerator if invoked without a block; otherwise self
-    def each(&block)
+    def each(*a, &block)
       return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
-      jsi_node_content_ary_pubsend(:each_index) { |i| yield(self[i]) }
+      jsi_node_content_ary_pubsend(:each_index) { |i| yield(self[i, *a]) }
       self
     end
 
+    # @param a arguments are passed to `#[]`
     # @return [Array] an array, the same size as the jsi_node_content, in which the
     #   element at each index is the result of self[index] (see #[])
-    def to_ary
-      to_a
+    def to_ary(*a)
+      to_a(*a)
     end
 
     include Arraylike
