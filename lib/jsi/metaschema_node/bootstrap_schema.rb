@@ -59,14 +59,14 @@ module JSI
 
     # @return [String]
     def inspect
-      "\#<#{object_group_text.join(' ')} #{schema_content.inspect}>"
+      "\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
     end
 
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)
       q.text '#<'
-      q.text object_group_text.join(' ')
+      q.text jsi_object_group_text.join(' ')
       q.group_sub {
         q.nest(2) {
           q.breakable ' '
@@ -79,7 +79,7 @@ module JSI
 
     # @private
     # @return [Array<String>]
-    def object_group_text
+    def jsi_object_group_text
       [
         self.class.name || MetaschemaNode::BootstrapSchema.name,
         "(#{metaschema_instance_modules.map(&:inspect).join(', ')})",
