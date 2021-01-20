@@ -258,8 +258,20 @@ module JSI
     #   is not a hash key or array index of the instance and no default value applies.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
+    # @param use_default [true, false] whether to return a schema default value when the token is not in
+    #   range. if the token is not an array index or hash key of the instance, and one schema for the child
+    #   instance specifies a default value, that default is returned.
+    #
+    #   if the result with the default value is a JSI (per the `as_jsi` param), that JSI is not a child of
+    #   this JSI - this JSI is not modified to fill in the default value. the result is a JSI within a new
+    #   document containing the filled-in default.
+    #
+    #   if the child instance's schemas do not indicate a single default value (that is, if zero or multiple
+    #   defaults are specified across those schemas), nil is returned.
+    #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
+    #   unspecified behavior.)
     # @return [JSI::Base, Object] the instance's subscript value at the given token.
-    def [](token, as_jsi: :auto)
+    def [](token, as_jsi: :auto, use_default: true)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
         value = jsi_node_content_hash_pubsend(:[], token)
@@ -278,14 +290,16 @@ module JSI
             jsi_subinstance_memos[token: token, subinstance_schemas: subinstance_schemas]
           end
         else
-          defaults = Set.new
-          subinstance_schemas.each do |subinstance_schema|
-            if subinstance_schema.respond_to?(:to_hash) && subinstance_schema.key?('default')
-              defaults << subinstance_schema['default']
+          if use_default
+            defaults = Set.new
+            subinstance_schemas.each do |subinstance_schema|
+              if subinstance_schema.respond_to?(:to_hash) && subinstance_schema.key?('default')
+                defaults << subinstance_schema['default']
+              end
             end
           end
 
-          if defaults.size == 1
+          if use_default && defaults.size == 1
             # use the default value
             # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
             dup.tap { |o| o[token] = defaults.first }[token, as_jsi: as_jsi]
