@@ -83,8 +83,8 @@ module JSI
         end
       end
 
-      # @private
       # a subclass of MetaschemaNode::BootstrapSchema with the given modules included
+      # @api private
       # @param modules [Set<Module>] metaschema instance modules
       # @return [Class]
       def bootstrap_schema_class(modules)
