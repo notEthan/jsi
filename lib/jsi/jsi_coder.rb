@@ -25,8 +25,8 @@ module JSI
   # (represented as one json object) or an array of them (represented as a json
   # array of json objects), indicated by the keyword argument `array`.
   class JSICoder
-    # @param schema [#new_jsi] a Schema, JSI schema class, or JSI schema module.
-    #   #load will instantiate column data using the JSI schemas represented.
+    # @param schema [#new_jsi] a Schema, JSI schema class, or JSI schema module. #load
+    #   will instantiate column data using the JSI schemas represented.
     # @param array [Boolean] whether the dumped data represent one instance of the schema,
     #   or an array of them. note that it may be preferable to simply use an array schema.
     def initialize(schema, array: false)
