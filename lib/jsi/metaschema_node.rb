@@ -152,10 +152,11 @@ module JSI
     end
 
     # @param token [String, Integer, Object] the token to subscript
+    # @param as_jsi (see JSI::Base#[])
     # @return [MetaschemaNode, Object] the node content's subscript value at the given token.
     #   if there is a subschema defined for that token on this MetaschemaNode's schema,
     #   returns that value as a MetaschemaNode instantiation of that subschema.
-    def [](token)
+    def [](token, as_jsi: :auto)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
         value = jsi_node_content_hash_pubsend(:[], token)
@@ -170,10 +171,8 @@ module JSI
         if token_in_range
           value_node = jsi_subinstance_memos[token]
 
-          if value_node.is_a?(Schema) || value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
+          jsi_subinstance_as_jsi(value, value_node.jsi_schemas, as_jsi) do
             value_node
-          else
-            value
           end
         else
           # I think I will not support Hash#default/#default_proc in this case.
