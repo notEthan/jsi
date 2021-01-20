@@ -151,7 +151,8 @@ module JSI
       q.text '>'
     end
 
-    # @private
+    # see {Util::Private::FingerprintHash}
+    # @api private
     def jsi_fingerprint
       {class: self.class, ref: ref, ref_schema: ref_schema}
     end

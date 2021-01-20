@@ -572,7 +572,8 @@ module JSI
       Util.as_json(jsi_instance, *opt)
     end
 
-    # an opaque fingerprint of this JSI for {Util::FingerprintHash}.
+    # see {Util::Private::FingerprintHash}
+    # @api private
     def jsi_fingerprint
       {
         class: jsi_class,

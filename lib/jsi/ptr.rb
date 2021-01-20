@@ -248,7 +248,8 @@ module JSI
 
       alias_method :to_s, :inspect
 
-      # pointers are equal if the tokens are equal
+      # see {Util::Private::FingerprintHash}
+      # @api private
       def jsi_fingerprint
         {class: Ptr, tokens: tokens}
       end

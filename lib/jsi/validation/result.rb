@@ -160,7 +160,8 @@ module JSI
         FullResult.new.merge(self).merge(result)
       end
 
-      # @private
+      # see {Util::Private::FingerprintHash}
+      # @api private
       def jsi_fingerprint
         {
           class: self.class,
@@ -198,7 +199,8 @@ module JSI
         @valid
       end
 
-      # @private
+      # see {Util::Private::FingerprintHash}
+      # @api private
       def jsi_fingerprint
         {
           class: self.class,

@@ -119,6 +119,9 @@ module JSI
       end
 
       include FingerprintHash
+
+      # see {Util::Private::FingerprintHash}
+      # @api private
       def jsi_fingerprint
         {class: self.class, attributes: @attributes}
       end
