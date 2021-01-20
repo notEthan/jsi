@@ -222,11 +222,21 @@ module JSI
     end
 
     # @param token [String, Integer, Object] the token to subscript
-    # @param as_jsi [:auto, true, false]
+    # @param as_jsi [:auto, true, false] whether to return the result value as a JSI. one of:
+    #   - :auto (default): by default a JSI will be returned when either:
+    #     - the result is a complex value (responds to #to_ary or #to_hash) and is described by some schemas
+    #     - the result is a schema (including true/false schemas)
+    #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
+    #     simple type (anything unresponsive to #to_ary / #to_hash).
+    #   - true: the result value will always be returned as a JSI. the #jsi_schemas of the result may be empty
+    #     if no schemas describe the instance.
+    #   - false: the result value will always be the plain instance.
+    #
+    #   note that nil is returned (regardless of as_jsi) when there is no value to return because the token
+    #   is not a hash key or array index of the instance and no default value applies.
+    #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
+    #   unspecified behavior.)
     # @return [JSI::Base, Object] the instance's subscript value at the given token.
-    #   if this JSI's schemas define subschemas which apply for the given token, and the value is complex,
-    #   returns the subscript value as a JSI instantiation of those subschemas. otherwise, the plain instance
-    #   value is returned.
     def [](token, as_jsi: :auto)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
