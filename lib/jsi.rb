@@ -34,6 +34,7 @@ module JSI
   autoload :Metaschema, 'jsi/metaschema'
   autoload :MetaschemaNode, 'jsi/metaschema_node'
   autoload :SchemaClasses, 'jsi/schema_classes'
+  autoload :SchemaRegistry, 'jsi/schema_registry'
   autoload :JSICoder, 'jsi/jsi_coder'
 
   autoload :JSONSchemaOrgDraft04, 'schemas/json-schema.org/draft-04/schema'
@@ -56,5 +57,13 @@ module JSI
   #   an instance of the class represents a JSON Schema instance described by all of the given schemas.
   def self.class_for_schemas(*schemas)
     SchemaClasses.class_for_schemas(*schemas)
+  end
+
+  # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.
+  #
+  # @return [JSI::SchemaRegistry]
+  def self.schema_registry
+    return @schema_registry if instance_variable_defined?(:@schema_registry)
+    @schema_registry = SchemaRegistry.new
   end
 end

@@ -5,5 +5,5 @@ module JSI
   schema_content = ::JSON.parse(File.read(::JSON::Validator.validators[schema_id].metaschema))
   JSONSchemaOrgDraft06 = MetaschemaNode.new(schema_content,
     metaschema_instance_modules: Set[JSI::Schema::Draft06],
-  ).jsi_schema_module
+  ).tap(&:register_schema).jsi_schema_module
 end
