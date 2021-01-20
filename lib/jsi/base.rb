@@ -252,20 +252,8 @@ module JSI
         subinstance_schemas = jsi_subinstance_schemas_memos[token: token, value: value]
 
         if token_in_range
-          value_as_jsi = if [true, false].include?(as_jsi)
-            as_jsi
-          elsif as_jsi == :auto
-            complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-            schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
-            complex_value || schema_value
-          else
-            raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
-          end
-
-          if value_as_jsi
+          jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi) do
             jsi_subinstance_memos[token: token, subinstance_schemas: subinstance_schemas]
-          else
-            value
           end
         else
           defaults = Set.new
@@ -465,6 +453,24 @@ module JSI
           jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
         )
+      end
+    end
+
+    def jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi)
+      value_as_jsi = if [true, false].include?(as_jsi)
+        as_jsi
+      elsif as_jsi == :auto
+        complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+        schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
+        complex_value || schema_value
+      else
+        raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
+      end
+
+      if value_as_jsi
+        yield
+      else
+        value
       end
     end
   end
