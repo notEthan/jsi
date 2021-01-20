@@ -2,6 +2,8 @@
 
 module JSI
   # JSI::Util classes, modules, constants, and methods are internal, and will be added and removed without warning.
+  #
+  # @api private
   module Util
     autoload :AttrStruct, 'jsi/util/attr_struct'
 
