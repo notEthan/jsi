@@ -537,5 +537,16 @@ describe JSI::Base do
         assert_equal('http://jsi/test/802e/4c01', act.schema_absolute_uri.to_s)
       end
     end
+    describe 'the jsi_schema_base_uri is different, but the schema_absolute_uri is unaffected' do
+      let(:schema) { JSI::JSONSchemaOrgDraft06 }
+      let(:instance) { {'$id' => 'http://jsi/test/a86e'} }
+      it 'is not equal' do
+        exp = schema.new_jsi(instance, jsi_schema_base_uri: 'http://jsi/test/802d/')
+        act = schema.new_jsi(instance, jsi_schema_base_uri: 'http://jsi/test/802e/')
+        assert_equal(exp, act)
+        assert_equal('http://jsi/test/a86e', exp.schema_absolute_uri.to_s)
+        assert_equal('http://jsi/test/a86e', act.schema_absolute_uri.to_s)
+      end
+    end
   end
 end
