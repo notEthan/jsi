@@ -43,7 +43,7 @@ describe JSI::Base do
   end
   describe 'class for schema .jsi_class_schemas' do
     it '.jsi_class_schemas' do
-      assert_equal(Set.new << schema, schema.jsi_schema_class.jsi_class_schemas)
+      assert_equal(Set[schema], schema.jsi_schema_class.jsi_class_schemas)
     end
   end
   describe 'module for schema .inspect' do
@@ -460,7 +460,7 @@ describe JSI::Base do
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
-          assert_equal(Set.new << schema, subject.jsi_schemas)
+          assert_equal(Set[schema], subject.jsi_schemas)
         end
       end
     end
