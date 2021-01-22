@@ -7,5 +7,6 @@ module JSI
 
     autoload :Draft04, 'jsi/schema/application/draft04'
     autoload :Draft06, 'jsi/schema/application/draft06'
+    autoload :Draft07, 'jsi/schema/application/draft07'
   end
 end
