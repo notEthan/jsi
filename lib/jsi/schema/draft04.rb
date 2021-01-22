@@ -6,8 +6,7 @@ module JSI
       include Schema
       include OldId
       include IdWithAnchor
-      include Schema::Application::InplaceApplication
-      include Schema::Application::ChildApplication
+      include Schema::Application::Draft04
     end
   end
 end
