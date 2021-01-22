@@ -2,6 +2,9 @@
 
 module JSI
   module Schema::Application::InplaceApplication
+    autoload :Draft04, 'jsi/schema/application/inplace_application/draft04'
+    autoload :Draft06, 'jsi/schema/application/inplace_application/draft06'
+
     # a set of inplace applicator schemas of this schema (from $ref, allOf, etc.) which apply to the
     # given instance.
     #

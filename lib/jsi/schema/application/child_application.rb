@@ -2,6 +2,9 @@
 
 module JSI
   module Schema::Application::ChildApplication
+    autoload :Draft04, 'jsi/schema/application/child_application/draft04'
+    autoload :Draft06, 'jsi/schema/application/child_application/draft06'
+
     # returns a set of subschemas of this schema for the given property name, from keywords
     #   `properties`, `patternProperties`, and `additionalProperties`.
     #
