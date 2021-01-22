@@ -122,7 +122,7 @@ module JSI
       begin # draft 4 boolean schema workaround
         # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
         # properties/additionalProperties and properties/additionalItems.
-        # we need to extend those as DescribesSchema.
+        # since these describe schemas, their jsi_schema_instance_modules are the metaschema_instance_modules.
         addtlPropsanyOf = metaschema_root_ptr["properties"]["additionalProperties"]["anyOf"]
         addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
 
