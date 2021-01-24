@@ -41,6 +41,7 @@ module JSI
           end
           # TODO dependencies
         else
+          # self is the only applicator schema if there are no keywords
           schemas << self
         end
       end
