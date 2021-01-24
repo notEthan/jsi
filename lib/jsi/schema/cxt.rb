@@ -23,6 +23,10 @@ module JSI
       end
     end
 
+    class Cxt
+      autoload(:InplaceApplication, 'jsi/schema/cxt/inplace_application')
+    end
+
     Cxt::Block = Cxt.subclass('block')
 
     # @!attribute block
