@@ -4,6 +4,23 @@ module JSI
   module Schema::Elements
     DEPENDENT_SCHEMAS = element_map do
       Schema::Element.new(keyword: 'dependentSchemas') do |element|
+        element.add_action(:inplace_applicate) do
+          #> This keyword's value MUST be an object.
+          next if !keyword_value_hash?('dependentSchemas')
+          next if !instance.respond_to?(:to_hash)
+
+          #> This keyword specifies subschemas that are evaluated if the
+          #> instance is an object and contains a certain property.
+          #
+          #> If the object key is a property in the instance, the entire instance must validate
+          #> against the subschema. Its use is dependent on the presence of the property.
+          schema_content['dependentSchemas'].each_key do |property_name|
+            if instance.key?(property_name)
+              inplace_subschema_applicate(['dependentSchemas', property_name])
+            end
+          end
+        end
+
         element.add_action(:validate) do
           #> This keyword's value MUST be an object.
           next if !keyword_value_hash?('dependentSchemas')
