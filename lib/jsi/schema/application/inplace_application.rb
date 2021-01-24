@@ -30,14 +30,7 @@ module JSI
 
       catch(:jsi_application_done) do
         if schema_content.respond_to?(:to_hash)
-          internal_applicate_ref(instance, visited_refs, throw_done: true, &block)
-
-            yield self
-
-            internal_applicate_someOf(instance, visited_refs, &block)
-
-            # TODO dependencies
-
+          internal_inplace_applicate_keywords(instance, visited_refs, &block)
         else
           # self is the only applicator schema if there are no keywords
           yield self
