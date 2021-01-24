@@ -4,8 +4,7 @@ describe JSI::MetaschemaNode do
   let(:metaschema_instance_modules) do
     [
       JSI::Schema,
-      JSI::Schema::Application::InplaceApplication,
-      JSI::Schema::Application::ChildApplication,
+      JSI::Schema::Application::Draft06,
     ]
   end
   let(:root_node) do
