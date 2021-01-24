@@ -25,17 +25,19 @@ module JSI
     def each_inplace_applicator_schema(instance, visited_refs: [], &block)
       return to_enum(__method__, instance, visited_refs: visited_refs) unless block
 
-      begin
+      catch(:jsi_application_done) do
         if schema_content.respond_to?(:to_hash)
-          ref_only = false
           if schema_content['$ref'].respond_to?(:to_str)
             ref = jsi_memoize(:ref) { Schema::Ref.new(schema_content['$ref'], self) }
             unless visited_refs.include?(ref)
-              ref_only = true
+              throw_done = true
               ref.deref_schema.each_inplace_applicator_schema(instance, visited_refs: visited_refs + [ref], &block)
+              if throw_done
+                throw(:jsi_application_done)
+              end
             end
           end
-          if !ref_only
+
             yield self
             if schema_content['allOf'].respond_to?(:to_ary)
               schema_content['allOf'].each_index do |i|
@@ -58,7 +60,7 @@ module JSI
               end
             end
             # TODO dependencies
-          end
+
         else
           # self is the only applicator schema if there are no keywords
           yield self
