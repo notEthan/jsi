@@ -119,12 +119,11 @@ describe 'JSI Schema inplace application' do
       describe 'applicators through allOf' do
         let(:schema_content) do
           YAML.load(<<~YAML
-            definitions:
-              A: {}
             allOf:
               - allOf:
                   - {}
-              - $ref: "#/definitions/A"
+              - oneOf:
+                  - {}
             YAML
           )
         end
@@ -133,21 +132,19 @@ describe 'JSI Schema inplace application' do
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].allOf[0].jsi_schema_module, subject)
-          refute_is_a(schema.allOf[1].jsi_schema_module, subject) # $ref
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
+          assert_is_a(schema.allOf[1].jsi_schema_module, subject)
+          assert_is_a(schema.allOf[1].oneOf[0].jsi_schema_module, subject)
         end
       end
       describe 'allOf failing validation' do
         let(:schema_content) do
           YAML.load(<<~YAML
-            definitions:
-              A:
-                type: integer
             allOf:
               - allOf:
                   - {type: integer}
                   - {not: {}}
-              - $ref: "#/definitions/A"
+              - oneOf:
+                - type: integer
             YAML
           )
         end
@@ -157,8 +154,8 @@ describe 'JSI Schema inplace application' do
           assert_is_a(schema.allOf[0].jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].allOf[0].jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].allOf[1].jsi_schema_module, subject)
-          refute_is_a(schema.allOf[1].jsi_schema_module, subject) # $ref
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
+          assert_is_a(schema.allOf[1].jsi_schema_module, subject)
+          refute_is_a(schema.allOf[1].oneOf[0].jsi_schema_module, subject)
         end
       end
       describe 'anyOf' do
@@ -182,14 +179,13 @@ describe 'JSI Schema inplace application' do
       describe 'applicators through anyOf' do
         let(:schema_content) do
           YAML.load(<<~YAML
-            definitions:
-              A: {}
-              B: {type: string}
             anyOf:
               - anyOf:
                   - {}
-              - $ref: "#/definitions/A"
-              - $ref: "#/definitions/B"
+              - oneOf:
+                  - {}
+              - allOf:
+                  - type: string
             YAML
           )
         end
@@ -198,23 +194,21 @@ describe 'JSI Schema inplace application' do
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.anyOf[0].jsi_schema_module, subject)
           assert_is_a(schema.anyOf[0].anyOf[0].jsi_schema_module, subject)
-          refute_is_a(schema.anyOf[1].jsi_schema_module, subject) # $ref
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
+          assert_is_a(schema.anyOf[1].jsi_schema_module, subject)
+          assert_is_a(schema.anyOf[1].oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[2].jsi_schema_module, subject)
-          refute_is_a(schema.definitions['B'].jsi_schema_module, subject)
+          refute_is_a(schema.anyOf[2].allOf[0].jsi_schema_module, subject)
         end
       end
       describe 'anyOf, all failing validation' do
         let(:schema_content) do
           YAML.load(<<~YAML
-            definitions:
-              A:
-                type: integer
             anyOf:
               - anyOf:
                   - {type: integer}
                   - {not: {}}
-              - $ref: "#/definitions/A"
+              - oneOf:
+                  - type: integer
             YAML
           )
         end
@@ -224,8 +218,8 @@ describe 'JSI Schema inplace application' do
           refute_is_a(schema.anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[0].anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[0].anyOf[1].jsi_schema_module, subject)
-          refute_is_a(schema.anyOf[1].jsi_schema_module, subject) # $ref
-          refute_is_a(schema.definitions['A'].jsi_schema_module, subject)
+          refute_is_a(schema.anyOf[1].jsi_schema_module, subject)
+          refute_is_a(schema.anyOf[1].oneOf[0].jsi_schema_module, subject)
         end
       end
       describe 'oneOf' do
@@ -249,17 +243,14 @@ describe 'JSI Schema inplace application' do
       describe 'applicators through oneOf' do
         let(:schema_content) do
           YAML.load(<<~YAML
-            definitions:
-              A:
-                oneOf:
-                  - {}
-              B: {type: string}
             oneOf:
               - oneOf:
                   - {}
                   - {}
-              - $ref: "#/definitions/A"
-              - $ref: "#/definitions/B"
+              - anyOf:
+                  - {}
+              - allOf:
+                  - type: string
             YAML
           )
         end
@@ -269,24 +260,21 @@ describe 'JSI Schema inplace application' do
           refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[1].jsi_schema_module, subject)
-          refute_is_a(schema.oneOf[1].jsi_schema_module, subject) # $ref
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
-          assert_is_a(schema.definitions['A'].oneOf[0].jsi_schema_module, subject)
+          assert_is_a(schema.oneOf[1].jsi_schema_module, subject)
+          assert_is_a(schema.oneOf[1].anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[2].jsi_schema_module, subject)
-          refute_is_a(schema.definitions['B'].jsi_schema_module, subject)
+          refute_is_a(schema.oneOf[2].allOf[0].jsi_schema_module, subject)
         end
       end
       describe 'oneOf, all failing validation' do
         let(:schema_content) do
           YAML.load(<<~YAML
-            definitions:
-              A:
-                type: integer
             oneOf:
               - oneOf:
                   - {type: integer}
                   - {not: {}}
-              - $ref: "#/definitions/A"
+              - allOf:
+                  - type: integer
             YAML
           )
         end
@@ -296,8 +284,8 @@ describe 'JSI Schema inplace application' do
           refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[1].jsi_schema_module, subject)
-          refute_is_a(schema.oneOf[1].jsi_schema_module, subject) # $ref
-          refute_is_a(schema.definitions['A'].jsi_schema_module, subject)
+          refute_is_a(schema.oneOf[1].jsi_schema_module, subject)
+          refute_is_a(schema.oneOf[1].allOf[0].jsi_schema_module, subject)
         end
       end
     end
