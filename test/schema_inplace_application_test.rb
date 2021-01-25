@@ -336,4 +336,110 @@ describe 'JSI Schema inplace application' do
       end
     end
   end
+  {
+    draft04: JSI::JSONSchemaOrgDraft04,
+    draft06: JSI::JSONSchemaOrgDraft06,
+  }.each do |name, metaschema|
+    describe "#{name} inplace dependencies application" do
+      let(:metaschema) { metaschema }
+      describe 'dependencies' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            dependencies:
+              foo: {}
+              bar: {}
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => [0], 'baz' => {}} }
+        it 'applies the ones present' do
+          assert_equal(Set[
+            schema,
+            schema.dependencies['foo'],
+          ], subject.jsi_schemas)
+          assert_is_a(schema.jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
+        end
+      end
+      describe 'applicators through dependencies' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              A:
+                dependencies:
+                  foo: {}
+                  bar: {}
+              B: {type: string}
+            dependencies:
+              foo:
+                allOf:
+                  - {}
+                  - $ref: "#/definitions/A"
+              bar:
+                $ref: "#/definitions/B"
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => [0], 'baz' => {}} }
+        it 'applies the ones present' do
+          assert_equal(Set[
+            schema,
+            schema.dependencies['foo'],
+            schema.dependencies['foo'].allOf[0],
+            schema.definitions['A'],
+            schema.definitions['A'].dependencies['foo'],
+          ], subject.jsi_schemas)
+          assert_is_a(schema.jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].allOf[0].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['foo'].allOf[1].jsi_schema_module, subject) # $ref
+          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
+          assert_is_a(schema.definitions['A'].dependencies['foo'].jsi_schema_module, subject)
+          refute_is_a(schema.definitions['A'].dependencies['bar'].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
+          refute_is_a(schema.definitions['B'].jsi_schema_module, subject)
+        end
+      end
+      describe 'dependencies, all failing validation' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              A:
+                dependencies:
+                  foo: {not: {}}
+                  bar: {}
+              B: {type: string}
+            dependencies:
+              foo:
+                allOf:
+                  - {type: integer}
+                  - $ref: "#/definitions/A"
+              bar:
+                $ref: "#/definitions/B"
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => [0], 'baz' => {}} }
+        it 'applies the ones present (regardless of validation)' do
+          assert_equal(Set[
+            schema,
+            schema.dependencies['foo'],
+            schema.dependencies['foo'].allOf[0],
+            schema.definitions['A'],
+            schema.definitions['A'].dependencies['foo'],
+          ], subject.jsi_schemas)
+          assert_is_a(schema.jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].allOf[0].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['foo'].allOf[1].jsi_schema_module, subject) # $ref
+          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
+          assert_is_a(schema.definitions['A'].dependencies['foo'].jsi_schema_module, subject)
+          refute_is_a(schema.definitions['A'].dependencies['bar'].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
+          refute_is_a(schema.definitions['B'].jsi_schema_module, subject)
+        end
+      end
+    end
+  end
 end
