@@ -4,4 +4,8 @@ cache: bundler
 rvm:
   - 2.3
   - 2.7
+  - 3.0
+  - jruby
+  - truffleruby
+  - rbx-4
 script: bundle exec rake test
