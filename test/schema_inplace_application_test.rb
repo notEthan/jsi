@@ -365,19 +365,16 @@ describe 'JSI Schema inplace application' do
       describe 'applicators through dependencies' do
         let(:schema_content) do
           YAML.load(<<~YAML
-            definitions:
-              A:
-                dependencies:
-                  foo: {}
-                  bar: {}
-              B: {type: string}
             dependencies:
               foo:
                 allOf:
                   - {}
-                  - $ref: "#/definitions/A"
+                  - dependencies:
+                      foo: {}
+                      bar: {}
               bar:
-                $ref: "#/definitions/B"
+                oneOf:
+                  - type: string
             YAML
           )
         end
@@ -387,36 +384,32 @@ describe 'JSI Schema inplace application' do
             schema,
             schema.dependencies['foo'],
             schema.dependencies['foo'].allOf[0],
-            schema.definitions['A'],
-            schema.definitions['A'].dependencies['foo'],
+            schema.dependencies['foo'].allOf[1],
+            schema.dependencies['foo'].allOf[1].dependencies['foo']
           ], subject.jsi_schemas)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].allOf[0].jsi_schema_module, subject)
-          refute_is_a(schema.dependencies['foo'].allOf[1].jsi_schema_module, subject) # $ref
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
-          assert_is_a(schema.definitions['A'].dependencies['foo'].jsi_schema_module, subject)
-          refute_is_a(schema.definitions['A'].dependencies['bar'].jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].allOf[1].jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].allOf[1].dependencies['foo'].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['foo'].allOf[1].dependencies['bar'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
-          refute_is_a(schema.definitions['B'].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['bar'].oneOf[0].jsi_schema_module, subject)
         end
       end
       describe 'dependencies, all failing validation' do
         let(:schema_content) do
           YAML.load(<<~YAML
-            definitions:
-              A:
-                dependencies:
-                  foo: {not: {}}
-                  bar: {}
-              B: {type: string}
             dependencies:
               foo:
                 allOf:
-                  - {type: integer}
-                  - $ref: "#/definitions/A"
+                  - {not: {}}
+                  - dependencies:
+                      foo: {not: {}}
+                      bar: {}
               bar:
-                $ref: "#/definitions/B"
+                oneOf:
+                  - type: string
             YAML
           )
         end
@@ -426,18 +419,17 @@ describe 'JSI Schema inplace application' do
             schema,
             schema.dependencies['foo'],
             schema.dependencies['foo'].allOf[0],
-            schema.definitions['A'],
-            schema.definitions['A'].dependencies['foo'],
+            schema.dependencies['foo'].allOf[1],
+            schema.dependencies['foo'].allOf[1].dependencies['foo']
           ], subject.jsi_schemas)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].allOf[0].jsi_schema_module, subject)
-          refute_is_a(schema.dependencies['foo'].allOf[1].jsi_schema_module, subject) # $ref
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
-          assert_is_a(schema.definitions['A'].dependencies['foo'].jsi_schema_module, subject)
-          refute_is_a(schema.definitions['A'].dependencies['bar'].jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].allOf[1].jsi_schema_module, subject)
+          assert_is_a(schema.dependencies['foo'].allOf[1].dependencies['foo'].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['foo'].allOf[1].dependencies['bar'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
-          refute_is_a(schema.definitions['B'].jsi_schema_module, subject)
+          refute_is_a(schema.dependencies['bar'].oneOf[0].jsi_schema_module, subject)
         end
       end
     end
