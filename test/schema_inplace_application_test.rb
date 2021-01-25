@@ -437,4 +437,137 @@ describe 'JSI Schema inplace application' do
       end
     end
   end
+  {
+    draft07: JSI::JSONSchemaOrgDraft07,
+  }.each do |name, metaschema|
+    describe "#{name} inplace if/then/else application" do
+      let(:metaschema) { metaschema }
+      describe 'if/then' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            if: {}
+            then: {}
+            else: {}
+            YAML
+          )
+        end
+        let(:instance) { {} }
+        it 'applies then' do
+          assert_equal(Set[
+            schema,
+            schema['then'],
+          ], subject.jsi_schemas)
+          assert_is_a(schema.jsi_schema_module, subject)
+          refute_is_a(schema['if'].jsi_schema_module, subject)
+          assert_is_a(schema['then'].jsi_schema_module, subject)
+          refute_is_a(schema['else'].jsi_schema_module, subject)
+        end
+      end
+      describe 'if/else' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            if: {not: {}}
+            then: {}
+            else: {}
+            YAML
+          )
+        end
+        let(:instance) { {} }
+        it 'applies else' do
+          assert_equal(Set[
+            schema,
+            schema['else'],
+          ], subject.jsi_schemas)
+          assert_is_a(schema.jsi_schema_module, subject)
+          refute_is_a(schema['if'].jsi_schema_module, subject)
+          refute_is_a(schema['then'].jsi_schema_module, subject)
+          assert_is_a(schema['else'].jsi_schema_module, subject)
+        end
+      end
+      describe 'applicators through if/then' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            if:
+              oneOf:
+                - true
+            then:
+              allOf:
+                - oneOf:
+                    - {}
+                - false
+            else:
+              anyOf:
+                - {}
+            YAML
+          )
+        end
+        let(:instance) { {} }
+        it 'applies then' do
+          assert_equal(Set[
+            schema,
+            schema['then'],
+            schema['then'].allOf[0],
+            schema['then'].allOf[0].oneOf[0],
+            schema['then'].allOf[1],
+          ], subject.jsi_schemas)
+          assert_is_a(schema.jsi_schema_module, subject)
+          refute_is_a(schema['if'].jsi_schema_module, subject)
+          refute_is_a(schema['if'].oneOf[0].jsi_schema_module, subject)
+          assert_is_a(schema['then'].jsi_schema_module, subject)
+          assert_is_a(schema['then'].allOf[0].jsi_schema_module, subject)
+          assert_is_a(schema['then'].allOf[0].oneOf[0].jsi_schema_module, subject)
+          assert_is_a(schema['then'].allOf[1].jsi_schema_module, subject)
+          refute_is_a(schema['else'].jsi_schema_module, subject)
+          refute_is_a(schema['else'].anyOf[0].jsi_schema_module, subject)
+        end
+      end
+      describe 'applicators through if/else' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            if: false
+            then: whatever
+            else:
+              if: false
+              else: false
+            YAML
+          )
+        end
+        let(:instance) { {} }
+        it 'applies else' do
+          assert_equal(Set[
+            schema,
+            schema['else'],
+            schema['else']['else'],
+          ], subject.jsi_schemas)
+          assert_is_a(schema.jsi_schema_module, subject)
+          refute_is_a(schema['if'].jsi_schema_module, subject)
+          refute_is_a(schema['then'].jsi_schema_module, subject)
+          assert_is_a(schema['else'].jsi_schema_module, subject)
+          refute_is_a(schema['else']['if'].jsi_schema_module, subject)
+          assert_is_a(schema['else']['else'].jsi_schema_module, subject)
+        end
+      end
+      describe 'if/then, failing validation' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            if: true
+            then: false
+            else: false
+            YAML
+          )
+        end
+        let(:instance) { {} }
+        it 'applies then' do
+          assert_equal(Set[
+            schema,
+            schema['then'],
+          ], subject.jsi_schemas)
+          assert_is_a(schema.jsi_schema_module, subject)
+          refute_is_a(schema['if'].jsi_schema_module, subject)
+          assert_is_a(schema['then'].jsi_schema_module, subject)
+          refute_is_a(schema['else'].jsi_schema_module, subject)
+        end
+      end
+    end
+  end
 end
