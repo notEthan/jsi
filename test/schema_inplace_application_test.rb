@@ -20,6 +20,9 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies $ref, excludes the schema containing $ref' do
+          assert_equal(Set[
+            schema.definitions['A'],
+          ], subject.jsi_schemas)
           refute_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
         end
@@ -38,6 +41,9 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies final $ref' do
+          assert_equal(Set[
+            schema.definitions['B'],
+          ], subject.jsi_schemas)
           refute_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.definitions['A'].jsi_schema_module, subject)
           assert_is_a(schema.definitions['B'].jsi_schema_module, subject)
@@ -56,6 +62,9 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'ignores' do
+          assert_equal(Set[
+            schema.definitions['A'],
+          ], subject.jsi_schemas)
           refute_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
           refute_is_a(schema.allOf[0].jsi_schema_module, subject)
@@ -74,6 +83,10 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies' do
+          assert_equal(Set[
+            schema.definitions['A'],
+            schema.definitions['A'].allOf[0],
+          ], subject.jsi_schemas)
           refute_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
           assert_is_a(schema.definitions['A'].allOf[0].jsi_schema_module, subject)
