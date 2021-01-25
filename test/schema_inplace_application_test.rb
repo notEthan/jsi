@@ -6,6 +6,7 @@ describe 'JSI Schema inplace application' do
   {
     draft04: JSI::JSONSchemaOrgDraft04,
     draft06: JSI::JSONSchemaOrgDraft06,
+    draft07: JSI::JSONSchemaOrgDraft07,
   }.each do |name, metaschema|
     describe "#{name} inplace $ref application" do
       let(:metaschema) { metaschema }
@@ -97,6 +98,7 @@ describe 'JSI Schema inplace application' do
   {
     draft04: JSI::JSONSchemaOrgDraft04,
     draft06: JSI::JSONSchemaOrgDraft06,
+    draft07: JSI::JSONSchemaOrgDraft07,
   }.each do |name, metaschema|
     describe "#{name} inplace allOf, anyOf, oneOf application" do
       let(:metaschema) { metaschema }
@@ -339,6 +341,7 @@ describe 'JSI Schema inplace application' do
   {
     draft04: JSI::JSONSchemaOrgDraft04,
     draft06: JSI::JSONSchemaOrgDraft06,
+    draft07: JSI::JSONSchemaOrgDraft07,
   }.each do |name, metaschema|
     describe "#{name} inplace dependencies application" do
       let(:metaschema) { metaschema }
