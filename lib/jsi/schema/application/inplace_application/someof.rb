@@ -10,18 +10,31 @@ module JSI
         end
       end
       if keyword?('anyOf') && schema_content['anyOf'].respond_to?(:to_ary)
-        schema_content['anyOf'].each_index do |i|
-          if subschema(['anyOf', i]).instance_valid?(instance)
-            subschema(['anyOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
-          end
+        anyOf = schema_content['anyOf'].each_index.map { |i| subschema(['anyOf', i]) }
+        validOf = anyOf.select { |schema| schema.instance_valid?(instance) }
+        if !validOf.empty?
+          applicators = validOf
+        else
+          # invalid application: if none of the anyOf were valid, we apply them all
+          applicators = anyOf
+        end
+
+        applicators.each do |applicator|
+          applicator.each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
         end
       end
       if keyword?('oneOf') && schema_content['oneOf'].respond_to?(:to_ary)
-        one_i = schema_content['oneOf'].each_index.detect do |i|
-          subschema(['oneOf', i]).instance_valid?(instance)
+        oneOf = schema_content['oneOf'].each_index.map { |i| subschema(['oneOf', i]) }
+        validOf = oneOf.select { |schema| schema.instance_valid?(instance) }
+        if validOf.size == 1
+          applicators = validOf
+        else
+          # invalid application: if none or multiple of the oneOf were valid, we apply them all
+          applicators = oneOf
         end
-        if one_i
-          subschema(['oneOf', one_i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+
+        applicators.each do |applicator|
+          applicator.each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
         end
       end
     end

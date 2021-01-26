@@ -52,8 +52,8 @@ describe JSI::Base do
 
       subject.ab = {'type' => 'c'}
       refute(subject.jsi_valid?)
-      refute_schema(schema.definitions['a'], subject.ab)
-      refute_schema(schema.definitions['b'], subject.ab)
+      assert_schema(schema.definitions['a'], subject.ab)
+      assert_schema(schema.definitions['b'], subject.ab)
     end
   end
 
