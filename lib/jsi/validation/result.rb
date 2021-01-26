@@ -13,6 +13,8 @@ module JSI
         virtual_method
         # :nocov:
       end
+
+      include Util::FingerprintHash
     end
 
     # a full result of validating an instance against its schemas, with each validation error
@@ -36,6 +38,15 @@ module JSI
         @schema_issues.freeze
         super
       end
+
+      # @api private
+      def jsi_fingerprint
+        {
+          class: self.class,
+          validation_errors: validation_errors,
+          schema_issues: schema_issues,
+        }
+      end
     end
 
     # a result indicating only whether an instance is valid against its schemas
@@ -46,6 +57,14 @@ module JSI
 
       def valid?
         @valid
+      end
+
+      # @api private
+      def jsi_fingerprint
+        {
+          class: self.class,
+          valid: valid?,
+        }
       end
     end
   end
