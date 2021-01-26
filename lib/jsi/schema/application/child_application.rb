@@ -13,42 +13,54 @@ module JSI
     # @return [JSI::SchemaSet] child application subschemas of this schema for the given token
     #   of the instance
     def child_applicator_schemas(token, instance)
-        SchemaSet.build do |subschemas|
+      SchemaSet.new(each_child_applicator_schema(token, instance))
+    end
+
+    # yields each child applicator subschema (from properties, items, etc.) which applies to the child of
+    # the given instance on the given token.
+    #
+    # @param (see #child_applicator_schemas)
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    def each_child_applicator_schema(token, instance, &block)
+      return to_enum(__method__, token, instance) unless block
+
           if schema_content.respond_to?(:to_hash)
 
           if instance.respond_to?(:to_hash)
             apply_additional = true
             if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(token)
               apply_additional = false
-              subschemas << subschema(['properties', token])
+              yield subschema(['properties', token])
             end
             if schema_content['patternProperties'].respond_to?(:to_hash)
               schema_content['patternProperties'].each_key do |pattern|
                 if token.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
                   apply_additional = false
-                  subschemas << subschema(['patternProperties', pattern])
+                  yield subschema(['patternProperties', pattern])
                 end
               end
             end
             if apply_additional && schema_content.key?('additionalProperties')
-              subschemas << subschema(['additionalProperties'])
+              yield subschema(['additionalProperties'])
             end
           end
 
           if instance.respond_to?(:to_ary)
             if schema_content['items'].respond_to?(:to_ary)
               if schema_content['items'].each_index.to_a.include?(token)
-                subschemas << subschema(['items', token])
+                yield subschema(['items', token])
               elsif schema_content.key?('additionalItems')
-                subschemas << subschema(['additionalItems'])
+                yield subschema(['additionalItems'])
               end
             elsif schema_content.key?('items')
-              subschemas << subschema(['items'])
+              yield subschema(['items'])
             end
           end
 
           end
-        end
+
+      nil
     end
   end
 end
