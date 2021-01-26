@@ -5,5 +5,9 @@ module JSI
     include Schema::Application::ChildApplication
     include Schema::Application::ChildApplication::Items
     include Schema::Application::ChildApplication::Properties
+
+    # @private
+    def internal_child_applicate_keywords(token, instance, &block)
+    end
   end
 end
