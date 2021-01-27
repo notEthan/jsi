@@ -21,10 +21,16 @@ module JSI
         if child_idx_valid[token]
           child_schema_applicate(contains_schema)
         else
-          instance_valid = instance.each_index.any? { |i| child_idx_valid[i] }
+          minContains = keyword_value_numeric?('minContains') ? schema_content['minContains'] : 1
+          child_valid_count = instance.each_index.inject(0) { |n, i| n < minContains && child_idx_valid[i] ? n + 1 : n }
 
-          unless instance_valid
-            # invalid application: if contains_schema does not validate against any child, it applies to every child
+          if child_valid_count < minContains
+            # invalid application: if contains_schema does not validate against `minContains` children,
+            # it applies to every child.
+            # note: this does not consider maxContains; a validation error from maxContains is not from any
+            # validation error of child application (which invalid application is intended to preserve), but
+            # rather from too few failures in child application. children that don't validate against contains
+            # are correctly not described by contains when contains validation failure comes from maxContains.
             child_schema_applicate(contains_schema)
           end
         end
