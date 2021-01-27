@@ -6,6 +6,30 @@ NamedSchemaInstance = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/tes
 # meaning the name NamedSchemaInstanceTwo is not known.
 NamedSchemaInstanceTwo = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).jsi_schema_class.tap(&:name)
 
+Phonebook = JSI.new_schema_module(YAML.load(<<~YAML
+  title: Phone Book
+  properties:
+    contacts:
+      title: Contact
+      properties:
+        phone_numbers:
+          items:
+            title: Phone Number
+            properties:
+              number: {}
+              location: {}
+              country:
+                properties:
+                  code: {}
+  YAML
+))
+module Phonebook
+  Contact = properties['contacts']
+  module Contact
+    PhoneNumber = properties['phone_numbers'].items
+  end
+end
+
 describe JSI::Base do
   let(:schema_content) { {} }
   let(:schema) { JSI.new_schema(schema_content) }
@@ -715,6 +739,38 @@ describe JSI::Base do
     let(:instance) { Object.new }
     it 'pretty_prints' do
       assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
+    end
+  end
+  describe 'name_from_ancestor #inspect #pretty_print' do
+    let(:phonebook) do
+      Phonebook.new_jsi(YAML.safe_load(<<~YAML
+        contacts:
+          phone_numbers:
+            - number: '2'
+              location: 'office'
+              country:
+                code: 'us'
+        YAML
+      ))
+    end
+    it "shows the schema modules' name_from_ancestor" do
+      assert_equal(%q(#{<JSI (Phonebook)> "contacts" => #{<JSI (Phonebook::Contact)> "phone_numbers" => #[<JSI (Phonebook::Contact.properties["phone_numbers"])> #{<JSI (Phonebook::Contact::PhoneNumber)> "number" => "2", "location" => "office", "country" => #{<JSI (Phonebook::Contact::PhoneNumber.properties["country"])> "code" => "us"}}]}}), phonebook.inspect)
+      pp = <<~PP
+        \#{<JSI (Phonebook)>
+          "contacts" => \#{<JSI (Phonebook::Contact)>
+            "phone_numbers" => \#[<JSI (Phonebook::Contact.properties["phone_numbers"])>
+              \#{<JSI (Phonebook::Contact::PhoneNumber)>
+                "number" => "2",
+                "location" => "office",
+                "country" => \#{<JSI (Phonebook::Contact::PhoneNumber.properties["country"])>
+                  "code" => "us"
+                }
+              }
+            ]
+          }
+        }
+        PP
+      assert_equal(pp, phonebook.pretty_inspect)
     end
   end
   describe '#as_json' do
