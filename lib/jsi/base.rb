@@ -209,7 +209,7 @@ module JSI
 
       jsi_ptr.reference_tokens.map do |token|
         parent.tap do
-          parent = parent[token]
+          parent = parent[token, as_jsi: true]
         end
       end.reverse
     end
