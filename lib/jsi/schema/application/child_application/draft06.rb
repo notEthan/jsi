@@ -15,7 +15,7 @@ module JSI
         internal_applicate_items(token, &block)
 
         # json-schema-validation 6.14.  contains
-        # TODO
+        internal_applicate_contains(token, instance, &block)
       end
 
       if instance.respond_to?(:to_hash)
