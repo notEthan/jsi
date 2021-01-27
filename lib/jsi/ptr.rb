@@ -155,10 +155,10 @@ module JSI
       alias_method :root?, :empty?
 
       # @return [JSI::Ptr] pointer to the parent of where this pointer points
-      # @raise [JSI::Ptr::ReferenceError] if this pointer has no parent (points to the root)
+      # @raise [JSI::Ptr::Error] if this pointer has no parent (points to the root)
       def parent
         if root?
-          raise(ReferenceError, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
+          raise(Ptr::Error, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
         else
           Ptr.new(reference_tokens[0...-1])
         end
