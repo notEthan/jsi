@@ -42,6 +42,9 @@ module JSI
           [ref, resolved_schema.jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)]
         end
 
+        element.add_action(:inplace_applicate) do
+        end
+
         element.add_action(:validate) do
           ref, resolved_schema = *instance_exec(&resolve_dynamicRef) || next
           ref_result = resolved_schema.internal_validate_instance(
