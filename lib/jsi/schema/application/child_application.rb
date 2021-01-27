@@ -5,23 +5,27 @@ module JSI
     autoload :Draft04, 'jsi/schema/application/child_application/draft04'
     autoload :Draft06, 'jsi/schema/application/child_application/draft06'
 
-    # returns a set of subschemas of this schema for the given property name, from keywords
-    #   `properties`, `patternProperties`, and `additionalProperties`.
+    # a set of child applicator subschemas of this schema which apply to the child of the given instance
+    # on the given token.
     #
-    # @param property_name [String] the property name for which to find subschemas
-    # @return [JSI::SchemaSet] subschemas of this schema for the given property_name
-    def subschemas_for_property_name(property_name)
-      jsi_memoize(__method__, property_name) do |property_name|
+    # @param token [Object] the array index or object property name for the child instance
+    # @param instance [Object] the instance to check any child applicators against
+    # @return [JSI::SchemaSet] child application subschemas of this schema for the given token
+    #   of the instance
+    def child_applicator_schemas(token, instance)
+      jsi_memoize(__method__, token, instance) do |token, instance|
         SchemaSet.build do |subschemas|
           if schema_content.respond_to?(:to_hash)
+
+          if instance.respond_to?(:to_hash)
             apply_additional = true
-            if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
+            if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(token)
               apply_additional = false
-              subschemas << subschema(['properties', property_name])
+              subschemas << subschema(['properties', token])
             end
             if schema_content['patternProperties'].respond_to?(:to_hash)
               schema_content['patternProperties'].each_key do |pattern|
-                if property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+                if token.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
                   apply_additional = false
                   subschemas << subschema(['patternProperties', pattern])
                 end
@@ -31,28 +35,19 @@ module JSI
               subschemas << subschema(['additionalProperties'])
             end
           end
-        end
-      end
-    end
 
-    # returns a set of subschemas of this schema for the given array index, from keywords
-    #   `items` and `additionalItems`.
-    #
-    # @param index [Integer] the array index for which to find subschemas
-    # @return [JSI::SchemaSet] subschemas of this schema for the given array index
-    def subschemas_for_index(index)
-      jsi_memoize(__method__, index) do |idx|
-        SchemaSet.build do |subschemas|
-          if schema_content.respond_to?(:to_hash)
+          if instance.respond_to?(:to_ary)
             if schema_content['items'].respond_to?(:to_ary)
-              if schema_content['items'].each_index.to_a.include?(idx)
-                subschemas << subschema(['items', idx])
+              if schema_content['items'].each_index.to_a.include?(token)
+                subschemas << subschema(['items', token])
               elsif schema_content.key?('additionalItems')
                 subschemas << subschema(['additionalItems'])
               end
             elsif schema_content.key?('items')
               subschemas << subschema(['items'])
             end
+          end
+
           end
         end
       end

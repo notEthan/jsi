@@ -70,11 +70,7 @@ module JSI
       )
       our_bootstrap_schemas = jsi_ptr.reference_tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_schemas, tok|
         subschemas_for_token = bootstrap_schemas.map do |bootstrap_schema|
-          if instance_for_schemas.respond_to?(:to_ary)
-            bootstrap_schema.subschemas_for_index(tok)
-          else
-            bootstrap_schema.subschemas_for_property_name(tok)
-          end
+          bootstrap_schema.child_applicator_schemas(tok, instance_for_schemas)
         end.inject(SchemaSet[], &:|)
         instance_for_schemas = instance_for_schemas[tok]
         bootstrap_schemas_for_instance = subschemas_for_token.map do |bootstrap_schema|
