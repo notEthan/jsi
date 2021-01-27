@@ -31,34 +31,11 @@ module JSI
           if schema_content.respond_to?(:to_hash)
 
           if instance.respond_to?(:to_hash)
-            apply_additional = true
-            if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(token)
-              apply_additional = false
-              yield subschema(['properties', token])
-            end
-            if schema_content['patternProperties'].respond_to?(:to_hash)
-              schema_content['patternProperties'].each_key do |pattern|
-                if token.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
-                  apply_additional = false
-                  yield subschema(['patternProperties', pattern])
-                end
-              end
-            end
-            if apply_additional && schema_content.key?('additionalProperties')
-              yield subschema(['additionalProperties'])
-            end
+            internal_applicate_properties(token, &block)
           end
 
           if instance.respond_to?(:to_ary)
-            if schema_content['items'].respond_to?(:to_ary)
-              if schema_content['items'].each_index.to_a.include?(token)
-                yield subschema(['items', token])
-              elsif schema_content.key?('additionalItems')
-                yield subschema(['additionalItems'])
-              end
-            elsif schema_content.key?('items')
-              yield subschema(['items'])
-            end
+            internal_applicate_items(token, &block)
           end
 
           end
