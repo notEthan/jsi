@@ -7,6 +7,7 @@ module JSI
 
     autoload :Ref, 'jsi/schema/application/inplace_application/ref'
     autoload :SomeOf, 'jsi/schema/application/inplace_application/someof'
+    autoload :IfThenElse, 'jsi/schema/application/inplace_application/ifthenelse'
     autoload :Dependencies, 'jsi/schema/application/inplace_application/dependencies'
 
     # a set of inplace applicator schemas of this schema (from $ref, allOf, etc.) which apply to the
