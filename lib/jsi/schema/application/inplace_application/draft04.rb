@@ -4,6 +4,7 @@ module JSI
   module Schema::Application::InplaceApplication::Draft04
     include Schema::Application::InplaceApplication
     include Schema::Application::InplaceApplication::Ref
+    include Schema::Application::InplaceApplication::Dependencies
     include Schema::Application::InplaceApplication::SomeOf
 
     # @private
