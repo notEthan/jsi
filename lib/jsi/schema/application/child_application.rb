@@ -5,6 +5,9 @@ module JSI
     autoload :Draft04, 'jsi/schema/application/child_application/draft04'
     autoload :Draft06, 'jsi/schema/application/child_application/draft06'
 
+    autoload :Items, 'jsi/schema/application/child_application/items'
+    autoload :Properties, 'jsi/schema/application/child_application/properties'
+
     # a set of child applicator subschemas of this schema which apply to the child of the given instance
     # on the given token.
     #
