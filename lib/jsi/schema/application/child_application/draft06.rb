@@ -4,6 +4,7 @@ module JSI
   module Schema::Application::ChildApplication::Draft06
     include Schema::Application::ChildApplication
     include Schema::Application::ChildApplication::Items
+    include Schema::Application::ChildApplication::Contains
     include Schema::Application::ChildApplication::Properties
 
     # @private
