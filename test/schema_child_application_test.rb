@@ -74,4 +74,140 @@ describe 'JSI Schema child application' do
       end
     end
   end
+  {
+    draft04: JSI::JSONSchemaOrgDraft04,
+    draft06: JSI::JSONSchemaOrgDraft06,
+  }.each do |name, metaschema|
+    describe "#{name} child properties, additionalProperties, patternProperties application" do
+      let(:metaschema) { metaschema }
+      describe 'properties' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            properties:
+              foo: {}
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => []} }
+        it 'applies properties' do
+          assert_equal(Set[
+            schema.properties['foo'],
+          ], subject['foo'].jsi_schemas)
+          assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
+        end
+      end
+      describe 'additionalProperties' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            properties:
+              foo: {}
+            additionalProperties: {}
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => [], 'bar' => []} }
+        it 'applies properties, additionalProperties' do
+          assert_equal(Set[
+            schema.properties['foo'],
+          ], subject['foo'].jsi_schemas)
+          assert_equal(Set[
+            schema.additionalProperties,
+          ], subject['bar'].jsi_schemas)
+          assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
+          assert_is_a(schema.additionalProperties.jsi_schema_module, subject['bar'])
+        end
+      end
+      describe 'additionalProperties without properties' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            additionalProperties: {}
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => []} }
+        it 'applies additionalProperties' do
+          assert_equal(Set[
+            schema.additionalProperties,
+          ], subject['foo'].jsi_schemas)
+          assert_is_a(schema.additionalProperties.jsi_schema_module, subject['foo'])
+        end
+      end
+      describe 'additionalProperties without properties' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            additionalProperties: {}
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => []} }
+        it 'applies additionalProperties' do
+          assert_equal(Set[
+            schema.additionalProperties,
+          ], subject['foo'].jsi_schemas)
+          assert_is_a(schema.additionalProperties.jsi_schema_module, subject['foo'])
+        end
+      end
+      describe 'properties, additionalProperties, patternProperties' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            properties:
+              foo:
+                title: foo
+              baz:
+                title: baz
+            patternProperties:
+              "^b":
+                title: 'b*'
+            additionalProperties:
+              title: additional
+            YAML
+          )
+        end
+        let(:instance) do
+          YAML.load(<<~YAML
+            foo: {}
+            bar: {}
+            baz: {}
+            qux: {}
+            YAML
+          )
+        end
+        it 'applies those applicable' do
+          assert_equal(Set[
+            schema.properties['foo'],
+          ], subject['foo'].jsi_schemas)
+          assert_equal(Set[
+            schema.patternProperties['^b'],
+          ], subject['bar'].jsi_schemas)
+          assert_equal(Set[
+            schema.properties['baz'],
+            schema.patternProperties['^b'],
+          ], subject['baz'].jsi_schemas)
+          assert_equal(Set[
+            schema.additionalProperties,
+          ], subject['qux'].jsi_schemas)
+
+          assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
+          refute_is_a(schema.properties['baz'].jsi_schema_module, subject['foo'])
+          refute_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['foo'])
+          refute_is_a(schema.additionalProperties.jsi_schema_module, subject['foo'])
+
+          refute_is_a(schema.properties['foo'].jsi_schema_module, subject['bar'])
+          refute_is_a(schema.properties['baz'].jsi_schema_module, subject['bar'])
+          assert_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['bar'])
+          refute_is_a(schema.additionalProperties.jsi_schema_module, subject['bar'])
+
+          refute_is_a(schema.properties['foo'].jsi_schema_module, subject['baz'])
+          assert_is_a(schema.properties['baz'].jsi_schema_module, subject['baz'])
+          assert_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['baz'])
+          refute_is_a(schema.additionalProperties.jsi_schema_module, subject['baz'])
+
+          refute_is_a(schema.properties['foo'].jsi_schema_module, subject['qux'])
+          refute_is_a(schema.properties['baz'].jsi_schema_module, subject['qux'])
+          refute_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['qux'])
+          assert_is_a(schema.additionalProperties.jsi_schema_module, subject['qux'])
+        end
+      end
+    end
+  end
 end
