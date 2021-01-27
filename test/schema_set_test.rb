@@ -32,4 +32,16 @@ describe 'JSI::SchemaSet' do
       end
     end
   end
+  describe '#inspect' do
+    it 'inspects' do
+      inspect = JSI::SchemaSet[schema_a].inspect
+      assert_equal(%q(JSI::SchemaSet[#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "title" => "A"}]), inspect)
+    end
+  end
+  describe '#pretty_print' do
+    it 'pretty prints' do
+      pp = JSI::SchemaSet[schema_a].pretty_inspect
+      assert_equal(%q(JSI::SchemaSet[#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "title" => "A"}]), pp.chomp)
+    end
+  end
 end
