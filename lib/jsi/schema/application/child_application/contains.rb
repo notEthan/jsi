@@ -7,7 +7,7 @@ module JSI
       if schema_content.key?('contains')
         contains_schema = subschema(['contains'])
 
-        if contains_schema.instance_valid?(instance[idx])
+        if contains_schema.validate_instance(instance[idx])
           yield contains_schema
         end
       end
