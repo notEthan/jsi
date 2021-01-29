@@ -31,7 +31,7 @@ properties:
         number: {type: "string"}
 ```
 
-Using that schema, we instantiate a JSI::Schema to represent it:
+We pass that to {JSI.new_schema} which will instantiate a JSI Schema which represents it:
 
 ```ruby
 # this would usually load YAML or JSON; the schema object is inlined for copypastability.
@@ -71,7 +71,7 @@ bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "nu
 # }
 ```
 
-Note that the keys are strings. JSI, being designed with JSON in mind, is geared toward string keys. Symbol keys will not match to schema properties, and so act the same as any other key not recognized from the schema.
+Note that the hash keys are strings. JSI, being designed with JSON in mind, is geared toward string keys.
 
 We get accessors for the Contact:
 
