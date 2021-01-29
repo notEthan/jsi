@@ -36,6 +36,21 @@ module JSI
   module Base::HashNode
     include Base::Enumerable
 
+    # instantiates and yields each property name (hash key) as a JSI described by any `propertyNames` schemas.
+    #
+    # @yield [JSI::Base]
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def jsi_each_propertyName
+      return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block_given?
+
+      property_schemas = SchemaSet.new(jsi_schemas.select { |s| s.keyword?('propertyNames') }.map { |s| s.subschema(['propertyNames']) })
+      jsi_node_content_hash_pubsend(:each_key) do |key|
+        yield property_schemas.new_jsi(key)
+      end
+
+      nil
+    end
+
     # yields each hash key and value of this node.
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
