@@ -248,6 +248,62 @@ describe 'JSI::Base hash' do
       end
     end
   end
+
+  describe 'jsi_each_propertyName' do
+    describe 'valid and invalid propertyNames' do
+      let(:schema_content) do
+        {
+          'allOf' => [
+            {
+              'propertyNames' => {
+                'maxLength' => 3,
+              },
+            },
+            {
+              'propertyNames' => {
+                'minLength' => 1,
+              },
+            },
+            true, # does not apply but ensures jsi_each_propertyName doesn't choke on boolean schema
+          ]
+        }
+      end
+
+      let(:instance) { {'str' => [], 'longstr' => []} }
+
+      it 'yields each as a jsi' do
+        subject.jsi_each_propertyName do |propertyName|
+          assert_schemas([schema.allOf[0].propertyNames, schema.allOf[1].propertyNames], propertyName)
+        end
+        jsis = %w(str longstr).map do |k|
+          JSI::SchemaSet[
+            schema.allOf[0].propertyNames,
+            schema.allOf[1].propertyNames,
+          ].new_jsi(k)
+        end
+        assert_equal(jsis, subject.jsi_each_propertyName.to_a)
+
+        valid, invalid = subject.jsi_each_propertyName.partition(&:jsi_valid?)
+        assert_equal(['str'], valid.map(&:jsi_instance))
+        assert_equal(['longstr'], invalid.map(&:jsi_instance))
+      end
+    end
+
+    describe 'no propertyNames schema' do
+      # note: schema_content and instance not redefined from the top-level describe
+
+      it 'yields each as a jsi' do
+        subject.jsi_each_propertyName do |propertyName|
+          assert_schemas([], propertyName)
+          assert(propertyName.jsi_valid?)
+        end
+
+        assert_equal(%w(foo bar baz).map { |k| JSI::SchemaSet[].new_jsi(k) }, subject.jsi_each_propertyName.to_a)
+        assert(subject.jsi_each_propertyName.all?(&:jsi_valid?))
+      end
+    end
+  end
+
   describe 'each' do
     it 'yields each element' do
       expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
