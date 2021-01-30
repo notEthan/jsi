@@ -6,6 +6,7 @@ describe 'JSI Schema child application' do
   {
     draft04: JSI::JSONSchemaOrgDraft04,
     draft06: JSI::JSONSchemaOrgDraft06,
+    draft07: JSI::JSONSchemaOrgDraft07,
   }.each do |name, metaschema|
     describe "#{name} child items / additionalItems application" do
       let(:metaschema) { metaschema }
@@ -76,6 +77,7 @@ describe 'JSI Schema child application' do
   end
   {
     draft06: JSI::JSONSchemaOrgDraft06,
+    draft07: JSI::JSONSchemaOrgDraft06,
   }.each do |name, metaschema|
     describe "#{name} contains application" do
       let(:metaschema) { metaschema }
@@ -124,6 +126,7 @@ describe 'JSI Schema child application' do
   {
     draft04: JSI::JSONSchemaOrgDraft04,
     draft06: JSI::JSONSchemaOrgDraft06,
+    draft07: JSI::JSONSchemaOrgDraft07,
   }.each do |name, metaschema|
     describe "#{name} child properties, additionalProperties, patternProperties application" do
       let(:metaschema) { metaschema }
