@@ -467,10 +467,15 @@ module JSI
 
     def jsi_subinstance_schemas_memos
       jsi_memomap(:subinstance_schemas, key_by: -> (i) { i[:token] }) do |token: , instance: , subinstance: |
-        jsi_schemas.map do |schema|
-          subschemas = schema.child_applicator_schemas(token, instance)
-          subschemas.map { |subschema| subschema.match_to_instance(subinstance) }.inject(Set.new, &:|)
-        end.inject(Set.new, &:|).freeze
+        SchemaSet.build do |schemas|
+          jsi_schemas.each do |schema|
+            schema.each_child_applicator_schema(token, instance) do |child_app_schema|
+              child_app_schema.each_inplace_applicator_schema(subinstance) do |child_inpl_app_schema|
+                schemas << child_inpl_app_schema
+              end
+            end
+          end
+        end
       end
     end
 
