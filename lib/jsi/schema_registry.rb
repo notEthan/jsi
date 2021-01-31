@@ -39,6 +39,10 @@ module JSI
             register_single(node.schema_absolute_uri, node)
           end
           if node.respond_to?(:to_hash)
+STDERR.puts rec.to_s
+STDERR.puts rec.inspect
+STDERR.puts rec.source_location
+
             node.to_hash.values.each(&rec)
           elsif node.respond_to?(:to_ary)
             node.to_ary.each(&rec)

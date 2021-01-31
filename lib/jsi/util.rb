@@ -63,7 +63,14 @@ module JSI
     # see https://secure.wikimedia.org/wikipedia/en/wiki/Fixed_point_combinator#Y_combinator
     # and chapter 9 of the little schemer, available as the sample chapter at http://www.ccs.neu.edu/home/matthias/BTLS/
     def ycomb
-      proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
+      i = proc { |f|
+        yield proc { |*x|
+          f.call(f).call(*x)
+        }
+      }
+      proc { |f|
+        f.call(f)
+      }.call(i)
     end
     module_function :ycomb
 
