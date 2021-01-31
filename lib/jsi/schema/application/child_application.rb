@@ -13,7 +13,6 @@ module JSI
     # @return [JSI::SchemaSet] child application subschemas of this schema for the given token
     #   of the instance
     def child_applicator_schemas(token, instance)
-      jsi_memoize(__method__, token, instance) do |token, instance|
         SchemaSet.build do |subschemas|
           if schema_content.respond_to?(:to_hash)
 
@@ -50,7 +49,6 @@ module JSI
 
           end
         end
-      end
     end
   end
 end
