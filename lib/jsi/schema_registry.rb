@@ -43,9 +43,14 @@ STDERR.puts rec.to_s
 STDERR.puts rec.inspect
 STDERR.puts rec.source_location
 
-            node.to_hash.values.each(&rec)
+            node.to_hash.values.each do |v|
+STDERR.puts v.inspect
+              rec.call(v)
+            end
           elsif node.respond_to?(:to_ary)
-            node.to_ary.each(&rec)
+            node.to_ary.each do |e|
+              rec.call(e)
+            end
           end
         end
       end.call(resource)
