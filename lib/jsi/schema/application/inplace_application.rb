@@ -2,8 +2,8 @@
 
 module JSI
   module Schema::Application::InplaceApplication
-    # checks this schema for applicators ($ref, allOf, etc.) which should be applied to the given instance.
-    # returns these as a Set of {JSI::Schema}s.
+    # a set of inplace applicator schemas of this schema (from $ref, allOf, etc.) which apply to the
+    # given instance.
     #
     # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
     #
