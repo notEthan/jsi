@@ -45,6 +45,17 @@ module JSI::Error
   # when it's required, relative when it must be absolute, etc.
   class URIError < Addressable::URI::InvalidURIError
   end
+
+  # A schema instance is not valid against schemas that describe it
+  class Invalid < StandardError
+    # @param result [Validation::Result]
+    def initialize(result, *a, &b)
+      @result = result
+      super(result.pretty_inspect.chomp, *a, &b)
+    end
+
+    attr_reader(:result)
+  end
 end
 
 module JSI

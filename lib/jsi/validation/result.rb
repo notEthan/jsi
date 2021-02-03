@@ -72,6 +72,12 @@ module JSI
         #chkbug raise(NotImplementedError)
       end
 
+      # @raise [JSI::Invalid]
+      # @return [nil]
+      def valid!
+        raise(JSI::Invalid, self) if !valid?
+      end
+
       def pretty_print(q)
         pretty_print_valid(q)
       end

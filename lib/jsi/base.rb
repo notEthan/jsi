@@ -668,6 +668,15 @@ module JSI
       jsi_indicated_schemas.instance_valid?(self)
     end
 
+    # Asserts that this JSI is valid against its schemas.
+    # {JSI::Invalid} is raised if it is not.
+    #
+    # @raise [Invalid]
+    # @return [nil]
+    def jsi_valid!
+      jsi_validate.valid!
+    end
+
     # queries this JSI using the [JMESPath Ruby](https://rubygems.org/gems/jmespath) gem.
     # see [https://jmespath.org/](https://jmespath.org/) to learn the JMESPath query language.
     #
