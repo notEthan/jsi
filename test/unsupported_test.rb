@@ -129,11 +129,24 @@ describe 'unsupported behavior' do
             [1] => {},
           }
         end
-        it 'applies properties' do
+
+        it 'applies properties, propertyNames' do
           assert_schemas([schema.properties[[1]]], subject[[1]])
           assert_schemas([], subject[[]])
 
           assert(subject.jsi_valid?)
+
+          subject.jsi_each_propertyName do |propertyName|
+            assert_schemas([schema.propertyNames], propertyName)
+          end
+          # child application of propertyNames' `items` subschema
+          pn_item = subject.jsi_each_propertyName.detect { |j| j.size > 0 }[0, as_jsi: true]
+          assert_schemas([schema.propertyNames.items], pn_item)
+
+          assert(subject.jsi_each_propertyName.all?(&:jsi_valid?))
+
+          exp_jsis = [schema.propertyNames.new_jsi([]), schema.propertyNames.new_jsi([1])]
+          assert_equal(exp_jsis, subject.jsi_each_propertyName.to_a) # this test seems unnecessary, w/e
         end
       end
       describe 'invalid' do
@@ -144,7 +157,8 @@ describe 'unsupported behavior' do
             {} => {},
           }
         end
-        it 'applies properties' do
+
+        it 'applies properties, propertyNames' do
           assert_schemas([schema.properties[[1]]], subject[[1]])
           assert_schemas([], subject[[]])
 
@@ -152,6 +166,14 @@ describe 'unsupported behavior' do
             "instance type does not match `type` value",
             "instance object property names are not all valid against `propertyNames` schema value",
           ], subject.jsi_validate.validation_errors.map(&:message))
+
+          subject.jsi_each_propertyName do |propertyName|
+            assert_schemas([schema.propertyNames], propertyName)
+          end
+
+          valid, invalid = subject.jsi_each_propertyName.partition(&:jsi_valid?)
+          assert_equal([[], [1]], valid.map(&:jsi_instance))
+          assert_equal([{}], invalid.map(&:jsi_instance))
         end
       end
     end
