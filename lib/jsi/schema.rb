@@ -125,7 +125,7 @@ module JSI
       #   consist of this schema.
       def new_schema(schema_content, base_uri: nil)
         new_jsi(JSI.deep_stringify_symbol_keys(schema_content),
-          jsi_schema_base_uri: base_uri,
+          base_uri: base_uri,
         ).tap(&:register_schema)
       end
 
@@ -290,10 +290,15 @@ module JSI
     # any parameters are passed to JSI::Base#initialize, but none are normally used.
     #
     # @param instance [Object] the JSON Schema instance to be represented as a JSI
+    # @param base_uri (see SchemaSet#new_jsi)
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are matched
     #   from this schema.
-    def new_jsi(instance, *a, &b)
-      JSI.class_for_schemas(match_to_instance(instance)).new(instance, *a, &b)
+    def new_jsi(instance,
+        base_uri: nil
+    )
+      JSI.class_for_schemas(match_to_instance(instance)).new(instance,
+        jsi_schema_base_uri: base_uri,
+      )
     end
 
     # registers this schema with `JSI.schema_registry`

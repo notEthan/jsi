@@ -59,14 +59,23 @@ module JSI
     # in this SchemaSet which apply to the given instance.
     #
     # @param instance [Object] the JSON Schema instance to be represented as a JSI
+    # @param base_uri [nil, #to_str, Addressable::URI] for an instance document containing schemas, this is
+    #   the URI of the document, whether or not the document is itself a schema.
+    #   in the normal case where the document does not contain any schemas, base_uri has no effect.
+    #   schemas within the document use the base_uri to resolve relative URIs.
+    #   the resulting JSI may be registered with a {SchemaRegistry} (see {JSI.schema_registry}).
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are inplace
     #   applicators matched to the instance from the schemas in this set.
-    def new_jsi(instance)
+    def new_jsi(instance,
+        base_uri: nil
+    )
       applied_schemas = SchemaSet.build do |set|
         each { |schema| set.merge(schema.match_to_instance(instance)) }
       end
 
-      JSI.class_for_schemas(applied_schemas).new(instance)
+      JSI.class_for_schemas(applied_schemas).new(instance,
+        jsi_schema_base_uri: base_uri,
+      )
     end
 
     def inspect
