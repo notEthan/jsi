@@ -11,6 +11,8 @@ require 'byebug'
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
 
+require 'yaml'
+
 # NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
 
