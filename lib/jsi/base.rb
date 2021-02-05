@@ -470,13 +470,13 @@ module JSI
     #
     # @return [JSI::Validation::FullResult]
     def jsi_validate
-      jsi_schemas.instance_validate(self)
+      jsi_indicated_schemas.instance_validate(self)
     end
 
     # whether this JSI's instance is valid against all of its schemas
     # @return [Boolean]
     def jsi_valid?
-      jsi_schemas.instance_valid?(self)
+      jsi_indicated_schemas.instance_valid?(self)
     end
 
     # queries this JSI using the [JMESPath Ruby](https://rubygems.org/gems/jmespath) gem.
