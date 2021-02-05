@@ -367,20 +367,22 @@ module JSI
       end
 
       begin
-        subinstance_schemas = jsi_subinstance_schemas_memos[token: token, instance: jsi_node_content, subinstance: value]
+        child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
+        child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(value)
 
         if token_in_range
-          jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi) do
+          jsi_subinstance_as_jsi(value, child_applied_schemas, as_jsi) do
             jsi_subinstance_memos[
               token: token,
-              subinstance_schemas: subinstance_schemas,
+              child_indicated_schemas: child_indicated_schemas,
+              child_applied_schemas: child_applied_schemas,
               includes: SchemaClasses.includes_for(value),
             ]
           end
         else
           if use_default
             defaults = Set.new
-            subinstance_schemas.each do |subinstance_schema|
+            child_applied_schemas.each do |subinstance_schema|
               if subinstance_schema.keyword?('default')
                 defaults << subinstance_schema.jsi_node_content['default']
               end
@@ -554,15 +556,9 @@ module JSI
 
     private
 
-    def jsi_subinstance_schemas_memos
-      jsi_memomap(:subinstance_schemas, key_by: -> (i) { i[:token] }) do |token: , instance: , subinstance: |
-        jsi_schemas.child_applicator_schemas(token, instance).inplace_applicator_schemas(subinstance)
-      end
-    end
-
     def jsi_subinstance_memos
-      jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , subinstance_schemas: , includes: |
-        jsi_class = JSI::SchemaClasses.class_for_schemas(subinstance_schemas, includes: includes)
+      jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , child_indicated_schemas: , child_applied_schemas: , includes: |
+        jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas, includes: includes)
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_root_node: @jsi_root_node,
