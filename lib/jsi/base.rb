@@ -563,7 +563,8 @@ module JSI
 
     def jsi_subinstance_memos
       jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , subinstance_schemas: |
-        JSI::SchemaClasses.class_for_schemas(subinstance_schemas).new(@jsi_document,
+        jsi_class = JSI::SchemaClasses.class_for_schemas(subinstance_schemas)
+        jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_root_node: @jsi_root_node,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
