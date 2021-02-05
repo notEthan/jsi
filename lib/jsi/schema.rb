@@ -296,9 +296,7 @@ module JSI
     def new_jsi(instance,
         base_uri: nil
     )
-      JSI.class_for_schemas(match_to_instance(instance)).new(instance,
-        jsi_schema_base_uri: base_uri,
-      )
+      SchemaSet[self].new_jsi(instance, base_uri: base_uri)
     end
 
     # registers this schema with `JSI.schema_registry`
