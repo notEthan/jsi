@@ -103,6 +103,22 @@ module JSI
       nil
     end
 
+    # yields each child applicator schema which applies to the child of
+    # the given instance on the given token.
+    #
+    # @param (see Schema::Application::ChildApplication#child_applicator_schemas)
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def each_child_applicator_schema(token, instance, &block)
+      return to_enum(__method__, token, instance) unless block
+
+      each do |schema|
+        schema.each_child_applicator_schema(token, instance, &block)
+      end
+
+      nil
+    end
+
     # validates the given instance against our schemas
     #
     # @param instance [Object] the instance to validate against our schemas
