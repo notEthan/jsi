@@ -154,6 +154,90 @@ describe 'unsupported behavior' do
     end
   end
 
+  describe 'an instance that responds to to_hash and to_ary' do
+    class HashlikeAry
+      def initialize(ary)
+        @ary = ary
+      end
+
+      def to_hash
+        @ary.each_with_index.map { |e, i| {i => e} }.inject({}, &:update)
+      end
+
+      def to_ary
+        @ary
+      end
+
+      def each_index(&b)
+        @ary.each_index(&b)
+      end
+
+      def keys
+        @ary.each_index.to_a
+      end
+
+      def each_key(&b)
+        @ary.each_index(&b)
+      end
+    end
+
+    describe 'properties and items' do
+      let(:schema_content) do
+        {
+          'properties' => {
+            0 => {},
+          },
+          'items' => {
+          },
+        }
+      end
+      let(:instance) do
+        HashlikeAry.new([{}])
+      end
+
+      it 'applies properties and itmes' do
+        assert_is_a(schema.properties[0].jsi_schema_module, subject[0])
+        assert_is_a(schema.items.jsi_schema_module, subject[0])
+        assert_is_a(Hash, subject.to_hash)
+        assert_is_a(Array, subject.to_ary)
+      end
+    end
+
+    describe 'additionalProperties, patternProperties, additionalItems' do
+      let(:schema_content) do
+        {
+          'properties' => {
+            0 => {},
+          },
+          'patternProperties' => {
+            '1' => {}
+          },
+          'additionalProperties' => {},
+          'items' => [
+            {},
+          ],
+          'additionalItems' => {},
+        }
+      end
+
+      let(:instance) do
+        HashlikeAry.new([{}, {}, {}])
+      end
+
+      it 'applies' do
+        assert_is_a(schema.properties[0].jsi_schema_module, subject[0])
+        assert_is_a(schema.items[0].jsi_schema_module, subject[0])
+        assert_is_a(schema.patternProperties['1'].jsi_schema_module, subject[1])
+        assert_is_a(schema.additionalItems.jsi_schema_module, subject[1])
+        assert_is_a(schema.additionalProperties.jsi_schema_module, subject[2])
+        assert_is_a(schema.additionalItems.jsi_schema_module, subject[2])
+        assert(subject.jsi_valid?)
+        assert_is_a(Hash, subject.to_hash)
+        assert_is_a(Array, subject.to_ary)
+      end
+    end
+  end
+
   describe 'conflicting JSI Schema Module instance methods' do
     let(:schema_content) do
       YAML.safe_load(<<~YAML
