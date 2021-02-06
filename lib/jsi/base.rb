@@ -177,7 +177,8 @@ module JSI
 
       if self.jsi_instance.respond_to?(:to_hash)
         extend PathedHashNode
-      elsif self.jsi_instance.respond_to?(:to_ary)
+      end
+      if self.jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
       end
 
