@@ -93,7 +93,7 @@ describe 'unsupported behavior' do
       let(:schema_content) do
         {
           'properties' => {
-            ARBITRARY_OBJECT => {},
+            ARBITRARY_OBJECT => {'type' => 'string'},
           },
         }
       end
@@ -105,6 +105,8 @@ describe 'unsupported behavior' do
 
       it 'applies properties' do
         assert_is_a(schema.properties[ARBITRARY_OBJECT].jsi_schema_module, subject[ARBITRARY_OBJECT])
+        assert(!subject.jsi_valid?)
+        assert(!subject[ARBITRARY_OBJECT].jsi_valid?)
       end
     end
     describe 'property name which is an array, described by propertyNames' do
