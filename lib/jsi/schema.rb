@@ -345,9 +345,7 @@ module JSI
     def resource_root_subschema_map
       jsi_memomap(:resource_root_subschema_map) do |ptr|
         schema = self
-        if schema.schema_resource_root?
-          result_schema = schema.subschema(ptr)
-        elsif schema.is_a?(MetaschemaNode::BootstrapSchema)
+        if schema.is_a?(MetaschemaNode::BootstrapSchema)
           # BootstrapSchema does not track jsi_schema_resource_ancestors used by #schema_resource_root;
           # resource_root_subschema is always relative to the document root.
           # BootstrapSchema also does not implement jsi_root_node or #[]. we instantiate the ptr directly
