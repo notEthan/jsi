@@ -539,6 +539,39 @@ describe JSI::Schema do
       assert_equal(JSI::SchemaClasses.class_for_schemas([schema]), schema.jsi_schema_class)
     end
   end
+
+  describe '#subschema error conditions' do
+    describe 'the subschema is not a schema' do
+      it 'errors with a Base - subschema key is not described' do
+        schema = JSI::JSONSchemaOrgDraft07.new_schema({
+          'foo' => {},
+        })
+        err = assert_raises(JSI::Schema::NotASchemaError) do
+          schema.subschema(['foo'])
+        end
+        msg = <<~MSG
+          subschema is not a schema at pointer: /foo
+          \#{<JSI>}
+          MSG
+        assert_equal(msg.chomp, err.message)
+      end
+
+      it 'errors with a Base - subschema key is described, not a schema' do
+        schema = JSI::JSONSchemaOrgDraft07.new_schema({
+          'properties' => {},
+        })
+        err = assert_raises(JSI::Schema::NotASchemaError) do
+          schema.subschema(['properties'])
+        end
+        msg = <<~MSG
+          subschema is not a schema at pointer: /properties
+          \#{<JSI (JSI::JSONSchemaOrgDraft07.properties["properties"])>}
+          MSG
+        assert_equal(msg.chomp, err.message)
+      end
+    end
+  end
+
   describe '#child_applicator_schemas with an object' do
     let(:schema) do
       JSI::JSONSchemaOrgDraft07.new_schema({
