@@ -53,20 +53,23 @@ describe JSI::Schema do
       assert_equal('https://schemas.jsi.unth.net/test/id_has_pointer#/notroot/properties/foo', subschema.schema_id)
     end
   end
-  describe '#schema_absolute_uri' do
+  describe '#schema_absolute_uri, #anchor' do
     describe 'draft 4' do
       let(:metaschema) { JSI::JSONSchemaOrgDraft04 }
       it "hasn't got one" do
         schema = metaschema.new_schema({})
         assert_nil(schema.schema_absolute_uri)
+        assert_nil(schema.anchor)
       end
       it 'uses a given id with an empty fragment' do
         schema = metaschema.new_schema({'id' => 'http://jsi/test/schema_absolute_uri/d4/empty_fragment#'})
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d4/empty_fragment'), schema.schema_absolute_uri)
+        assert_nil(schema.anchor)
       end
       it 'uses a given id without a fragment' do
         schema = metaschema.new_schema({'id' => 'http://jsi/test/schema_absolute_uri/d4/given_id'})
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d4/given_id'), schema.schema_absolute_uri)
+        assert_nil(schema.anchor)
       end
       it 'nested schema without id' do
         schema = metaschema.new_schema({
@@ -74,6 +77,7 @@ describe JSI::Schema do
           'items' => {},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       it 'nested schema with absolute id' do
         schema = metaschema.new_schema({
@@ -81,6 +85,7 @@ describe JSI::Schema do
           'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_abs_id'},
         })
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d4/nested_w_abs_id'), schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       it 'nested schema with relative id' do
         schema = metaschema.new_schema({
@@ -88,6 +93,7 @@ describe JSI::Schema do
           'items' => {'id' => 'nested_w_rel_id'},
         })
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d4/nested_w_rel_id'), schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       it 'nested schema with anchor id' do
         schema = metaschema.new_schema({
@@ -95,6 +101,7 @@ describe JSI::Schema do
           'items' => {'id' => '#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_equal('nested_anchor', schema.items.anchor)
       end
       it 'nested schema with anchor id on the base' do
         schema = metaschema.new_schema({
@@ -102,6 +109,7 @@ describe JSI::Schema do
           'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_anchor_on_base#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_equal('nested_anchor', schema.items.anchor)
       end
       it 'nested schema with anchor id on the base after resolution' do
         schema = metaschema.new_schema({
@@ -109,6 +117,7 @@ describe JSI::Schema do
           'items' => {'id' => 'nested_w_anchor_on_base_rel#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_equal('nested_anchor', schema.items.anchor)
       end
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
@@ -116,6 +125,7 @@ describe JSI::Schema do
           'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag#nested_anchor'},
         })
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag'), schema.items.schema_absolute_uri)
+        assert_equal('nested_anchor', schema.items.anchor)
       end
       it 'nested schema with id with empty fragment' do
         schema = metaschema.new_schema({
@@ -123,6 +133,7 @@ describe JSI::Schema do
           'items' => {'id' => '#'},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       it 'nested schema with empty id' do
         schema = metaschema.new_schema({
@@ -130,6 +141,7 @@ describe JSI::Schema do
           'items' => {'id' => ''},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       describe 'externally supplied base uri' do
         it 'schema with relative ids' do
@@ -153,14 +165,17 @@ describe JSI::Schema do
       it "hasn't got one" do
         schema = metaschema.new_schema({})
         assert_nil(schema.schema_absolute_uri)
+        assert_nil(schema.anchor)
       end
       it 'uses a given id with an empty fragment' do
         schema = metaschema.new_schema({'$id' => 'http://jsi/test/schema_absolute_uri/d6/empty_fragment#'})
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d6/empty_fragment'), schema.schema_absolute_uri)
+        assert_nil(schema.anchor)
       end
       it 'uses a given id without a fragment' do
         schema = metaschema.new_schema({'$id' => 'http://jsi/test/schema_absolute_uri/d6/given_id'})
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d6/given_id'), schema.schema_absolute_uri)
+        assert_nil(schema.anchor)
       end
       it 'nested schema without id' do
         schema = metaschema.new_schema({
@@ -168,6 +183,7 @@ describe JSI::Schema do
           'items' => {},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       it 'nested schema with absolute id' do
         schema = metaschema.new_schema({
@@ -175,6 +191,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_abs_id'},
         })
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d6/nested_w_abs_id'), schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       it 'nested schema with relative id' do
         schema = metaschema.new_schema({
@@ -182,6 +199,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'nested_w_rel_id'},
         })
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d6/nested_w_rel_id'), schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       it 'nested schema with anchor id' do
         schema = metaschema.new_schema({
@@ -189,6 +207,7 @@ describe JSI::Schema do
           'items' => {'$id' => '#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_equal('nested_anchor', schema.items.anchor)
       end
       it 'nested schema with anchor id on the base' do
         schema = metaschema.new_schema({
@@ -196,6 +215,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_on_base#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_equal('nested_anchor', schema.items.anchor)
       end
       it 'nested schema with anchor id on the base after resolution' do
         schema = metaschema.new_schema({
@@ -203,6 +223,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'nested_w_anchor_on_base_rel#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_equal('nested_anchor', schema.items.anchor)
       end
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
@@ -210,6 +231,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag#nested_anchor'},
         })
         assert_equal(Addressable::URI.parse('http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag'), schema.items.schema_absolute_uri)
+        assert_equal('nested_anchor', schema.items.anchor)
       end
       it 'nested schema with id with empty fragment' do
         schema = metaschema.new_schema({
@@ -217,6 +239,7 @@ describe JSI::Schema do
           'items' => {'$id' => '#'},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       it 'nested schema with empty id' do
         schema = metaschema.new_schema({
@@ -224,6 +247,7 @@ describe JSI::Schema do
           'items' => {'$id' => ''},
         })
         assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.anchor)
       end
       describe 'externally supplied base uri' do
         it 'schema with relative ids' do

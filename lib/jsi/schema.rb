@@ -86,6 +86,20 @@ module JSI
           nil
         end
       end
+
+      # @return [String] an anchor defined by a non-empty fragment in the id uri
+      def anchor
+        if id
+          id_uri = Addressable::URI.parse(id)
+          if id_uri.fragment == ''
+            nil
+          else
+            id_uri.fragment
+          end
+        else
+          nil
+        end
+      end
     end
 
     # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
