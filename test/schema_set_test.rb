@@ -15,5 +15,21 @@ describe 'JSI::SchemaSet' do
         assert_equal("JSI::SchemaSet initialized with non-schema objects:\n3", err.message)
       end
     end
+    describe '.build' do
+      it 'initializes' do
+        schema_set = JSI::SchemaSet.build do |schemas|
+          schemas << schema_a
+        end
+        assert_equal(1, schema_set.size)
+      end
+      it 'errors given non-schemas' do
+        err = assert_raises(JSI::Schema::NotASchemaError) do
+          JSI::SchemaSet.build do |schemas|
+            schemas << 3
+          end
+        end
+        assert_equal("JSI::SchemaSet initialized with non-schema objects:\n3", err.message)
+      end
+    end
   end
 end
