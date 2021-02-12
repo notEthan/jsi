@@ -122,7 +122,7 @@ module JSI
       #   relative URIs within the document are resolved using this base_uri.
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
-      #   consist of this schema.
+      #   are inplace applicators matched from self to the schema being instantiated.
       def new_schema(schema_content, base_uri: nil)
         new_jsi(JSI.deep_stringify_symbol_keys(schema_content),
           jsi_schema_base_uri: base_uri,
