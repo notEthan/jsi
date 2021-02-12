@@ -28,7 +28,7 @@ module JSI
               subschemas << subschema(['additionalProperties'])
             end
           end
-        end
+        end.freeze
       end
     end
 
@@ -51,7 +51,7 @@ module JSI
               subschemas << subschema(['items'])
             end
           end
-        end
+        end.freeze
       end
     end
   end

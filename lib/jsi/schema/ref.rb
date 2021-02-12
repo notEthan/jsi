@@ -54,6 +54,17 @@ module JSI
         # find the schema_resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.
         schema_resource_root = nil
 
+        if ref_uri_nofrag.absolute?
+          ref_abs_uri = ref_uri_nofrag
+        elsif ref_schema.jsi_subschema_base_uri && ref_schema.jsi_subschema_base_uri.absolute? # TODO the second check is redundant unless jsi_subschema_base_uri may be relative
+          ref_abs_uri = ref_schema.jsi_subschema_base_uri.join(ref_uri_nofrag)
+        else
+          ref_abs_uri = nil
+        end
+        if ref_abs_uri
+          schema_resource_root = JSI.schema_registry.find(ref_abs_uri)
+        end
+
         unless schema_resource_root
           # HAX for how google does refs and ids
           if ref_schema && ref_schema.jsi_document.respond_to?(:to_hash) && ref_schema.jsi_document['schemas'].respond_to?(:to_hash)
@@ -62,13 +73,6 @@ module JSI
                 schema_resource_root = ref_schema.resource_root_subschema(['schemas', k])
               end
             end
-          end
-        end
-
-        unless schema_resource_root
-          schema_resource_root = JSI::Schema.supported_metaschemas.detect do |metaschema|
-            # HAX until the schema registry
-            %w(id $id).any? { |k| metaschema.key?(k) && Addressable::URI.parse(metaschema[k]) == ref_uri_nofrag }
           end
         end
 

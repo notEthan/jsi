@@ -61,7 +61,7 @@ module JSI
       end
       registered_uris = @resources.keys
       if !registered_uris.include?(uri)
-        raise(ResourceNotFound, "URI #{uri} has no registered resource. registered URIs:\n#{registered_uris.join("\n")}")
+        raise(ResourceNotFound, "URI #{uri} is not registered. registered URIs:\n#{registered_uris.join("\n")}")
       end
       @resources[uri]
     end
@@ -81,7 +81,7 @@ module JSI
     def register_single(uri, resource)
       @resources_mutex.synchronize do
         if uri.relative? || uri.fragment
-          raise(NonAbsoluteURIRegistration, "cannot register URI which is not absolute: #{id}")
+          raise(NonAbsoluteURIRegistration, "cannot register URI which is not absolute: #{uri}")
         end
         if @resources.key?(uri)
           if @resources[uri] != resource

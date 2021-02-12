@@ -3,10 +3,9 @@
 module JSI
   # a module relating to objects that act like Hash or Array instances
   module Typelike
-    # yields the content of the given param `object`. for objects which have a
-    # #jsi_modified_copy method of their own (JSI::Base, JSI::JSON::Node) that
-    # method is invoked with the given block. otherwise the given object itself
-    # is yielded.
+    # yields the content of the given param `object`. for objects which have a #jsi_modified_copy
+    # method of their own (JSI::Base, JSI::MetaschemaNode) that method is invoked with the given
+    # block. otherwise the given object itself is yielded.
     #
     # the given block must result in a modified copy of its block parameter
     # (not destructively modifying the yielded content).
@@ -27,8 +26,8 @@ module JSI
     # will raise TypeError if an object is given that is not a type that seems
     # to be expressable as json.
     #
-    # similar effect could be achieved by requiring 'json/add/core' and using
-    # #as_json, but I don't much care for how it represents classes that are
+    # similar effect could be achieved by requiring 'json/add/core' and using #as_json,
+    # but I don't much care for how it represents classes that are
     # not naturally expressable in JSON, and prefer not to load its
     # monkey-patching.
     #

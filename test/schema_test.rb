@@ -294,7 +294,7 @@ describe JSI::Schema do
           baz: {description: 'baz'},
         },
         patternProperties: {
-          "^b" => {description: 'ba*'},
+          "^b" => {description: 'b*'},
         },
         additionalProperties: {description: 'whatever'},
       })
@@ -312,7 +312,7 @@ describe JSI::Schema do
       subschemas = schema.subschemas_for_property_name('bar').to_a
       assert_equal(1, subschemas.size)
       assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschemas[0])
-      assert_equal('ba*', subschemas[0].description)
+      assert_equal('b*', subschemas[0].description)
     end
     it 'has subschemas by properties, patternProperties' do
       subschemas = schema.subschemas_for_property_name('baz').to_a
@@ -320,7 +320,7 @@ describe JSI::Schema do
       assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschemas[0])
       assert_equal('baz', subschemas[0].description)
       assert_is_a(JSI::Schema.default_metaschema.jsi_schema_module, subschemas[1])
-      assert_equal('ba*', subschemas[1].description)
+      assert_equal('b*', subschemas[1].description)
     end
     it 'has subschemas by additional properties' do
       subschemas = schema.subschemas_for_property_name('anything').to_a

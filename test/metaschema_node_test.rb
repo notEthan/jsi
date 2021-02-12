@@ -41,6 +41,10 @@ describe JSI::MetaschemaNode do
     assert_is_a(schema.jsi_schema_module, instance)
     assert_is_a(schema.properties['foo'].jsi_schema_module, instance.foo)
     assert_is_a(schema.additionalProperties.jsi_schema_module, instance['bar'])
+
+    # check that subscripting unknown keys behaves
+    assert_equal(nil, metaschema['no'])
+    assert_equal(nil, metaschema.properties['no'])
   end
 
   describe 'basic' do

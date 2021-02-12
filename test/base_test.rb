@@ -43,7 +43,7 @@ describe JSI::Base do
   end
   describe 'class for schema .jsi_class_schemas' do
     it '.jsi_class_schemas' do
-      assert_equal(Set.new << schema, schema.jsi_schema_class.jsi_class_schemas)
+      assert_equal(Set[schema], schema.jsi_schema_class.jsi_class_schemas)
     end
   end
   describe 'module for schema .inspect' do
@@ -460,7 +460,7 @@ describe JSI::Base do
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
-          assert_equal(Set.new << schema, subject.jsi_schemas)
+          assert_equal(Set[schema], subject.jsi_schemas)
         end
       end
     end
@@ -523,6 +523,30 @@ describe JSI::Base do
       assert(subject_subclass == subject)
       assert(subject.eql?(subject_subclass))
       assert(subject_subclass.eql?(subject))
+    end
+  end
+  describe 'equality' do
+    describe 'with different jsi_schema_base_uri' do
+      let(:schema) { JSI::JSONSchemaOrgDraft06 }
+      let(:instance) { {'$id' => '4c01'} }
+      it 'is not equal' do
+        exp = schema.new_jsi(instance, jsi_schema_base_uri: 'http://jsi/test/802d/')
+        act = schema.new_jsi(instance, jsi_schema_base_uri: 'http://jsi/test/802e/')
+        refute_equal(exp, act)
+        assert_equal('http://jsi/test/802d/4c01', exp.schema_absolute_uri.to_s)
+        assert_equal('http://jsi/test/802e/4c01', act.schema_absolute_uri.to_s)
+      end
+    end
+    describe 'the jsi_schema_base_uri is different, but the schema_absolute_uri is unaffected' do
+      let(:schema) { JSI::JSONSchemaOrgDraft06 }
+      let(:instance) { {'$id' => 'http://jsi/test/a86e'} }
+      it 'is not equal' do
+        exp = schema.new_jsi(instance, jsi_schema_base_uri: 'http://jsi/test/802d/')
+        act = schema.new_jsi(instance, jsi_schema_base_uri: 'http://jsi/test/802e/')
+        assert_equal(exp, act)
+        assert_equal('http://jsi/test/a86e', exp.schema_absolute_uri.to_s)
+        assert_equal('http://jsi/test/a86e', act.schema_absolute_uri.to_s)
+      end
     end
   end
 end

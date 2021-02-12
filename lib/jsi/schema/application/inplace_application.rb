@@ -43,7 +43,7 @@ module JSI
         else
           schemas << self
         end
-      end
+      end.freeze
     end
   end
 end

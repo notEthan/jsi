@@ -31,7 +31,7 @@ properties:
 Using that schema, we instantiate a JSI::Schema to represent it:
 
 ```ruby
-# this would usually load YAML or JSON; it's inlined for copypastability.
+# this would usually load YAML or JSON; the schema object is inlined for copypastability.
 contact_schema = JSI.new_schema({"description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
@@ -54,7 +54,7 @@ nickname: big b
 So, if we construct an instance like:
 
 ```ruby
-# this would usually load YAML or JSON; it's inlined for copypastability.
+# this would usually load YAML or JSON; the schema instance is inlined for copypastability.
 bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
 # => #{<JSI (Contact)>
 #   "name" => "bill",

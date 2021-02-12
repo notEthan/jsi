@@ -10,10 +10,13 @@ module JSI
   #
   # the JSI::Base class itself is not intended to be instantiated.
   class Base
-    include Util::Memoize
-    include Enumerable
     include PathedNode
     include Schema::SchemaAncestorNode
+    include Util::Memoize
+
+    # not every JSI::Base is necessarily an Enumerable, but it's better to include Enumerable on
+    # the class than to conditionally extend the instance.
+    include Enumerable
 
     # an exception raised when #[] is invoked on an instance which is not an array or hash
     class CannotSubscriptError < StandardError
@@ -174,7 +177,8 @@ module JSI
 
       if self.jsi_instance.respond_to?(:to_hash)
         extend PathedHashNode
-      elsif self.jsi_instance.respond_to?(:to_ary)
+      end
+      if self.jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
       end
     end
@@ -191,8 +195,8 @@ module JSI
     # the instance of the json-schema - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :jsi_node_content
 
-    # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base
-    # #each is not actually implemented, along with all the methods of Enumerable.
+    # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base #each
+    # is not actually implemented, along with all the methods of Enumerable.
     def each
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
     end
@@ -286,7 +290,7 @@ module JSI
 
     # @return [Set<Module>] the set of JSI schema modules corresponding to the schemas that describe this JSI
     def jsi_schema_modules
-      jsi_schemas.map(&:jsi_schema_module).to_set
+      jsi_schemas.map(&:jsi_schema_module).to_set.freeze
     end
 
     # yields the content of the underlying instance. the block must result in
@@ -297,7 +301,7 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [JSI::Base subclass the same as self] the modified copy of self
     def jsi_modified_copy(&block)
-      if jsi_ptr.root?
+      if @jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         self.class.new(Base::NOINSTANCE,
           jsi_document: modified_document,
@@ -410,7 +414,7 @@ module JSI
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
-        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
         # only defined for JSI::Schema instances:
         jsi_schema_instance_modules: is_a?(Schema) ? jsi_schema_instance_modules : nil,
       }
@@ -430,7 +434,7 @@ module JSI
             raise(Bug, 'jsi_subinstance_schemas_memos: not array or hash')
           end
           subschemas.map { |subschema| subschema.match_to_instance(value) }.inject(Set.new, &:|)
-        end.inject(Set.new, &:|)
+        end.inject(Set.new, &:|).freeze
       end
     end
 

@@ -11,6 +11,8 @@ require 'byebug'
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
 
+require 'yaml'
+
 # NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
 
@@ -59,9 +61,15 @@ class JSISpec < Minitest::Spec
   end
 
   def assert_is_a mod, obj, msg = nil
-    msg = message(msg) { "Expected instance of #{mod.inspect}. received #{obj.class}: #{mu_pp(obj)}" }
+    msg = message(msg) { "Expected object to be an instance of #{mod.inspect}. received #{obj.class}: #{mu_pp(obj)}" }
 
     assert obj.is_a?(mod), msg
+  end
+
+  def refute_is_a mod, obj, msg = nil
+    msg = message(msg) { "Expected object not to be an instance of #{mod.inspect}. received #{obj.class}: #{mu_pp(obj)}" }
+
+    assert !obj.is_a?(mod), msg
   end
 end
 
