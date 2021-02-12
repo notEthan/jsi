@@ -175,6 +175,24 @@ module JSI
 
       # @deprecated
       alias_method :from_object, :new_schema
+
+      # ensure the given object is a JSI Schema
+      #
+      # @param schema [Object] the thing the caller wishes to ensure is a Schema
+      # @param msg [#to_s, #to_ary] lines of the error message preceding the pretty-printed schema param
+      #   if the schema param is not a schema
+      # @raise [NotASchemaError] if the schema param is not a schema
+      # @return [Schema] the given schema
+      def ensure_schema(schema, msg: "indicated object is not a schema:")
+        if schema.is_a?(Schema)
+          schema
+        else
+          raise(NotASchemaError, [
+            *msg,
+            schema.pretty_inspect.chomp,
+          ].join("\n"))
+        end
+      end
     end
 
     # the underlying JSON data used to instantiate this JSI::Schema.
