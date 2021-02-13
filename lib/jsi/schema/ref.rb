@@ -106,14 +106,8 @@ module JSI
         raise(Schema::ReferenceError, "cannot find schema by fragment: #{fragment} from ref schema: #{ref_schema.pretty_inspect.chomp}")
       end
 
-      if result_schema.is_a?(JSI::Schema)
-        return @deref_schema = result_schema
-      else
-        raise(Schema::NotASchemaError, [
-          "object identified by uri #{ref} is not a schema:",
-          result_schema.pretty_inspect.chomp,
-        ].join("\n"))
-      end
+      Schema.ensure_schema(result_schema, msg: "object identified by uri #{ref} is not a schema:")
+      return @deref_schema = result_schema
     end
 
     # @return [String]

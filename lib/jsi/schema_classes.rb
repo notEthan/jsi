@@ -121,9 +121,7 @@ module JSI
       # @return [Module] a module of accessors (setters and getters) for described property names of the given
       #   schema
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
-        unless schema.is_a?(JSI::Schema)
-          raise(JSI::Schema::NotASchemaError, "not a schema: #{schema.pretty_inspect.chomp}")
-        end
+        Schema.ensure_schema(schema)
         jsi_memoize(:accessor_module_for_schema, schema, conflicting_modules, setters) do |schema, conflicting_modules, setters|
           Module.new.tap do |m|
             m.module_eval do

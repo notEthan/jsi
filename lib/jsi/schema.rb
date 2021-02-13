@@ -380,10 +380,9 @@ module JSI
         else
           result_schema = ptr.evaluate(schema.schema_resource_root)
         end
-        unless result_schema.is_a?(JSI::Schema)
-          raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{result_schema.pretty_inspect.chomp}")
-        end
-        result_schema
+        Schema.ensure_schema(result_schema, msg: [
+          "subschema is not a schema at pointer: #{ptr.pointer}"
+        ])
       end
     end
 
