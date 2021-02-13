@@ -43,9 +43,12 @@ module JSI
     extend Util::Memoize
 
     class << self
-      # see {JSI.class_for_schemas}
-      def class_for_schemas(schema_objects)
-        schemas = SchemaSet.new(schema_objects) { |schema_object| JSI.new_schema(schema_object) }
+      # @api private
+      # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
+      # @return [Class subclassing JSI::Base] a JSI Schema Class which represents the given schemas.
+      #   an instance of the class is a JSON Schema instance described by all of the given schemas.
+      def class_for_schemas(schemas)
+        schemas = SchemaSet.ensure_schema_set(schemas)
 
         jsi_memoize(:class_for_schemas, schemas) do |schemas|
           Class.new(Base).instance_exec(schemas) do |schemas|

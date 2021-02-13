@@ -70,11 +70,9 @@ module JSI
     JSI::Schema.new_schema(schema_object, *a).jsi_schema_module
   end
 
-  # @param schemas [Enumerable<JSI::Schema, #to_hash, Boolean>] schemas to represent with the class
-  # @return [Class subclassing JSI::Base] a JSI class which represents the given schemas.
-  #   an instance of the class represents a JSON Schema instance described by all of the given schemas.
-  def self.class_for_schemas(*schemas)
-    SchemaClasses.class_for_schemas(*schemas)
+  # @deprecated
+  def self.class_for_schemas(schemas)
+    SchemaClasses.class_for_schemas(schemas.map { |schema| JSI.new_schema(schema) })
   end
 
   # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.
