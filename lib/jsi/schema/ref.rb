@@ -10,7 +10,7 @@ module JSI
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Addressable::URI.parse(ref)
-      @ref_schema = ref_schema
+      @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
     end
 
     attr_reader :ref
