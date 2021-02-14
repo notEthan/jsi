@@ -57,7 +57,8 @@ module JSI
 
       if jsi_node_content.respond_to?(:to_hash)
         extend PathedHashNode
-      elsif jsi_node_content.respond_to?(:to_ary)
+      end
+      if jsi_node_content.respond_to?(:to_ary)
         extend PathedArrayNode
       end
 
