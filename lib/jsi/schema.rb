@@ -315,9 +315,7 @@ module JSI
 
     def subschema_map
       jsi_memomap(:subschema) do |subptr|
-        if subptr.empty?
-          self
-        elsif is_a?(MetaschemaNode::BootstrapSchema)
+        if is_a?(MetaschemaNode::BootstrapSchema)
           self.class.new(
             jsi_document,
             jsi_ptr: jsi_ptr + subptr,
