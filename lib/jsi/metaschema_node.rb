@@ -1,24 +1,22 @@
 # frozen_string_literal: true
 
 module JSI
-  # a MetaschemaNode is a PathedNode whose jsi_document contains a metaschema.
-  # as with any PathedNode the jsi_ptr points to the content of a node.
+  # a MetaschemaNode is a JSI instance representing a node in a document which contains a metaschema.
   # the root of the metaschema is pointed to by metaschema_root_ptr.
   # the schema describing the root of the document is pointed to by root_schema_ptr.
   #
-  # like JSI::Base, this class represents an instance of a schema, an instance
-  # which may itself be a schema. unlike JSI::Base, the document containing the
-  # schema and the instance is the same, and a schema may be an instance of itself.
+  # like JSI::Base's normal subclasses, this class represents an instance of a schema set, an instance
+  # which may itself be a schema. unlike JSI::Base, the document containing the instance and its schemas
+  # is the same, and a schema (the metaschema) may be an instance of itself.
   #
-  # the document containing the metaschema, its subschemas, and instances of those
-  # subschemas is the jsi_document.
+  # unlike JSI::Base's normal subclasses, the schemas describing the instance are not part of the class.
+  # since the metaschema describes itself, attempting to construct a class from the JSI Schema Module of a
+  # schema which is itself an instance of that class results in a causality loop.
+  # instead, a MetaschemaNode calculates its {#jsi_schemas} and extends itself with their JSI Schema
+  # modules during initialization.
+  # the MetaschemaNode of the metaschema is extended with its own JSI Schema Module.
   #
-  # the schema instance is the content in the document pointed to by the MetaschemaNode's jsi_ptr.
-  #
-  # unlike with JSI::Base, the schema is not part of the class, since a metaschema
-  # needs the ability to have its schema be the instance itself.
-  #
-  # if the MetaschemaNode's schema is its self, it will be extended with JSI::Metaschema.
+  # if the MetaschemaNode's schemas include its self, it is extended with JSI::Metaschema.
   #
   # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
   # the metaschema is one of its schemas.
