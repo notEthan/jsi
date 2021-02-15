@@ -79,8 +79,8 @@ module JSI
       #
       # defines a singleton method #schema to access the {JSI::Schema} this module represents, and extends
       # the module with {JSI::SchemaModule}.
-      def module_for_schema(schema_object)
-        schema = JSI.new_schema(schema_object)
+      def module_for_schema(schema)
+        Schema.ensure_schema(schema)
         jsi_memoize(:module_for_schema, schema) do |schema|
           Module.new.tap do |m|
             m.module_eval do
