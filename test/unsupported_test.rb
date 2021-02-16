@@ -238,6 +238,37 @@ describe 'unsupported behavior' do
     end
   end
 
+  describe 'recursive structures' do
+    describe 'a instance whose child references itself' do
+      let(:schema_content) do
+        YAML.load(<<~YAML
+          properties:
+            "a": {}
+            "on":
+              $ref: "#"
+          YAML
+        )
+      end
+      it 'goes all the way down' do
+        child = {'a' => ['turtle']}
+        child['on'] = child
+        root = {'a' => ['world'], 'on' => child}
+        jsi = schema.new_jsi(root)
+        assert_equal(Set[schema.properties['a']], jsi.a.jsi_schemas)
+        assert_equal(Set[schema], jsi.on.jsi_schemas)
+        # little deeper
+        deep_parent_ptr = JSI::Ptr['on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on']
+        assert_equal(Set[schema.properties['a']], deep_parent_ptr.evaluate(jsi).a.jsi_schemas)
+        assert_equal(Set[schema], deep_parent_ptr.evaluate(jsi).jsi_schemas)
+
+        # lul
+        #assert_raises(SystemStackError) do
+        #  jsi.jsi_each_child_node { }
+        #end
+      end
+    end
+  end
+
   describe 'conflicting JSI Schema Module instance methods' do
     let(:schema_content) do
       YAML.safe_load(<<~YAML
