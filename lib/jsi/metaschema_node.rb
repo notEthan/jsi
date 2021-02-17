@@ -25,7 +25,8 @@ module JSI
 
     include(Base::Immutable)
 
-    # @param jsi_document the document containing the metaschema
+    # @param jsi_document the document containing the metaschema.
+    #   this must be frozen recursively; MetaschemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality
     #   of the schema. these are included on the {Schema#jsi_schema_module} of the metaschema.
@@ -63,6 +64,8 @@ module JSI
       end
 
       jsi_node_content = self.jsi_node_content
+
+      #chkbug raise(Bug, 'MetaschemaNode instance must be frozen') unless jsi_node_content.frozen?
 
       extends = Set[]
 
