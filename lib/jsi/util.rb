@@ -117,6 +117,31 @@ module JSI
       end
     end
 
+    # returns an object which is equal to the param object, and is recursively frozen.
+    # the given object is not modified.
+    def deep_to_frozen(object)
+      if object.instance_of?(Hash)
+        out = {}
+        object.each do |k, v|
+          out[deep_to_frozen(k)] = deep_to_frozen(v)
+        end
+        out.freeze
+      elsif object.instance_of?(Array)
+        object.map do |e|
+          deep_to_frozen(e)
+        end.freeze
+      elsif object.instance_of?(String)
+        object.dup.freeze
+      elsif CLASSES_ALWAYS_FROZEN.any? { |c| object.instance_of?(c) }
+        object
+      else
+          raise(NotImplementedError, [
+            "deep_to_frozen not implemented for class: #{object.class}",
+            "object: #{object.pretty_inspect.chomp}",
+          ].join("\n"))
+      end
+    end
+
     # ensures the given param becomes a frozen Set of Modules.
     # returns the param if it is already that, otherwise initializes and freezes such a Set.
     #
