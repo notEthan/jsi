@@ -65,7 +65,6 @@ module JSI
     def ycomb
       proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
     end
-    module_function :ycomb
 
     module FingerprintHash
       # overrides BasicObject#==
@@ -172,6 +171,10 @@ module JSI
         # :nocov:
       end
     end
+
+    public
+
+    extend self
   end
   public
   extend Util
