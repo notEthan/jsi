@@ -102,7 +102,7 @@ module JSI
         unless tokens.respond_to?(:to_ary)
           raise(TypeError, "tokens must be an array. got: #{tokens.inspect}")
         end
-        @tokens = tokens.to_ary.map(&:freeze).freeze
+        @tokens = Util.deep_to_frozen(tokens.to_ary, not_implemented: proc { |o| o })
       end
 
       EMPTY = new(Util::EMPTY_ARY)
