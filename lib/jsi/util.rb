@@ -119,8 +119,8 @@ module JSI
 
     # returns an object which is equal to the param object, and is recursively frozen.
     # the given object is not modified.
-    def deep_to_frozen(object)
-      dtf = proc { |o| deep_to_frozen(o) }
+    def deep_to_frozen(object, not_implemented: nil)
+      dtf = proc { |o| deep_to_frozen(o, not_implemented: not_implemented) }
       if object.instance_of?(Hash)
         out = {}
         object.each do |k, v|
@@ -136,10 +136,14 @@ module JSI
       elsif CLASSES_ALWAYS_FROZEN.any? { |c| object.is_a?(c) } # note: `is_a?`, not `instance_of?`, here because instance_of?(Integer) is false until Fixnum/Bignum is gone. this is fine here; there is no concern of subclasses of CLASSES_ALWAYS_FROZEN duping/freezing differently (as with e.g. ActiveSupport::HashWithIndifferentAccess)
         object
       else
+        if not_implemented
+          not_implemented.call(object)
+        else
           raise(NotImplementedError, [
             "deep_to_frozen not implemented for class: #{object.class}",
             "object: #{object.pretty_inspect.chomp}",
           ].join("\n"))
+        end
       end
     end
 
