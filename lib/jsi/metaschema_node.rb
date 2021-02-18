@@ -26,8 +26,9 @@ module JSI
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
     # @param metaschema_instance_modules [Set<Module>] modules which implement the functionality of the
-    #   schema, to be applied to every schema instance of the metaschema. this must include JSI::Schema
-    #   directly or indirectly.
+    #   schema, to be applied to every schema which is an instance of the metaschema. this must include
+    #   JSI::Schema directly or indirectly. these are the {Schema#jsi_schema_instance_modules} of the
+    #   metaschema.
     # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in the jsi_document
     # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema describing the root of the jsi_document
     def initialize(
