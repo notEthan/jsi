@@ -12,6 +12,8 @@ module JSI
   # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
   #
+  # BootstrapSchema does not support mutation; its document must be immutable.
+  #
   # @api private
   class MetaschemaNode::BootstrapSchema
     include Util::FingerprintHash
@@ -45,6 +47,9 @@ module JSI
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = Util::EMPTY_ARY
+
+      @jsi_node_content = jsi_ptr.evaluate(jsi_document)
+      #chkbug raise(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
     end
 
     # document containing the schema content
@@ -53,9 +58,7 @@ module JSI
     # JSI::Ptr pointing to this schema within the document
     attr_reader :jsi_ptr
 
-    def jsi_node_content
-      jsi_ptr.evaluate(jsi_document)
-    end
+    attr_reader(:jsi_node_content)
 
     # overrides {Schema#subschema}
     def subschema(subptr)
