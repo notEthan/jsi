@@ -536,6 +536,7 @@ module JSI
           uri: @jsi_root_node.jsi_schema_base_uri,
           register: false, # default is already false but this is a place to be explicit
           schema_registry: jsi_schema_registry,
+          mutable: jsi_mutable?,
         )
         modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
     end
