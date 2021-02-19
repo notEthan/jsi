@@ -78,6 +78,13 @@ end
 # register this to be the base class for specs instead of Minitest::Spec
 Minitest::Spec.register_spec_type(//, JSISpec)
 
+Minitest.after_run do
+  if ENV['JSI_EXITDEBUG']
+    byebug
+    nil
+  end
+end
+
 # tests support of things that duck-type #to_hash
 class SortOfHash
   def initialize(hash)
