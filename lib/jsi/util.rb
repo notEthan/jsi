@@ -138,6 +138,7 @@ module JSI
 
       # @return [Util::MemoMap]
       def jsi_memomap(name, **options, &block)
+        raise(Bug, 'must jsi_initialize_memos') unless @jsi_memomaps
         unless @jsi_memomaps.key?(name)
           @jsi_memomaps_mutex.synchronize do
             # note: this ||= appears redundant with `unless @jsi_memomaps.key?(name)`,
