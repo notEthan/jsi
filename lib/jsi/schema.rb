@@ -118,6 +118,9 @@ module JSI
       # the schema will be registered with the `JSI.schema_registry`.
       #
       # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
+      # @param base_uri [nil, #to_str, Addressable::URI] the URI of the schema document.
+      #   relative URIs within the document are resolved using this base_uri.
+      #   the result schema will be registered with this URI in the {JSI.schema_registry}.
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   consist of this schema.
       def new_schema(schema_content, base_uri: nil)
@@ -162,6 +165,7 @@ module JSI
       #
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a schema, it is returned as-is.
+      # @param base_uri (see DescribesSchema#new_schema)
       # @return [JSI::Schema] a JSI::Schema representing the given schema_object
       def new_schema(schema_object, base_uri: nil)
         if schema_object.is_a?(Schema)
