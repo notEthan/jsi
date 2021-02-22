@@ -153,12 +153,6 @@ module JSI
         raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.")
       end
 
-      if instance.is_a?(JSI::Schema)
-        raise(TypeError, "assigning a schema to a #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
-      elsif instance.is_a?(JSI::Base)
-        raise(TypeError, "assigning another JSI::Base instance to a #{self.class.inspect} instance is incorrect. received: #{instance.pretty_inspect.chomp}")
-      end
-
       jsi_initialize_memos
 
       if instance == NOINSTANCE
@@ -191,6 +185,10 @@ module JSI
       end
       if self.jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
+      end
+
+      if jsi_instance.is_a?(JSI::Base)
+        raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
       end
     end
 

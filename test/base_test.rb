@@ -175,14 +175,14 @@ describe JSI::Base do
       let(:instance) { schema.new_jsi({'foo' => 'bar'}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal("assigning another JSI::Base instance to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI> \"foo\" => \"bar\"}", err.message)
+        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI> "foo" => "bar"}), err.message)
       end
     end
     describe 'Schema invalid' do
       let(:instance) { JSI::JSONSchemaOrgDraft06.new_schema({}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal("assigning a schema to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>}", err.message)
+        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI (JSI::JSONSchemaOrgDraft06) Schema>}), err.message)
       end
     end
   end
