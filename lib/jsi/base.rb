@@ -119,32 +119,21 @@ module JSI
       end
     end
 
-    # NOINSTANCE is a magic value passed to #initialize when instantiating a JSI
-    # from a document and pointer.
+    # initializes a JSI whose instance is in the given document at the given pointer.
     #
-    # @private
-    NOINSTANCE = Object.new
-    [:inspect, :to_s].each(&(-> (s, m) { NOINSTANCE.define_singleton_method(m) { s } }.curry.("#{JSI::Base}::NOINSTANCE")))
-    NOINSTANCE.freeze
-
-    # initializes this JSI from the given instance - instance is most commonly
-    # a parsed JSON document consisting of Hash, Array, or sometimes a basic
-    # type, but this is in no way enforced and a JSI may wrap any object.
+    # this is a private api - users should look elsewhere to instantiate JSIs, in particular:
     #
-    # @param instance [Object] the JSON Schema instance to be represented as a JSI
-    # @param jsi_document [Object] for internal use. the instance may be specified as a
-    #   node in the `jsi_document` param, pointed to by `jsi_ptr`. the param `instance`
-    #   MUST be `NOINSTANCE` to use the jsi_document + jsi_ptr form. `jsi_document` MUST
-    #   NOT be passed if `instance` is anything other than `NOINSTANCE`.
-    # @param jsi_ptr [JSI::Ptr] for internal use. a pointer specifying
-    #   the path of this instance in the `jsi_document` param. `jsi_ptr` must be passed
-    #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
-    # @param jsi_root_node [JSI::Base] for internal use, specifies the JSI at the root of the document
+    # - {JSI.new_schema} and {Schema::DescribesSchema#new_schema} to instantiate schemas
+    # - {Schema#new_jsi} to instantiate schema instances
+    #
+    # @api private
+    # @param jsi_document [Object] the document containing the instance
+    # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
+    # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base>]
-    def initialize(instance,
-        jsi_document: nil,
-        jsi_ptr: nil,
+    def initialize(jsi_document,
+        jsi_ptr: Ptr[],
         jsi_root_node: nil,
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: []
@@ -155,7 +144,6 @@ module JSI
 
       jsi_initialize_memos
 
-      if instance == NOINSTANCE
         self.jsi_document = jsi_document
         self.jsi_ptr = jsi_ptr
         if @jsi_ptr.root?
@@ -170,13 +158,6 @@ module JSI
           end
           @jsi_root_node = jsi_root_node
         end
-      else
-        raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || jsi_root_node
-        @jsi_document = instance
-        @jsi_ptr = Ptr[]
-        @jsi_root_node = self
-      end
-
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
@@ -586,8 +567,7 @@ module JSI
 
     def jsi_subinstance_memos
       jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , subinstance_schemas: |
-        JSI::SchemaClasses.class_for_schemas(subinstance_schemas).new(Base::NOINSTANCE,
-          jsi_document: @jsi_document,
+        JSI::SchemaClasses.class_for_schemas(subinstance_schemas).new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_root_node: @jsi_root_node,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,

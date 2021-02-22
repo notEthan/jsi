@@ -281,8 +281,7 @@ module JSI
 
             result_schema_class = JSI::SchemaClasses.class_for_schemas(result_schema_schemas)
 
-            result_schema_class.new(Base::NOINSTANCE,
-              jsi_document: schema.jsi_document,
+            result_schema_class.new(schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,
               jsi_root_node: schema.jsi_root_node,
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
