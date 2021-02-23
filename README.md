@@ -133,7 +133,7 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 - `JSI::Base` is the base class for each JSI schema class representing instances of JSON Schemas.
 - a "JSI Schema" is a JSON Schema, instantiated as (usually) a JSI::Base described by a metaschema (see the sections on Metaschemas below). a JSI Schema is an instance of the module `JSI::Schema`.
-- a "JSI schema module" is a module which represents one schema. Instances of that schema are extended with its JSI schema module. applications may reopen these modules to add functionality to JSI instances described by a given schema.
+- a "JSI Schema Module" is a module which represents one schema, dynamically created by that Schema. Instances of that schema are extended with its JSI schema module. applications may reopen these modules to add functionality to JSI instances described by a given schema.
 - a "JSI schema class" is a subclass of `JSI::Base` representing one or more JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
