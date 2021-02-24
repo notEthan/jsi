@@ -371,6 +371,16 @@ module JSI
       JSI::SchemaClasses.module_for_schema(self)
     end
 
+    # Evaluates the given block in the context of this schema's JSI schema module.
+    # Any arguments passed to this method will be passed to the block.
+    # shortcut to invoke [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec)
+    # on our {#jsi_schema_module}.
+    #
+    # @return the result of evaluating the block
+    def jsi_schema_module_exec(*a, **kw, &block)
+      jsi_schema_module.module_exec(*a, **kw, &block)
+    end
+
     # @private @deprecated
     def jsi_schema_class
       JSI::SchemaClasses.class_for_schemas(SchemaSet[self])
