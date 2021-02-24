@@ -153,4 +153,28 @@ describe 'unsupported behavior' do
       end
     end
   end
+
+  describe 'conflicting JSI Schema Module instance methods' do
+    let(:schema_content) do
+      YAML.safe_load(<<~YAML
+        definitions:
+          a:
+            {}
+          b:
+            {}
+        allOf:
+          - $ref: "#/definitions/a"
+          - $ref: "#/definitions/b"
+        YAML
+      )
+    end
+    let(:instance) do
+      {}
+    end
+    it "defines both; an undefined one wins" do
+      schema.definitions['a'].jsi_schema_module.module_eval { define_method(:foo) { :a } }
+      schema.definitions['b'].jsi_schema_module.module_eval { define_method(:foo) { :b } }
+      assert_includes([:a, :b], subject.foo)
+    end
+  end
 end
