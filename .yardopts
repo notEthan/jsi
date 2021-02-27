@@ -1,1 +1,4 @@
---main README.md --markup=markdown --no-private {lib}/**/*.rb
+--main README.md
+--markup=markdown
+--no-private
+{lib}/**/*.rb
