@@ -317,9 +317,7 @@ module JSI
 
     # @return [void]
     def jsi_schema_instance_modules=(jsi_schema_instance_modules)
-      raise(TypeError) unless jsi_schema_instance_modules.is_a?(Set)
-      raise(TypeError) unless jsi_schema_instance_modules.all? { |m| m.is_a?(Module) }
-      @jsi_schema_instance_modules = jsi_schema_instance_modules
+      @jsi_schema_instance_modules = Util.ensure_module_set(jsi_schema_instance_modules)
     end
 
     # a resource containing this schema.

@@ -64,6 +64,7 @@ module JSI
       # @param modules [Set<Module>] metaschema instance modules
       # @return [Class] a subclass of MetaschemaNode::BootstrapSchema with the given modules included
       def bootstrap_schema_class(modules)
+        modules = Util.ensure_module_set(modules)
         jsi_memoize(__method__, modules) do |modules|
           Class.new(MetaschemaNode::BootstrapSchema).instance_exec(modules) do |modules|
             define_singleton_method(:metaschema_instance_modules) { modules }

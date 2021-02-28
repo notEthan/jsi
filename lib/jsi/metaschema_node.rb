@@ -43,7 +43,7 @@ module JSI
 
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
-      @metaschema_instance_modules = metaschema_instance_modules
+      @metaschema_instance_modules = Util.ensure_module_set(metaschema_instance_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
 
