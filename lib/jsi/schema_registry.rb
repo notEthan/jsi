@@ -33,7 +33,7 @@ module JSI
         end
       end
 
-      JSI::Util.ycomb do |rec|
+      Util.ycomb do |rec|
         proc do |node|
           if node.is_a?(JSI::Schema) && node.schema_absolute_uri
             register_single(node.schema_absolute_uri, node)

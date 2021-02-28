@@ -124,7 +124,7 @@ module JSI
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   are inplace applicators matched from self to the schema being instantiated.
       def new_schema(schema_content, base_uri: nil)
-        new_jsi(JSI.deep_stringify_symbol_keys(schema_content),
+        new_jsi(Util.deep_stringify_symbol_keys(schema_content),
           base_uri: base_uri,
         ).tap(&:register_schema)
       end
