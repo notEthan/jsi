@@ -281,7 +281,7 @@ module JSI
 
     # @return [Class subclassing JSI::Base] a JSI class (subclass of JSI::Base) representing this schema.
     def jsi_schema_class
-      JSI.class_for_schemas(SchemaSet[self])
+      JSI::SchemaClasses.class_for_schemas(SchemaSet[self])
     end
 
     # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the

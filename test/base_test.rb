@@ -58,13 +58,13 @@ describe JSI::Base do
   end
   describe '.class_for_schemas' do
     it 'returns a class from a schema' do
-      class_for_schema = JSI.class_for_schemas([schema])
+      class_for_schema = JSI::SchemaClasses.class_for_schemas([schema])
       # same class every time
-      assert_equal(JSI.class_for_schemas([schema]), class_for_schema)
+      assert_equal(JSI::SchemaClasses.class_for_schemas([schema]), class_for_schema)
       assert_operator(class_for_schema, :<, JSI::Base)
     end
-    it 'returns the same class from a hash' do
-      assert_equal(JSI.class_for_schemas([schema]), JSI.class_for_schemas([schema_content]))
+    it 'raises given a nonschema' do
+      assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaClasses.class_for_schemas([schema_content]) }
     end
   end
   describe 'JSI::SchemaClasses.module_for_schema' do
