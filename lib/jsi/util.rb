@@ -84,6 +84,4 @@ module JSI
 
     extend Private
   end
-  public
-  extend Util
 end
