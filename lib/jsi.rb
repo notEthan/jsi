@@ -77,11 +77,6 @@ module JSI
     JSI::Schema.new_schema(schema_object, **kw).jsi_schema_module
   end
 
-  # @private @deprecated
-  def self.class_for_schemas(schemas)
-    SchemaClasses.class_for_schemas(schemas.map { |schema| JSI.new_schema(schema) })
-  end
-
   # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.
   #
   # @return [JSI::SchemaRegistry]
