@@ -7,9 +7,9 @@ module JSI
     class Collision < StandardError
     end
 
-    # an exception raised when an attempt is made to add a resource to the registry using a URI which is
-    # not absolute (it is a relative URI or it contains a fragment)
-    class NonAbsoluteURIRegistration < StandardError
+    # an exception raised when an attempt is made to access (register or find) a resource of the
+    # registry using a URI which is not absolute (it is a relative URI or it contains a fragment)
+    class NonAbsoluteURI < StandardError
     end
 
     # an exception raised when a URI we are looking for has not been registered
@@ -53,12 +53,7 @@ module JSI
     # @raise [JSI::SchemaRegistry::ResourceNotFound]
     def find(uri)
       uri = Addressable::URI.parse(uri)
-      if uri.fragment
-        raise(ArgumentError, "SchemaRegistry only registers absolute URIs; cannot find URI with fragment: #{uri}")
-      end
-      if uri.relative?
-        raise(ArgumentError, "SchemaRegistry only registers absolute URIs; cannot find relative URI: #{uri}")
-      end
+      ensure_uri_absolute(uri)
       registered_uris = @resources.keys
       if !registered_uris.include?(uri)
         raise(ResourceNotFound, "URI #{uri} is not registered. registered URIs:\n#{registered_uris.join("\n")}")
@@ -80,9 +75,7 @@ module JSI
     # @return [void]
     def register_single(uri, resource)
       @resources_mutex.synchronize do
-        if uri.relative? || uri.fragment
-          raise(NonAbsoluteURIRegistration, "cannot register URI which is not absolute: #{uri}")
-        end
+        ensure_uri_absolute(uri)
         if @resources.key?(uri)
           if @resources[uri] != resource
             raise(Collision, "URI collision on #{uri}.\nexisting:\n#{@resources[uri].pretty_inspect.chomp}\nnew:\n#{resource.pretty_inspect.chomp}")
@@ -92,6 +85,17 @@ module JSI
         end
       end
       nil
+    end
+
+    private
+
+    def ensure_uri_absolute(uri)
+      if uri.fragment
+        raise(NonAbsoluteURI, "SchemaRegistry only registers absolute URIs. cannot access URI with fragment: #{uri}")
+      end
+      if uri.relative?
+        raise(NonAbsoluteURI, "SchemaRegistry only registers absolute URIs. cannot access relative URI: #{uri}")
+      end
     end
   end
 end

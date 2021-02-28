@@ -209,7 +209,7 @@ module JSI
 
       jsi_ptr.reference_tokens.map do |token|
         parent.tap do
-          parent = parent[token]
+          parent = parent[token, as_jsi: true]
         end
       end.reverse
     end
@@ -222,11 +222,22 @@ module JSI
     end
 
     # @param token [String, Integer, Object] the token to subscript
+    # @param as_jsi [:auto, true, false] whether to return the result value as a JSI. one of:
+    #   - :auto (default): by default a JSI will be returned when either:
+    #     - the result is a complex value (responds to #to_ary or #to_hash) and is described by some schemas
+    #     - the result is a schema (including true/false schemas)
+    #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
+    #     simple type (anything unresponsive to #to_ary / #to_hash).
+    #   - true: the result value will always be returned as a JSI. the #jsi_schemas of the result may be empty
+    #     if no schemas describe the instance.
+    #   - false: the result value will always be the plain instance.
+    #
+    #   note that nil is returned (regardless of as_jsi) when there is no value to return because the token
+    #   is not a hash key or array index of the instance and no default value applies.
+    #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
+    #   unspecified behavior.)
     # @return [JSI::Base, Object] the instance's subscript value at the given token.
-    #   if this JSI's schemas define subschemas which apply for the given token, and the value is complex,
-    #   returns the subscript value as a JSI instantiation of those subschemas. otherwise, the plain instance
-    #   value is returned.
-    def [](token)
+    def [](token, as_jsi: :auto)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
         value = jsi_node_content_hash_pubsend(:[], token)
@@ -241,13 +252,8 @@ module JSI
         subinstance_schemas = jsi_subinstance_schemas_memos[token: token, value: value]
 
         if token_in_range
-          complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
-          schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
-
-          if complex_value || schema_value
+          jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi) do
             jsi_subinstance_memos[token: token, subinstance_schemas: subinstance_schemas]
-          else
-            value
           end
         else
           defaults = Set.new
@@ -260,7 +266,7 @@ module JSI
           if defaults.size == 1
             # use the default value
             # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
-            dup.tap { |o| o[token] = defaults.first }[token]
+            dup.tap { |o| o[token] = defaults.first }[token, as_jsi: as_jsi]
           else
             # I kind of want to just return nil here. the preferred mechanism for
             # a JSI's default value should be its schema. but returning nil ignores
@@ -447,6 +453,24 @@ module JSI
           jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
         )
+      end
+    end
+
+    def jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi)
+      value_as_jsi = if [true, false].include?(as_jsi)
+        as_jsi
+      elsif as_jsi == :auto
+        complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+        schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
+        complex_value || schema_value
+      else
+        raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
+      end
+
+      if value_as_jsi
+        yield
+      else
+        value
       end
     end
   end

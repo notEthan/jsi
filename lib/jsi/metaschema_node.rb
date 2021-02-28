@@ -1,24 +1,22 @@
 # frozen_string_literal: true
 
 module JSI
-  # a MetaschemaNode is a PathedNode whose jsi_document contains a metaschema.
-  # as with any PathedNode the jsi_ptr points to the content of a node.
+  # a MetaschemaNode is a JSI instance representing a node in a document which contains a metaschema.
   # the root of the metaschema is pointed to by metaschema_root_ptr.
   # the schema describing the root of the document is pointed to by root_schema_ptr.
   #
-  # like JSI::Base, this class represents an instance of a schema, an instance
-  # which may itself be a schema. unlike JSI::Base, the document containing the
-  # schema and the instance is the same, and a schema may be an instance of itself.
+  # like JSI::Base's normal subclasses, this class represents an instance of a schema set, an instance
+  # which may itself be a schema. unlike JSI::Base, the document containing the instance and its schemas
+  # is the same, and a schema (the metaschema) may be an instance of itself.
   #
-  # the document containing the metaschema, its subschemas, and instances of those
-  # subschemas is the jsi_document.
+  # unlike JSI::Base's normal subclasses, the schemas describing the instance are not part of the class.
+  # since the metaschema describes itself, attempting to construct a class from the JSI Schema Module of a
+  # schema which is itself an instance of that class results in a causality loop.
+  # instead, a MetaschemaNode calculates its {#jsi_schemas} and extends itself with their JSI Schema
+  # modules during initialization.
+  # the MetaschemaNode of the metaschema is extended with its own JSI Schema Module.
   #
-  # the schema instance is the content in the document pointed to by the MetaschemaNode's jsi_ptr.
-  #
-  # unlike with JSI::Base, the schema is not part of the class, since a metaschema
-  # needs the ability to have its schema be the instance itself.
-  #
-  # if the MetaschemaNode's schema is its self, it will be extended with JSI::Metaschema.
+  # if the MetaschemaNode's schemas include its self, it is extended with JSI::Metaschema.
   #
   # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
   # the metaschema is one of its schemas.
@@ -28,8 +26,9 @@ module JSI
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::JSON::Pointer] ptr to this MetaschemaNode in jsi_document
     # @param metaschema_instance_modules [Set<Module>] modules which implement the functionality of the
-    #   schema, to be applied to every schema instance of the metaschema. this must include JSI::Schema
-    #   directly or indirectly.
+    #   schema, to be applied to every schema which is an instance of the metaschema. this must include
+    #   JSI::Schema directly or indirectly. these are the {Schema#jsi_schema_instance_modules} of the
+    #   metaschema.
     # @param metaschema_root_ptr [JSI::JSON::Pointer] ptr to the root of the metaschema in the jsi_document
     # @param root_schema_ptr [JSI::JSON::Pointer] ptr to the schema describing the root of the jsi_document
     def initialize(
@@ -57,7 +56,8 @@ module JSI
 
       if jsi_node_content.respond_to?(:to_hash)
         extend PathedHashNode
-      elsif jsi_node_content.respond_to?(:to_ary)
+      end
+      if jsi_node_content.respond_to?(:to_ary)
         extend PathedArrayNode
       end
 
@@ -152,10 +152,11 @@ module JSI
     end
 
     # @param token [String, Integer, Object] the token to subscript
+    # @param as_jsi (see JSI::Base#[])
     # @return [MetaschemaNode, Object] the node content's subscript value at the given token.
     #   if there is a subschema defined for that token on this MetaschemaNode's schema,
     #   returns that value as a MetaschemaNode instantiation of that subschema.
-    def [](token)
+    def [](token, as_jsi: :auto)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
         value = jsi_node_content_hash_pubsend(:[], token)
@@ -170,10 +171,8 @@ module JSI
         if token_in_range
           value_node = jsi_subinstance_memos[token]
 
-          if value_node.is_a?(Schema) || value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
+          jsi_subinstance_as_jsi(value, value_node.jsi_schemas, as_jsi) do
             value_node
-          else
-            value
           end
         else
           # I think I will not support Hash#default/#default_proc in this case.

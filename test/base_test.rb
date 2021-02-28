@@ -73,8 +73,8 @@ describe JSI::Base do
       # same module every time
       assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
     end
-    it 'returns a module from a hash' do
-      assert_equal(JSI::SchemaClasses.module_for_schema(schema), JSI::SchemaClasses.module_for_schema(schema.jsi_instance))
+    it 'raises given a nonschema' do
+      assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaClasses.module_for_schema(schema_content) }
     end
   end
   describe 'initialization' do
@@ -190,6 +190,17 @@ describe JSI::Base do
       it 'has more' do
         assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.jsi_parent_nodes)
         assert_equal(subject.foo.bar, subject.foo.bar.baz.jsi_parent_node)
+      end
+    end
+    describe 'jsi_parent_nodes not described by schemas' do
+      let(:instance) { {'foo' => {'a' => {'b' => ['c']}}} }
+      it 'has more' do
+        a = subject.foo['a', as_jsi: true]
+        b = a['b', as_jsi: true]
+        c = b[0, as_jsi: true] # TODO use jsi_child_node or evaluate
+        assert_equal([b, a, subject.foo, subject], c.jsi_parent_nodes)
+        assert_equal(b, c.jsi_parent_node)
+        assert_equal(a, b.jsi_parent_node)
       end
     end
   end

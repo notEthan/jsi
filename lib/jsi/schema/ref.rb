@@ -10,7 +10,7 @@ module JSI
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Addressable::URI.parse(ref)
-      @ref_schema = ref_schema
+      @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
     end
 
     attr_reader :ref
@@ -56,7 +56,7 @@ module JSI
 
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
-        elsif ref_schema.jsi_subschema_base_uri && ref_schema.jsi_subschema_base_uri.absolute? # TODO the second check is redundant unless jsi_subschema_base_uri may be relative
+        elsif ref_schema && ref_schema.jsi_subschema_base_uri && ref_schema.jsi_subschema_base_uri.absolute? # TODO the last check is redundant unless jsi_subschema_base_uri may be relative
           ref_abs_uri = ref_schema.jsi_subschema_base_uri.join(ref_uri_nofrag)
         else
           ref_abs_uri = nil
@@ -106,14 +106,8 @@ module JSI
         raise(Schema::ReferenceError, "cannot find schema by fragment: #{fragment} from ref schema: #{ref_schema.pretty_inspect.chomp}")
       end
 
-      if result_schema.is_a?(JSI::Schema)
-        return @deref_schema = result_schema
-      else
-        raise(Schema::NotASchemaError, [
-          "object identified by uri #{ref} is not a schema:",
-          result_schema.pretty_inspect.chomp,
-        ].join("\n"))
-      end
+      Schema.ensure_schema(result_schema, msg: "object identified by uri #{ref} is not a schema:")
+      return @deref_schema = result_schema
     end
 
     # @return [String]

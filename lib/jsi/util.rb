@@ -65,7 +65,6 @@ module JSI
     def ycomb
       proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
     end
-    module_function :ycomb
 
     module FingerprintHash
       # overrides BasicObject#==
@@ -138,6 +137,7 @@ module JSI
 
       # @return [Util::MemoMap]
       def jsi_memomap(name, **options, &block)
+        raise(Bug, 'must jsi_initialize_memos') unless @jsi_memomaps
         unless @jsi_memomaps.key?(name)
           @jsi_memomaps_mutex.synchronize do
             # note: this ||= appears redundant with `unless @jsi_memomaps.key?(name)`,
@@ -171,6 +171,10 @@ module JSI
         # :nocov:
       end
     end
+
+    public
+
+    extend self
   end
   public
   extend Util

@@ -111,13 +111,32 @@ module JSI
     module DescribesSchema
       # instantiates the given schema content as a JSI Schema.
       #
-      # the schema will be registered with `JSI.schema_registry`.
+      # the schema is instantiated after recursively converting any symbol hash keys in the structure
+      # to strings. note that this is in contrast to {JSI::Schema#new_jsi}, which does not alter its
+      # given instance.
+      #
+      # the schema will be registered with the `JSI.schema_registry`.
       #
       # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
+      # @param base_uri [nil, #to_str, Addressable::URI] the URI of the schema document.
+      #   relative URIs within the document are resolved using this base_uri.
+      #   the result schema will be registered with this URI in the {JSI.schema_registry}.
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   consist of this schema.
       def new_schema(schema_content, base_uri: nil)
-        new_jsi(schema_content, jsi_schema_base_uri: base_uri).tap(&:register_schema)
+        new_jsi(JSI.deep_stringify_symbol_keys(schema_content),
+          jsi_schema_base_uri: base_uri,
+        ).tap(&:register_schema)
+      end
+
+      # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+      #
+      # see {.new_schema}
+      #
+      # @param (see .new_schema)
+      # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
+      def self.new_schema_module(schema_content, *a)
+        new_schema(schema_content, *a).jsi_schema_module
       end
     end
 
@@ -146,6 +165,7 @@ module JSI
       #
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a schema, it is returned as-is.
+      # @param base_uri (see DescribesSchema#new_schema)
       # @return [JSI::Schema] a JSI::Schema representing the given schema_object
       def new_schema(schema_object, base_uri: nil)
         if schema_object.is_a?(Schema)
@@ -153,7 +173,6 @@ module JSI
         elsif schema_object.is_a?(JSI::Base)
           raise(NotASchemaError, "the given schema_object is a JSI::Base, but is not a JSI::Schema: #{schema_object.pretty_inspect.chomp}")
         elsif schema_object.respond_to?(:to_hash)
-          schema_object = JSI.deep_stringify_symbol_keys(schema_object)
           if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
             metaschema = supported_metaschemas.detect { |ms| schema_object['$schema'] == ms['$id'] || schema_object['$schema'] == ms['id'] }
             unless metaschema
@@ -175,6 +194,24 @@ module JSI
 
       # @deprecated
       alias_method :from_object, :new_schema
+
+      # ensure the given object is a JSI Schema
+      #
+      # @param schema [Object] the thing the caller wishes to ensure is a Schema
+      # @param msg [#to_s, #to_ary] lines of the error message preceding the pretty-printed schema param
+      #   if the schema param is not a schema
+      # @raise [NotASchemaError] if the schema param is not a schema
+      # @return [Schema] the given schema
+      def ensure_schema(schema, msg: "indicated object is not a schema:")
+        if schema.is_a?(Schema)
+          schema
+        else
+          raise(NotASchemaError, [
+            *msg,
+            schema.pretty_inspect.chomp,
+          ].join("\n"))
+        end
+      end
     end
 
     # the underlying JSON data used to instantiate this JSI::Schema.
@@ -315,16 +352,16 @@ module JSI
 
     def subschema_map
       jsi_memomap(:subschema) do |subptr|
-        if subptr.empty?
-          self
-        elsif is_a?(MetaschemaNode::BootstrapSchema)
+        if is_a?(MetaschemaNode::BootstrapSchema)
           self.class.new(
             jsi_document,
             jsi_ptr: jsi_ptr + subptr,
             jsi_schema_base_uri: jsi_subschema_base_uri,
           )
         else
-          subptr.evaluate(self)
+          Schema.ensure_schema(subptr.evaluate(self), msg: [
+            "subschema is not a schema at pointer: #{subptr.pointer}"
+          ])
         end
       end
     end
@@ -345,9 +382,7 @@ module JSI
     def resource_root_subschema_map
       jsi_memomap(:resource_root_subschema_map) do |ptr|
         schema = self
-        if schema.schema_resource_root?
-          result_schema = schema.subschema(ptr)
-        elsif schema.is_a?(MetaschemaNode::BootstrapSchema)
+        if schema.is_a?(MetaschemaNode::BootstrapSchema)
           # BootstrapSchema does not track jsi_schema_resource_ancestors used by #schema_resource_root;
           # resource_root_subschema is always relative to the document root.
           # BootstrapSchema also does not implement jsi_root_node or #[]. we instantiate the ptr directly
@@ -360,10 +395,9 @@ module JSI
         else
           result_schema = ptr.evaluate(schema.schema_resource_root)
         end
-        unless result_schema.is_a?(JSI::Schema)
-          raise(NotASchemaError, "subschema not a schema at ptr #{ptr.inspect}: #{result_schema.pretty_inspect.chomp}")
-        end
-        result_schema
+        Schema.ensure_schema(result_schema, msg: [
+          "subschema is not a schema at pointer: #{ptr.pointer}"
+        ])
       end
     end
 
