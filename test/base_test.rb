@@ -211,6 +211,40 @@ describe JSI::Base do
       assert_raises(NoMethodError) { subject.map { nil } }
     end
   end
+  describe '#jsi_each_child_node' do
+    let(:schema_content) do
+      {
+        'properties' => {
+          'foo' => {'items' => {'title' => 'foo items'}},
+        },
+        'additionalProperties' => {'title' => 'addtl'},
+      }
+    end
+
+    describe 'iterating a complex structure' do
+      let(:instance) { {'foo' => ['x', []], 'bar' => [9]} }
+      it "yields JSIs with the right schemas" do
+        child_nodes = subject.jsi_each_child_node.to_a
+        assert_equal({
+          JSI::JSON::Pointer[] => Set[schema],
+          JSI::JSON::Pointer["foo"] => Set[schema.properties['foo']],
+          JSI::JSON::Pointer["foo", 0] => Set[schema.properties['foo'].items],
+          JSI::JSON::Pointer["foo", 1] => Set[schema.properties['foo'].items],
+          JSI::JSON::Pointer["bar"] => Set[schema.additionalProperties],
+          JSI::JSON::Pointer["bar", 0] => Set[],
+        }, child_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
+      end
+    end
+    describe 'iterating a simple structure' do
+      let(:instance) { 0 }
+      it "yields a JSI with the right schemas" do
+        child_nodes = subject.jsi_each_child_node.to_a
+        assert_equal({
+          JSI::JSON::Pointer[] => Set[schema],
+        }, child_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
+      end
+    end
+  end
   describe '#jsi_modified_copy' do
     describe 'with an instance that does not have #jsi_modified_copy' do
       let(:instance) { Object.new }
