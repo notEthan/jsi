@@ -32,6 +32,18 @@ describe 'JSI::SchemaSet' do
       end
     end
   end
+  describe '.ensure_schema_set' do
+    it 'ensures each thing is a schema set' do
+      schemas = [schema_a]
+      schema_set = JSI::SchemaSet.new(schemas)
+      assert_equal(schema_set.object_id, JSI::SchemaSet.ensure_schema_set(schema_set).object_id)
+      assert_equal(schema_set, JSI::SchemaSet.ensure_schema_set(schemas))
+      assert_is_a(JSI::SchemaSet, JSI::SchemaSet.ensure_schema_set(schemas))
+      assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaSet.ensure_schema_set([3]) }
+      # TypeError seems better but ruby's Set raises ArgumentError
+      assert_raises(ArgumentError) { JSI::SchemaSet.ensure_schema_set(3) }
+    end
+  end
   describe '#inspect' do
     it 'inspects' do
       inspect = JSI::SchemaSet[schema_a].inspect

@@ -53,6 +53,31 @@ module JSI
       end
     end
 
+    # ensures the given param becomes a frozen Set of Modules.
+    # returns the param if it is already that, otherwise initializes and freezes such a Set.
+    #
+    # @param modules [Set, Enumerable] the object to ensure becomes a frozen Set of Modules
+    # @return [SchemaSet] the given SchemaSet, or a SchemaSet initialized from the given Enumerable
+    # @raise [ArgumentError] when the modules param is not an Enumerable
+    # @raise [Schema::NotASchemaError] when the modules param contains objects which are not Schemas
+    def ensure_module_set(modules)
+      if modules.is_a?(Set) && modules.frozen?
+        modules
+      else
+        set = Set.new(modules).freeze
+
+        not_modules = set.reject { |s| s.is_a?(Module) }
+        if !not_modules.empty?
+          raise(TypeError, [
+            "ensure_module_set give non-Module objects:",
+            *not_modules.map { |ns| ns.pretty_inspect.chomp },
+          ].join("\n"))
+        end
+
+        set
+      end
+    end
+
     # this is the Y-combinator, which allows anonymous recursive functions. for a simple example,
     # to define a recursive function to return the length of an array:
     #
