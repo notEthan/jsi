@@ -405,8 +405,7 @@ module JSI
     # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the
     # instance.
     #
-    # @param instance [Object] the JSON Schema instance to be represented as a JSI
-    # @param uri (see SchemaSet#new_jsi)
+    # @param (see SchemaSet#new_jsi)
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are
     #   inplace applicator schemas matched from this schema.
     def new_jsi(instance, **kw)
