@@ -88,13 +88,16 @@ module JSI
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
+    # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
+    #   The instance content will be transformed with `to_immutable` if the JSI will be immutable.
     # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
     #   inplace applicators of the schemas in this set.
     def new_jsi(instance,
         uri: nil,
         register: false,
         schema_registry: JSI.schema_registry,
-        stringify_symbol_keys: false
+        stringify_symbol_keys: false,
+        mutable: true
     )
       if stringify_symbol_keys
         instance = Util.deep_stringify_symbol_keys(instance)
@@ -114,7 +117,7 @@ module JSI
 
       jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
         includes: SchemaClasses.includes_for(instance),
-        mutable: true,
+        mutable: mutable,
       )
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
