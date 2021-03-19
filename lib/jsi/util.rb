@@ -113,6 +113,7 @@ module JSI
       Result = Util::AttrStruct[*%w(
         value
         inputs
+        inputs_hash
       )]
 
       class Result
@@ -141,11 +142,12 @@ module JSI
         end
 
         result_mutex.synchronize do
-          if @results.key?(key) && inputs == @results[key].inputs
+          inputs_hash = inputs.hash
+          if @results.key?(key) && inputs_hash == @results[key].inputs_hash && inputs == @results[key].inputs
             @results[key].value
           else
             value = @block.call(*inputs)
-            @results[key] = Result.new(value: value, inputs: inputs)
+            @results[key] = Result.new(value: value, inputs: inputs, inputs_hash: inputs_hash)
             value
           end
         end
