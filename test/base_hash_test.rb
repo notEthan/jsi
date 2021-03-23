@@ -267,6 +267,26 @@ describe 'JSI::Base hash' do
       end
     end
   end
+  describe 'each' do
+    it 'yields each element' do
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, Array]
+      subject.each { |_, v| assert_is_a(expect_modules.shift, v) }
+    end
+    it 'yields each element as_jsi' do
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base]
+      subject.each(as_jsi: true) { |_, v| assert_is_a(expect_modules.shift, v) }
+    end
+  end
+  describe 'to_hash' do
+    it 'includes each element' do
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, Array]
+      subject.to_hash.each { |_, v| assert_is_a(expect_modules.shift, v) }
+    end
+    it 'includes each element as_jsi' do
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base]
+      subject.to_hash(as_jsi: true).each { |_, v| assert_is_a(expect_modules.shift, v) }
+    end
+  end
   # these methods just delegate to Hash so not going to test excessively
   describe 'key only methods' do
     it('#each_key') { assert_equal(['foo', 'bar', 'baz'], subject.each_key.to_a) }
