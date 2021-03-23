@@ -29,11 +29,11 @@ module JSI
       alias_method :to_s, :inspect
     end
 
-    # @param jsi_ptr [JSI::JSON::Pointer] pointer to the schema in the document
+    # @param jsi_ptr [JSI::Ptr] pointer to the schema in the document
     # @param jsi_document [#to_hash, #to_ary, Boolean, Object] document containing the schema
     def initialize(
         jsi_document,
-        jsi_ptr: JSI::JSON::Pointer[],
+        jsi_ptr: Ptr[],
         jsi_schema_base_uri: nil
     )
       unless respond_to?(:metaschema_instance_modules)
@@ -50,7 +50,7 @@ module JSI
     # document containing the schema content
     attr_reader :jsi_document
 
-    # JSI::JSON::Pointer pointing to this schema within the document
+    # JSI::Ptr pointing to this schema within the document
     attr_reader :jsi_ptr
 
     def jsi_node_content

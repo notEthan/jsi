@@ -91,8 +91,8 @@ module JSI
 
       if fragment
         begin
-          ptr_from_fragment = JSI::JSON::Pointer.from_fragment(fragment)
-        rescue JSI::JSON::Pointer::PointerSyntaxError
+          ptr_from_fragment = Ptr.from_fragment(fragment)
+        rescue Ptr::PointerSyntaxError
         end
       end
 
