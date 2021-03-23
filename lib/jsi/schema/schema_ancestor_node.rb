@@ -23,8 +23,8 @@ module JSI
     end
 
     def jsi_ptr=(jsi_ptr)
-      unless jsi_ptr.is_a?(JSI::JSON::Pointer)
-        raise(TypeError, "jsi_ptr must be a JSI::JSON::Pointer; got: #{jsi_ptr.inspect}")
+      unless jsi_ptr.is_a?(Ptr)
+        raise(TypeError, "jsi_ptr must be a JSI::Ptr; got: #{jsi_ptr.inspect}")
       end
       @jsi_ptr = jsi_ptr
     end

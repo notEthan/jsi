@@ -111,7 +111,7 @@ module JSI
     end
 
     # NOINSTANCE is a magic value passed to #initialize when instantiating a JSI
-    # from a document and JSON Pointer.
+    # from a document and pointer.
     #
     # @private
     NOINSTANCE = Object.new
@@ -127,7 +127,7 @@ module JSI
     #   node in the `jsi_document` param, pointed to by `jsi_ptr`. the param `instance`
     #   MUST be `NOINSTANCE` to use the jsi_document + jsi_ptr form. `jsi_document` MUST
     #   NOT be passed if `instance` is anything other than `NOINSTANCE`.
-    # @param jsi_ptr [JSI::JSON::Pointer] for internal use. a JSON pointer specifying
+    # @param jsi_ptr [JSI::Ptr] for internal use. a pointer specifying
     #   the path of this instance in the `jsi_document` param. `jsi_ptr` must be passed
     #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
     # @param jsi_root_node [JSI::Base] for internal use, specifies the JSI at the root of the document
@@ -168,7 +168,7 @@ module JSI
       else
         raise(Bug, 'incorrect usage') if jsi_document || jsi_ptr || jsi_root_node
         @jsi_document = instance
-        @jsi_ptr = JSI::JSON::Pointer[]
+        @jsi_ptr = Ptr[]
         @jsi_root_node = self
       end
 
@@ -186,7 +186,7 @@ module JSI
     # document containing the instance of this JSI
     attr_reader :jsi_document
 
-    # JSI::JSON::Pointer pointing to this JSI's instance within the jsi_document
+    # JSI::Ptr pointing to this JSI's instance within the jsi_document
     attr_reader :jsi_ptr
 
     # the JSI at the root of this JSI's document

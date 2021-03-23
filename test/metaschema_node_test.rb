@@ -60,8 +60,8 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:metaschema_root_ptr) { JSI::JSON::Pointer[] }
-    let(:root_schema_ptr) { JSI::JSON::Pointer[] }
+    let(:metaschema_root_ptr) { JSI::Ptr[] }
+    let(:root_schema_ptr) { JSI::Ptr[] }
     it 'acts like a metaschema' do
       assert_metaschema_behaves
     end
@@ -101,8 +101,8 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:metaschema_root_ptr) { JSI::JSON::Pointer['schemas', 'JsonSchema'] }
-    let(:root_schema_ptr) { JSI::JSON::Pointer['schemas', 'Document'] }
+    let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
+    let(:root_schema_ptr) { JSI::Ptr['schemas', 'Document'] }
     it 'acts like a metaschema' do
       assert_is_a(root_node.schemas['Document'].jsi_schema_module, root_node)
       assert_is_a(root_node.schemas['Document'].properties['schemas'].jsi_schema_module, root_node.schemas)
@@ -130,9 +130,9 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:jsi_ptr) { JSI::JSON::Pointer[] }
-    let(:metaschema_root_ptr) { JSI::JSON::Pointer['$defs', 'JsonSchema'] }
-    let(:root_schema_ptr) { JSI::JSON::Pointer['$defs', 'JsonSchema'] }
+    let(:jsi_ptr) { JSI::Ptr[] }
+    let(:metaschema_root_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
+    let(:root_schema_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
     it 'acts like a metaschema' do
       assert_is_a(metaschema.jsi_schema_module, root_node)
       assert_is_a(metaschema.properties['$defs'].jsi_schema_module, root_node['$defs'])
@@ -158,9 +158,9 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:jsi_ptr) { JSI::JSON::Pointer[] }
-    let(:metaschema_root_ptr) { JSI::JSON::Pointer['schemas', 'JsonSchema'] }
-    let(:root_schema_ptr) { JSI::JSON::Pointer['schemas', 'JsonSchema'] }
+    let(:jsi_ptr) { JSI::Ptr[] }
+    let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
+    let(:root_schema_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     it 'acts like a metaschema' do
       assert_is_a(metaschema.jsi_schema_module, root_node)
       assert_is_a(metaschema.properties['schemas'].jsi_schema_module, root_node.schemas)

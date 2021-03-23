@@ -24,7 +24,7 @@ module JSI
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
   RESOURCES_PATH = ROOT_PATH.join('resources')
 
-  autoload :JSON, 'jsi/json'
+  autoload :Ptr, 'jsi/ptr'
   autoload :PathedNode, 'jsi/pathed_node'
   autoload :Typelike, 'jsi/typelike_modules'
   autoload :Hashlike, 'jsi/typelike_modules'
