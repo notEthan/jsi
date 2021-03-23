@@ -259,13 +259,13 @@ module JSI
           parent_auri = Addressable::URI.parse(parent_id)
           if parent_auri.fragment
             # add onto the fragment
-            parent_id_path = JSI::JSON::Pointer.from_fragment(parent_auri.fragment).reference_tokens
+            parent_id_path = Ptr.from_fragment(parent_auri.fragment).reference_tokens
             path_from_id_node = parent_id_path + path_from_id_node
             parent_auri.fragment = nil
           #else: no fragment so parent_id good as is
           end
 
-          schema_id = parent_auri.merge(fragment: JSI::JSON::Pointer.new(path_from_id_node).fragment).to_s
+          schema_id = parent_auri.merge(fragment: Ptr.new(path_from_id_node).fragment).to_s
 
           schema_id
         else
@@ -340,10 +340,10 @@ module JSI
 
     # returns a subschema of this Schema
     #
-    # @param subptr [JSI::JSON::Pointer, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
+    # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
     def subschema(subptr)
-      subschema_map[JSI::JSON::Pointer.ary_ptr(subptr)]
+      subschema_map[Ptr.ary_ptr(subptr)]
     end
 
     private
@@ -369,10 +369,10 @@ module JSI
     # returns a schema in the same schema resource as this one (see #schema_resource_root) at the given
     # pointer relative to the root of the schema resource.
     #
-    # @param ptr [JSI::JSON::Pointer, #to_ary] a pointer to a schema from our schema resource root
+    # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-      resource_root_subschema_map[JSI::JSON::Pointer.ary_ptr(ptr)]
+      resource_root_subschema_map[Ptr.ary_ptr(ptr)]
     end
 
     private

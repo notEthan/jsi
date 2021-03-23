@@ -226,12 +226,12 @@ describe JSI::Base do
       it "yields JSIs with the right schemas" do
         child_nodes = subject.jsi_each_child_node.to_a
         assert_equal({
-          JSI::JSON::Pointer[] => Set[schema],
-          JSI::JSON::Pointer["foo"] => Set[schema.properties['foo']],
-          JSI::JSON::Pointer["foo", 0] => Set[schema.properties['foo'].items],
-          JSI::JSON::Pointer["foo", 1] => Set[schema.properties['foo'].items],
-          JSI::JSON::Pointer["bar"] => Set[schema.additionalProperties],
-          JSI::JSON::Pointer["bar", 0] => Set[],
+          JSI::Ptr[] => Set[schema],
+          JSI::Ptr["foo"] => Set[schema.properties['foo']],
+          JSI::Ptr["foo", 0] => Set[schema.properties['foo'].items],
+          JSI::Ptr["foo", 1] => Set[schema.properties['foo'].items],
+          JSI::Ptr["bar"] => Set[schema.additionalProperties],
+          JSI::Ptr["bar", 0] => Set[],
         }, child_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
       end
     end
@@ -240,7 +240,7 @@ describe JSI::Base do
       it "yields a JSI with the right schemas" do
         child_nodes = subject.jsi_each_child_node.to_a
         assert_equal({
-          JSI::JSON::Pointer[] => Set[schema],
+          JSI::Ptr[] => Set[schema],
         }, child_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
       end
     end

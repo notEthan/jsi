@@ -45,7 +45,7 @@ module JSON
     def schema_from_fragment(base_schema, fragment)
       schema_uri = base_schema.uri
 
-      pointer = JSI::JSON::Pointer.from_fragment(fragment)
+      pointer = JSI::Ptr.from_fragment(fragment)
 
       base_schema = JSON::Schema.new(pointer.evaluate(base_schema.schema), schema_uri, @options[:version])
 

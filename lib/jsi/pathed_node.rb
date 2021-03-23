@@ -3,7 +3,7 @@
 module JSI
   # including class MUST define
   # - #jsi_document [Object] returning the document
-  # - #jsi_ptr [JSI::JSON::Pointer] returning a pointer for the node path in the document
+  # - #jsi_ptr [JSI::Ptr] returning a pointer for the node path in the document
   # - #jsi_root_node [JSI::PathedNode] returning a PathedNode pointing at the document root
   # - #jsi_parent_node [JSI::PathedNode] returning the parent node of this PathedNode
   #
