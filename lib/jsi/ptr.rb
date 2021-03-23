@@ -2,6 +2,8 @@
 
 module JSI
     # a representation to work with JSON Pointer, as described by RFC 6901 https://tools.ietf.org/html/rfc6901
+    #
+    # a pointer is a sequence of tokens pointing to a node in a document.
     class Ptr
       class Error < StandardError
       end
