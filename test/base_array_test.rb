@@ -209,6 +209,26 @@ describe 'JSI::Base array' do
       end
     end
   end
+  describe 'each' do
+    it 'yields each element' do
+      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, Hash]
+      subject.each { |e| assert_is_a(expect_modules.shift, e) }
+    end
+    it 'yields each element as_jsi' do
+      expect_modules = [schema.items[0].jsi_schema_module, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base]
+      subject.each(as_jsi: true) { |e| assert_is_a(expect_modules.shift, e) }
+    end
+  end
+  describe 'to_ary' do
+    it 'includes each element' do
+      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, Hash]
+      subject.to_ary.each { |e| assert_is_a(expect_modules.shift, e) }
+    end
+    it 'includes each element as_jsi' do
+      expect_modules = [schema.items[0].jsi_schema_module, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base]
+      subject.to_ary(as_jsi: true).each { |e| assert_is_a(expect_modules.shift, e) }
+    end
+  end
   # these methods just delegate to Array so not going to test excessively
   describe 'index only methods' do
     it('#each_index') { assert_equal([0, 1, 2, 3], subject.each_index.to_a) }

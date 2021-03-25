@@ -422,6 +422,10 @@ describe JSI::Base do
         refute_respond_to(subject.baz, :to_ary)
         refute_respond_to(subject, :qux)
       end
+      it 'passes as_jsi option' do
+        assert_equal({'x' => 'y'}, subject.foo(as_jsi: false))
+        assert_is_a(schema.properties['baz'].jsi_schema_module, subject.baz(as_jsi: true))
+      end
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
         it 'errors' do
