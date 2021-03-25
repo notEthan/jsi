@@ -102,8 +102,35 @@ module JSI
         check_schema_resource_root.call
         result_schema = schema_resource_root
       else
-        # TODO find an anchor that resembles the fragment
-        raise(Schema::ReferenceError, "cannot find schema by fragment: #{fragment} from ref schema: #{ref_schema.pretty_inspect.chomp}")
+        check_schema_resource_root.call
+
+        # find an anchor that resembles the fragment
+        result_schemas = JSI::Util.ycomb do |rec|
+          proc do |node|
+            Set[].tap do |out|
+              if node.is_a?(JSI::Schema) && node.respond_to?(:anchor) && node.anchor == fragment
+                out << node
+              end
+              if node.respond_to?(:to_hash)
+                node.to_hash.values.each do |v|
+                  out.merge(rec.call(v))
+                end
+              elsif node.respond_to?(:to_ary)
+                node.to_ary.each do |e|
+                  out.merge(rec.call(e))
+                end
+              end
+            end
+          end
+        end.call(schema_resource_root)
+
+        if result_schemas.size == 1
+          result_schema = result_schemas.first
+        elsif result_schemas.size == 0
+          raise(Schema::ReferenceError, "could not find schema by fragment: #{fragment} in schema resource root: #{schema_resource_root.pretty_inspect.chomp}")
+        else
+          raise(Schema::ReferenceError, "found multiple schemas for plain name fragment #{fragment}:#{result_schemas.map { |s| "\n" + s.pretty_inspect.chomp }.join('')}")
+        end
       end
 
       Schema.ensure_schema(result_schema, msg: "object identified by uri #{ref} is not a schema:")

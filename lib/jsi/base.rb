@@ -197,8 +197,30 @@ module JSI
 
     # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base #each
     # is not actually implemented, along with all the methods of Enumerable.
-    def each
+    def each(*_)
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
+    end
+
+    # yields a JSI of each node at or below this one in this JSI's document.
+    #
+    # returns an Enumerator if no block is given.
+    #
+    # @yield [JSI::Base] each node in the document, starting with self
+    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    def jsi_each_child_node(&block)
+      return to_enum(__method__) unless block
+
+      yield self
+      if respond_to?(:to_hash)
+        each_key do |k|
+          self[k, as_jsi: true].jsi_each_child_node(&block)
+        end
+      elsif respond_to?(:to_ary)
+        each_index do |i|
+          self[i, as_jsi: true].jsi_each_child_node(&block)
+        end
+      end
+      nil
     end
 
     # an array of JSI instances above this one in the document.

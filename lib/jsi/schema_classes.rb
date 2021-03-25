@@ -132,8 +132,8 @@ module JSI
               end.inject(Set.new, &:|)
               accessors_to_define = schema.described_object_property_names.map(&:to_s) - conflicting_instance_methods.map(&:to_s)
               accessors_to_define.each do |property_name|
-                define_method(property_name) do
-                  self[property_name]
+                define_method(property_name) do |*a|
+                  self[property_name, *a]
                 end
                 if setters
                   define_method("#{property_name}=") do |value|
