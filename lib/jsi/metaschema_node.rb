@@ -185,7 +185,7 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [MetaschemaNode] modified copy of self
     def jsi_modified_copy(&block)
-      MetaschemaNode.new(jsi_ptr.modified_document_copy(jsi_document, &block), our_initialize_params)
+      MetaschemaNode.new(jsi_ptr.modified_document_copy(jsi_document, &block), **our_initialize_params)
     end
 
     # @private
@@ -221,7 +221,7 @@ module JSI
     end
 
     def new_node(params)
-      MetaschemaNode.new(jsi_document, our_initialize_params.merge(params))
+      MetaschemaNode.new(jsi_document, **our_initialize_params.merge(params))
     end
 
     def jsi_subinstance_memos

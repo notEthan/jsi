@@ -6,7 +6,7 @@ describe JSI::JSICoder do
   end
   let(:schema) { JSI.new_schema(schema_content) }
   let(:options) { {} }
-  let(:schema_instance_json_coder) { JSI::JSICoder.new(schema, options) }
+  let(:schema_instance_json_coder) { JSI::JSICoder.new(schema, **options) }
   describe 'json' do
     describe 'load' do
       it 'loads nil' do
