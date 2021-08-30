@@ -72,9 +72,9 @@ module JSI
         @results = {}
       end
 
-      def [](*inputs)
+      def [](**inputs)
         if @key_by
-          key = @key_by.call(*inputs)
+          key = @key_by.call(**inputs)
         else
           key = inputs
         end
@@ -87,7 +87,7 @@ module JSI
           if @results.key?(key) && inputs_hash == @results[key].inputs_hash && inputs == @results[key].inputs
             @results[key].value
           else
-            value = @block.call(*inputs)
+            value = @block.call(**inputs)
             @results[key] = Result.new(value: value, inputs: inputs, inputs_hash: inputs_hash)
             value
           end
@@ -120,8 +120,8 @@ module JSI
         @jsi_memomaps[name]
       end
 
-      def jsi_memoize(name, *inputs, &block)
-        jsi_memomap(name, &block)[*inputs]
+      def jsi_memoize(name, **inputs, &block)
+        jsi_memomap(name, &block)[**inputs]
       end
     end
 
