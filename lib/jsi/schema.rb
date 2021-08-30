@@ -135,8 +135,8 @@ module JSI
       #
       # @param (see .new_schema)
       # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
-      def self.new_schema_module(schema_content, *a)
-        new_schema(schema_content, *a).jsi_schema_module
+      def self.new_schema_module(schema_content, **kw)
+        new_schema(schema_content, **kw).jsi_schema_module
       end
     end
 

@@ -26,8 +26,8 @@ module JSI
       # JSI::Base.new_jsi behaves the same as .new, and is defined for compatibility so you may call #new_jsi
       # on any of a JSI Schema, a JSI Schema Module, or a JSI Schema Class.
       # @return [JSI::Base] a JSI whose instance is the given instance
-      def new_jsi(instance, *a, &b)
-        new(instance, *a, &b)
+      def new_jsi(instance, **kw, &b)
+        new(instance, **kw, &b)
       end
 
       # is the constant JSI::SchemaClasses::{self.schema_classes_const_name} defined?

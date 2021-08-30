@@ -23,8 +23,8 @@ module JSI
     #
     # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base] a JSI whose instance is the given instance
-    def new_jsi(instance, *a, &b)
-      schema.new_jsi(instance, *a, &b)
+    def new_jsi(instance, **kw, &b)
+      schema.new_jsi(instance, **kw, &b)
     end
   end
 
@@ -35,8 +35,8 @@ module JSI
     # @param (see JSI::Schema::DescribesSchema#new_schema)
     # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
     #   consist of this module's schema.
-    def new_schema(schema_content, *a)
-      schema.new_schema(schema_content, *a)
+    def new_schema(schema_content, **kw)
+      schema.new_schema(schema_content, **kw)
     end
   end
 
