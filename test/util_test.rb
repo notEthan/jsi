@@ -46,7 +46,7 @@ describe JSI::Util do
       assert_equal(expected, actual)
     end
     it 'deep stringifies JSI instance' do
-      schema = JSI.new_schema(type: 'object')
+      schema = JSI.new_schema({type: 'object'})
       actual = JSI::Util.deep_stringify_symbol_keys(schema.new_jsi({a: 'b', 'c' => {d: 0}, nil => 3}))
       expected = schema.new_jsi({'a' => 'b', 'c' => {'d' => 0}, nil => 3})
       assert_equal(expected, actual)

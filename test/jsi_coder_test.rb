@@ -13,7 +13,7 @@ describe JSI::JSICoder do
         assert_nil(schema_instance_json_coder.load(nil))
       end
       it 'loads a hash' do
-        assert_equal(schema.new_jsi('foo' => 'bar'), schema_instance_json_coder.load({"foo" => "bar"}))
+        assert_equal(schema.new_jsi({'foo' => 'bar'}), schema_instance_json_coder.load({"foo" => "bar"}))
       end
       it 'loads something else' do
         assert_equal(schema.new_jsi([[]]), schema_instance_json_coder.load([[]]))
@@ -22,7 +22,7 @@ describe JSI::JSICoder do
         let(:options) { {array: true} }
         it 'loads an array of hashes' do
           data = [{"foo" => "bar"}, {"foo" => "baz"}]
-          assert_equal([schema.new_jsi('foo' => 'bar'), schema.new_jsi('foo' => 'baz')], schema_instance_json_coder.load(data))
+          assert_equal([schema.new_jsi({'foo' => 'bar'}), schema.new_jsi({'foo' => 'baz'})], schema_instance_json_coder.load(data))
         end
         it 'loads an empty array' do
           assert_equal([], schema_instance_json_coder.load([]))
@@ -53,7 +53,7 @@ describe JSI::JSICoder do
         assert_nil(schema_instance_json_coder.dump(nil))
       end
       it 'dumps a schema_instance_class' do
-        assert_equal({"foo" => "x", "bar" => "y"}, schema_instance_json_coder.dump(schema.new_jsi(foo: 'x', bar: 'y')))
+        assert_equal({"foo" => "x", "bar" => "y"}, schema_instance_json_coder.dump(schema.new_jsi({foo: 'x', bar: 'y'})))
       end
       it 'dumps something else' do
         assert_raises(TypeError) do
@@ -69,7 +69,7 @@ describe JSI::JSICoder do
       describe 'array' do
         let(:options) { {array: true} }
         it 'dumps an array of schema_instances' do
-          schema_instances = [schema.new_jsi(foo: 'x', bar: 'y'), schema.new_jsi(foo: 'z', bar: 'q')]
+          schema_instances = [schema.new_jsi({foo: 'x', bar: 'y'}), schema.new_jsi({foo: 'z', bar: 'q'})]
           assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], schema_instance_json_coder.dump(schema_instances))
         end
       end
