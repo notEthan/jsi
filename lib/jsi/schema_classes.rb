@@ -38,7 +38,7 @@ module JSI
     end
   end
 
-  # this module is just a namespace for schema classes.
+  # this module is a namespace for building schema classes and schema modules.
   module SchemaClasses
     extend Util::Memoize
 

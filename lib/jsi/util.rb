@@ -1,8 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Util classes, modules, constants, and methods are INTERNAL and will be added and removed without warning.
-  # do not rely on them.
+  # JSI::Util classes, modules, constants, and methods are internal, and will be added and removed without warning.
   module Util
     autoload :AttrStruct, 'jsi/util/attr_struct'
 

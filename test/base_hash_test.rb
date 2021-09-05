@@ -39,12 +39,14 @@ describe 'JSI::Base hash' do
       let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
         assert_equal('foo', subject.foo)
+        assert_nil(subject.foo(use_default: false))
       end
     end
     describe 'nondefault value (basic type)' do
       let(:instance) { {'foo' => 'who'} }
       it 'returns the nondefault value' do
         assert_equal('who', subject.foo)
+        assert_equal('who', subject.foo(use_default: false))
       end
     end
     describe 'nondefault value (nonbasic type)' do
@@ -68,6 +70,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
+        assert_nil(subject.foo(use_default: false))
         assert_equal({'foo' => 2}, subject.foo.as_json)
       end
     end
@@ -75,6 +78,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'foo' => 'who'} }
       it 'returns the nondefault value' do
         assert_equal('who', subject.foo)
+        assert_equal('who', subject.foo(use_default: false))
       end
     end
     describe 'nondefault value (nonbasic type)' do

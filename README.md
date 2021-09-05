@@ -124,13 +124,14 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 ## Terminology and Concepts
 
-- `JSI::Base` is the base class for each JSI class representing instances of JSON Schemas.
+- `JSI::Base` is the base class for each JSI schema class representing instances of JSON Schemas.
+- a "JSI Schema" is a JSON Schema, instantiated as (usually) a JSI::Base described by a metaschema (see the sections on Metaschemas below). a JSI Schema is an instance of the module `JSI::Schema`.
 - a "JSI schema module" is a module which represents one schema. Instances of that schema are extended with its JSI schema module. applications may reopen these modules to add functionality to JSI instances described by a given schema.
 - a "JSI schema class" is a subclass of `JSI::Base` representing one or more JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
   - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_instance`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
-- a schema refers to a JSON schema. in JSI a schema is typically a JSI instance which is described by a metaschema (see the sections on Metaschemas below). a JSI schema is extended by the `JSI::Schema` module.
+- "schema" refers to either a parsed JSON schema (generally a ruby Hash) or a JSI schema.
 
 ## JSI and Object Oriented Programming
 
@@ -213,7 +214,7 @@ A metaschema is a schema which describes schemas. Likewise, a schema is an insta
 
 In JSI, a schema is generally a JSI::Base instance whose schemas include a metaschema.
 
-A self-descriptive metaschema - most commonly one of the JSON schema draft metaschemas - is an object whose schema is itself. This is instantiated in JSI as a JSI::MetaschemaNode (not a JSI::Base).
+A self-descriptive metaschema - most commonly one of the JSON schema draft metaschemas - is an object whose schemas include itself. This is instantiated in JSI as a JSI::MetaschemaNode, a special subclass of JSI::Base.
 
 ## ActiveRecord serialization
 

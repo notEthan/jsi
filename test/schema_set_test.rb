@@ -44,6 +44,18 @@ describe 'JSI::SchemaSet' do
       assert_raises(ArgumentError) { JSI::SchemaSet.ensure_schema_set(3) }
     end
   end
+  describe '#new_jsi' do
+    it 'instantiates' do
+      schema_b = JSI::JSONSchemaOrgDraft06.new_schema({'$ref' => '#/definitions/b', 'definitions' => {'b' => {'title' => 'B'}}})
+      schema_c = JSI::JSONSchemaOrgDraft06.new_schema({'allOf' => [{'title' => 'C'}]})
+      schema_set = JSI::SchemaSet[
+        schema_a,
+        schema_b,
+        schema_c,
+      ]
+      assert_equal(Set[schema_a, schema_b.definitions['b'], schema_c, schema_c.allOf[0]], schema_set.new_jsi({}).jsi_schemas)
+    end
+  end
   describe '#inspect' do
     it 'inspects' do
       inspect = JSI::SchemaSet[schema_a].inspect

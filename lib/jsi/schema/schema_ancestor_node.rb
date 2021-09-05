@@ -9,7 +9,7 @@ module JSI
     attr_reader :jsi_schema_base_uri
 
     # @private
-    # @return [Array<JSI::Schema>] schema resources which are ancestors of this JSI.
+    # @return [Array<JSI::Schema>] resources which are ancestors of this JSI in the document.
     #   this does not include self.
     def jsi_schema_resource_ancestors
       return @jsi_schema_resource_ancestors if instance_variable_defined?(:@jsi_schema_resource_ancestors)

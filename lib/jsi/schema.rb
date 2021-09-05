@@ -122,10 +122,10 @@ module JSI
       #   relative URIs within the document are resolved using this base_uri.
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
-      #   consist of this schema.
+      #   are inplace applicators matched from self to the schema being instantiated.
       def new_schema(schema_content, base_uri: nil)
         new_jsi(JSI.deep_stringify_symbol_keys(schema_content),
-          jsi_schema_base_uri: base_uri,
+          base_uri: base_uri,
         ).tap(&:register_schema)
       end
 
@@ -154,7 +154,7 @@ module JSI
         ]
       end
 
-      # instantiates a given schema object as a JSI::Schema.
+      # instantiates a given schema object as a JSI Schema.
       #
       # schemas are instantiated according to their '$schema' property if specified. otherwise their schema
       # will be the {JSI::Schema.default_metaschema}.
@@ -290,10 +290,13 @@ module JSI
     # any parameters are passed to JSI::Base#initialize, but none are normally used.
     #
     # @param instance [Object] the JSON Schema instance to be represented as a JSI
+    # @param base_uri (see SchemaSet#new_jsi)
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are matched
     #   from this schema.
-    def new_jsi(instance, *a, &b)
-      JSI.class_for_schemas(match_to_instance(instance)).new(instance, *a, &b)
+    def new_jsi(instance,
+        base_uri: nil
+    )
+      SchemaSet[self].new_jsi(instance, base_uri: base_uri)
     end
 
     # registers this schema with `JSI.schema_registry`
@@ -357,7 +360,7 @@ module JSI
             jsi_schema_base_uri: jsi_subschema_base_uri,
           )
         else
-          Schema.ensure_schema(subptr.evaluate(self), msg: [
+          Schema.ensure_schema(subptr.evaluate(self, as_jsi: true), msg: [
             "subschema is not a schema at pointer: #{subptr.pointer}"
           ])
         end
@@ -391,7 +394,7 @@ module JSI
             jsi_schema_base_uri: nil,
           )
         else
-          result_schema = ptr.evaluate(schema.schema_resource_root)
+          result_schema = ptr.evaluate(schema.schema_resource_root, as_jsi: true)
         end
         Schema.ensure_schema(result_schema, msg: [
           "subschema is not a schema at pointer: #{ptr.pointer}"

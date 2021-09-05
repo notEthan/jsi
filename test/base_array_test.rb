@@ -39,12 +39,14 @@ describe 'JSI::Base array' do
       let(:instance) { [1] }
       it 'returns the default value' do
         assert_equal('foo', subject[2])
+        assert_nil(subject[2, use_default: false])
       end
     end
     describe 'nondefault value (basic type)' do
       let(:instance) { ['who'] }
       it 'returns the nondefault value' do
         assert_equal('who', subject[0])
+        assert_equal('who', subject[0, use_default: false])
       end
     end
     describe 'nondefault value (nonbasic type)' do
@@ -66,6 +68,7 @@ describe 'JSI::Base array' do
       let(:instance) { [{'bar' => 3}] }
       it 'returns the default value' do
         assert_is_a(schema.items.jsi_schema_module, subject[1])
+        assert_nil(subject[1, use_default: false])
         assert_equal({'foo' => 2}, subject[1].as_json)
       end
     end
@@ -73,6 +76,7 @@ describe 'JSI::Base array' do
       let(:instance) { [true, 'who'] }
       it 'returns the nondefault value' do
         assert_equal('who', subject[1])
+        assert_equal('who', subject[1, use_default: false])
       end
     end
     describe 'nondefault value (nonbasic type)' do

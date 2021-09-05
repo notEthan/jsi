@@ -105,24 +105,9 @@ module JSI
         check_schema_resource_root.call
 
         # find an anchor that resembles the fragment
-        result_schemas = JSI::Util.ycomb do |rec|
-          proc do |node|
-            Set[].tap do |out|
-              if node.is_a?(JSI::Schema) && node.respond_to?(:anchor) && node.anchor == fragment
-                out << node
-              end
-              if node.respond_to?(:to_hash)
-                node.to_hash.values.each do |v|
-                  out.merge(rec.call(v))
-                end
-              elsif node.respond_to?(:to_ary)
-                node.to_ary.each do |e|
-                  out.merge(rec.call(e))
-                end
-              end
-            end
-          end
-        end.call(schema_resource_root)
+        result_schemas = schema_resource_root.jsi_each_child_node.select do |node|
+          node.is_a?(JSI::Schema) && node.respond_to?(:anchor) && node.anchor == fragment
+        end
 
         if result_schemas.size == 1
           result_schema = result_schemas.first
