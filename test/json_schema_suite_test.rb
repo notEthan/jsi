@@ -38,6 +38,10 @@ describe 'JSON Schema Test Suite' do
                             skip("unsupported keywords: #{unsupported_keywords.join(' ')}")
                           end
 
+                          if schema.patternProperties && schema.patternProperties.keys.any? { |pattern| pattern =~ /\\[dw]/ }
+                            skip("unsupported unicode character range")
+                          end
+
                           # :nocov:
                           assert(false, [
                             test.valid ? "expected valid, got errors: " : "expected errors, got valid: ",
