@@ -16,13 +16,13 @@ module JSI
     #
     # @param instance [Object] the instance to check any applicators against
     # @return [JSI::SchemaSet] matched applicator schemas
-    def match_to_instance(instance)
+    def inplace_applicator_schemas(instance)
       SchemaSet.new(each_inplace_applicator_schema(instance))
     end
 
     # yields each inplace applicator schema which applies to the given instance.
     #
-    # @param instance (see #match_to_instance)
+    # @param instance (see #inplace_applicator_schemas)
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
