@@ -83,7 +83,7 @@ module JSI
     # @return [JSI::SchemaSet]
     def inplace_applicator_schemas(instance)
       SchemaSet.build do |set|
-        each { |schema| set.merge(schema.inplace_applicator_schemas(instance)) }
+        each { |schema| schema.each_inplace_applicator_schema(instance) { |ias| set << ias } }
       end
     end
 
