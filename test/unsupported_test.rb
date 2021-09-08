@@ -47,6 +47,22 @@ describe 'unsupported behavior' do
           )
         end
       end
+      describe 'below nonschema root' do
+        it "instantiates" do
+          schema_doc_schema = JSI::JSONSchemaOrgDraft04.new_schema({
+            'properties' => {'schema' => {'$ref' => 'http://json-schema.org/draft-04/schema'}}
+          })
+          schema_doc = schema_doc_schema.new_jsi({
+            'schema' => {'$ref' => '#/unknown'},
+            'unknown' => {},
+          })
+          subject = schema_doc.schema.new_jsi({})
+          assert_equal(
+            [JSI::Ptr["unknown"]],
+            subject.jsi_schemas.map(&:jsi_ptr)
+          )
+        end
+      end
     end
   end
 end
