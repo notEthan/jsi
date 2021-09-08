@@ -388,17 +388,19 @@ module JSI
           # resource_root_subschema is always relative to the document root.
           # BootstrapSchema also does not implement jsi_root_node or #[]. we instantiate the ptr directly
           # rather than as a subschema from the root.
-          result_schema = schema.class.new(
+          schema.class.new(
             schema.jsi_document,
             jsi_ptr: ptr,
             jsi_schema_base_uri: nil,
           )
         else
-          result_schema = ptr.evaluate(schema.schema_resource_root, as_jsi: true)
+          resource_root = schema.schema_resource_root
+          Schema.ensure_schema(ptr.evaluate(resource_root, as_jsi: true),
+            msg: [
+              "subschema is not a schema at pointer: #{ptr.pointer}"
+            ]
+          )
         end
-        Schema.ensure_schema(result_schema, msg: [
-          "subschema is not a schema at pointer: #{ptr.pointer}"
-        ])
       end
     end
 
