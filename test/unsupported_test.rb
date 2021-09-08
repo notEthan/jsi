@@ -63,6 +63,27 @@ describe 'unsupported behavior' do
           )
         end
       end
+      describe 'the origin schema has schemas that do not describe a schema (items)' do
+        let(:schema_content) do
+          {
+            'items' => {'$ref' => '#/unknown'},
+            'unknown' => {},
+          }
+        end
+        let(:instance) do
+          [{}]
+        end
+        it "instantiates" do
+          assert_equal(
+            [JSI::Ptr["unknown"]],
+            subject[0].jsi_schemas.map(&:jsi_ptr)
+          )
+          unknown_schema = subject[0].jsi_schemas.to_a[0]
+          # check it's not an items schema like schema.items is
+          assert_equal(schema.jsi_schemas, unknown_schema.jsi_schemas)
+          refute_equal(schema.items.jsi_schemas, unknown_schema.jsi_schemas)
+        end
+      end
     end
   end
 end
