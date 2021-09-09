@@ -92,11 +92,11 @@ module JSI
       end
     end
     safe_kv_block_modified_copy_methods.each do |method_name|
-      define_method(method_name) do |*a, &b|
+      define_method(method_name) do |**kw, &b|
         jsi_modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
           responsive_object.public_send(method_name) do |k, _v|
-            b.call(k, self[k, *a])
+            b.call(k, self[k, **kw])
           end
         end
       end
@@ -200,12 +200,12 @@ module JSI
       end
     end
     safe_el_block_methods.each do |method_name|
-      define_method(method_name) do |*a, &b|
+      define_method(method_name) do |**kw, &b|
         jsi_modified_copy do |object_to_modify|
           i = 0
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
           responsive_object.public_send(method_name) do |_e|
-            b.call(self[i, *a]).tap { i += 1 }
+            b.call(self[i, **kw]).tap { i += 1 }
           end
         end
       end
