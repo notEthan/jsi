@@ -33,18 +33,12 @@ module JSI
         end
       end
 
-      Util.ycomb do |rec|
-        proc do |node|
-          if node.is_a?(JSI::Schema) && node.schema_absolute_uri
-            register_single(node.schema_absolute_uri, node)
-          end
-          if node.respond_to?(:to_hash)
-            node.to_hash.values.each(&rec)
-          elsif node.respond_to?(:to_ary)
-            node.to_ary.each(&rec)
-          end
+      resource.jsi_each_child_node do |node|
+        if node.is_a?(JSI::Schema) && node.schema_absolute_uri
+          register_single(node.schema_absolute_uri, node)
         end
-      end.call(resource)
+      end
+
       nil
     end
 
