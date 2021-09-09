@@ -20,6 +20,8 @@ module JSI
     end
 
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
+    #
+    # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base] a JSI whose instance is the given instance
     def new_jsi(instance, *a, &b)
       schema.new_jsi(instance, *a, &b)
