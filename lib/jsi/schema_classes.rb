@@ -32,7 +32,7 @@ module JSI
   module DescribesSchemaModule
     # instantiates the given schema content as a JSI Schema.
     #
-    # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
+    # @param (see JSI::Schema::DescribesSchema#new_schema)
     # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
     #   consist of this module's schema.
     def new_schema(schema_content, *a)
