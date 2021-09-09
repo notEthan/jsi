@@ -512,6 +512,48 @@ describe JSI::Base do
           assert_equal(Set[schema], subject.jsi_schemas)
         end
       end
+      describe 'properties with names to ignore' do
+        class X
+          def to_s
+            'x'
+          end
+        end
+        let(:schema_content) do
+          {
+            'type' => 'object',
+            'properties' => {
+              X.new => {}, # not a string
+              '[]' => {}, # operator, also conflicts with Base
+              '-@' => {}, # unary operator
+              '~' => {},  # unary operator
+              '%' => {},  # binary operator
+              '0' => {}, # digit
+              1 => {}, # digit, not a string
+           },
+          }
+        end
+        let(:instance) do
+          {
+            X.new => 'x',
+            '[]' => '[]',
+            '-@' => '-@',
+            '~' => '~',
+            '%' => '%',
+            '0' => '0',
+            1 => 1,
+          }
+        end
+        it 'does not define readers' do
+          assert_raises(NoMethodError) { subject.x }
+          assert_equal(nil, subject['test']) # #[] would SystemStackError since reader calls #[]
+          assert_equal(JSI::Base, subject.method(:[]).owner)
+          assert_raises(NoMethodError) { -subject }
+          assert_raises(NoMethodError) { ~subject }
+          assert_raises(NoMethodError) { subject % 0 }
+          assert_raises(NoMethodError) { subject.send('0') }
+          assert_raises(NoMethodError) { subject.send('1') }
+        end
+      end
     end
     describe 'writers' do
       it 'writes attributes described as properties' do
