@@ -109,9 +109,9 @@ module JSI
       # @param a arguments are passed to each invocation of `#[]`
       # @return [Object] the content of the document pointed to by this pointer
       # @raise [JSI::Ptr::ResolutionError] the document does not contain the path this pointer references
-      def evaluate(document, *a)
+      def evaluate(document, *a, **kw)
         res = tokens.inject(document) do |value, token|
-          _, child = node_subscript_token_child(value, token, *a)
+          _, child = node_subscript_token_child(value, token, *a, **kw)
           child
         end
         res
@@ -260,7 +260,7 @@ module JSI
 
       private
 
-      def node_subscript_token_child(value, token, *a)
+      def node_subscript_token_child(value, token, *a, **kw)
         if value.respond_to?(:to_ary)
           if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
             token = token.to_i
@@ -276,13 +276,13 @@ module JSI
             raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid index of #{value.inspect}")
           end
 
-          child = (value.respond_to?(:[]) ? value : value.to_ary)[token, *a]
+          child = (value.respond_to?(:[]) ? value : value.to_ary)[token, *a, **kw]
         elsif value.respond_to?(:to_hash)
           unless (value.respond_to?(:key?) ? value : value.to_hash).key?(token)
             raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid key of #{value.inspect}")
           end
 
-          child = (value.respond_to?(:[]) ? value : value.to_hash)[token, *a]
+          child = (value.respond_to?(:[]) ? value : value.to_hash)[token, *a, **kw]
         else
           raise(ResolutionError, "Invalid resolution: #{token.inspect} cannot be resolved in #{value.inspect}")
         end
