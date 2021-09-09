@@ -166,8 +166,8 @@ module JSI
               define_singleton_method(:jsi_property_accessors) { accessors_to_define }
 
               accessors_to_define.each do |property_name|
-                define_method(property_name) do |*a|
-                  self[property_name, *a]
+                define_method(property_name) do |**kw|
+                  self[property_name, **kw]
                 end
                 if setters
                   define_method("#{property_name}=") do |value|
