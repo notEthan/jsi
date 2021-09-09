@@ -287,8 +287,6 @@ module JSI
     # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the
     # instance.
     #
-    # any parameters are passed to JSI::Base#initialize, but none are normally used.
-    #
     # @param instance [Object] the JSON Schema instance to be represented as a JSI
     # @param base_uri (see SchemaSet#new_jsi)
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are matched
