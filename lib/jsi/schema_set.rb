@@ -73,7 +73,7 @@ module JSI
         each { |schema| set.merge(schema.match_to_instance(instance)) }
       end
 
-      JSI.class_for_schemas(applied_schemas).new(instance,
+      JSI::SchemaClasses.class_for_schemas(applied_schemas).new(instance,
         jsi_schema_base_uri: base_uri,
       )
     end

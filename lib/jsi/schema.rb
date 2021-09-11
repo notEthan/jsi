@@ -124,7 +124,7 @@ module JSI
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   are inplace applicators matched from self to the schema being instantiated.
       def new_schema(schema_content, base_uri: nil)
-        new_jsi(JSI.deep_stringify_symbol_keys(schema_content),
+        new_jsi(Util.deep_stringify_symbol_keys(schema_content),
           base_uri: base_uri,
         ).tap(&:register_schema)
       end
@@ -135,8 +135,8 @@ module JSI
       #
       # @param (see .new_schema)
       # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
-      def self.new_schema_module(schema_content, *a)
-        new_schema(schema_content, *a).jsi_schema_module
+      def self.new_schema_module(schema_content, **kw)
+        new_schema(schema_content, **kw).jsi_schema_module
       end
     end
 
@@ -144,14 +144,6 @@ module JSI
       # @return [JSI::Schema] the default metaschema
       def default_metaschema
         JSI::JSONSchemaOrgDraft06.schema
-      end
-
-      # @return [Array<JSI::Schema>] supported metaschemas
-      def supported_metaschemas
-        [
-          JSI::JSONSchemaOrgDraft04.schema,
-          JSI::JSONSchemaOrgDraft06.schema,
-        ]
       end
 
       # instantiates a given schema object as a JSI Schema.
@@ -174,9 +166,9 @@ module JSI
           raise(NotASchemaError, "the given schema_object is a JSI::Base, but is not a JSI::Schema: #{schema_object.pretty_inspect.chomp}")
         elsif schema_object.respond_to?(:to_hash)
           if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
-            metaschema = supported_metaschemas.detect { |ms| schema_object['$schema'] == ms['$id'] || schema_object['$schema'] == ms['id'] }
-            unless metaschema
-              raise(NotImplementedError, "metaschema not supported: #{schema_object['$schema']}")
+            metaschema = Schema::Ref.new(schema_object['$schema']).deref_schema
+            unless metaschema.is_a?(Schema) && metaschema.describes_schema?
+              raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
             metaschema.new_schema(schema_object, base_uri: base_uri)
           else
@@ -297,13 +289,11 @@ module JSI
 
     # @return [Class subclassing JSI::Base] a JSI class (subclass of JSI::Base) representing this schema.
     def jsi_schema_class
-      JSI.class_for_schemas(SchemaSet[self])
+      JSI::SchemaClasses.class_for_schemas(SchemaSet[self])
     end
 
     # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the
     # instance.
-    #
-    # any parameters are passed to JSI::Base#initialize, but none are normally used.
     #
     # @param instance [Object] the JSON Schema instance to be represented as a JSI
     # @param base_uri (see SchemaSet#new_jsi)

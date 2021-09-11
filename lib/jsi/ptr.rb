@@ -155,10 +155,10 @@ module JSI
       alias_method :root?, :empty?
 
       # @return [JSI::Ptr] pointer to the parent of where this pointer points
-      # @raise [JSI::Ptr::ReferenceError] if this pointer has no parent (points to the root)
+      # @raise [JSI::Ptr::Error] if this pointer has no parent (points to the root)
       def parent
         if root?
-          raise(ReferenceError, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
+          raise(Ptr::Error, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
         else
           Ptr.new(reference_tokens[0...-1])
         end
@@ -229,7 +229,7 @@ module JSI
         # or hash in the path above this node. this node's content is modified by the caller, and
         # that is recursively merged up to the document root. the recursion is done with a
         # y combinator, for no other reason than that was a fun way to implement it.
-        modified_document = JSI::Util.ycomb do |rec|
+        modified_document = Util.ycomb do |rec|
           proc do |subdocument, subpath|
             if subpath == []
               Typelike.modified_copy(subdocument, &block)

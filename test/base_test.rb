@@ -58,13 +58,13 @@ describe JSI::Base do
   end
   describe '.class_for_schemas' do
     it 'returns a class from a schema' do
-      class_for_schema = JSI.class_for_schemas([schema])
+      class_for_schema = JSI::SchemaClasses.class_for_schemas([schema])
       # same class every time
-      assert_equal(JSI.class_for_schemas([schema]), class_for_schema)
+      assert_equal(JSI::SchemaClasses.class_for_schemas([schema]), class_for_schema)
       assert_operator(class_for_schema, :<, JSI::Base)
     end
-    it 'returns the same class from a hash' do
-      assert_equal(JSI.class_for_schemas([schema]), JSI.class_for_schemas([schema_content]))
+    it 'raises given a nonschema' do
+      assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaClasses.class_for_schemas([schema_content]) }
     end
   end
   describe 'JSI::SchemaClasses.module_for_schema' do
@@ -510,6 +510,48 @@ describe JSI::Base do
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
           assert_equal(Set[schema], subject.jsi_schemas)
+        end
+      end
+      describe 'properties with names to ignore' do
+        class X
+          def to_s
+            'x'
+          end
+        end
+        let(:schema_content) do
+          {
+            'type' => 'object',
+            'properties' => {
+              X.new => {}, # not a string
+              '[]' => {}, # operator, also conflicts with Base
+              '-@' => {}, # unary operator
+              '~' => {},  # unary operator
+              '%' => {},  # binary operator
+              '0' => {}, # digit
+              1 => {}, # digit, not a string
+           },
+          }
+        end
+        let(:instance) do
+          {
+            X.new => 'x',
+            '[]' => '[]',
+            '-@' => '-@',
+            '~' => '~',
+            '%' => '%',
+            '0' => '0',
+            1 => 1,
+          }
+        end
+        it 'does not define readers' do
+          assert_raises(NoMethodError) { subject.x }
+          assert_equal(nil, subject['test']) # #[] would SystemStackError since reader calls #[]
+          assert_equal(JSI::Base, subject.method(:[]).owner)
+          assert_raises(NoMethodError) { -subject }
+          assert_raises(NoMethodError) { ~subject }
+          assert_raises(NoMethodError) { subject % 0 }
+          assert_raises(NoMethodError) { subject.send('0') }
+          assert_raises(NoMethodError) { subject.send('1') }
         end
       end
     end

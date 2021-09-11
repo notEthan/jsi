@@ -20,9 +20,11 @@ module JSI
     end
 
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
+    #
+    # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base] a JSI whose instance is the given instance
-    def new_jsi(instance, *a, &b)
-      schema.new_jsi(instance, *a, &b)
+    def new_jsi(instance, **kw, &b)
+      schema.new_jsi(instance, **kw, &b)
     end
   end
 
@@ -30,11 +32,11 @@ module JSI
   module DescribesSchemaModule
     # instantiates the given schema content as a JSI Schema.
     #
-    # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
+    # @param (see JSI::Schema::DescribesSchema#new_schema)
     # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
     #   consist of this module's schema.
-    def new_schema(schema_content, *a)
-      schema.new_schema(schema_content, *a)
+    def new_schema(schema_content, **kw)
+      schema.new_schema(schema_content, **kw)
     end
   end
 
@@ -43,9 +45,12 @@ module JSI
     extend Util::Memoize
 
     class << self
-      # see {JSI.class_for_schemas}
-      def class_for_schemas(schema_objects)
-        schemas = SchemaSet.new(schema_objects) { |schema_object| JSI.new_schema(schema_object) }
+      # @api private
+      # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
+      # @return [Class subclassing JSI::Base] a JSI Schema Class which represents the given schemas.
+      #   an instance of the class is a JSON Schema instance described by all of the given schemas.
+      def class_for_schemas(schemas)
+        schemas = SchemaSet.ensure_schema_set(schemas)
 
         jsi_memoize(:class_for_schemas, schemas) do |schemas|
           Class.new(Base).instance_exec(schemas) do |schemas|
@@ -130,7 +135,21 @@ module JSI
               conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
                 mod.instance_methods + mod.private_instance_methods
               end.inject(Set.new, &:|)
-              accessors_to_define = schema.described_object_property_names.map(&:to_s) - conflicting_instance_methods.map(&:to_s)
+
+              accessors_to_define = schema.described_object_property_names.select do |name|
+                do_define = true
+                # must be a string
+                do_define &&= name.respond_to?(:to_str)
+                # must not begin with a digit
+                do_define &&= name !~ /\A[0-9]/
+                # must not contain characters special to ruby syntax
+                do_define &&= name !~ /[\\\s\#;\.,\(\)\[\]\{\}'"`%\+\-\/\*\^\|&=<>\?:!@\$~]/
+                # must not conflict with any method on a conflicting module
+                do_define &&= !conflicting_instance_methods.any? { |m| m.to_s == name }
+
+                do_define
+              end
+
               accessors_to_define.each do |property_name|
                 define_method(property_name) do |*a|
                   self[property_name, *a]

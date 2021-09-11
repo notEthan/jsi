@@ -56,8 +56,8 @@ module JSI
   #
   # @param (see JSI::Schema.new_schema)
   # @return (see JSI::Schema.new_schema)
-  def self.new_schema(schema_object, *a)
-    JSI::Schema.new_schema(schema_object, *a)
+  def self.new_schema(schema_object, **kw)
+    JSI::Schema.new_schema(schema_object, **kw)
   end
 
   # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
@@ -66,15 +66,13 @@ module JSI
   #
   # @param (see JSI::Schema.new_schema)
   # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
-  def self.new_schema_module(schema_object, *a)
-    JSI::Schema.new_schema(schema_object, *a).jsi_schema_module
+  def self.new_schema_module(schema_object, **kw)
+    JSI::Schema.new_schema(schema_object, **kw).jsi_schema_module
   end
 
-  # @param schemas [Enumerable<JSI::Schema, #to_hash, Boolean>] schemas to represent with the class
-  # @return [Class subclassing JSI::Base] a JSI class which represents the given schemas.
-  #   an instance of the class represents a JSON Schema instance described by all of the given schemas.
-  def self.class_for_schemas(*schemas)
-    SchemaClasses.class_for_schemas(*schemas)
+  # @deprecated
+  def self.class_for_schemas(schemas)
+    SchemaClasses.class_for_schemas(schemas.map { |schema| JSI.new_schema(schema) })
   end
 
   # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.
@@ -85,3 +83,6 @@ module JSI
     @schema_registry = SchemaRegistry.new
   end
 end
+
+JSI.schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
+JSI.schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaOrgDraft06.schema }

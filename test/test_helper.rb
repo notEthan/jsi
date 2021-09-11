@@ -1,8 +1,10 @@
-require 'coveralls'
-if Coveralls.will_run?
-  Coveralls.wear!
+if ENV['CI'] || ENV['COV']
+  require 'coveralls'
+  if Coveralls.will_run?
+    Coveralls.wear!
+  end
+  require 'simplecov'
 end
-require 'simplecov'
 
 require 'bundler/setup'
 

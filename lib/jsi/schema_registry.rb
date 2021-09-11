@@ -18,6 +18,7 @@ module JSI
 
     def initialize
       @resources = {}
+      @autoload_uris = {}
       @resources_mutex = Mutex.new
     end
 
@@ -33,18 +34,25 @@ module JSI
         end
       end
 
-      JSI::Util.ycomb do |rec|
-        proc do |node|
-          if node.is_a?(JSI::Schema) && node.schema_absolute_uri
-            register_single(node.schema_absolute_uri, node)
-          end
-          if node.respond_to?(:to_hash)
-            node.to_hash.values.each(&rec)
-          elsif node.respond_to?(:to_ary)
-            node.to_ary.each(&rec)
-          end
+      resource.jsi_each_child_node do |node|
+        if node.is_a?(JSI::Schema) && node.schema_absolute_uri
+          register_single(node.schema_absolute_uri, node)
         end
-      end.call(resource)
+      end
+
+      nil
+    end
+
+    # takes a URI identifying a schema to be loaded by the given block
+    # when a reference to the URI is followed.
+    #
+    # @param uri [Addressable::URI]
+    # @yieldreturn [JSI::Base] a document containing the schema identified by the given uri
+    # @return [void]
+    def autoload_uri(uri, &block)
+      uri = Addressable::URI.parse(uri)
+      ensure_uri_absolute(uri)
+      @autoload_uris[uri] = block
       nil
     end
 
@@ -54,6 +62,9 @@ module JSI
     def find(uri)
       uri = Addressable::URI.parse(uri)
       ensure_uri_absolute(uri)
+      if @autoload_uris.key?(uri) && !@resources.key?(uri)
+        register(@autoload_uris[uri].call)
+      end
       registered_uris = @resources.keys
       if !registered_uris.include?(uri)
         raise(ResourceNotFound, "URI #{uri} is not registered. registered URIs:\n#{registered_uris.join("\n")}")
@@ -65,6 +76,9 @@ module JSI
       self.class.new.tap do |reg|
         @resources.each do |uri, resource|
           reg.register_single(uri, resource)
+        end
+        @autoload_uris.each do |uri, autoload|
+          reg.autoload_uri(uri, &autoload)
         end
       end
     end

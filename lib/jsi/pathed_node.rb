@@ -1,15 +1,11 @@
 # frozen_string_literal: true
 
 module JSI
+  # this module represents a node in a document.
+  #
   # including class MUST define
-  # - #jsi_document [Object] returning the document
-  # - #jsi_ptr [JSI::Ptr] returning a pointer for the node path in the document
-  # - #jsi_root_node [JSI::PathedNode] returning a PathedNode pointing at the document root
-  # - #jsi_parent_node [JSI::PathedNode] returning the parent node of this PathedNode
-  #
-  # given these, this module represents the node in the document at the path.
-  #
-  # the node content (#jsi_node_content) is the result of evaluating the node document at the path.
+  # - #jsi_document [Object] the document
+  # - #jsi_ptr [JSI::Ptr] a pointer to the node in the document
   module PathedNode
     # @return [Object] the content of this node
     def jsi_node_content
