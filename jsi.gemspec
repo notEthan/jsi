@@ -12,7 +12,7 @@ Gem::Specification.new do |spec|
   spec.description = "JSI offers an Object-Oriented representation for JSON data using JSON Schemas"
   spec.homepage    = "https://github.com/notEthan/jsi"
   spec.license     = "AGPL-3.0"
-  ignore_files     = %w(.gitignore .travis.yml Gemfile test)
+  ignore_files     = %w(.gitignore .travis.yml Gemfile test {resources}/icons)
   ignore_files_re  = %r{\A(#{ignore_files.map { |f| Regexp.escape(f) }.join('|')})(/|\z)}
   spec.files       = `git ls-files -z`.split("\x0").reject { |f| f.match(ignore_files_re) }
   spec.test_files   = `git ls-files -z test`.split("\x0")
