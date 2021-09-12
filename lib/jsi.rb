@@ -22,7 +22,7 @@ module JSI
   end
 
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
-  RESOURCES_PATH = ROOT_PATH.join('resources')
+  RESOURCES_PATH = ROOT_PATH.join('{resources}')
 
   autoload :Ptr, 'jsi/ptr'
 
