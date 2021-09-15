@@ -23,8 +23,6 @@ Gem::Specification.new do |spec|
     *Dir['lib/**/*'],
   ].reject { |f| File.lstat(f).ftype == 'directory' }
 
-  spec.test_files = Dir['test/**/*'].reject { |f| File.directory?(f) }
-
   spec.require_paths = ["lib"]
 
   # we are monkey patching json-schema with a fix that has not been merged in a timely fashion.

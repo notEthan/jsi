@@ -15,6 +15,7 @@ JSI_GEM_IGNORE_FILES = %w(
   .simplecov
   Gemfile
   jsi.gemspec
+  test/**/*
   \\{resources\\}/icons/**/*
 ).map { |glob| Dir.glob(glob, File::FNM_DOTMATCH) }.inject([], &:|)
 
