@@ -12,10 +12,19 @@ Gem::Specification.new do |spec|
   spec.description = "JSI offers an Object-Oriented representation for JSON data using JSON Schemas"
   spec.homepage    = "https://github.com/notEthan/jsi"
   spec.license     = "AGPL-3.0"
-  ignore_files     = %w(.gitignore .travis.yml Gemfile test {resources}/icons)
-  ignore_files_re  = %r{\A(#{ignore_files.map { |f| Regexp.escape(f) }.join('|')})(/|\z)}
-  spec.files       = `git ls-files -z`.split("\x0").reject { |f| f.match(ignore_files_re) }
-  spec.test_files   = `git ls-files -z test`.split("\x0")
+
+  spec.files = [
+    'LICENSE.md',
+    'CHANGELOG.md',
+    'README.md',
+    'readme.rb',
+    '.yardopts',
+    'Rakefile.rb',
+    *Dir['lib/**/*'],
+  ].reject { |f| File.lstat(f).ftype == 'directory' }
+
+  spec.test_files = Dir['test/**/*'].reject { |f| File.directory?(f) }
+
   spec.require_paths = ["lib"]
 
   # we are monkey patching json-schema with a fix that has not been merged in a timely fashion.
