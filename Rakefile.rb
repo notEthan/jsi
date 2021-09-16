@@ -17,6 +17,7 @@ JSI_GEM_IGNORE_FILES = %w(
   jsi.gemspec
   test/**/*
   \\{resources\\}/icons/**/*
+  \\{resources\\}/test/**/*
 ).map { |glob| Dir.glob(glob, File::FNM_DOTMATCH) }.inject([], &:|)
 
 task :gem do
