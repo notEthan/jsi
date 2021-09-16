@@ -24,6 +24,7 @@ module JSI
 
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
   RESOURCES_PATH = ROOT_PATH.join('{resources}')
+  SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   autoload :Ptr, 'jsi/ptr'
 

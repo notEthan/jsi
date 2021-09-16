@@ -21,6 +21,7 @@ Gem::Specification.new do |spec|
     '.yardopts',
     'Rakefile.rb',
     *Dir['lib/**/*'],
+    *Dir['\\{resources\\}/schemas/**/*'],
   ].reject { |f| File.lstat(f).ftype == 'directory' }
 
   spec.require_paths = ["lib"]
