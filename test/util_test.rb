@@ -52,6 +52,14 @@ describe JSI::Util do
       assert_equal(expected, actual)
     end
   end
+  describe 'ensure_module_set' do
+    it 'raises' do
+      err = assert_raises(TypeError) { JSI::Util.ensure_module_set([0]) }
+      assert_match(/0/, err.message)
+      err = assert_raises(TypeError) { JSI::Util.ensure_module_set(Set[0].freeze) }
+      assert_match(/0/, err.message)
+    end
+  end
   describe 'AttrStruct' do
     Foo = JSI::Util::AttrStruct[*%w(bar)]
     it 'structs' do
