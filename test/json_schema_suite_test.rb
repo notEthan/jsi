@@ -38,8 +38,18 @@ describe 'JSON Schema Test Suite' do
                             skip("unsupported keywords: #{unsupported_keywords.join(' ')}")
                           end
 
-                          if schema.patternProperties && schema.patternProperties.keys.any? { |pattern| pattern =~ /\\[dw]/ }
-                            skip("unsupported unicode character range")
+                          regexs = schema.jsi_each_child_node.select do |node|
+                            node.jsi_schemas.any? { |s| s['format'] == 'regex' }
+                          end.map(&:jsi_node_content)
+                          schema.jsi_each_child_node.each do |node|
+                            if node.is_a?(JSI::Schema) && node.respond_to?(:to_hash) && node.patternProperties
+                              regexs += node.patternProperties.keys
+                            end
+                          end
+                          regexs.each do |regex|
+                            if regex =~ /\\[dDwWsS]/
+                              skip("unsupported unicode character range")
+                            end
                           end
 
                           # :nocov:
