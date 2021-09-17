@@ -70,7 +70,7 @@ module JSI
         base_uri: nil
     )
       applied_schemas = SchemaSet.build do |set|
-        each { |schema| set.merge(schema.match_to_instance(instance)) }
+        each { |schema| set.merge(schema.inplace_applicator_schemas(instance)) }
       end
 
       JSI::SchemaClasses.class_for_schemas(applied_schemas).new(instance,

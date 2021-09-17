@@ -2,57 +2,38 @@
 
 module JSI
   module Schema::Application::ChildApplication
-    # returns a set of subschemas of this schema for the given property name, from keywords
-    #   `properties`, `patternProperties`, and `additionalProperties`.
+    autoload :Draft04, 'jsi/schema/application/child_application/draft04'
+    autoload :Draft06, 'jsi/schema/application/child_application/draft06'
+
+    autoload :Items, 'jsi/schema/application/child_application/items'
+    autoload :Contains, 'jsi/schema/application/child_application/contains'
+    autoload :Properties, 'jsi/schema/application/child_application/properties'
+
+    # a set of child applicator subschemas of this schema which apply to the child of the given instance
+    # on the given token.
     #
-    # @param property_name [String] the property name for which to find subschemas
-    # @return [JSI::SchemaSet] subschemas of this schema for the given property_name
-    def subschemas_for_property_name(property_name)
-      jsi_memoize(__method__, property_name) do |property_name|
-        SchemaSet.build do |subschemas|
-          if schema_content.respond_to?(:to_hash)
-            apply_additional = true
-            if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
-              apply_additional = false
-              subschemas << subschema(['properties', property_name])
-            end
-            if schema_content['patternProperties'].respond_to?(:to_hash)
-              schema_content['patternProperties'].each_key do |pattern|
-                if property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
-                  apply_additional = false
-                  subschemas << subschema(['patternProperties', pattern])
-                end
-              end
-            end
-            if apply_additional && schema_content.key?('additionalProperties')
-              subschemas << subschema(['additionalProperties'])
-            end
-          end
-        end
-      end
+    # @param token [Object] the array index or object property name for the child instance
+    # @param instance [Object] the instance to check any child applicators against
+    # @return [JSI::SchemaSet] child application subschemas of this schema for the given token
+    #   of the instance
+    def child_applicator_schemas(token, instance)
+      SchemaSet.new(each_child_applicator_schema(token, instance))
     end
 
-    # returns a set of subschemas of this schema for the given array index, from keywords
-    #   `items` and `additionalItems`.
+    # yields each child applicator subschema (from properties, items, etc.) which applies to the child of
+    # the given instance on the given token.
     #
-    # @param index [Integer] the array index for which to find subschemas
-    # @return [JSI::SchemaSet] subschemas of this schema for the given array index
-    def subschemas_for_index(index)
-      jsi_memoize(__method__, index) do |idx|
-        SchemaSet.build do |subschemas|
-          if schema_content.respond_to?(:to_hash)
-            if schema_content['items'].respond_to?(:to_ary)
-              if schema_content['items'].each_index.to_a.include?(idx)
-                subschemas << subschema(['items', idx])
-              elsif schema_content.key?('additionalItems')
-                subschemas << subschema(['additionalItems'])
-              end
-            elsif schema_content.key?('items')
-              subschemas << subschema(['items'])
-            end
-          end
-        end
+    # @param (see #child_applicator_schemas)
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    def each_child_applicator_schema(token, instance, &block)
+      return to_enum(__method__, token, instance) unless block
+
+      if schema_content.respond_to?(:to_hash)
+        internal_child_applicate_keywords(token, instance, &block)
       end
+
+      nil
     end
   end
 end

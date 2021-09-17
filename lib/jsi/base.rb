@@ -283,7 +283,7 @@ module JSI
       end
 
       begin
-        subinstance_schemas = jsi_subinstance_schemas_memos[token: token, value: value]
+        subinstance_schemas = jsi_subinstance_schemas_memos[token: token, instance: jsi_node_content, subinstance: value]
 
         if token_in_range
           jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi) do
@@ -466,17 +466,16 @@ module JSI
     private
 
     def jsi_subinstance_schemas_memos
-      jsi_memomap(:subinstance_schemas, key_by: -> (i) { i[:token] }) do |token: , value: |
-        jsi_schemas.map do |schema|
-          if respond_to?(:to_ary)
-            subschemas = schema.subschemas_for_index(token)
-          elsif respond_to?(:to_hash)
-            subschemas = schema.subschemas_for_property_name(token)
-          else
-            raise(Bug, 'jsi_subinstance_schemas_memos: not array or hash')
+      jsi_memomap(:subinstance_schemas, key_by: -> (i) { i[:token] }) do |token: , instance: , subinstance: |
+        SchemaSet.build do |schemas|
+          jsi_schemas.each do |schema|
+            schema.each_child_applicator_schema(token, instance) do |child_app_schema|
+              child_app_schema.each_inplace_applicator_schema(subinstance) do |child_inpl_app_schema|
+                schemas << child_inpl_app_schema
+              end
+            end
           end
-          subschemas.map { |subschema| subschema.match_to_instance(value) }.inject(Set.new, &:|)
-        end.inject(Set.new, &:|).freeze
+        end
       end
     end
 

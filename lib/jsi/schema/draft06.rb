@@ -6,8 +6,7 @@ module JSI
       include Schema
       include BigMoneyId
       include IdWithAnchor
-      include Schema::Application::InplaceApplication
-      include Schema::Application::ChildApplication
+      include Schema::Application::Draft06
     end
   end
 end

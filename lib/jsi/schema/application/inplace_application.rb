@@ -2,54 +2,43 @@
 
 module JSI
   module Schema::Application::InplaceApplication
+    autoload :Draft04, 'jsi/schema/application/inplace_application/draft04'
+    autoload :Draft06, 'jsi/schema/application/inplace_application/draft06'
+
+    autoload :Ref, 'jsi/schema/application/inplace_application/ref'
+    autoload :SomeOf, 'jsi/schema/application/inplace_application/someof'
+    autoload :Dependencies, 'jsi/schema/application/inplace_application/dependencies'
+
     # a set of inplace applicator schemas of this schema (from $ref, allOf, etc.) which apply to the
     # given instance.
     #
     # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
     #
     # @param instance [Object] the instance to check any applicators against
-    # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @return [JSI::SchemaSet] matched applicator schemas
-    def match_to_instance(instance, visited_refs: [])
-      SchemaSet.build do |schemas|
+    def inplace_applicator_schemas(instance)
+      SchemaSet.new(each_inplace_applicator_schema(instance))
+    end
+
+    # yields each inplace applicator schema which applies to the given instance.
+    #
+    # @param instance (see #inplace_applicator_schemas)
+    # @param visited_refs [Enumerable<JSI::Schema::Ref>]
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    def each_inplace_applicator_schema(instance, visited_refs: [], &block)
+      return to_enum(__method__, instance, visited_refs: visited_refs) unless block
+
+      catch(:jsi_application_done) do
         if schema_content.respond_to?(:to_hash)
-          ref_only = false
-          if schema_content['$ref'].respond_to?(:to_str)
-            ref = jsi_memoize(:ref) { Schema::Ref.new(schema_content['$ref'], self) }
-            unless visited_refs.include?(ref)
-              ref_only = true
-              schemas.merge(ref.deref_schema.match_to_instance(instance, visited_refs: visited_refs + [ref]))
-            end
-          end
-          if !ref_only
-            schemas << self
-            if schema_content['allOf'].respond_to?(:to_ary)
-              schema_content['allOf'].each_index do |i|
-                schemas.merge(subschema(['allOf', i]).match_to_instance(instance, visited_refs: visited_refs))
-              end
-            end
-            if schema_content['anyOf'].respond_to?(:to_ary)
-              schema_content['anyOf'].each_index do |i|
-                if subschema(['anyOf', i]).validate_instance(instance)
-                  schemas.merge(subschema(['anyOf', i]).match_to_instance(instance, visited_refs: visited_refs))
-                end
-              end
-            end
-            if schema_content['oneOf'].respond_to?(:to_ary)
-              one_i = schema_content['oneOf'].each_index.detect do |i|
-                subschema(['oneOf', i]).validate_instance(instance)
-              end
-              if one_i
-                schemas.merge(subschema(['oneOf', one_i]).match_to_instance(instance, visited_refs: visited_refs))
-              end
-            end
-            # TODO dependencies
-          end
+          internal_inplace_applicate_keywords(instance, visited_refs, &block)
         else
           # self is the only applicator schema if there are no keywords
-          schemas << self
+          yield self
         end
       end
+
+      nil
     end
   end
 end
