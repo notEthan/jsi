@@ -10,9 +10,9 @@ base = {
   },
 }
 NAMED_HASH_SCHEMA = JSI.new_schema(base)
-NamedHashInstance = NAMED_HASH_SCHEMA.jsi_schema_class
 NAMED_ID_HASH_SCHEMA = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base))
-NamedIdHashInstance = NAMED_ID_HASH_SCHEMA.jsi_schema_class
+NamedHashInstance = NAMED_HASH_SCHEMA.new_jsi({}).class
+NamedIdHashInstance = NAMED_ID_HASH_SCHEMA.new_jsi({}).class
 
 describe 'JSI::Base hash' do
   let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }

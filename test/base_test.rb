@@ -3,14 +3,14 @@ require_relative 'test_helper'
 NamedSchemaInstance = JSI.new_schema({
   '$schema' => 'http://json-schema.org/draft-07/schema#',
   '$id' => 'https://schemas.jsi.unth.net/test/base/named_schema',
-}).jsi_schema_class
+}).new_jsi({}).class
 
 # hitting .tap(&:name) causes JSI to assign a constant name from the ID,
 # meaning the name NamedSchemaInstanceTwo is not known.
 NamedSchemaInstanceTwo = JSI.new_schema({
   '$schema' => 'http://json-schema.org/draft-07/schema#',
   '$id' => 'https://schemas.jsi.unth.net/test/base/named_schema_two',
-}).jsi_schema_class.tap(&:name)
+}).new_jsi({}).class.tap(&:name)
 
 Phonebook = JSI.new_schema_module(YAML.load(<<~YAML
   title: Phone Book
@@ -73,7 +73,7 @@ describe JSI::Base do
   end
   describe 'class for schema .jsi_class_schemas' do
     it '.jsi_class_schemas' do
-      assert_equal(Set[schema], schema.jsi_schema_class.jsi_class_schemas)
+      assert_equal(Set[schema], schema.new_jsi({}).class.jsi_class_schemas)
     end
   end
   describe 'module for schema .inspect' do
@@ -787,7 +787,7 @@ describe JSI::Base do
     end
   end
   describe 'equality between different classes of JSI::Base subclasses' do
-    let(:subject_subclass) { Class.new(schema.jsi_schema_class).new(instance) }
+    let(:subject_subclass) { Class.new(schema.new_jsi({}).class).new(instance) }
 
     it 'considers a Base subclass (class_for_schema) and subsubclass to be equal with the same instance' do
       assert_equal(subject.hash, subject_subclass.hash)

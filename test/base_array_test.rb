@@ -11,9 +11,10 @@ base = {
   ],
 }
 NAMED_ARY_SCHEMA = JSI.new_schema(base)
-NamedArrayInstance = NAMED_ARY_SCHEMA.jsi_schema_class
 NAMED_ID_ARY_SCHEMA = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_array_schema'}.merge(base))
-NamedIdArrayInstance = NAMED_ID_ARY_SCHEMA.jsi_schema_class
+# TODO drop support for this
+NamedArrayInstance = NAMED_ARY_SCHEMA.new_jsi([]).class
+NamedIdArrayInstance = NAMED_ID_ARY_SCHEMA.new_jsi([]).class
 
 describe 'JSI::Base array' do
   let(:instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
