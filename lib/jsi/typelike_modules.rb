@@ -81,13 +81,26 @@ module JSI
     SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
     safe_to_hash_methods = SAFE_METHODS - safe_modified_copy_methods - safe_kv_block_modified_copy_methods
     safe_to_hash_methods.each do |method_name|
-      define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+      else
+        define_method(method_name) { |*a, **kw, &b| to_hash.public_send(method_name, *a, **kw, &b) }
+      end
     end
     safe_modified_copy_methods.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        jsi_modified_copy do |object_to_modify|
-          responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
-          responsive_object.public_send(method_name, *a, &b)
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) do |*a, &b|
+          jsi_modified_copy do |object_to_modify|
+            responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
+            responsive_object.public_send(method_name, *a, &b)
+          end
+        end
+      else
+        define_method(method_name) do |*a, **kw, &b|
+          jsi_modified_copy do |object_to_modify|
+            responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
+            responsive_object.public_send(method_name, *a, **kw, &b)
+          end
         end
       end
     end
@@ -189,13 +202,26 @@ module JSI
     SAFE_METHODS = SAFE_INDEX_ONLY_METHODS | SAFE_INDEX_ELEMENT_METHODS
     safe_to_ary_methods = SAFE_METHODS - safe_modified_copy_methods - safe_el_block_methods
     safe_to_ary_methods.each do |method_name|
-      define_method(method_name) { |*a, &b| to_ary.public_send(method_name, *a, &b) }
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) { |*a, &b| to_ary.public_send(method_name, *a, &b) }
+      else
+        define_method(method_name) { |*a, **kw, &b| to_ary.public_send(method_name, *a, **kw, &b) }
+      end
     end
     safe_modified_copy_methods.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        jsi_modified_copy do |object_to_modify|
-          responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
-          responsive_object.public_send(method_name, *a, &b)
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) do |*a, &b|
+          jsi_modified_copy do |object_to_modify|
+            responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
+            responsive_object.public_send(method_name, *a, &b)
+          end
+        end
+      else
+        define_method(method_name) do |*a, **kw, &b|
+          jsi_modified_copy do |object_to_modify|
+            responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
+            responsive_object.public_send(method_name, *a, **kw, &b)
+          end
         end
       end
     end
