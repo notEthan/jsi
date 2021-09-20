@@ -276,13 +276,25 @@ module JSI
             raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid index of #{value.inspect}")
           end
 
-          child = (value.respond_to?(:[]) ? value : value.to_ary)[token, *a, **kw]
+          ary = (value.respond_to?(:[]) ? value : value.to_ary)
+          if kw.empty?
+            # TODO remove eventually (keyword argument compatibility)
+            child = ary[token, *a]
+          else
+            child = ary[token, *a, **kw]
+          end
         elsif value.respond_to?(:to_hash)
           unless (value.respond_to?(:key?) ? value : value.to_hash).key?(token)
             raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid key of #{value.inspect}")
           end
 
-          child = (value.respond_to?(:[]) ? value : value.to_hash)[token, *a, **kw]
+          hsh = (value.respond_to?(:[]) ? value : value.to_hash)
+          if kw.empty?
+            # TODO remove eventually (keyword argument compatibility)
+            child = hsh[token, *a]
+          else
+            child = hsh[token, *a, **kw]
+          end
         else
           raise(ResolutionError, "Invalid resolution: #{token.inspect} cannot be resolved in #{value.inspect}")
         end
