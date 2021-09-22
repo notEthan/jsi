@@ -284,6 +284,7 @@ module JSI
             result_schema_class.new(schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,
               jsi_root_node: schema.jsi_root_node,
+              jsi_indicated_schemas: schema.jsi_indicated_schemas,
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
             )

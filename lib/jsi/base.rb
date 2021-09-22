@@ -129,6 +129,7 @@ module JSI
     def initialize(jsi_document,
         jsi_ptr: Ptr[],
         jsi_root_node: nil,
+        jsi_indicated_schemas: ,
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY
     )
@@ -146,6 +147,7 @@ module JSI
         raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
         @jsi_root_node = jsi_root_node
       end
+      self.jsi_indicated_schemas = jsi_indicated_schemas
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
@@ -179,6 +181,20 @@ module JSI
 
     # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :jsi_node_content
+
+    # the schemas indicated as describing this instance, prior to inplace application.
+    #
+    # this is different from {#jsi_schemas}, which are the inplace applicator schemas
+    # which describe this instance. for most purposes, `#jsi_schemas` is more relevant.
+    #
+    # `jsi_indicated_schemas` does not include inplace applicator schemas, such as the
+    # subschemas of `allOf`, whereas `#jsi_schemas` does.
+    #
+    # this does include indicated schemas which do not apply themselves, such as `$ref`
+    # schemas (on json schema drafts up to 7) - these are not included on `#jsi_schemas`.
+    #
+    # @return [JSI::SchemaSet]
+    attr_reader :jsi_indicated_schemas
 
     # yields a JSI of each node at or below this one in this JSI's document.
     #
@@ -439,7 +455,7 @@ module JSI
     def jsi_modified_copy(&block)
       if @jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        jsi_schemas.new_jsi(modified_document,
+        jsi_indicated_schemas.new_jsi(modified_document,
           uri: jsi_schema_base_uri,
         )
       else
@@ -556,12 +572,17 @@ module JSI
 
     private
 
+    def jsi_indicated_schemas=(jsi_indicated_schemas)
+      @jsi_indicated_schemas = SchemaSet.ensure_schema_set(jsi_indicated_schemas)
+    end
+
     def jsi_subinstance_memos
       jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , child_indicated_schemas: , child_applied_schemas: , includes: |
         jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas, includes: includes)
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_root_node: @jsi_root_node,
+          jsi_indicated_schemas: child_indicated_schemas,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
         )
