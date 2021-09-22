@@ -61,20 +61,19 @@ module JSI
     # @raise [Schema::NotASchemaError] when the modules param contains objects which are not Schemas
     def ensure_module_set(modules)
       if modules.is_a?(Set) && modules.frozen?
-        modules
+        set = modules
       else
         set = Set.new(modules).freeze
-
-        not_modules = set.reject { |s| s.is_a?(Module) }
-        if !not_modules.empty?
-          raise(TypeError, [
-            "ensure_module_set give non-Module objects:",
-            *not_modules.map { |ns| ns.pretty_inspect.chomp },
-          ].join("\n"))
-        end
-
-        set
       end
+      not_modules = set.reject { |s| s.is_a?(Module) }
+      if !not_modules.empty?
+        raise(TypeError, [
+          "ensure_module_set give non-Module objects:",
+          *not_modules.map { |ns| ns.pretty_inspect.chomp },
+        ].join("\n"))
+      end
+
+      set
     end
 
     # this is the Y-combinator, which allows anonymous recursive functions. for a simple example,
