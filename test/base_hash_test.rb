@@ -8,8 +8,10 @@ base = {
     'bar' => {},
   },
 }
-NamedHashInstance = JSI.new_schema(base).jsi_schema_class
-NamedIdHashInstance = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base)).jsi_schema_class
+NAMED_HASH_SCHEMA = JSI.new_schema(base)
+NamedHashInstance = NAMED_HASH_SCHEMA.jsi_schema_class
+NAMED_ID_HASH_SCHEMA = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base))
+NamedIdHashInstance = NAMED_ID_HASH_SCHEMA.jsi_schema_class
 
 describe 'JSI::Base hash' do
   let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
@@ -181,49 +183,49 @@ describe 'JSI::Base hash' do
       end
     end
     describe '#inspect named' do
-      let(:subject) { NamedHashInstance.new(instance) }
+      let(:subject) { NAMED_HASH_SCHEMA.new_jsi(instance) }
       it 'inspects' do
         assert_equal("\#{<NamedHashInstance> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named' do
-      let(:subject) { NamedHashInstance.new(instance) }
+      let(:subject) { NAMED_HASH_SCHEMA.new_jsi(instance) }
       it 'inspects' do
         assert_equal("\#{<NamedHashInstance>\n  \"foo\" => \#{<JSI> \"x\" => \"y\"},\n  \"bar\" => #[<JSI> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect named SortOfHash' do
-      let(:subject) { NamedHashInstance.new(SortOfHash.new(instance)) }
+      let(:subject) { NAMED_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
         assert_equal("\#{<NamedHashInstance SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named SortOfHash' do
-      let(:subject) { NamedHashInstance.new(SortOfHash.new(instance)) }
+      let(:subject) { NAMED_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
         assert_equal("\#{<NamedHashInstance SortOfHash>\n  \"foo\" => \#{<JSI> \"x\" => \"y\"},\n  \"bar\" => #[<JSI> 9],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect named with id' do
-      let(:subject) { NamedIdHashInstance.new(instance) }
+      let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(instance) }
       it 'inspects' do
         assert_equal("\#{<NamedIdHashInstance> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named with id' do
-      let(:subject) { NamedIdHashInstance.new(instance) }
+      let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(instance) }
       it 'inspects' do
         assert_equal("\#{<NamedIdHashInstance>\n  \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
     end
     describe '#inspect named SortOfHash with id' do
-      let(:subject) { NamedIdHashInstance.new(SortOfHash.new(instance)) }
+      let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
         assert_equal("\#{<NamedIdHashInstance SortOfHash> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named with id SortOfHash' do
-      let(:subject) { NamedIdHashInstance.new(SortOfHash.new(instance)) }
+      let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
         assert_equal("\#{<NamedIdHashInstance SortOfHash>\n  \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)>\n    \"x\" => \"y\"\n  },\n  \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)>\n    9\n  ],\n  \"baz\" => [true]\n}\n", subject.pretty_inspect)
       end
