@@ -631,9 +631,11 @@ describe JSI::Base do
       end
       describe 'properties with names to ignore' do
         class X
+          # :nocov:
           def to_s
             'x'
           end
+          # :nocov:
         end
         let(:schema_content) do
           {
