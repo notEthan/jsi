@@ -853,5 +853,25 @@ describe JSI::Base do
         assert_equal('http://jsi/test/a86e', act.schema_absolute_uri.to_s)
       end
     end
+
+    describe 'instance of the same applied schemas via different indicated schemas' do
+      let(:schema_content) do
+        YAML.safe_load(<<~YAML
+          $schema: "http://json-schema.org/draft-07/schema"
+          definitions:
+            A:
+              $ref: "#"
+            B:
+              $ref: "#"
+          type: object
+          YAML
+        )
+      end
+      it 'compares equality' do
+        a = schema.definitions['A'].new_jsi(instance)
+        b = schema.definitions['B'].new_jsi(instance)
+        assert_equal(a, b)
+      end
+    end
   end
 end
