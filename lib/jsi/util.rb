@@ -68,7 +68,7 @@ module JSI
       not_modules = set.reject { |s| s.is_a?(Module) }
       if !not_modules.empty?
         raise(TypeError, [
-          "ensure_module_set give non-Module objects:",
+          "ensure_module_set given non-Module objects:",
           *not_modules.map { |ns| ns.pretty_inspect.chomp },
         ].join("\n"))
       end
