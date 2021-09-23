@@ -11,18 +11,19 @@ module JSI
         # validates against the provided schema. Note the property name that the schema is testing will
         # always be a string.
         if result_builder.instance.respond_to?(:to_hash)
-          results = result_builder.instance.keys.map do |property_name|
-            subschema(['propertyNames']).internal_validate_instance(
+          results = {}
+          result_builder.instance.keys.each do |property_name|
+            results[property_name] = subschema(['propertyNames']).internal_validate_instance(
               Ptr[],
               property_name,
               validate_only: result_builder.validate_only,
             )
           end
           result_builder.validate(
-            results.all?(&:valid?),
+            results.values.all?(&:valid?),
             'instance object property names are not all valid against `propertyNames` schema value',
             keyword: 'propertyNames',
-            results: results,
+            results: results.values,
           )
         end
       end
