@@ -212,6 +212,15 @@ module ContactPhone
 end
 ```
 
+## Validation
+
+JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications. To validate instances, see methods {JSI::Base#jsi_validate}, {JSI::Base#jsi_valid?}, {JSI::Schema#instance_validate}, {JSI::Schema#instance_valid?}.
+
+The following optional features are not completely supported:
+
+- The `format` keyword does not perform any validation.
+- Regular expressions are interpreted by Ruby's Regexp class, whereas JSON Schema recommends interpreting these as ECMA 262 regular expressions. Certain expressions behave differently, particularly `^` and `$`.
+
 ## Metaschemas
 
 A metaschema is a schema which describes schemas. Likewise, a schema is an instance of a metaschema.
