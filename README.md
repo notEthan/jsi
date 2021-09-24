@@ -7,7 +7,9 @@ JSI offers an Object-Oriented representation for JSON data using JSON Schemas. G
 
 To learn more about JSON Schema see [https://json-schema.org/](https://json-schema.org/).
 
-A JSI class aims to be a fairly unobtrusive wrapper around its instance - "instance" here meaning the JSON data, usually a Hash or Array, which instantiate the JSON Schema. JSI schema modules and classes add accessors for property names described by its schema, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting `#to_ary` or `#to_hash`.
+JSI marries object-oriented programming with JSON Schemas by associating a module with each schema, and extending every instance described by a schema with that module. When an application adds methods to a schema module, those methods can be used on its instances.
+
+A JSI instance aims to offer a fairly unobtrusive wrapper around its JSON data, which is usually a Hash (JSON Object) or Array described by one or more JSON Schemas. JSI instances have accessors for property names described by schemas, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting `#to_ary` or `#to_hash`.
 
 Note: The canonical location of this README is on [RubyDoc](http://rubydoc.info/gems/jsi/). When viewed on [Github](https://github.com/notEthan/jsi/), it may be inconsistent with the latest released gem, and Yardoc links will not work.
 
