@@ -149,17 +149,8 @@ module JSI
               end.inject(Set.new, &:|)
 
               accessors_to_define = schema.described_object_property_names.select do |name|
-                do_define = true
-                # must be a string
-                do_define &&= name.respond_to?(:to_str)
-                # must not begin with a digit
-                do_define &&= name !~ /\A[0-9]/
-                # must not contain characters special to ruby syntax
-                do_define &&= name !~ /[\\\s\#;\.,\(\)\[\]\{\}'"`%\+\-\/\*\^\|&=<>\?:!@\$~]/
                 # must not conflict with any method on a conflicting module
-                do_define &&= !conflicting_instance_methods.any? { |mn| mn.to_s == name }
-
-                do_define
+                Util.ok_ruby_method_name?(name) && !conflicting_instance_methods.any? { |mn| mn.to_s == name }
               end.to_set.freeze
 
               define_singleton_method(:jsi_property_accessors) { accessors_to_define }
