@@ -97,10 +97,13 @@ module JSI
                 include(mod)
               end
 
-              include JSI::SchemaClasses.accessor_module_for_schema(schema,
+              accessor_module = JSI::SchemaClasses.accessor_module_for_schema(schema,
                 conflicting_modules: Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode] +
                   schema.jsi_schema_instance_modules,
               )
+              include accessor_module
+
+              define_singleton_method(:jsi_property_accessors) { accessor_module.jsi_property_accessors }
 
               if schema.describes_schema?
                 extend DescribesSchemaModule
@@ -146,7 +149,9 @@ module JSI
                 do_define &&= !conflicting_instance_methods.any? { |mn| mn.to_s == name }
 
                 do_define
-              end
+              end.to_set.freeze
+
+              define_singleton_method(:jsi_property_accessors) { accessors_to_define }
 
               accessors_to_define.each do |property_name|
                 define_method(property_name) do |*a|
