@@ -237,7 +237,7 @@ Let's say you're sticking to JSON types in the database - you have to do so if y
 
 But if your database contains JSON, then your deserialized objects in ruby are likewise Hash / Array / basic types. You have to use subscripts instead of accessors, and you don't have any way to add methods to your data types.
 
-JSI gives you the best of both with JSICoder. This coder dumps objects which are simple JSON types, and loads instances of a specified JSI schema. Here's an example:
+JSI gives you the best of both with JSICoder. This coder dumps objects which are simple JSON types, and loads instances of a specified JSI schema. Here's an example, supposing a `users` table with a JSON column `contact_info`:
 
 ```ruby
 class User < ActiveRecord::Base
@@ -245,7 +245,7 @@ class User < ActiveRecord::Base
 end
 ```
 
-Now `user.contacts` will return an array of Contact instances, from the JSON type in the database, with Contact's accessors, validations, and user-defined instance methods.
+Now `user.contact_info` will be instantiated as a Contact JSI instance, from the JSON type in the database, with Contact's accessors, validations, and user-defined instance methods.
 
 See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize the dumped JSON-compatible objects further as text.
 
