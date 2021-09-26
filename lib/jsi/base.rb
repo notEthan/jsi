@@ -430,7 +430,7 @@ module JSI
     # the set of JSI schema modules corresponding to the schemas that describe this JSI
     # @return [Set<Module>]
     def jsi_schema_modules
-      jsi_schemas.map(&:jsi_schema_module).to_set.freeze
+      Util.ensure_module_set(jsi_schemas.map(&:jsi_schema_module))
     end
 
     # yields the content of this JSI's instance. the block must result in
