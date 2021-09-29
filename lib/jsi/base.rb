@@ -223,6 +223,78 @@ module JSI
       nil
     end
 
+    # recursively selects child nodes of this JSI, returning a modified copy of self containing only
+    # child nodes for which the given block had a true-ish result.
+    #
+    # this method yields a node before recursively descending to its child nodes, so leaf nodes are yielded
+    # last, after their parents. if a node is not selected, its children are never recursed.
+    #
+    # @yield [JSI::Base] each child node below self
+    # @return [JSI::Base] modified copy of self containing only the selected nodes
+    def jsi_select_children_node_first(&block)
+      return to_enum(__method__) unless block
+
+      jsi_modified_copy do |instance|
+        if respond_to?(:to_hash)
+          res = instance.class.new
+          each_key do |k|
+            v = self[k, as_jsi: true]
+            if yield(v)
+              res[k] = v.jsi_select_children_node_first(&block).jsi_node_content
+            end
+          end
+          res
+        elsif respond_to?(:to_ary)
+          res = instance.class.new
+          each_index do |i|
+            e = self[i, as_jsi: true]
+            if yield(e)
+              res << e.jsi_select_children_node_first(&block).jsi_node_content
+            end
+          end
+          res
+        else
+          instance
+        end
+      end
+    end
+
+    # recursively selects child nodes of this JSI, returning a modified copy of self containing only
+    # child nodes for which the given block had a true-ish result.
+    #
+    # this method recursively descends child nodes before yielding each node, so leaf nodes are yielded
+    # before their parents.
+    #
+    # @yield [JSI::Base] each child node below self
+    # @return [JSI::Base] modified copy of self containing only the selected nodes
+    def jsi_select_children_leaf_first(&block)
+      return to_enum(__method__) unless block
+
+      jsi_modified_copy do |instance|
+        if respond_to?(:to_hash)
+          res = instance.class.new
+          each_key do |k|
+            v = self[k, as_jsi: true].jsi_select_children_leaf_first(&block)
+            if yield(v)
+              res[k] = v.jsi_node_content
+            end
+          end
+          res
+        elsif respond_to?(:to_ary)
+          res = instance.class.new
+          each_index do |i|
+            e = self[i, as_jsi: true].jsi_select_children_leaf_first(&block)
+            if yield(e)
+              res << e.jsi_node_content
+            end
+          end
+          res
+        else
+          instance
+        end
+      end
+    end
+
     # an array of JSI instances above this one in the document.
     #
     # @return [Array<JSI::Base>]

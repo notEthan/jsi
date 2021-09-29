@@ -245,6 +245,77 @@ describe JSI::Base do
       end
     end
   end
+  describe 'selecting child nodes' do
+    let(:schema_content) do
+      YAML.safe_load(<<~YAML
+        patternProperties:
+          ...:
+            $ref: "#"
+        items:
+          - $ref: "#"
+          - $ref: "#"
+        pattern: "..."
+        YAML
+      )
+    end
+    describe '#jsi_select_children_node_first: selecting in a complex structure those elements described by a schema or subschema' do
+      # note that 'described by a schema' does not imply the instance or subinstance validates against
+      # its schema(s). string subinstances ('y') are described but fail validation against `pattern`.
+      let(:instance) do
+        YAML.safe_load(<<~YAML
+          n:
+            n: []
+          yyy:
+            - y
+            - n:   [y, {yyy: y}, n, {nnn: n}] # the 'y's in the value here are irrelevant as they are below a 'n'
+              yyy: [y, {yyy: y}, n, {nnn: n}]
+            - n
+          YAML
+        )
+      end
+      it "selects the nodes" do
+        exp = schema.new_jsi(
+          'yyy' => [
+            'y',
+            {'yyy' => ['y', {'yyy' => 'y'}]},
+          ]
+        )
+        act = subject.jsi_select_children_node_first do |node|
+          node.jsi_schemas.any?
+        end
+        assert_equal(exp, act)
+      end
+    end
+    describe 'jsi_select_children_leaf_first: selecting in a complex structure by validity' do
+      # here we select valid leaf nodes and thereby end up with a result consisting of valid child nodes
+      let(:instance) do
+        YAML.safe_load(<<~YAML
+          y: # valid because no schema applies to this or its children
+            y: [y]
+          yyy: # will be valid when its invalid children are rejected
+            - n # fails pattern
+            - y:   [y] # valid; no schemas apply
+              yyy: [[yyy, n], {nnn: n}, yyy]
+            - yyy
+          YAML
+        )
+      end
+      it "selects the nodes" do
+        exp = schema.new_jsi(
+          'y' => {'y' => ['y']},
+          'yyy' => [
+            {
+              'y' => ['y'],
+              'yyy' => [['yyy'], {}, 'yyy']
+            },
+            'yyy',
+          ]
+        )
+        act = subject.jsi_select_children_leaf_first(&:jsi_valid?)
+        assert_equal(exp, act)
+      end
+    end
+  end
   describe '#jsi_modified_copy' do
     describe 'with an instance that does not have #jsi_modified_copy' do
       let(:instance) { Object.new }
