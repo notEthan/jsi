@@ -81,11 +81,9 @@ module JSI
         end
       end
 
-      # a module for the given schema, with accessor methods for any object property names the schema
-      # identifies (see {JSI::Schema#described_object_property_names}).
-      #
-      # defines a singleton method #schema to access the {JSI::Schema} this module represents, and extends
-      # the module with {JSI::SchemaModule}.
+      # @api private
+      # see {Schema#jsi_schema_module}
+      # @return [Module]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
         jsi_memoize(:module_for_schema, schema) do |schema|
