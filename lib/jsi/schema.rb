@@ -57,8 +57,6 @@ module JSI
     module IdWithAnchor
       # @return [Addressable::URI, nil] a URI for the schema's id, unless the id defines an anchor in its
       #   fragment. nil if the schema defines no id.
-      # @raise [Schema::IdFragmentUndefined] when the id defines an anchor fragment attached to a URI which
-      #   is not the same as the schema's base URI
       def id_without_fragment
         if id
           id_uri = Addressable::URI.parse(id)
