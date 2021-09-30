@@ -303,9 +303,9 @@ describe JSI::Base do
         end
         assert_equal(schema.new_jsi(['{}']), modified)
       end
-      it 'changes from a jsi to a basic type' do
+      it 'changes from complex to a basic type' do
         mod = subject[0].jsi_modified_copy { |o| o.to_s }
-        assert_equal('{}', mod)
+        assert_equal(schema.new_jsi(['{}'])[0, as_jsi: true], mod)
       end
     end
     describe 'resulting in a different schema' do
