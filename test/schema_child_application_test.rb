@@ -75,6 +75,53 @@ describe 'JSI Schema child application' do
     end
   end
   {
+    draft06: JSI::JSONSchemaOrgDraft06,
+  }.each do |name, metaschema|
+    describe "#{name} contains application" do
+      let(:metaschema) { metaschema }
+      describe 'contains valid' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            YAML
+          )
+        end
+        let(:instance) { [{}, [], [], {}] }
+        it 'applies' do
+          refute_is_a(JSI::Base, subject[0])
+          assert_equal(Set[
+            schema.contains,
+          ], subject[1].jsi_schemas)
+          assert_equal(Set[
+            schema.contains,
+          ], subject[2].jsi_schemas)
+          refute_is_a(JSI::Base, subject[3])
+          refute_is_a(schema.contains.jsi_schema_module, subject[0])
+          assert_is_a(schema.contains.jsi_schema_module, subject[1])
+          assert_is_a(schema.contains.jsi_schema_module, subject[2])
+          refute_is_a(schema.contains.jsi_schema_module, subject[3])
+        end
+      end
+      describe 'contains invalid' do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            YAML
+          )
+        end
+        let(:instance) { [{}, {}] }
+        it 'does not apply' do
+          refute_is_a(JSI::Base, subject[0])
+          refute_is_a(JSI::Base, subject[1])
+          refute_is_a(schema.contains.jsi_schema_module, subject[0])
+          refute_is_a(schema.contains.jsi_schema_module, subject[1])
+        end
+      end
+    end
+  end
+  {
     draft04: JSI::JSONSchemaOrgDraft04,
     draft06: JSI::JSONSchemaOrgDraft06,
   }.each do |name, metaschema|
