@@ -95,8 +95,8 @@ module JSI
       define_method(method_name) do |*a, &b|
         jsi_modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
-          responsive_object.public_send(method_name, *a) do |k, _v|
-            b.call(k, self[k])
+          responsive_object.public_send(method_name) do |k, _v|
+            b.call(k, self[k, *a])
           end
         end
       end
@@ -203,8 +203,8 @@ module JSI
         jsi_modified_copy do |object_to_modify|
           i = 0
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
-          responsive_object.public_send(method_name, *a) do |_e|
-            b.call(self[i]).tap { i += 1 }
+          responsive_object.public_send(method_name) do |_e|
+            b.call(self[i, *a]).tap { i += 1 }
           end
         end
       end
