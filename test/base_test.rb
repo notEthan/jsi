@@ -259,7 +259,7 @@ describe JSI::Base do
         refute_equal(instance, modified)
       end
     end
-    describe 'with an instance that does have #jsi_modified_copy' do
+    describe 'with an instance of the same type' do
       it 'yields the instance to modify' do
         modified = subject.jsi_modified_copy do |o|
           assert_equal({}, o)
