@@ -43,6 +43,7 @@ module JSI
   autoload :MetaschemaNode, 'jsi/metaschema_node'
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :SchemaRegistry, 'jsi/schema_registry'
+  autoload :Validation, 'jsi/validation'
   autoload :JSICoder, 'jsi/jsi_coder'
 
   autoload :JSONSchemaOrgDraft04, 'schemas/json-schema.org/draft-04/schema'
