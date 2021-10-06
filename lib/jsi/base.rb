@@ -46,12 +46,12 @@ module JSI
         else
           schema_names = jsi_class_schemas.map do |schema|
             mod = schema.jsi_schema_module
-            if mod.name && schema.schema_id
-              "#{mod.name} (#{schema.schema_id})"
+            if mod.name && schema.schema_uri
+              "#{mod.name} (#{schema.schema_uri})"
             elsif mod.name
               mod.name
-            elsif schema.schema_id
-              schema.schema_id
+            elsif schema.schema_uri
+              schema.schema_uri.to_s
             else
               schema.jsi_ptr.uri
             end
@@ -83,8 +83,8 @@ module JSI
           schema_names = jsi_class_schemas.map do |schema|
             if schema.jsi_schema_module.name
               schema.jsi_schema_module.name
-            elsif schema.schema_id
-              schema.schema_id
+            elsif schema.schema_uri
+              schema.schema_uri.to_s
             else
               nil
             end
@@ -429,7 +429,7 @@ module JSI
             "#{class_name} (#{schema_module_names.join(', ')})"
           end
         else
-          schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name || schema.schema_id }.compact
+          schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name || schema.schema_uri }.compact
           if schema_names.empty?
             "JSI"
           else

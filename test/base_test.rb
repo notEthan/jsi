@@ -27,14 +27,14 @@ describe JSI::Base do
     it 'is the constant name plus id for a class assigned to a constant' do
       assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/base/named_schema#)), NamedSchemaInstance.inspect)
     end
-    it 'is not the constant name when the constant name has been generated from the schema_id' do
+    it 'is not the constant name when the constant name has been generated from the schema_uri' do
       assert_equal("JSI::SchemaClasses::Xhttps___schemas_jsi_unth_net_test_base_named_schema_two_", NamedSchemaInstanceTwo.name)
       assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two#)", NamedSchemaInstanceTwo.inspect)
     end
   end
   describe 'class name' do
     let(:schema_content) { {'$id' => 'https://jsi/BaseTest'} }
-    it 'generates a class name from schema_id' do
+    it 'generates a class name from schema_uri' do
       assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest_', subject.class.name)
     end
     it 'uses an existing name' do

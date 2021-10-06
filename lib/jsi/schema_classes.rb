@@ -3,15 +3,15 @@
 module JSI
   # JSI Schema Modules are extended with JSI::SchemaModule
   module SchemaModule
-    # @return [String] absolute schema_id of the schema this module represents.
-    #   see {Schema#schema_id}.
-    def schema_id
-      schema.schema_id
+    # @return [String] absolute schema_uri of the schema this module represents.
+    #   see {Schema#schema_uri}.
+    def schema_uri
+      schema.schema_uri
     end
 
     # @return [String]
     def inspect
-      uri = schema.schema_id || schema.jsi_ptr.uri
+      uri = schema.schema_uri || schema.jsi_ptr.uri
       if name
         "#{name} (#{uri})"
       else

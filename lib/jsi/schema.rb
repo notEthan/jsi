@@ -266,10 +266,11 @@ module JSI
       end
     end
 
-    # @return [String, nil] an absolute id for the schema, with a json pointer fragment. nil if
-    #   no parent of this schema defines an id.
-    def schema_id
-      schema_uris.empty? ? nil : schema_uris.first.to_s
+    # @return [Addressable::URI, nil] a URI which refers to this schema.
+    #   nil if no parent of this schema defines an id.
+    #   see {#schema_uris} for all URIs known to refer to this schema.
+    def schema_uri
+      schema_uris.first
     end
 
     # @return [Array<Addressable::URI>] URIs which refer to this schema

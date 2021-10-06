@@ -24,17 +24,17 @@ describe JSI::Schema do
       assert_equal({'description' => 'items!'}, schema_items.as_json)
     end
   end
-  describe '#schema_id' do
+  describe '#schema_uri' do
     it "hasn't got one" do
-      assert_nil(JSI.new_schema({}).schema_id)
+      assert_nil(JSI.new_schema({}).schema_uri)
     end
     it 'uses a given id with a fragment' do
       schema = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/given_id_with_fragment#'})
-      assert_equal('https://schemas.jsi.unth.net/test/given_id_with_fragment#', schema.schema_id)
+      assert_equal(Addressable::URI.parse('https://schemas.jsi.unth.net/test/given_id_with_fragment#'), schema.schema_uri)
     end
     it 'uses a given id (adding a fragment)' do
       schema = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/given_id'})
-      assert_equal('https://schemas.jsi.unth.net/test/given_id#', schema.schema_id)
+      assert_equal(Addressable::URI.parse('https://schemas.jsi.unth.net/test/given_id#'), schema.schema_uri)
     end
     it 'uses a pointer in the fragment' do
       schema = JSI.new_schema({
@@ -42,7 +42,7 @@ describe JSI::Schema do
         'properties' => {'foo' => {'type' => 'object'}},
       })
       subschema = schema['properties']['foo']
-      assert_equal('https://schemas.jsi.unth.net/test/uses_pointer_in_fragment#/properties/foo', subschema.schema_id)
+      assert_equal(Addressable::URI.parse('https://schemas.jsi.unth.net/test/uses_pointer_in_fragment#/properties/foo'), subschema.schema_uri)
     end
     it 'uses a pointer in the fragment, ignoring a pointer in the fragment of the root id' do
       schema = JSI.new_schema({
@@ -50,7 +50,7 @@ describe JSI::Schema do
         'properties' => {'foo' => {'type' => 'object'}},
       })
       subschema = schema['properties']['foo']
-      assert_equal('https://schemas.jsi.unth.net/test/id_has_pointer#/properties/foo', subschema.schema_id)
+      assert_equal(Addressable::URI.parse('https://schemas.jsi.unth.net/test/id_has_pointer#/properties/foo'), subschema.schema_uri)
     end
   end
   describe '#schema_uris' do
