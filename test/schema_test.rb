@@ -533,6 +533,15 @@ describe JSI::Schema do
       assert_equal(schema, schema.jsi_schema_module.schema)
     end
   end
+
+  describe '#jsi_schema_module_exec' do
+    it 'evaluates the block on the schema module' do
+      schema = JSI::JSONSchemaOrgDraft07.new_schema({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module_exec'})
+      schema.jsi_schema_module_exec(foo: 'foo') { |foo: | define_method(:foo) { foo } }
+      assert_equal('foo', schema.new_jsi({}).foo)
+    end
+  end
+
   describe '#jsi_schema_class' do
     it 'returns the class for the schema' do
       schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/schema_schema_class'})
