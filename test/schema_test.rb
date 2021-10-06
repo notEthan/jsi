@@ -393,29 +393,33 @@ describe JSI::Schema do
     let(:schema) { JSI.new_schema({id: 'https://schemas.jsi.unth.net/test/validation', type: 'object'}) }
     describe 'without errors' do
       let(:instance) { {'foo' => 'bar'} }
-      it '#fully_validate_instance' do
-        assert_equal([], schema.fully_validate_instance(instance))
+      it '#instance_validate' do
+        result = schema.instance_validate(instance)
+        assert_equal(true, result.valid?)
+        assert_equal(Set[], result.validation_errors)
+        assert_equal(Set[], result.schema_issues)
       end
-      it '#validate_instance' do
-        assert_equal(true, schema.validate_instance(instance))
-      end
-      it '#validate_instance!' do
-        assert_equal(true, schema.validate_instance!(instance))
+      it '#instance_valid?' do
+        assert_equal(true, schema.instance_valid?(instance))
       end
     end
     describe 'with errors' do
       let(:instance) { ['no'] }
-      it '#fully_validate_instance' do
-        assert_equal(["The property '#/' of type array did not match the following type: object in schema https://schemas.jsi.unth.net/test/validation"], schema.fully_validate_instance(instance))
+      it '#instance_validate' do
+        result = schema.instance_validate(instance)
+        assert_equal(false, result.valid?)
+        assert_equal(Set[
+          JSI::Validation::Error.new({
+            :message => "instance type does not match `type` value",
+            :keyword => "type",
+            :schema => schema,
+            :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
+          }),
+        ], result.validation_errors)
+        assert_equal(Set[], result.schema_issues)
       end
-      it '#validate_instance' do
-        assert_equal(false, schema.validate_instance(instance))
-      end
-      it '#validate_instance!' do
-        err = assert_raises(JSON::Schema::ValidationError) do
-          schema.validate_instance!(instance)
-        end
-        assert_equal("The property '#/' of type array did not match the following type: object", err.message)
+      it '#instance_valid?' do
+        assert_equal(false, schema.instance_valid?(instance))
       end
     end
   end

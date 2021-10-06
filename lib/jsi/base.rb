@@ -359,23 +359,32 @@ module JSI
       end
     end
 
-    # @return [Array] array of schema validation errors for this instance
+    # validates this JSI's instance against its schemas
+    #
+    # @return [JSI::Validation::FullResult]
+    def jsi_validate
+      results = jsi_schemas.map { |schema| schema.instance_validate(self) }
+      results.inject(Validation::FullResult.new, &:merge).freeze
+    end
+
+    # @return [Boolean] whether this JSI's instance is valid against all of its schemas
+    def jsi_valid?
+      jsi_schemas.all? { |schema| schema.instance_valid?(self) }
+    end
+
+    # @private
     def fully_validate(errors_as_objects: false)
-      jsi_schemas.map { |schema| schema.fully_validate_instance(jsi_instance, errors_as_objects: errors_as_objects) }.inject([], &:+)
+      raise(NotImplementedError, "Base#fully_validate removed: see new validation interface Base#jsi_validate")
     end
 
-    # @return [true, false] whether the instance validates against its schema
+    # @private
     def validate
-      jsi_schemas.all? { |schema| schema.validate_instance(jsi_instance) }
+      raise(NotImplementedError, "Base#validate renamed: see Base#jsi_valid?")
     end
 
-    # @return [true] if this method does not raise, it returns true to
-    #   indicate a valid instance.
-    # @raise [::JSON::Schema::ValidationError] raises if the instance has
-    #   validation errors
+    # @private
     def validate!
-      jsi_schemas.each { |schema| schema.validate_instance!(jsi_instance) }
-      true
+      raise(NotImplementedError, "Base#validate! removed")
     end
 
     def dup

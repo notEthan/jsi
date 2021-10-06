@@ -5,9 +5,8 @@ require "pp"
 require "set"
 require "json"
 require "pathname"
+require "bigdecimal"
 require "addressable/uri"
-
-require "jsi/json-schema-fragments"
 
 require "jsi/util"
 require "jsi/typelike_modules"
@@ -23,6 +22,7 @@ module JSI
 
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
   RESOURCES_PATH = ROOT_PATH.join('{resources}')
+  SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   autoload :Ptr, 'jsi/ptr'
 
@@ -43,6 +43,7 @@ module JSI
   autoload :MetaschemaNode, 'jsi/metaschema_node'
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :SchemaRegistry, 'jsi/schema_registry'
+  autoload :Validation, 'jsi/validation'
   autoload :JSICoder, 'jsi/jsi_coder'
 
   autoload :JSONSchemaOrgDraft04, 'schemas/json-schema.org/draft-04/schema'

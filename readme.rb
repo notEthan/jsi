@@ -69,16 +69,16 @@ pp bill.name
 print 'bill.phone.map(&:location): '
 pp bill.phone.map(&:location)
 
-print 'bill.validate: '
-pp bill.validate
+print 'bill.jsi_valid?: '
+pp bill.jsi_valid?
 
 bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 
 print 'bad: '
 pp bad
 
-print 'bad.phone.fully_validate: '
-pp bad.phone.fully_validate
+print 'bad.phone.jsi_validate: '
+pp bad.phone.jsi_validate
 
 print 'bill.transform_values(&:size): '
 pp bill.transform_values(&:size)

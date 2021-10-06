@@ -7,6 +7,8 @@ module JSI
   # expected to be a Hash (JSON object) or a Boolean.
   module Schema
     autoload :Application, 'jsi/schema/application'
+    autoload :Validation, 'jsi/schema/validation'
+    autoload :Issue, 'jsi/schema/issue'
 
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
 
@@ -99,6 +101,26 @@ module JSI
         else
           nil
         end
+      end
+    end
+
+    # @private
+    module IntegerAllows0Fraction
+      # @private
+      # @param value
+      # @return [Boolean] is value an integer?
+      def internal_integer?(value)
+        value.is_a?(Integer) || (value.is_a?(Numeric) && value % 1.0 == 0.0)
+      end
+    end
+
+    # @private
+    module IntegerDisallows0Fraction
+      # @private
+      # @param value
+      # @return [Boolean] is value an integer?
+      def internal_integer?(value)
+        value.is_a?(Integer)
       end
     end
 
@@ -429,43 +451,58 @@ module JSI
       end
     end
 
-    # @return [Array] array of schema validation errors for
-    #   the given instance against this schema
+    # validates the given instance against this schema
+    #
+    # @param instance [Object] the instance to validate against this schema
+    # @return [JSI::Validation::Result]
+    def instance_validate(instance)
+      if instance.is_a?(JSI::PathedNode)
+        instance_ptr = instance.jsi_ptr
+        instance_document = instance.jsi_document
+      else
+        instance_ptr = Ptr[]
+        instance_document = instance
+      end
+      internal_validate_instance(instance_ptr, instance_document)
+    end
+
+    # @param instance [Object] the instance to validate against this schema
+    # @return [Boolean] whether the given instance is valid against this schema
+    def instance_valid?(instance)
+      if instance.is_a?(JSI::PathedNode)
+        instance = instance.jsi_node_content
+      end
+      internal_validate_instance(Ptr[], instance, validate_only: true).valid?
+    end
+
+    # @private
     def fully_validate_instance(other_instance, errors_as_objects: false)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment, errors_as_objects: errors_as_objects)
+      raise(NotImplementedError, "Schema#fully_validate_instance removed: see new validation interface Schema#instance_validate")
     end
 
-    # @return [true, false] whether the given instance validates against this schema
+    # @private
     def validate_instance(other_instance)
-      ::JSON::Validator.validate(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment)
+      raise(NotImplementedError, "Schema#validate_instance renamed: see Schema#instance_valid?")
     end
 
-    # @return [true] if this method does not raise, it returns true to
-    #   indicate the instance is valid against this schema
-    # @raise [::JSON::Schema::ValidationError] raises if the instance has
-    #   validation errors against this schema
+    # @private
     def validate_instance!(other_instance)
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(jsi_document), JSI::Typelike.as_json(other_instance), fragment: jsi_ptr.fragment)
+      raise(NotImplementedError, "Schema#validate_instance! removed")
     end
 
-    # @return [Array] array of schema validation errors for
-    #   this schema, validated against its metaschema. a default metaschema
-    #   is assumed if the schema does not specify a $schema.
+    # @private
     def fully_validate_schema(errors_as_objects: false)
-      ::JSON::Validator.fully_validate(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true, errors_as_objects: errors_as_objects)
+      raise(NotImplementedError, "Schema#fully_validate_schema removed: use validation interface Base#jsi_validate on the schema")
     end
 
-    # @return [true, false] whether this schema validates against its metaschema
+    # @private
     def validate_schema
-      ::JSON::Validator.validate(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true)
+      raise(NotImplementedError, "Schema#validate_schema removed: use validation interface Base#jsi_valid? on the schema")
     end
 
-    # @return [true] if this method does not raise, it returns true to
-    #   indicate this schema is valid against its metaschema
-    # @raise [::JSON::Schema::ValidationError] raises if this schema has
-    #   validation errors against its metaschema
+    # @private
     def validate_schema!
-      ::JSON::Validator.validate!(JSI::Typelike.as_json(jsi_document), [], fragment: jsi_ptr.fragment, validate_schema: true, list: true)
+      raise(NotImplementedError, "Schema#validate_schema! removed")
     end
 
     # @private

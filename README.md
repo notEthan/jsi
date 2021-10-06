@@ -87,7 +87,7 @@ bill.phone.map(&:location)
 We also get validations, as you'd expect given that's largely what json-schema exists to do:
 
 ```ruby
-bill.validate
+bill.jsi_valid?
 # => true
 ```
 
@@ -102,11 +102,15 @@ bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 #     }
 #   ]
 # }
-bad.phone.fully_validate
-# => ["The property '#/0/number' of type array did not match the following type: string in schema 594126e3"]
+bad.phone.jsi_validate
+# => #<JSI::Validation::FullResult
+#  @validation_errors=
+#   #<Set: {#<JSI::Validation::Error
+#      message: "instance type does not match `type` value",
+#      keyword: "type",
+#  ...
+# >
 ```
-
-These validations are done by the [`json-schema` gem](https://github.com/ruby-json-schema/json-schema) - JSI does not do validations on its own.
 
 Since the underlying instance is a ruby hash (json object), we can use it like a hash with `#[]` or, say, `#transform_values`:
 
@@ -207,6 +211,15 @@ module ContactPhone
   end
 end
 ```
+
+## Validation
+
+JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications. To validate instances, see methods {JSI::Base#jsi_validate}, {JSI::Base#jsi_valid?}, {JSI::Schema#instance_validate}, {JSI::Schema#instance_valid?}.
+
+The following optional features are not completely supported:
+
+- The `format` keyword does not perform any validation.
+- Regular expressions are interpreted by Ruby's Regexp class, whereas JSON Schema recommends interpreting these as ECMA 262 regular expressions. Certain expressions behave differently, particularly `^` and `$`.
 
 ## Metaschemas
 
