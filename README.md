@@ -175,10 +175,10 @@ Contact.properties['phone'].items
 # => (JSI Schema Module: #/properties/phone/items)
 ```
 
-Opening a subschema module with module_eval, you can add methods to instances of the subschema.
+Opening a subschema module with [`module_exec`](https://ruby-doc.org/core/Module.html#method-i-module_exec), you can add methods to instances of the subschema.
 
 ```ruby
-Contact.properties['phone'].items.module_eval do
+Contact.properties['phone'].items.module_exec do
   def number_with_dashes
     number.split(//).join('-')
   end
