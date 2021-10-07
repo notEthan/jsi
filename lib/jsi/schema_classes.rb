@@ -145,7 +145,7 @@ module JSI
                 # must not contain characters special to ruby syntax
                 do_define &&= name !~ /[\\\s\#;\.,\(\)\[\]\{\}'"`%\+\-\/\*\^\|&=<>\?:!@\$~]/
                 # must not conflict with any method on a conflicting module
-                do_define &&= !conflicting_instance_methods.any? { |m| m.to_s == name }
+                do_define &&= !conflicting_instance_methods.any? { |mn| mn.to_s == name }
 
                 do_define
               end
