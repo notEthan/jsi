@@ -30,9 +30,9 @@ module Minitest
   class SpecReporterWithEndSummary < Minitest::Reporters::SpecReporter
     def report
       super
-      skip_messages = results.select(&:skipped?).group_by { |r| r.failure.message }.transform_values(&:size)
-      skip_messages.sort_by { |m, n| [-n, m] }.each do |msg, n|
-        puts "#{yellow { "skipped #{n}" }}: #{msg}"
+      skip_messages = results.select(&:skipped?).group_by { |r| r.failure.message }
+      skip_messages.sort_by { |m, rs| [-rs.size, m] }.each do |msg, rs|
+        puts "#{yellow { "skipped #{rs.size}" }}: #{msg}"
       end
       results.reject(&:skipped?).sort_by(&:source_location).each do |result|
         print(red { result.failure.is_a?(UnexpectedError) ? "error" : "failure" })
