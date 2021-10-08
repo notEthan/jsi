@@ -159,6 +159,22 @@ describe JSI::Schema do
           assert_nil(schema.properties['none'].schema_absolute_uri)
         end
       end
+      describe 'relative id uri with no base' do
+        it 'has no schema_absolute_uri' do
+          schema = metaschema.new_schema({
+            'id' => 'test/d4/relative_uri',
+          })
+          assert_nil(schema.schema_absolute_uri)
+          assert_nil(schema.anchor)
+        end
+        it 'has no schema_absolute_uri but has an anchor' do
+          schema = metaschema.new_schema({
+            'id' => 'test/d4/relative_uri_w_anchor#anchor',
+          })
+          assert_nil(schema.schema_absolute_uri)
+          assert_equal('anchor', schema.anchor)
+        end
+      end
     end
     describe 'draft 6' do
       let(:metaschema) { JSI::JSONSchemaOrgDraft06 }
@@ -263,6 +279,22 @@ describe JSI::Schema do
           assert_equal(Addressable::URI.parse('http://jsi/test/d6/external_base_uri/nested_relative'), schema.properties['relative'].schema_absolute_uri)
           assert_equal(Addressable::URI.parse('http://jsi/test/d6/ignore_external_base_uri/nested_absolute'), schema.properties['absolute'].schema_absolute_uri)
           assert_nil(schema.properties['none'].schema_absolute_uri)
+        end
+      end
+      describe 'relative id uri with no base' do
+        it 'has no schema_absolute_uri' do
+          schema = metaschema.new_schema({
+            '$id' => 'test/d6/relative_uri',
+          })
+          assert_nil(schema.schema_absolute_uri)
+          assert_nil(schema.anchor)
+        end
+        it 'has no schema_absolute_uri but has an anchor' do
+          schema = metaschema.new_schema({
+            '$id' => 'test/d6/relative_uri_w_anchor#anchor',
+          })
+          assert_nil(schema.schema_absolute_uri)
+          assert_equal('anchor', schema.anchor)
         end
       end
     end
