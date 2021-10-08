@@ -22,7 +22,15 @@ module JSI
       @resources_mutex = Mutex.new
     end
 
-    # @param resource [JSI::Base]
+    # registers the given resource and/or schema resources it contains in the registry.
+    #
+    # each child of the resource (including the resource itself) is registered if it is a schema that
+    # has an absolute URI (generally defined by the '$id' keyword).
+    #
+    # the given resource itself will be registered, whether or not it is a schema, if it is the root
+    # of its document and was instantiated with the option `base_uri` specified.
+    #
+    # @param resource [JSI::Base] a JSI containing resources to register
     # @return [void]
     def register(resource)
       # allow for registration of resources at the root of a document whether or not they are schemas
