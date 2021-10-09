@@ -26,7 +26,24 @@ require 'minitest/autorun'
 require 'minitest/around/spec'
 require 'minitest/reporters'
 
-Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
+module Minitest
+  class SpecReporterWithEndSummary < Minitest::Reporters::SpecReporter
+    def report
+      super
+      skip_messages = results.select(&:skipped?).group_by { |r| r.failure.message }
+      skip_messages.sort_by { |m, rs| [-rs.size, m] }.each do |msg, rs|
+        puts "#{yellow { "skipped #{rs.size}" }}: #{msg}"
+      end
+      results.reject(&:skipped?).sort_by(&:source_location).each do |result|
+        print(red { result.failure.is_a?(UnexpectedError) ? "error" : "failure" })
+        print(": #{result.klass} #{result.name}")
+        puts
+        puts("  #{result.source_location.join(' :')}")
+      end
+    end
+  end
+end
+Minitest::Reporters.use! MiniTest::SpecReporterWithEndSummary.new
 
 class JSISpec < Minitest::Spec
   if ENV['JSI_TEST_ALPHA']

@@ -259,7 +259,7 @@ describe JSI::Base do
         refute_equal(instance, modified)
       end
     end
-    describe 'with an instance that does have #jsi_modified_copy' do
+    describe 'with an instance of the same type' do
       it 'yields the instance to modify' do
         modified = subject.jsi_modified_copy do |o|
           assert_equal({}, o)
@@ -303,9 +303,9 @@ describe JSI::Base do
         end
         assert_equal(schema.new_jsi(['{}']), modified)
       end
-      it 'changes from a jsi to a basic type' do
+      it 'changes from complex to a basic type' do
         mod = subject[0].jsi_modified_copy { |o| o.to_s }
-        assert_equal('{}', mod)
+        assert_equal(schema.new_jsi(['{}'])[0, as_jsi: true], mod)
       end
     end
     describe 'resulting in a different schema' do

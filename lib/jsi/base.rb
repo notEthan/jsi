@@ -335,13 +335,16 @@ module JSI
       jsi_schemas.map(&:jsi_schema_module).to_set.freeze
     end
 
-    # yields the content of the underlying instance. the block must result in
-    # a modified copy of that (not destructively modifying the yielded content)
-    # which will be used to instantiate a new instance of this JSI class with
-    # the modified content.
-    # @yield [Object] the content of the instance. the block should result
-    #   in a (nondestructively) modified copy of this.
-    # @return [JSI::Base subclass the same as self] the modified copy of self
+    # yields the content of this JSI's instance. the block must result in
+    # a modified copy of the yielded instance (not destructively modifying it)
+    # which will be used to instantiate a new JSI with the modified content.
+    #
+    # the result may have different schemas which describe it than this JSI's schemas,
+    # if conditional applicator schemas apply differently to the modified instance.
+    #
+    # @yield [Object] this JSI's instance. the block should result
+    #   in a nondestructively modified copy of this.
+    # @return [JSI::Base subclass] the modified copy of self
     def jsi_modified_copy(&block)
       if @jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
@@ -355,7 +358,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
         end
-        @jsi_ptr.evaluate(modified_jsi_root_node)
+        @jsi_ptr.evaluate(modified_jsi_root_node, as_jsi: true)
       end
     end
 
