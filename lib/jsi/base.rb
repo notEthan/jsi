@@ -440,13 +440,12 @@ module JSI
     #
     # @return [JSI::Validation::FullResult]
     def jsi_validate
-      results = jsi_schemas.map { |schema| schema.instance_validate(self) }
-      results.inject(Validation::FullResult.new, &:merge).freeze
+      jsi_schemas.instance_validate(self)
     end
 
     # @return [Boolean] whether this JSI's instance is valid against all of its schemas
     def jsi_valid?
-      jsi_schemas.all? { |schema| schema.instance_valid?(self) }
+      jsi_schemas.instance_valid?(self)
     end
 
     # @private
