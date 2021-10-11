@@ -82,9 +82,22 @@ module JSI
     # @param instance (see Schema::Application::InplaceApplication#inplace_applicator_schemas)
     # @return [JSI::SchemaSet]
     def inplace_applicator_schemas(instance)
-      SchemaSet.build do |set|
-        each { |schema| schema.each_inplace_applicator_schema(instance) { |ias| set << ias } }
+      SchemaSet.new(each_inplace_applicator_schema(instance))
+    end
+
+    # yields each inplace applicator schema which applies to the given instance.
+    #
+    # @param instance (see Schema::Application::InplaceApplication#inplace_applicator_schemas)
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    def each_inplace_applicator_schema(instance, &block)
+      return to_enum(__method__, instance) unless block
+
+      each do |schema|
+        schema.each_inplace_applicator_schema(instance, &block)
       end
+
+      nil
     end
 
     def inspect
