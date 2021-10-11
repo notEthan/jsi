@@ -208,6 +208,68 @@ describe JSI::Schema do
         assert_equal(all_exp_uris, all_act_uris)
       end
     end
+
+    describe 'draft6 example' do
+      let(:schema) do
+        # from https://datatracker.ietf.org/doc/html/draft-wright-json-schema-01#section-9.2
+        JSI::JSONSchemaOrgDraft06.new_schema(JSON.parse(%q({
+          "$id": "http://example.com/root.json",
+          "definitions": {
+            "A": { "$id": "#foo" },
+            "B": {
+              "$id": "other.json",
+              "definitions": {
+                "X": { "$id": "#bar" },
+                "Y": { "$id": "t/inner.json" }
+              }
+            },
+            "C": {
+              "$id": "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f"
+            }
+          }
+        })))
+      end
+
+      it 'has the specified uris' do
+        all_exp_uris = {
+          '#' => [
+            "http://example.com/root.json",
+            "http://example.com/root.json#",
+          ],
+          '#/definitions/A' => [
+            "http://example.com/root.json#foo",
+            "http://example.com/root.json#/definitions/A",
+          ],
+          '#/definitions/B' => [
+            'http://example.com/other.json',
+            'http://example.com/other.json#',
+            'http://example.com/root.json#/definitions/B',
+          ],
+          '#/definitions/B/definitions/X' => [
+            "http://example.com/other.json#bar",
+            "http://example.com/other.json#/definitions/X",
+            "http://example.com/root.json#bar",
+            "http://example.com/root.json#/definitions/B/definitions/X",
+          ],
+          '#/definitions/B/definitions/Y' => [
+            "http://example.com/t/inner.json",
+            "http://example.com/t/inner.json#",
+            "http://example.com/other.json#/definitions/Y",
+            "http://example.com/root.json#/definitions/B/definitions/Y",
+          ],
+          '#/definitions/C' => [
+            "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f",
+            "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f#",
+            "http://example.com/root.json#/definitions/C",
+          ],
+        }
+        all_act_uris = all_exp_uris.keys.map do |uri|
+          subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
+          {uri => subschema.schema_uris.map(&:to_s)}
+        end.inject({}, &:update)
+        assert_equal(all_exp_uris, all_act_uris)
+      end
+    end
   end
   describe '#schema_absolute_uri, #anchor' do
     describe 'draft 4' do
