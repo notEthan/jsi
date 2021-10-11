@@ -136,6 +136,78 @@ describe JSI::Schema do
         assert_equal(all_exp_uris, all_act_uris)
       end
     end
+
+    describe 'draft4 example' do
+      let(:schema) do
+        # adapted from https://datatracker.ietf.org/doc/html/draft-zyp-json-schema-04#section-7.2.2
+        # but changed so only schemas use ids
+        JSI::JSONSchemaOrgDraft04.new_schema(JSON.parse(%q({
+          "id": "http://x.y.z/rootschema.json#",
+          "definitions": {
+            "schema1": {
+              "id": "#foo"
+            },
+            "schema2": {
+              "id": "otherschema.json",
+              "definitions": {
+                "nested": {
+                  "id": "#bar"
+                },
+                "alsonested": {
+                  "id": "t/inner.json#a"
+                }
+              }
+            },
+            "schema3": {
+              "id": "some://where.else/completely#"
+            }
+          }
+        })))
+      end
+
+      it 'has the specified uris' do
+        all_exp_uris = {
+          '#' => [
+            "http://x.y.z/rootschema.json",
+            "http://x.y.z/rootschema.json#",
+          ],
+          '#/definitions/schema1' => [
+            "http://x.y.z/rootschema.json#foo",
+            "http://x.y.z/rootschema.json#/definitions/schema1",
+          ],
+          '#/definitions/schema2' => [
+            'http://x.y.z/otherschema.json',
+            'http://x.y.z/otherschema.json#',
+            'http://x.y.z/rootschema.json#/definitions/schema2',
+          ],
+          '#/definitions/schema2/definitions/nested' => [
+            "http://x.y.z/otherschema.json#bar",
+            "http://x.y.z/otherschema.json#/definitions/nested",
+            "http://x.y.z/rootschema.json#bar",
+            "http://x.y.z/rootschema.json#/definitions/schema2/definitions/nested",
+          ],
+          '#/definitions/schema2/definitions/alsonested' => [
+            "http://x.y.z/t/inner.json",
+            "http://x.y.z/t/inner.json#a",
+            "http://x.y.z/t/inner.json#",
+            "http://x.y.z/otherschema.json#a",
+            "http://x.y.z/otherschema.json#/definitions/alsonested",
+            "http://x.y.z/rootschema.json#a",
+            "http://x.y.z/rootschema.json#/definitions/schema2/definitions/alsonested",
+          ],
+          '#/definitions/schema3' => [
+            "some://where.else/completely",
+            "some://where.else/completely#",
+            "http://x.y.z/rootschema.json#/definitions/schema3",
+          ],
+        }
+        all_act_uris = all_exp_uris.keys.map do |uri|
+          subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
+          {uri => subschema.schema_uris.map(&:to_s)}
+        end.inject({}, &:update)
+        assert_equal(all_exp_uris, all_act_uris)
+      end
+    end
   end
   describe '#schema_absolute_uri, #anchor' do
     describe 'draft 4' do
