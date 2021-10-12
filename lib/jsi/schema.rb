@@ -284,6 +284,8 @@ module JSI
     def each_schema_uri
       return to_enum(__method__) unless block_given?
 
+      yield schema_absolute_uri if schema_absolute_uri
+
       parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
         resource.is_a?(Schema) && resource.schema_absolute_uri
       end

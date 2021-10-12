@@ -21,21 +21,21 @@ describe JSI::Base do
     describe 'with schema id' do
       let(:schema_content) { {'$id' => 'https://jsi/foo'} }
       it 'is (JSI Schema Class: ...) for generated subclass with id' do
-        assert_equal("(JSI Schema Class: https://jsi/foo#)", subject.class.inspect)
+        assert_equal("(JSI Schema Class: https://jsi/foo)", subject.class.inspect)
       end
     end
     it 'is the constant name plus id for a class assigned to a constant' do
-      assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/base/named_schema#)), NamedSchemaInstance.inspect)
+      assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/base/named_schema)), NamedSchemaInstance.inspect)
     end
     it 'is not the constant name when the constant name has been generated from the schema_uri' do
-      assert_equal("JSI::SchemaClasses::Xhttps___schemas_jsi_unth_net_test_base_named_schema_two_", NamedSchemaInstanceTwo.name)
-      assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two#)", NamedSchemaInstanceTwo.inspect)
+      assert_equal("JSI::SchemaClasses::Xhttps___schemas_jsi_unth_net_test_base_named_schema_two", NamedSchemaInstanceTwo.name)
+      assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two)", NamedSchemaInstanceTwo.inspect)
     end
   end
   describe 'class name' do
     let(:schema_content) { {'$id' => 'https://jsi/BaseTest'} }
     it 'generates a class name from schema_uri' do
-      assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest_', subject.class.name)
+      assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest', subject.class.name)
     end
     it 'uses an existing name' do
       assert_equal('NamedSchemaInstance', NamedSchemaInstance.name)

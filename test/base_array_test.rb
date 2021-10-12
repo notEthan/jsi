@@ -188,28 +188,28 @@ describe 'JSI::Base array' do
       let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/base_array_test/withid', 'items' => [{}, {}, {}]} }
       let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#)> \"foo\", \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)> \"lamp\" => [3]}, #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid)> \"foo\", \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)> \"lamp\" => [3]}, #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
       let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/base_array_test/withid', 'items' => [{}, {}, {}]} }
       let(:subject) { schema.new_jsi(instance) }
       it 'pretty prints' do
-        assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#)>\n  \"foo\",\n  \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)>\n    \"lamp\" => [3]\n  },\n  #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)>\n    \"q\",\n    \"r\"\n  ],\n  {\"four\"=>4}\n]\n", subject.pretty_inspect)
+        assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid)>\n  \"foo\",\n  \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)>\n    \"lamp\" => [3]\n  },\n  #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)>\n    \"q\",\n    \"r\"\n  ],\n  {\"four\"=>4}\n]\n", subject.pretty_inspect)
       end
     end
     describe '#inspect with id SortOfArray' do
       let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/base_array_test/withid', 'items' => [{}, {}, {}]} }
       let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
       it 'inspects' do
-        assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#) SortOfArray> \"foo\", \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)> \"lamp\" => [3]}, #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid) SortOfArray> \"foo\", \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)> \"lamp\" => [3]}, #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfArray' do
       let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/base_array_test/withid', 'items' => [{}, {}, {}]} }
       let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
       it 'inspects' do
-        assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#) SortOfArray>\n  \"foo\",\n  \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)>\n    \"lamp\" => [3]\n  },\n  #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)>\n    \"q\",\n    \"r\"\n  ],\n  {\"four\"=>4}\n]\n", subject.pretty_inspect)
+        assert_equal("#[<JSI (https://schemas.jsi.unth.net/base_array_test/withid) SortOfArray>\n  \"foo\",\n  \#{<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/1)>\n    \"lamp\" => [3]\n  },\n  #[<JSI (https://schemas.jsi.unth.net/base_array_test/withid#/items/2)>\n    \"q\",\n    \"r\"\n  ],\n  {\"four\"=>4}\n]\n", subject.pretty_inspect)
       end
     end
   end

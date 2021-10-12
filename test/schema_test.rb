@@ -65,8 +65,9 @@ describe JSI::Schema do
           }
         }
       end
-      it 'has both ids' do
+      it 'has its absolute URI and both by pointer fragment' do
         assert_equal([
+          Addressable::URI.parse("https://example.com/bar"),
           Addressable::URI.parse("https://example.com/bar#"),
           Addressable::URI.parse("https://example.com/foo#/items"),
         ], schema.items.schema_uris)
