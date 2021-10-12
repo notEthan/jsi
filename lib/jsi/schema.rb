@@ -284,14 +284,14 @@ module JSI
     def each_schema_uri
       return to_enum(__method__) unless block_given?
 
-        parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
-          resource.is_a?(Schema) && resource.schema_absolute_uri
-        end
+      parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
+        resource.is_a?(Schema) && resource.schema_absolute_uri
+      end
 
-        parent_schemas.each do |parent_schema|
-          relative_ptr = self.jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
-          yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
-        end
+      parent_schemas.each do |parent_schema|
+        relative_ptr = self.jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
+        yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
+      end
 
       nil
     end
