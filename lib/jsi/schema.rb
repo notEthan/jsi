@@ -289,6 +289,12 @@ module JSI
       end
 
       parent_schemas.each do |parent_schema|
+        if anchor
+          if parent_schema.jsi_anchor_subschema(anchor) == self
+            yield parent_schema.schema_absolute_uri.merge(fragment: anchor)
+          end
+        end
+
         relative_ptr = self.jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
         yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
       end
