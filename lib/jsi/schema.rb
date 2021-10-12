@@ -276,15 +276,24 @@ module JSI
     # @return [Array<Addressable::URI>] URIs which refer to this schema
     def schema_uris
       jsi_memoize(:schema_uris) do
+        each_schema_uri.to_a
+      end
+    end
+
+    # @yield [Addressable::URI] each URI which refers to this schema
+    def each_schema_uri
+      return to_enum(__method__) unless block_given?
+
         parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
           resource.is_a?(Schema) && resource.schema_absolute_uri
         end
 
-        parent_schemas.map do |parent_schema|
+        parent_schemas.each do |parent_schema|
           relative_ptr = self.jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
-          parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
+          yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
         end
-      end
+
+      nil
     end
 
     # @return [Module] a module representing this schema. see {JSI::SchemaClasses.module_for_schema}.
