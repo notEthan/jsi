@@ -159,7 +159,7 @@ module JSI
         FullResult.new.merge(self).merge(result)
       end
 
-      # @api private
+      # @private
       def jsi_fingerprint
         {
           class: self.class,
@@ -197,7 +197,7 @@ module JSI
         @valid
       end
 
-      # @api private
+      # @private
       def jsi_fingerprint
         {
           class: self.class,

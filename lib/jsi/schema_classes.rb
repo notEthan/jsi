@@ -45,7 +45,7 @@ module JSI
     extend Util::Memoize
 
     class << self
-      # @api private
+      # @private
       # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
       # @return [Class subclassing JSI::Base] a JSI Schema Class which represents the given schemas.
       #   an instance of the class is a JSON Schema instance described by all of the given schemas.
