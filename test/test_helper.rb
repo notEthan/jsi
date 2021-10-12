@@ -44,6 +44,7 @@ module Minitest
   end
 end
 Minitest::Reporters.use! MiniTest::SpecReporterWithEndSummary.new
+Minitest::Test.make_my_diffs_pretty!
 
 class JSISpec < Minitest::Spec
   if ENV['JSI_TEST_ALPHA']
