@@ -288,10 +288,13 @@ module JSI
         resource.is_a?(Schema) && resource.schema_absolute_uri
       end
 
+      anchored = self.anchor
       parent_schemas.each do |parent_schema|
-        if anchor
+        if anchored
           if parent_schema.jsi_anchor_subschema(anchor) == self
             yield parent_schema.schema_absolute_uri.merge(fragment: anchor)
+          else
+            anchored = false
           end
         end
 
