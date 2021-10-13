@@ -53,7 +53,7 @@ module JSI
             elsif schema.schema_uri
               schema.schema_uri.to_s
             else
-              schema.jsi_ptr.uri
+              schema.jsi_ptr.uri.to_s
             end
           end
 
@@ -90,7 +90,7 @@ module JSI
             end
           end
           if !schema_names.any?(&:nil?) && !schema_names.empty?
-            schema_names.sort.map { |n| 'X' + n.gsub(/[^\w]/, '_') }.join('')
+            schema_names.sort.map { |n| 'X' + n.to_s.gsub(/[^\w]/, '_') }.join('')
           end
         end
       end
