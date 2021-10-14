@@ -108,9 +108,24 @@ module JSI
 
     def jsi_anchor_subschemas_map
       jsi_memomap(__method__) do |anchor|
-        jsi_each_child_node.select do |node|
-          node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
-        end.freeze
+        resource_subschemas = []
+        subresource_subschemas = []
+
+        jsi_each_child_node do |node|
+          if node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
+            if node.jsi_resource_ancestor_uri == self.jsi_resource_ancestor_uri
+              resource_subschemas << node
+            else
+              subresource_subschemas << node
+            end
+          end
+        end
+
+        if !resource_subschemas.empty?
+          resource_subschemas.freeze
+        else
+          subresource_subschemas.freeze
+        end
       end
     end
   end
