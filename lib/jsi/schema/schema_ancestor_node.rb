@@ -30,6 +30,25 @@ module JSI
       end
     end
 
+    # a schema at or below this node with the given anchor.
+    #
+    # @return [JSI::Schema, nil]
+    def jsi_anchor_subschema(anchor)
+      subschemas = jsi_anchor_subschemas_map[anchor]
+      if subschemas.size == 1
+        subschemas.first
+      else
+        nil
+      end
+    end
+
+    # schemas at or below node with the given anchor.
+    #
+    # @return [Array<JSI::Schema>]
+    def jsi_anchor_subschemas(anchor)
+      jsi_anchor_subschemas_map[anchor]
+    end
+
     private
 
     def jsi_document=(jsi_document)
@@ -84,6 +103,14 @@ module JSI
         @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors.to_ary.freeze
       else
         @jsi_schema_resource_ancestors = [].freeze
+      end
+    end
+
+    def jsi_anchor_subschemas_map
+      jsi_memomap(__method__) do |anchor|
+        jsi_each_child_node.select do |node|
+          node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
+        end.freeze
       end
     end
   end
