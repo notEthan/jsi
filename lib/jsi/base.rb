@@ -330,6 +330,15 @@ module JSI
       jsi_parent_nodes.first
     end
 
+    # the child node at the given pointer
+    #
+    # @param ptr [JSI::Ptr, #to_ary]
+    # @return [JSI::Base]
+    def jsi_child_node(ptr)
+      child = Ptr.ary_ptr(ptr).evaluate(self, as_jsi: true)
+      child
+    end
+
     # subscripts to return a child value identified by the given token.
     #
     # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
