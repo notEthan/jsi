@@ -109,9 +109,24 @@ module JSI
     attr_writer(:jsi_schema_registry)
 
     def jsi_anchor_subschemas_compute(anchor: )
-        jsi_each_descendent_schema.select do |schema|
-          schema.anchors.include?(anchor)
-        end.to_set.freeze
+      resource_subschemas = Set[]
+      subresource_subschemas = Set[]
+
+      jsi_each_descendent_schema do |schema|
+        if schema.anchors.include?(anchor)
+          if schema.jsi_resource_ancestor_uri == self.jsi_resource_ancestor_uri
+            resource_subschemas << schema
+          else
+            subresource_subschemas << schema
+          end
+        end
+      end
+
+      if !resource_subschemas.empty?
+        resource_subschemas.freeze
+      else
+        subresource_subschemas.freeze
+      end
     end
 
     # @return [Util::MemoMap]
