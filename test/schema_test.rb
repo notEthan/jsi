@@ -110,7 +110,8 @@ describe JSI::Schema do
             # no #collide
           ],
           "#/definitions/child" => [
-            # #X collides with anchor in different child resource
+            # includes #X; does not collide with anchor in different child resource
+            "http://jsi/schema_uris/q0wo#X",
             "http://jsi/schema_uris/q0wo#/definitions/child",
           ],
           "#/definitions/child/definitions/rel" => [
@@ -122,7 +123,7 @@ describe JSI::Schema do
             "http://jsi/schema_uris/z268#X",
             "http://jsi/schema_uris/z268#/definitions/x",
             # no "http://jsi/schema_uris/q0wo#X"; we detect that the anchor no longer
-            # refers to self in the parent resource (it becomes ambiguous)
+            # refers to self in the parent resource
             "http://jsi/schema_uris/q0wo#/definitions/child/definitions/rel/definitions/x",
           ],
         }
