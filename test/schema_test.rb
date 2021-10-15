@@ -73,6 +73,66 @@ describe JSI::Schema do
         ], schema.items.schema_uris)
       end
     end
+    describe 'conflicting anchors' do
+      let(:schema) do
+        JSI::JSONSchemaOrgDraft06.new_schema(JSON.parse(%q({
+          "$id": "http://jsi/schema_uris/q0wo",
+          "definitions": {
+            "sibling1": {"$id": "#collide"},
+            "sibling2": {"$id": "#collide"},
+            "child": {
+              "$id": "#X",
+              "definitions": {
+                "rel": {
+                  "$id": "z268",
+                  "definitions": {
+                    "x": {"$id": "#X"}
+                  }
+                }
+              }
+            }
+          }
+        })))
+      end
+
+      it 'has the specified uris' do
+        all_exp_uris = {
+          "#" => [
+            "http://jsi/schema_uris/q0wo",
+            "http://jsi/schema_uris/q0wo#",
+          ],
+          "#/definitions/sibling1" => [
+            "http://jsi/schema_uris/q0wo#/definitions/sibling1",
+            # no #collide
+          ],
+          "#/definitions/sibling2" => [
+            "http://jsi/schema_uris/q0wo#/definitions/sibling2",
+            # no #collide
+          ],
+          "#/definitions/child" => [
+            # #X collides with anchor in different child resource
+            "http://jsi/schema_uris/q0wo#/definitions/child",
+          ],
+          "#/definitions/child/definitions/rel" => [
+            "http://jsi/schema_uris/z268",
+            "http://jsi/schema_uris/z268#",
+            "http://jsi/schema_uris/q0wo#/definitions/child/definitions/rel",
+          ],
+          "#/definitions/child/definitions/rel/definitions/x" => [
+            "http://jsi/schema_uris/z268#X",
+            "http://jsi/schema_uris/z268#/definitions/x",
+            # no "http://jsi/schema_uris/q0wo#X"; we detect that the anchor no longer
+            # refers to self in the parent resource (it becomes ambiguous)
+            "http://jsi/schema_uris/q0wo#/definitions/child/definitions/rel/definitions/x",
+          ],
+        }
+        all_act_uris = all_exp_uris.keys.map do |uri|
+          subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
+          {uri => subschema.schema_uris.map(&:to_s)}
+        end.inject({}, &:update)
+        assert_equal(all_exp_uris, all_act_uris)
+      end
+    end
   end
   describe '#schema_absolute_uri, #anchor' do
     describe 'draft 4' do
