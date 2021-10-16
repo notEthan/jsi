@@ -112,9 +112,9 @@ module JSI
         if result_schemas.size == 1
           result_schema = result_schemas.first
         elsif result_schemas.size == 0
-          raise(Schema::ReferenceError, "could not find schema by fragment: #{fragment} in schema resource root: #{schema_resource_root.pretty_inspect.chomp}")
+          raise(Schema::ReferenceError, "could not find schema by fragment: #{fragment.inspect} in schema resource root: #{schema_resource_root.pretty_inspect.chomp}")
         else
-          raise(Schema::ReferenceError, "found multiple schemas for plain name fragment #{fragment}:#{result_schemas.map { |s| "\n" + s.pretty_inspect.chomp }.join('')}")
+          raise(Schema::ReferenceError, "found multiple schemas for plain name fragment #{fragment.inspect}:#{result_schemas.map { |s| "\n" + s.pretty_inspect.chomp }.join('')}")
         end
       end
 
