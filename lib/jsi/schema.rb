@@ -392,7 +392,7 @@ module JSI
           self.class.new(
             jsi_document,
             jsi_ptr: jsi_ptr + subptr,
-            jsi_schema_base_uri: jsi_subschema_base_uri,
+            jsi_schema_base_uri: jsi_resource_ancestor_uri,
           )
         else
           Schema.ensure_schema(subptr.evaluate(self, as_jsi: true), msg: [
@@ -510,17 +510,6 @@ module JSI
     # @private
     def validate_schema!
       raise(NotImplementedError, "Schema#validate_schema! removed")
-    end
-
-    # @private
-    # @return [Addressable::URI, nil] the base URI for any subschemas below this schema.
-    #   this is always an absolute URI (with no fragment).
-    def jsi_subschema_base_uri
-      if schema_absolute_uri
-        schema_absolute_uri
-      else
-        jsi_schema_base_uri
-      end
     end
 
     # @private

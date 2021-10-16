@@ -228,7 +228,7 @@ module JSI
       jsi_memomap(:subinstance) do |token|
         new_node(
           jsi_ptr: jsi_ptr[token],
-          jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
+          jsi_schema_base_uri: jsi_resource_ancestor_uri,
         )
       end
     end

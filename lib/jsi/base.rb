@@ -468,7 +468,7 @@ module JSI
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
-        jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
+        jsi_schema_base_uri: jsi_resource_ancestor_uri,
         # only defined for JSI::Schema instances:
         jsi_schema_instance_modules: is_a?(Schema) ? jsi_schema_instance_modules : nil,
       }
@@ -497,7 +497,7 @@ module JSI
           jsi_document: @jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_root_node: @jsi_root_node,
-          jsi_schema_base_uri: is_a?(Schema) ? jsi_subschema_base_uri : jsi_schema_base_uri,
+          jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
         )
       end
