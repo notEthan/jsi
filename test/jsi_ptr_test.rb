@@ -92,10 +92,10 @@ describe JSI::Ptr do
     end
   end
   describe 'initialization' do
-    describe 'new with invalid reference_tokens' do
+    describe 'new with invalid tokens' do
       it 'raises' do
         err = assert_raises(TypeError) { JSI::Ptr.new({}) }
-        assert_equal("reference_tokens must be an array. got: {}", err.message)
+        assert_equal("tokens must be an array. got: {}", err.message)
       end
     end
     describe '.[]' do

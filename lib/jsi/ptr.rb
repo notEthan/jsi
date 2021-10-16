@@ -10,8 +10,8 @@ module JSI
       class ReferenceError < Error
       end
 
-      # @param ary_ptr [#to_ary, JSI::Ptr] an array of reference tokens, or a pointer
-      # @return [JSI::Ptr] a pointer with the given reference tokens, or the given pointer
+      # @param ary_ptr [#to_ary, JSI::Ptr] an array of tokens, or a pointer
+      # @return [JSI::Ptr] a pointer with the given tokens, or the given pointer
       def self.ary_ptr(ary_ptr)
         if ary_ptr.is_a?(Ptr)
           ary_ptr
@@ -20,7 +20,7 @@ module JSI
         end
       end
 
-      # instantiates a pointer from the given reference tokens.
+      # instantiates a pointer from the given tokens.
       #
       #     JSI::Ptr[]
       #
@@ -29,13 +29,13 @@ module JSI
       #     JSI::Ptr['a', 'b']
       #     JSI::Ptr['a']['b']
       #
-      # are both ways to instantiate a pointer with reference tokens ['a', 'b']. the latter example chains the
+      # are both ways to instantiate a pointer with tokens ['a', 'b']. the latter example chains the
       # class .[] method with the instance #[] method.
       #
-      # @param reference_tokens any number of reference tokens
+      # @param tokens any number of tokens
       # @return [JSI::Ptr]
-      def self.[](*reference_tokens)
-        new(reference_tokens)
+      def self.[](*tokens)
+        new(tokens)
       end
 
       # parse a URI-escaped fragment and instantiate as a JSI::Ptr
@@ -80,17 +80,17 @@ module JSI
         end
       end
 
-      # initializes a JSI::Ptr from the given reference_tokens.
+      # initializes a JSI::Ptr from the given tokens.
       #
-      # @param reference_tokens [Array<Object>]
-      def initialize(reference_tokens)
-        unless reference_tokens.respond_to?(:to_ary)
-          raise(TypeError, "reference_tokens must be an array. got: #{reference_tokens.inspect}")
+      # @param tokens [Array<Object>]
+      def initialize(tokens)
+        unless tokens.respond_to?(:to_ary)
+          raise(TypeError, "tokens must be an array. got: #{tokens.inspect}")
         end
-        @reference_tokens = reference_tokens.to_ary.map(&:freeze).freeze
+        @tokens = tokens.to_ary.map(&:freeze).freeze
       end
 
-      attr_reader :reference_tokens
+      attr_reader :tokens
 
       # takes a root json document and evaluates this pointer through the document, returning the value
       # pointed to by this pointer.
@@ -100,7 +100,7 @@ module JSI
       # @return [Object] the content of the document pointed to by this pointer
       # @raise [JSI::Ptr::ReferenceError] the document does not contain the path this pointer references
       def evaluate(document, *a)
-        res = reference_tokens.inject(document) do |value, token|
+        res = tokens.inject(document) do |value, token|
           if value.respond_to?(:to_ary)
             if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
               token = token.to_i
@@ -132,7 +132,7 @@ module JSI
 
       # @return [String] the pointer string representation of this pointer
       def pointer
-        reference_tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('')
+        tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('')
       end
 
       # @return [String] the fragment string representation of this pointer
@@ -146,12 +146,12 @@ module JSI
         Addressable::URI.new(fragment: fragment)
       end
 
-      # @return [Boolean] whether this pointer is empty, i.e. it has no reference tokens
+      # @return [Boolean] whether this pointer is empty, i.e. it has no tokens
       def empty?
-        reference_tokens.empty?
+        tokens.empty?
       end
 
-      # @return [Boolean] whether this is a root pointer, indicated by an empty array of reference_tokens
+      # @return [Boolean] whether this is a root pointer, indicated by an empty array of tokens
       alias_method :root?, :empty?
 
       # @return [JSI::Ptr] pointer to the parent of where this pointer points
@@ -160,14 +160,14 @@ module JSI
         if root?
           raise(Ptr::Error, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
         else
-          Ptr.new(reference_tokens[0...-1])
+          Ptr.new(tokens[0...-1])
         end
       end
 
       # @return [Boolean] does this pointer contain the other_ptr - that is, is this pointer an
       #   ancestor of other_ptr, a child pointer. contains? is inclusive; a pointer does contain itself.
       def contains?(other_ptr)
-        self.reference_tokens == other_ptr.reference_tokens[0...self.reference_tokens.size]
+        self.tokens == other_ptr.tokens[0...self.tokens.size]
       end
 
       # @return [JSI::Ptr] returns this pointer relative to the given ancestor_ptr
@@ -176,38 +176,38 @@ module JSI
         unless ancestor_ptr.contains?(self)
           raise(ReferenceError, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
-        Ptr.new(reference_tokens[ancestor_ptr.reference_tokens.size..-1])
+        Ptr.new(tokens[ancestor_ptr.tokens.size..-1])
       end
 
       # @param ptr [JSI::Ptr, #to_ary]
-      # @return [JSI::Ptr] a pointer with the reference tokens of this one plus the given ptr's.
+      # @return [JSI::Ptr] a pointer with the tokens of this one plus the given ptr's.
       def +(ptr)
         if ptr.is_a?(Ptr)
-          ptr_reference_tokens = ptr.reference_tokens
+          ptr_tokens = ptr.tokens
         elsif ptr.respond_to?(:to_ary)
-          ptr_reference_tokens = ptr
+          ptr_tokens = ptr
         else
-          raise(TypeError, "ptr must be a JSI::Ptr or Array of reference_tokens; got: #{ptr.inspect}")
+          raise(TypeError, "ptr must be a JSI::Ptr or Array of tokens; got: #{ptr.inspect}")
         end
-        Ptr.new(self.reference_tokens + ptr_reference_tokens)
+        Ptr.new(self.tokens + ptr_tokens)
       end
 
       # @param n [Integer]
-      # @return [JSI::Ptr] a pointer consisting of the first n of our reference_tokens
-      # @raise [ArgumentError] if n is not between 0 and the size of our reference_tokens
+      # @return [JSI::Ptr] a pointer consisting of the first n of our tokens
+      # @raise [ArgumentError] if n is not between 0 and the size of our tokens
       def take(n)
-        unless (0..reference_tokens.size).include?(n)
-          raise(ArgumentError, "n not in range (0..#{reference_tokens.size}): #{n.inspect}")
+        unless (0..tokens.size).include?(n)
+          raise(ArgumentError, "n not in range (0..#{tokens.size}): #{n.inspect}")
         end
-        Ptr.new(reference_tokens.take(n))
+        Ptr.new(tokens.take(n))
       end
 
-      # appends the given token to this pointer's reference tokens and returns the result
+      # appends the given token to this pointer's tokens and returns the result
       #
       # @param token [Object]
       # @return [JSI::Ptr] pointer to a child node of this pointer with the given token
       def [](token)
-        Ptr.new(reference_tokens + [token])
+        Ptr.new(tokens + [token])
       end
 
       # takes a document and a block. the block is yielded the content of the given document at this
@@ -265,20 +265,20 @@ module JSI
               end
             end
           end
-        end.call(document, reference_tokens)
+        end.call(document, tokens)
         modified_document
       end
 
       # @return [String] a string representation of this pointer
       def inspect
-        "#{self.class.name}[#{reference_tokens.map(&:inspect).join(", ")}]"
+        "#{self.class.name}[#{tokens.map(&:inspect).join(", ")}]"
       end
 
       alias_method :to_s, :inspect
 
-      # pointers are equal if the reference_tokens are equal
+      # pointers are equal if the tokens are equal
       def jsi_fingerprint
-        {class: Ptr, reference_tokens: reference_tokens}
+        {class: Ptr, tokens: tokens}
       end
       include Util::FingerprintHash
     end

@@ -303,7 +303,7 @@ module JSI
     def jsi_parent_nodes
       parent = jsi_root_node
 
-      jsi_ptr.reference_tokens.map do |token|
+      jsi_ptr.tokens.map do |token|
         parent.tap do
           parent = parent[token, as_jsi: true]
         end
