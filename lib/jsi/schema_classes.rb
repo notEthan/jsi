@@ -175,7 +175,7 @@ module JSI
     # return a NotASchemaModule; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
-    # @return [Class, NotASchemaModule, Object]
+    # @return [Module, NotASchemaModule, Object]
     def [](token)
       sub = @possibly_schema_node[token]
       if sub.is_a?(JSI::Schema)
