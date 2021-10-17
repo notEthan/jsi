@@ -38,6 +38,16 @@ module JSI
     def new_schema(schema_content, **kw)
       schema.new_schema(schema_content, **kw)
     end
+
+    # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+    #
+    # shortcut to chain {JSI::Schema::DescribesSchema#new_schema} + {Schema#jsi_schema_module}.
+    #
+    # @param (see JSI::Schema::DescribesSchema#new_schema)
+    # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
+    def new_schema_module(schema_content, **kw)
+      schema.new_schema(schema_content, **kw).jsi_schema_module
+    end
   end
 
   # this module is a namespace for building schema classes and schema modules.
