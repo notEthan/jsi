@@ -7,7 +7,8 @@ JSI::Util.ycomb do |rec|
     path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes').join(*subpath)
 
     if path.directory?
-      path.children(with_directory = false).each { |c| rec.call(subpath + [c.to_s]) }
+      with_directory = false
+      path.children(with_directory).each { |c| rec.call(subpath + [c.to_s]) }
     elsif path.file? && path.to_s =~ /\.json\z/
       remote_content = ::JSON.parse(path.read)
       uri = File.join('http://localhost:1234/', *subpath)
@@ -33,7 +34,8 @@ describe 'JSON Schema Test Suite' do
         proc do |subpath|
           path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests').join(*subpath)
           if path.directory?
-            path.children(with_directory = false).each { |c| rec.call(subpath + [c.to_s]) }
+            with_directory = false
+            path.children(with_directory).each { |c| rec.call(subpath + [c.to_s]) }
           elsif path.file? && path.to_s =~ /\.json\z/
             describe(subpath.join('/')) do
               JSONSchemaTestSchema.new_jsi(::JSON.parse(path.read)).map do |tests_desc|

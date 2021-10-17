@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  SimpleWrap = JSI.new_schema({
+  SimpleWrap = JSI::JSONSchemaOrgDraft06.new_schema({
     "additionalProperties": {"$ref": "#"},
     "items": {"$ref": "#"}
   }).jsi_schema_module

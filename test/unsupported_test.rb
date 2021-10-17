@@ -86,4 +86,71 @@ describe 'unsupported behavior' do
       end
     end
   end
+
+  describe 'property names which are not strings' do
+    ARBITRARY_OBJECT = Object.new
+    describe 'arbitrary object property name' do
+      let(:schema_content) do
+        {
+          'properties' => {
+            ARBITRARY_OBJECT => {},
+          },
+        }
+      end
+      let(:instance) do
+        {
+          ARBITRARY_OBJECT => {},
+        }
+      end
+
+      it 'applies properties' do
+        assert_is_a(schema.properties[ARBITRARY_OBJECT].jsi_schema_module, subject[ARBITRARY_OBJECT])
+      end
+    end
+    describe 'property name which is an array, described by propertyNames' do
+      let(:schema_content) do
+        {
+          'properties' => {
+            [1] => {},
+          },
+          'propertyNames' => {
+            'type' => 'array',
+            'items' => {'type' => 'integer'},
+          },
+        }
+      end
+      describe 'valid' do
+        let(:instance) do
+          {
+            [] => {},
+            [1] => {},
+          }
+        end
+        it 'applies properties' do
+          assert_is_a(schema.properties[[1]].jsi_schema_module, subject[[1]])
+          assert_equal({}, subject[[]]) # not a jsi
+
+          assert(subject.jsi_valid?)
+        end
+      end
+      describe 'invalid' do
+        let(:instance) do
+          {
+            [] => {},
+            [1] => {},
+            {} => {},
+          }
+        end
+        it 'applies properties' do
+          assert_is_a(schema.properties[[1]].jsi_schema_module, subject[[1]])
+          assert_equal({}, subject[[]]) # not a jsi
+
+          assert_equal([
+            "instance type does not match `type` value",
+            "instance object property names are not all valid against `propertyNames` schema value",
+          ], subject.jsi_validate.validation_errors.map(&:message))
+        end
+      end
+    end
+  end
 end

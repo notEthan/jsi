@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   # a node in a document which may contain a schema somewhere within is extended with SchemaAncestorNode, for
   # tracking things necessary for a schema to function correctly
@@ -76,6 +78,7 @@ module JSI
           elsif !anc.jsi_ptr.contains?(jsi_ptr)
             raise(Bug, "ancestor does not contain self")
           end
+          last_anc_ptr = anc.jsi_ptr
         end
 
         @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors.to_ary.freeze
