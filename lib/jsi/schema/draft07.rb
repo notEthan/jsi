@@ -3,6 +3,12 @@
 module JSI
   module Schema
     module Draft07
+      include Schema
+      include BigMoneyId
+      include IdWithAnchor
+      include IntegerAllows0Fraction
+      include Schema::Application::Draft07
+      include Schema::Validation::Draft07
     end
   end
 end

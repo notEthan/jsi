@@ -6,6 +6,7 @@ module JSI
 
     autoload :Draft04, 'jsi/schema/validation/draft04'
     autoload :Draft06, 'jsi/schema/validation/draft06'
+    autoload :Draft07, 'jsi/schema/validation/draft07'
 
     # ref application
     autoload :Ref, 'jsi/schema/validation/ref'
@@ -15,6 +16,7 @@ module JSI
     autoload :AnyOf, 'jsi/schema/validation/someof'
     autoload :OneOf, 'jsi/schema/validation/someof'
     autoload :Not,  'jsi/schema/validation/not'
+    autoload :IfThenElse, 'jsi/schema/validation/ifthenelse'
 
     # child subschema application
     autoload :Items,    'jsi/schema/validation/items'
