@@ -214,7 +214,7 @@ module JSI
     end
   end
 
-  # a JSI Schema module and a JSI::NotASchemaModule are both a SchemaModulePossibly.
+  # a JSI Schema module and a JSI::SchemaModule::Connection are both a SchemaModulePossibly.
   # this module provides a #[] method.
   module SchemaModulePossibly
     attr_reader :possibly_schema_node
@@ -243,19 +243,19 @@ module JSI
       name
     end
 
-    # subscripting a JSI schema module or a NotASchemaModule will subscript the node, and
+    # Subscripting a JSI schema module or a {SchemaModule::Connection} will subscript its node, and
     # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a JSI::Base,
-    # return a NotASchemaModule; or if it is another value (a basic type), return that value.
+    # return a SchemaModule::Connection; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
-    # @return [Module, NotASchemaModule, Object]
+    # @return [Module, SchemaModule::Connection, Object]
     def [](token, **kw)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       sub = @possibly_schema_node[token]
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module
       elsif sub.is_a?(JSI::Base)
-        NotASchemaModule.new(sub)
+        SchemaModule::Connection.new(sub)
       else
         sub
       end
@@ -273,20 +273,20 @@ module JSI
     end
   end
 
-  # a JSI Schema Module is a module which represents a schema. a NotASchemaModule represents
+  # A JSI Schema Module is a module which represents a schema. A SchemaModule::Connection represents
   # a node in a schema's document which is not a schema, such as the 'properties'
   # object (which contains schemas but is not a schema).
   #
   # instances of this class act as a stand-in to allow users to subscript or call property accessors on
   # schema modules to refer to their subschemas' schema modules.
   #
-  # a NotASchemaModule is extended with the module_for_schema of the node's schema.
+  # a SchemaModule::Connection is extended with the module_for_schema of the node's schema.
   #
-  # NotASchemaModule holds a node which is not a schema. when subscripted, it subscripts
+  # SchemaModule::Connection holds a node which is not a schema. when subscripted, it subscripts
   # its node. if the value is a JSI::Schema, its schema module is returned. if the value
-  # is another node, a NotASchemaModule for that node is returned. otherwise - when the
+  # is another node, a SchemaModule::Connection for that node is returned. otherwise - when the
   # value is a basic type - that value itself is returned.
-  class NotASchemaModule
+  class SchemaModule::Connection
     include SchemaModulePossibly
 
     # @param node [JSI::Base]
@@ -295,7 +295,7 @@ module JSI
       raise(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
       @possibly_schema_node = node
       node.jsi_schemas.each do |schema|
-        extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [NotASchemaModule]))
+        extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [SchemaModule::Connection]))
       end
     end
 
