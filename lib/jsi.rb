@@ -64,7 +64,7 @@ module JSI
 
   # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
   #
-  # see {JSI::Schema.new_schema}
+  # shortcut to chain {JSI::Schema.new_schema} + {Schema#jsi_schema_module}.
   #
   # @param (see JSI::Schema.new_schema)
   # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
