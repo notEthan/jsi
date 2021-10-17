@@ -32,6 +32,8 @@ module JSI
   module DescribesSchemaModule
     # instantiates the given schema content as a JSI Schema.
     #
+    # see {JSI::Schema::DescribesSchema#new_schema}
+    #
     # @param (see JSI::Schema::DescribesSchema#new_schema)
     # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
     #   consist of this module's schema.
