@@ -16,6 +16,18 @@ module JSI
       [].freeze
     end
 
+    # @return [Addressable::URI, nil] the URI of the resource containing this node.
+    #   this is always an absolute URI (with no fragment).
+    #   if this node is a schema with an id, this is its absolute URI; otherwise a parent resource's URI,
+    #   or nil if not contained by a resource with a URI.
+    def jsi_resource_ancestor_uri
+      if is_a?(Schema) && schema_absolute_uri
+        schema_absolute_uri
+      else
+        jsi_schema_base_uri
+      end
+    end
+
     private
 
     def jsi_document=(jsi_document)

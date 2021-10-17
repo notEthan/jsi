@@ -56,8 +56,8 @@ module JSI
 
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
-        elsif ref_schema && ref_schema.jsi_subschema_base_uri
-          ref_abs_uri = ref_schema.jsi_subschema_base_uri.join(ref_uri_nofrag)
+        elsif ref_schema && ref_schema.jsi_resource_ancestor_uri
+          ref_abs_uri = ref_schema.jsi_resource_ancestor_uri.join(ref_uri_nofrag)
         else
           ref_abs_uri = nil
         end
