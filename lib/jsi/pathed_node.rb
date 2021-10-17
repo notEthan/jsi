@@ -4,8 +4,9 @@ module JSI
   # this module represents a node in a document.
   #
   # including class MUST define
-  # - #jsi_document [Object] the document
-  # - #jsi_ptr [JSI::Ptr] a pointer to the node in the document
+  #
+  # - `#jsi_document` [Object] the document
+  # - `#jsi_ptr` [JSI::Ptr] a pointer to the node in the document
   module PathedNode
     # @return [Object] the content of this node
     def jsi_node_content
