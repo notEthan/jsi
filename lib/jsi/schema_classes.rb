@@ -246,5 +246,14 @@ module JSI
     end
 
     include SchemaModulePossibly
+
+    # @return [String]
+    def inspect
+      if name_from_ancestor
+        "#{name_from_ancestor} (JSI wrapper for Schema Module)"
+      else
+        "(JSI wrapper for Schema Module: #{@possibly_schema_node.jsi_ptr.uri})"
+      end
+    end
   end
 end
