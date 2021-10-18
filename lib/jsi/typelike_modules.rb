@@ -138,7 +138,7 @@ module JSI
     #   class name and, if responsive, self's #jsi_object_group_text
     def inspect
       object_group_str = (respond_to?(:jsi_object_group_text) ? self.jsi_object_group_text : [self.class]).join(' ')
-      "\#{<#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |k, v| "#{k.inspect} => #{v.inspect}" }.join(', ')}}"
+      "\#{<#{object_group_str}>#{self.map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
     end
 
     alias_method :to_s, :inspect
@@ -150,7 +150,7 @@ module JSI
       q.text "\#{<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {
-          q.breakable(any? { true } ? ' ' : '')
+          q.breakable(empty? ? '' : ' ')
           q.seplist(self, nil, :each_pair) { |k, v|
             q.group {
               q.pp k
@@ -214,7 +214,7 @@ module JSI
     #   class name and, if responsive, self's #jsi_object_group_text
     def inspect
       object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
-      "\#[<#{object_group_str}>#{empty? ? '' : ' '}#{self.map { |e| e.inspect }.join(', ')}]"
+      "\#[<#{object_group_str}>#{self.map { |e| ' ' + e.inspect }.join(',')}]"
     end
 
     alias_method :to_s, :inspect
@@ -226,7 +226,7 @@ module JSI
       q.text "\#[<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {
-          q.breakable(any? { true } ? ' ' : '')
+          q.breakable(empty? ? '' : ' ')
           q.seplist(self, nil, :each) { |e|
             q.pp e
           }
