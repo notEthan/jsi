@@ -57,7 +57,7 @@ describe 'JSI::Base array' do
       let(:instance) { [[2]] }
       it 'returns the nondefault value' do
         assert_is_a(schema.items.jsi_schema_module, subject[0])
-        assert_equal([2], subject[0].as_json)
+        assert_equal([2], subject[0].jsi_instance)
       end
     end
   end
@@ -73,7 +73,7 @@ describe 'JSI::Base array' do
       it 'returns the default value' do
         assert_is_a(schema.items.jsi_schema_module, subject[1])
         assert_nil(subject[1, use_default: false])
-        assert_equal({'foo' => 2}, subject[1].as_json)
+        assert_equal({'foo' => 2}, subject[1].jsi_instance)
       end
     end
     describe 'nondefault value (basic type)' do
@@ -87,7 +87,7 @@ describe 'JSI::Base array' do
       let(:instance) { [true, [2]] }
       it 'returns the nondefault value' do
         assert_is_a(schema.items.jsi_schema_module, subject[1])
-        assert_equal([2], subject[1].as_json)
+        assert_equal([2], subject[1].jsi_instance)
       end
     end
   end
@@ -97,7 +97,7 @@ describe 'JSI::Base array' do
 
       subject[2] = {'y' => 'z'}
 
-      assert_equal({'y' => 'z'}, subject[2].as_json)
+      assert_equal({'y' => 'z'}, subject[2].jsi_instance)
       assert_is_a(schema.items[2].jsi_schema_module, orig_2)
       assert_is_a(schema.items[2].jsi_schema_module, subject[2])
     end

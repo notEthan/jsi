@@ -594,11 +594,11 @@ describe JSI::Base do
     end
     describe 'readers' do
       it 'reads attributes described as properties' do
-        assert_equal({'x' => 'y'}, subject.foo.as_json)
+        assert_equal({'x' => 'y'}, subject.foo.jsi_instance)
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_respond_to(subject.foo, :to_hash)
         refute_respond_to(subject.foo, :to_ary)
-        assert_equal([3.14159], subject.bar.as_json)
+        assert_equal([3.14159], subject.bar.jsi_instance)
         assert_is_a(schema.properties['bar'].jsi_schema_module, subject.bar)
         refute_respond_to(subject.bar, :to_hash)
         assert_respond_to(subject.bar, :to_ary)
@@ -735,7 +735,7 @@ describe JSI::Base do
 
         subject.foo = {'y' => 'z'}
 
-        assert_equal({'y' => 'z'}, subject.foo.as_json)
+        assert_equal({'y' => 'z'}, subject.foo.jsi_instance)
         assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
       end

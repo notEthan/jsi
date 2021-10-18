@@ -30,7 +30,7 @@ describe JSI::Schema do
     it '#[]' do
       schema_items = schema['items']
       assert_is_a(metaschema_jsi_module, schema_items)
-      assert_equal({'description' => 'items!'}, schema_items.as_json)
+      assert_equal({'description' => 'items!'}, schema_items.jsi_instance)
     end
   end
   describe '#schema_uri' do

@@ -56,7 +56,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
-        assert_equal([2], subject.foo.as_json)
+        assert_equal([2], subject.foo.jsi_instance)
       end
     end
   end
@@ -74,7 +74,7 @@ describe 'JSI::Base hash' do
       it 'returns the default value' do
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_nil(subject.foo(use_default: false))
-        assert_equal({'foo' => 2}, subject.foo.as_json)
+        assert_equal({'foo' => 2}, subject.foo.jsi_instance)
       end
     end
     describe 'nondefault value (basic type)' do
@@ -88,7 +88,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
-        assert_equal([2], subject.foo.as_json)
+        assert_equal([2], subject.foo.jsi_instance)
       end
     end
   end
@@ -115,7 +115,7 @@ describe 'JSI::Base hash' do
 
       subject['foo'] = {'y' => 'z'}
 
-      assert_equal({'y' => 'z'}, subject['foo'].as_json)
+      assert_equal({'y' => 'z'}, subject['foo'].jsi_instance)
       assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
       assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
     end
@@ -125,8 +125,8 @@ describe 'JSI::Base hash' do
       subject['foo'] = subject['bar']
 
       # the content of the subscripts' instances is the same but the subscripts' classes are different
-      assert_equal([9], subject['foo'].as_json)
-      assert_equal([9], subject['bar'].as_json)
+      assert_equal([9], subject['foo'].jsi_instance)
+      assert_equal([9], subject['bar'].jsi_instance)
       assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
       assert_is_a(schema.properties['bar'].jsi_schema_module, subject['bar'])
     end
