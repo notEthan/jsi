@@ -346,7 +346,7 @@ describe 'JSI::Base hash' do
     it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
     it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
     describe '#select' do
-      it 'yields properly too' do
+      it 'yields property too' do
         subject.select do |k, v|
           assert_equal(subject[k], v)
         end
