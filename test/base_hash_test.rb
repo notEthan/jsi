@@ -340,8 +340,6 @@ describe 'JSI::Base hash' do
     end
   end
   describe 'modified copy methods' do
-    # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
-    # tests of all the modified copy methods here
     it('#merge') { assert_equal(subject, subject.merge({})) }
     it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
     it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
