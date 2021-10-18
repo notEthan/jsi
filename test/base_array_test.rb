@@ -320,6 +320,14 @@ describe 'JSI::Base array' do
       subj_a = subject.to_a
       subject.select { |e| assert_equal(e, subj_a.shift) }
     end
+    describe '#select' do
+      it 'passes as_jsi' do
+        result = subject.select(as_jsi: true) do |e|
+          e.jsi_schemas.empty?
+        end
+        assert_equal(schema.new_jsi([{"four" => 4}]), result)
+      end
+    end
     it('#compact') { assert_equal(subject, subject.compact) }
     describe 'at a depth' do
       it('#select') do

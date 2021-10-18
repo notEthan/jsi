@@ -351,6 +351,13 @@ describe 'JSI::Base hash' do
           assert_equal(subject[k], v)
         end
       end
+      it 'passes as_jsi' do
+        result = subject.select(as_jsi: true) do |k, v|
+          assert_equal(subject[k, as_jsi: true], v)
+          v.jsi_schemas.empty?
+        end
+        assert_equal(schema.new_jsi({'baz' => [true]}), result)
+      end
     end
     # Hash#compact only available as of ruby 2.5.0
     if {}.respond_to?(:compact)
