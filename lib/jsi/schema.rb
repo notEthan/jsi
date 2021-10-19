@@ -303,6 +303,7 @@ module JSI
     # describes (see {#described_object_property_names}). these accessors wrap {Base#[]} and {Base#[]=}.
     #
     # some functionality is also defined on the module itself (its singleton class, not for its instances):
+    #
     # - the module is extended with {JSI::SchemaModule}, which defines .new_jsi to instantiate instances
     #   of this schema (see {#new_jsi}).
     # - properties described by this schema's metaschema are defined as methods to get subschemas' schema

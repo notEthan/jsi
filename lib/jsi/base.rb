@@ -319,11 +319,15 @@ module JSI
 
     # @param token [String, Integer, Object] the token to subscript
     # @param as_jsi [:auto, true, false] whether to return the result value as a JSI. one of:
+    #
     #   - :auto (default): by default a JSI will be returned when either:
+    #
     #     - the result is a complex value (responds to #to_ary or #to_hash) and is described by some schemas
     #     - the result is a schema (including true/false schemas)
+    #
     #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
     #     simple type (anything unresponsive to #to_ary / #to_hash).
+    #
     #   - true: the result value will always be returned as a JSI. the #jsi_schemas of the result may be empty
     #     if no schemas describe the instance.
     #   - false: the result value will always be the plain instance.
