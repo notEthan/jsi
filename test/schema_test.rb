@@ -548,13 +548,6 @@ describe JSI::Schema do
     end
   end
 
-  describe '#jsi_schema_class' do
-    it 'returns the class for the schema' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/schema_schema_class'})
-      assert_equal(JSI::SchemaClasses.class_for_schemas([schema]), schema.jsi_schema_class)
-    end
-  end
-
   describe '#subschema error conditions' do
     describe 'the subschema is not a schema' do
       it 'errors with a Base - subschema key is not described' do

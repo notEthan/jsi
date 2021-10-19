@@ -395,11 +395,6 @@ module JSI
       jsi_schema_module.module_exec(*a, **kw, &block)
     end
 
-    # @private @deprecated
-    def jsi_schema_class
-      JSI::SchemaClasses.class_for_schemas(SchemaSet[self])
-    end
-
     # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the
     # instance.
     #
