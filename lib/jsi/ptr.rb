@@ -170,7 +170,7 @@ module JSI
         self.reference_tokens == other_ptr.reference_tokens[0...self.reference_tokens.size]
       end
 
-      # @return [JSI::Ptr] returns this pointer relative to the given ancestor_ptr
+      # @return [JSI::Ptr] part of this pointer relative to the given ancestor_ptr
       # @raise [JSI::Ptr::ReferenceError] if the given ancestor_ptr is not an ancestor of this pointer
       def ptr_relative_to(ancestor_ptr)
         unless ancestor_ptr.contains?(self)

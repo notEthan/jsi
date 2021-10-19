@@ -376,7 +376,7 @@ module JSI
       jsi_ptr.root? || !!schema_absolute_uri
     end
 
-    # returns a subschema of this Schema
+    # a subschema of this Schema
     #
     # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
@@ -404,7 +404,7 @@ module JSI
 
     public
 
-    # returns a schema in the same schema resource as this one (see #schema_resource_root) at the given
+    # a schema in the same schema resource as this one (see #schema_resource_root) at the given
     # pointer relative to the root of the schema resource.
     #
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root

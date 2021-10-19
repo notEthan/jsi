@@ -89,7 +89,7 @@ module JSI
     #
     # @param instance (see Schema::Application::InplaceApplication#inplace_applicator_schemas)
     # @yield [JSI::Schema]
-    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_inplace_applicator_schema(instance, &block)
       return to_enum(__method__, instance) unless block
 
