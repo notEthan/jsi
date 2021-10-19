@@ -338,7 +338,7 @@ module JSI
     #
     #   - :auto (default): by default a JSI will be returned when either:
     #
-    #     - the result is a complex value (responds to #to_ary or #to_hash) and is described by some schemas
+    #     - the result is a complex value (responds to #to_ary or #to_hash)
     #     - the result is a schema (including true/false schemas)
     #
     #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
@@ -602,7 +602,7 @@ module JSI
       value_as_jsi = if [true, false].include?(as_jsi)
         as_jsi
       elsif as_jsi == :auto
-        complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+        complex_value = value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
         schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
         complex_value || schema_value
       else
