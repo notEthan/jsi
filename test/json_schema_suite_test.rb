@@ -34,7 +34,9 @@ describe 'JSON Schema Test Suite' do
       {name: 'draft6', metaschema: JSI::JSONSchemaOrgDraft06.schema},
       {name: 'draft7', metaschema: JSI::JSONSchemaOrgDraft07.schema},
     ]
-    drafts.each do |name: , metaschema: |
+    drafts.each do |draft|
+      name = draft[:name]
+      metaschema = draft[:metaschema]
       JSI::Util.ycomb do |rec|
         proc do |subpath|
           path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests').join(*subpath)
