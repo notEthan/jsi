@@ -274,12 +274,12 @@ describe JSI::Base do
         )
       end
       it "selects the nodes" do
-        exp = schema.new_jsi(
+        exp = schema.new_jsi({
           'yyy' => [
             'y',
             {'yyy' => ['y', {'yyy' => 'y'}]},
           ]
-        )
+        })
         act = subject.jsi_select_children_node_first do |node|
           node.jsi_schemas.any?
         end
@@ -301,7 +301,7 @@ describe JSI::Base do
         )
       end
       it "selects the nodes" do
-        exp = schema.new_jsi(
+        exp = schema.new_jsi({
           'y' => {'y' => ['y']},
           'yyy' => [
             {
@@ -310,7 +310,7 @@ describe JSI::Base do
             },
             'yyy',
           ]
-        )
+        })
         act = subject.jsi_select_children_leaf_first(&:jsi_valid?)
         assert_equal(exp, act)
       end
