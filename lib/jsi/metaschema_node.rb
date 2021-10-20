@@ -184,7 +184,7 @@ module JSI
 
       begin
         if token_in_range
-          value_node = jsi_subinstance_memos[token]
+          value_node = jsi_subinstance_memos[token: token]
 
           jsi_subinstance_as_jsi(value, value_node.jsi_schemas, as_jsi) do
             value_node
@@ -241,7 +241,7 @@ module JSI
     end
 
     def jsi_subinstance_memos
-      jsi_memomap(:subinstance) do |token|
+      jsi_memomap(:subinstance) do |token: |
         new_node(
           jsi_ptr: jsi_ptr[token],
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
