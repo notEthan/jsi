@@ -89,7 +89,7 @@ module JSI
       # @return [Class]
       def bootstrap_schema_class(modules)
         modules = Util.ensure_module_set(modules)
-        jsi_memoize(__method__, modules) do |modules|
+        jsi_memoize(__method__, modules: modules) do |modules: |
           Class.new(MetaschemaNode::BootstrapSchema).instance_exec(modules) do |modules|
             define_singleton_method(:metaschema_instance_modules) { modules }
             define_method(:metaschema_instance_modules) { modules }

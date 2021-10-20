@@ -36,7 +36,7 @@ module JSI
     #
     # @return [JSI::Schema, nil]
     def jsi_anchor_subschema(anchor)
-      subschemas = jsi_anchor_subschemas_map[anchor]
+      subschemas = jsi_anchor_subschemas_map[anchor: anchor]
       if subschemas.size == 1
         subschemas.first
       else
@@ -48,7 +48,7 @@ module JSI
     #
     # @return [Array<JSI::Schema>]
     def jsi_anchor_subschemas(anchor)
-      jsi_anchor_subschemas_map[anchor]
+      jsi_anchor_subschemas_map[anchor: anchor]
     end
 
     private
@@ -109,7 +109,7 @@ module JSI
     end
 
     def jsi_anchor_subschemas_map
-      jsi_memomap(__method__) do |anchor|
+      jsi_memomap(__method__) do |anchor: |
         jsi_each_child_node.select do |node|
           node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
         end.freeze

@@ -458,13 +458,13 @@ module JSI
     # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
     def subschema(subptr)
-      subschema_map[Ptr.ary_ptr(subptr)]
+      subschema_map[subptr: Ptr.ary_ptr(subptr)]
     end
 
     private
 
     def subschema_map
-      jsi_memomap(:subschema) do |subptr|
+      jsi_memomap(:subschema) do |subptr: |
         if is_a?(MetaschemaNode::BootstrapSchema)
           self.class.new(
             jsi_document,
@@ -487,13 +487,13 @@ module JSI
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-      resource_root_subschema_map[Ptr.ary_ptr(ptr)]
+      resource_root_subschema_map[ptr: Ptr.ary_ptr(ptr)]
     end
 
     private
 
     def resource_root_subschema_map
-      jsi_memomap(:resource_root_subschema_map) do |ptr|
+      jsi_memomap(:resource_root_subschema_map) do |ptr: |
         schema = self
         if schema.is_a?(MetaschemaNode::BootstrapSchema)
           # BootstrapSchema does not track jsi_schema_resource_ancestors used by #schema_resource_root;
