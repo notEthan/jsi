@@ -43,7 +43,18 @@ describe 'JSON Schema Test Suite' do
             path.children(with_directory).each { |c| rec.call(subpath + [c.to_s]) }
           elsif path.file? && path.to_s =~ /\.json\z/
             describe(subpath.join('/')) do
-              JSONSchemaTestSchema.new_jsi(::JSON.parse(path.read)).map do |tests_desc|
+              begin
+                tests_desc_object = ::JSON.parse(path.read)
+              rescue JSON::ParserError => e
+                # :nocov:
+                # known json/pure issue https://github.com/flori/json/pull/483
+                raise unless e.message =~ /Encoding::CompatibilityError/
+                warn("JSON Schema Test Suite skipping #{path}")
+                warn(e)
+                tests_desc_object = []
+                # :nocov:
+              end
+              JSONSchemaTestSchema.new_jsi(tests_desc_object).map do |tests_desc|
                 describe(tests_desc.description) do
                   around do |test|
                     registry_before = JSI.schema_registry.dup
