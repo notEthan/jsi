@@ -678,10 +678,13 @@ describe JSI::Schema do
       assert_equal("\#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> \"$id\" => \"https://schemas.jsi.unth.net/test/stringification\", \"type\" => \"object\"}", schema.inspect)
     end
     it '#pretty_print' do
-      assert_equal("\#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
-        \"$id\" => \"https://schemas.jsi.unth.net/test/stringification\",
-        \"type\" => \"object\"
-      }".gsub(/^      /, ''), schema.pretty_inspect.chomp)
+      pp = <<~PP
+        \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+          "$id" => "https://schemas.jsi.unth.net/test/stringification",
+          "type" => "object"
+        }
+        PP
+      assert_equal(pp, schema.pretty_inspect)
     end
   end
   describe 'validation' do
