@@ -103,6 +103,16 @@ module JSI
       nil
     end
 
+    # a set of child applicator subschemas of each schema in this set which apply to the child
+    # of the given instance on the given token.
+    # (see {Schema::Application::ChildApplication#child_applicator_schemas})
+    #
+    # @param instance (see Schema::Application::ChildApplication#child_applicator_schemas)
+    # @return [JSI::SchemaSet]
+    def child_applicator_schemas(token, instance)
+      SchemaSet.new(each_child_applicator_schema(token, instance))
+    end
+
     # yields each child applicator schema which applies to the child of
     # the given instance on the given token.
     #
