@@ -10,7 +10,7 @@ base = {
   },
 }
 NAMED_HASH_SCHEMA = JSI.new_schema(base)
-NAMED_ID_HASH_SCHEMA = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_hash_schema'}.merge(base))
+NAMED_ID_HASH_SCHEMA = JSI.new_schema({'$id' => 'http://jsi/base/named_hash_schema'}.merge(base))
 NamedHashInstance = NAMED_HASH_SCHEMA.new_jsi({}).class
 NamedIdHashInstance = NAMED_ID_HASH_SCHEMA.new_jsi({}).class
 
@@ -234,7 +234,7 @@ describe 'JSI::Base hash' do
     describe '#inspect named with id' do
       let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedIdHashInstance> \"foo\" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named with id' do
@@ -242,12 +242,10 @@ describe 'JSI::Base hash' do
       it 'inspects' do
         pp = <<~PP
           \#{<NamedIdHashInstance>
-            "foo" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)>
+            "foo" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)>
               "x" => "y"
             },
-            "bar" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)>
-              9
-            ],
+            "bar" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9],
             "baz" => [true]
           }
           PP
@@ -257,7 +255,7 @@ describe 'JSI::Base hash' do
     describe '#inspect named SortOfHash with id' do
       let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance SortOfHash> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedIdHashInstance SortOfHash> \"foo\" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print named with id SortOfHash' do
@@ -265,12 +263,10 @@ describe 'JSI::Base hash' do
       it 'inspects' do
         pp = <<~PP
           \#{<NamedIdHashInstance SortOfHash>
-            "foo" => \#{<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/foo)>
+            "foo" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)>
               "x" => "y"
             },
-            "bar" => #[<JSI (https://schemas.jsi.unth.net/test/base/named_hash_schema#/properties/bar)>
-              9
-            ],
+            "bar" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9],
             "baz" => [true]
           }
           PP
@@ -278,24 +274,20 @@ describe 'JSI::Base hash' do
       end
     end
     describe '#inspect with id' do
-      let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/base_hash_test/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
+      let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("\#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid)> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI (http://jsi/base_hash/withid)> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
-      let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/base_hash_test/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
+      let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(instance) }
       it 'pretty prints' do
         pp = <<~PP
-          \#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid)>
-            "foo" => \#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/foo)>
-              "x" => "y"
-            },
-            "bar" => #[<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/bar)>
-              9
-            ],
+          \#{<JSI (http://jsi/base_hash/withid)>
+            "foo" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> "x" => "y"},
+            "bar" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9],
             "baz" => [true]
           }
           PP
@@ -303,24 +295,20 @@ describe 'JSI::Base hash' do
       end
     end
     describe '#inspect with id SortOfHash' do
-      let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/base_hash_test/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
+      let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid) SortOfHash> \"foo\" => \#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfHash' do
-      let(:schema_content) { {'$id' => 'https://schemas.jsi.unth.net/base_hash_test/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
+      let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
       it 'pretty prints' do
         pp = <<~PP
-          \#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid) SortOfHash>
-            "foo" => \#{<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/foo)>
-              "x" => "y"
-            },
-            "bar" => #[<JSI (https://schemas.jsi.unth.net/base_hash_test/withid#/properties/bar)>
-              9
-            ],
+          \#{<JSI (http://jsi/base_hash/withid) SortOfHash>
+            "foo" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> "x" => "y"},
+            "bar" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9],
             "baz" => [true]
           }
           PP
