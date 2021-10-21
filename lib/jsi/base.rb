@@ -472,8 +472,8 @@ module JSI
       jsi_modified_copy(&:dup)
     end
 
-    # @return [String] a string representing this JSI, indicating its class
-    #   and inspecting its instance
+    # @return [String] a string representing this JSI, indicating its schemas (by schema module name
+    #   or URI) and inspecting its instance
     def inspect
       "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
