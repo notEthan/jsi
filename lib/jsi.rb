@@ -20,8 +20,13 @@ module JSI
   class Bug < NotImplementedError
   end
 
+  # @private
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
+
+  # @private
   RESOURCES_PATH = ROOT_PATH.join('{resources}')
+
+  # @private
   SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   autoload :Ptr, 'jsi/ptr'
@@ -72,7 +77,7 @@ module JSI
     JSI::Schema.new_schema(schema_object, **kw).jsi_schema_module
   end
 
-  # @deprecated
+  # @private @deprecated
   def self.class_for_schemas(schemas)
     SchemaClasses.class_for_schemas(schemas.map { |schema| JSI.new_schema(schema) })
   end
