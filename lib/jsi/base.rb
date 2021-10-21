@@ -76,9 +76,8 @@ module JSI
 
       alias_method :to_s, :inspect
 
-      # @return [String, nil] a name for a constant for this class, generated from the constant name
-      #   or schema id of each schema this class represents. nil if any represented schema has no constant
-      #   name or schema id.
+      # @private
+      # see {.name}
       def schema_classes_const_name
         if respond_to?(:jsi_class_schemas)
           schema_names = jsi_class_schemas.map do |schema|
@@ -96,7 +95,13 @@ module JSI
         end
       end
 
-      # @return [String] a constant name of this class
+      # a constant name of this class. this is generated from the schema module name or URI of each schema
+      # this class represents. nil if any represented schema has no schema module name or schema URI.
+      #
+      # this generated name is not too pretty but can be more helpful than an anonymous class, especially
+      # in error messages.
+      #
+      # @return [String]
       def name
         unless instance_variable_defined?(:@in_schema_classes)
           const_name = schema_classes_const_name
