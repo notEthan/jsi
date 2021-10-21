@@ -118,12 +118,6 @@ describe JSI::Base do
     end
   end
   describe 'initialization' do
-    describe 'on Base' do
-      it 'errors' do
-        err = assert_raises(TypeError) { JSI::Base.new({}) }
-        assert_equal('cannot instantiate JSI::Base which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.', err.message)
-      end
-    end
     describe 'nil' do
       let(:instance) { nil }
       it 'initializes with nil instance' do
@@ -830,17 +824,6 @@ describe JSI::Base do
         assert_equal(:foo, schema.new_jsi([]).as_json)
         assert_equal(:foo, schema.new_jsi(0).as_json)
       end
-    end
-  end
-  describe 'equality between different classes of JSI::Base subclasses' do
-    let(:subject_subclass) { Class.new(schema.new_jsi({}).class).new(instance) }
-
-    it 'considers a Base subclass (class_for_schema) and subsubclass to be equal with the same instance' do
-      assert_equal(subject.hash, subject_subclass.hash)
-      assert(subject == subject_subclass)
-      assert(subject_subclass == subject)
-      assert(subject.eql?(subject_subclass))
-      assert(subject_subclass.eql?(subject))
     end
   end
   describe 'equality' do

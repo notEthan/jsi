@@ -134,9 +134,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: []
     )
-      unless respond_to?(:jsi_schemas)
-        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.")
-      end
+      raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
       jsi_initialize_memos
 
