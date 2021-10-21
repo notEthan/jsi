@@ -185,16 +185,16 @@ module JSI
       end
     end
 
-    # document containing the instance of this JSI
+    # document containing the instance of this JSI at our {#jsi_ptr}
     attr_reader :jsi_document
 
-    # JSI::Ptr pointing to this JSI's instance within the jsi_document
+    # {JSI::Ptr} pointing to this JSI's instance within our {#jsi_document}
     attr_reader :jsi_ptr
 
     # the JSI at the root of this JSI's document
     attr_reader :jsi_root_node
 
-    # the instance of the json-schema - the underlying JSON data used to instantiate this JSI
+    # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :jsi_node_content
 
     # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base #each
