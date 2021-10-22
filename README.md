@@ -58,8 +58,8 @@ So, if we construct an instance like:
 bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
 # => #{<JSI (Contact)>
 #   "name" => "bill",
-#   "phone" => #[<JSI>
-#     #{<JSI>
+#   "phone" => #[<JSI (Contact.properties["phone"])>
+#     #{<JSI (Contact.properties["phone"].items)>
 #       "location" => "home",
 #       "number" => "555"
 #     }
@@ -96,9 +96,9 @@ bill.jsi_valid?
 ```ruby
 bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 # => #{<JSI (Contact)>
-#   "phone" => #[<JSI>
-#     #{<JSI>
-#       "number" => #[<JSI> 5, 5, 5]
+#   "phone" => #[<JSI (Contact.properties["phone"])>
+#     #{<JSI (Contact.properties["phone"].items)>
+#       "number" => #[<JSI (Contact.properties["phone"].items.properties["number"])> 5, 5, 5]
 #     }
 #   ]
 # }
@@ -172,7 +172,7 @@ You can subscript or use property accessors on a JSI schema module to refer to t
 
 ```ruby
 Contact.properties['phone'].items
-# => (JSI Schema Module: #/properties/phone/items)
+# => Contact.properties["phone"].items (JSI Schema Module)
 ```
 
 Opening a subschema module with [`module_exec`](https://ruby-doc.org/core/Module.html#method-i-module_exec), you can add methods to instances of the subschema.
