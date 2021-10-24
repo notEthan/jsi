@@ -119,4 +119,31 @@ describe JSI::Ptr do
       end
     end
   end
+  describe 'errors' do
+    describe 'evaluate' do
+      it 'fails to evaluate' do
+        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr['-'].evaluate([]) }
+        assert_match(/nonexistent element/, err.message)
+        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr['foo'].evaluate([]) }
+        assert_match(/not an integer/, err.message)
+        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr[1].evaluate([]) }
+        assert_match(/not a valid index/, err.message)
+
+        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr['a'].evaluate({}) }
+        assert_match(/not a valid key/, err.message)
+
+        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr['a'].evaluate(Object.new) }
+        assert_match(/cannot be resolved/, err.message)
+      end
+    end
+    describe 'relative pointers' do
+      it 'fails' do
+        err = assert_raises(JSI::Ptr::Error) { JSI::Ptr[].parent }
+        assert_match(/cannot access parent of root pointer/, err.message)
+
+        err = assert_raises(JSI::Ptr::Error) { JSI::Ptr['a', 'b'].ptr_relative_to(JSI::Ptr['c']) }
+        assert_match(/is not ancestor/, err.message)
+      end
+    end
+  end
 end
