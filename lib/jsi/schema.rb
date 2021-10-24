@@ -187,7 +187,7 @@ module JSI
         elsif schema_object.respond_to?(:to_hash)
           if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
             metaschema = Schema::Ref.new(schema_object['$schema']).deref_schema
-            unless metaschema.is_a?(Schema) && metaschema.describes_schema?
+            unless metaschema.describes_schema?
               raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
             metaschema.new_schema(schema_object, base_uri: base_uri)
