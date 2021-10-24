@@ -235,47 +235,41 @@ module JSI
         #
         # this is actually a bit tricky. we can't modify the original document, obviously.
         # we could do a deep copy, but that's expensive. instead, we make a copy of each array
-        # or hash in the path above this node. this node's content is modified by the caller, and
-        # that is recursively merged up to the document root. the recursion is done with a
-        # y combinator, for no other reason than that was a fun way to implement it.
-        modified_document = Util.ycomb do |rec|
-          proc do |subdocument, subpath|
-            if subpath == []
-              Typelike.modified_copy(subdocument, &block)
+        # or hash in the path above the node we point to. this node's content is modified by the
+        # caller, and that is recursively merged up to the document root.
+            if empty?
+              Typelike.modified_copy(document, &block)
             else
-              car = subpath[0]
-              cdr = subpath[1..-1]
-              if subdocument.respond_to?(:to_hash)
-                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_hash)[car]
-                car_object = rec.call(subdocument_car, cdr)
-                if car_object.object_id == subdocument_car.object_id
-                  subdocument
+              car = tokens[0]
+              cdr = Ptr.new(tokens[1..-1])
+              if document.respond_to?(:to_hash)
+                document_car = (document.respond_to?(:[]) ? document : document.to_hash)[car]
+                car_object = cdr.modified_document_copy(document_car, &block)
+                if car_object.object_id == document_car.object_id
+                  document
                 else
-                  (subdocument.respond_to?(:merge) ? subdocument : subdocument.to_hash).merge({car => car_object})
+                  (document.respond_to?(:merge) ? document : document.to_hash).merge({car => car_object})
                 end
-              elsif subdocument.respond_to?(:to_ary)
+              elsif document.respond_to?(:to_ary)
                 if car.is_a?(String) && car =~ /\A\d+\z/
                   car = car.to_i
                 end
                 unless car.is_a?(Integer)
-                  raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{subdocument.pretty_inspect.chomp}")
+                  raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{document.pretty_inspect.chomp}")
                 end
-                subdocument_car = (subdocument.respond_to?(:[]) ? subdocument : subdocument.to_ary)[car]
-                car_object = rec.call(subdocument_car, cdr)
-                if car_object.object_id == subdocument_car.object_id
-                  subdocument
+                document_car = (document.respond_to?(:[]) ? document : document.to_ary)[car]
+                car_object = cdr.modified_document_copy(document_car, &block)
+                if car_object.object_id == document_car.object_id
+                  document
                 else
-                  (subdocument.respond_to?(:[]=) ? subdocument : subdocument.to_ary).dup.tap do |arr|
+                  (document.respond_to?(:[]=) ? document : document.to_ary).dup.tap do |arr|
                     arr[car] = car_object
                   end
                 end
               else
-                raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{subdocument.pretty_inspect.chomp}")
+                raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{document.pretty_inspect.chomp}")
               end
             end
-          end
-        end.call(document, tokens)
-        modified_document
       end
 
       # @return [String] a string representation of this pointer
