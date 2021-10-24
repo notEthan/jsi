@@ -353,6 +353,8 @@ module JSI
       return Set[].freeze
     end
 
+    # see {#jsi_schema_instance_modules}
+    #
     # @return [void]
     def jsi_schema_instance_modules=(jsi_schema_instance_modules)
       @jsi_schema_instance_modules = Util.ensure_module_set(jsi_schema_instance_modules)
