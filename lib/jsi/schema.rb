@@ -371,7 +371,7 @@ module JSI
       JSI::SchemaClasses.module_for_schema(self)
     end
 
-    # @return [Class subclassing JSI::Base] a JSI class (subclass of JSI::Base) representing this schema.
+    # @private @deprecated
     def jsi_schema_class
       JSI::SchemaClasses.class_for_schemas(SchemaSet[self])
     end
