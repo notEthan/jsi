@@ -65,10 +65,35 @@ describe JSI::Util do
     it 'structs' do
       foo = Foo.new(bar: 'bar')
       assert_equal('bar', foo.bar)
+      assert_equal('bar', foo['bar'])
+      assert_equal('bar', foo[:bar])
       foo.bar = 'baar'
       assert_equal('baar', foo.bar)
-      assert_equal(foo, Foo.new(bar: 'baar'))
-      refute_equal(foo, Foo.new(bar: 'baaar'))
+      foo['bar'] = 'baaar'
+      assert_equal('baaar', foo.bar)
+      foo[:bar] = 'baaaar'
+      assert_equal('baaaar', foo.bar)
+      assert_equal(foo, Foo.new(bar: foo.bar))
+      refute_equal(foo, Foo.new(bar: 'who'))
+    end
+    it 'errors' do
+      assert_raises(ArgumentError) { JSI::Util::AttrStruct[3] }
+      assert_raises(TypeError) { Foo.new(3) }
+      assert_raises(JSI::Util::AttrStruct::UndefinedAttributeKey) { Foo.new(x: 'y') }
+      assert_raises(JSI::Util::AttrStruct::UndefinedAttributeKey) { Foo.new[:x] = 'y' }
+    end
+    it 'is pretty' do
+      foo = Foo.new(bar: {'foo' => 'foooooooooooooooooooooo', 'bar' => [3.14159], 'baz' => true, 'qux' => []})
+      assert_equal(%q(#<Foo bar: {"foo"=>"foooooooooooooooooooooo", "bar"=>[3.14159], "baz"=>true, "qux"=>[]}>), foo.inspect)
+      pp = <<~PP
+        #<Foo
+          bar: {"foo"=>"foooooooooooooooooooooo",
+           "bar"=>[3.14159],
+           "baz"=>true,
+           "qux"=>[]}
+        >
+        PP
+      assert_equal(pp, foo.pretty_inspect)
     end
   end
 end
