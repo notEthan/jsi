@@ -30,7 +30,7 @@ module JSI
         new(instance, **kw, &b)
       end
 
-      # is the constant JSI::SchemaClasses::{self.schema_classes_const_name} defined?
+      # is the constant JSI::SchemaClasses::<self.schema_classes_const_name> defined?
       # (if so, we will prefer to use something more human-readable than that ugly mess.)
       def in_schema_classes
         # #name sets @in_schema_classes
