@@ -219,32 +219,17 @@ module JSI
             else
               car = tokens[0]
               cdr = Ptr.new(tokens[1..-1])
-              if document.respond_to?(:to_hash)
-                document_car = (document.respond_to?(:[]) ? document : document.to_hash)[car]
-                car_object = cdr.modified_document_copy(document_car, &block)
-                if car_object.object_id == document_car.object_id
-                  document
-                else
-                  (document.respond_to?(:merge) ? document : document.to_hash).merge({car => car_object})
-                end
-              elsif document.respond_to?(:to_ary)
-                if car.is_a?(String) && car =~ /\A\d+\z/
-                  car = car.to_i
-                end
-                unless car.is_a?(Integer)
-                  raise(TypeError, "bad subscript #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for array: #{document.pretty_inspect.chomp}")
-                end
-                document_car = (document.respond_to?(:[]) ? document : document.to_ary)[car]
-                car_object = cdr.modified_document_copy(document_car, &block)
-                if car_object.object_id == document_car.object_id
-                  document
-                else
-                  (document.respond_to?(:[]=) ? document : document.to_ary).dup.tap do |arr|
-                    arr[car] = car_object
-                  end
-                end
+              token, document_child = node_subscript_token_child(document, car)
+              modified_document_child = cdr.modified_document_copy(document_child, &block)
+              if modified_document_child.object_id == document_child.object_id
+                document
               else
-                raise(TypeError, "bad subscript: #{car.pretty_inspect.chomp} with remaining subpath: #{cdr.inspect} for content: #{document.pretty_inspect.chomp}")
+                modified_document = document.respond_to?(:[]=) ? document.dup :
+                  document.respond_to?(:to_hash) ? document.to_hash.dup :
+                  document_child.respond_to?(:to_ary) ? document.to_ary.dup :
+                  raise(Bug) # not possible; node_subscript_token_child would have raised
+                modified_document[token] = modified_document_child
+                modified_document
               end
             end
       end
