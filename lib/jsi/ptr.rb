@@ -214,24 +214,24 @@ module JSI
         # we could do a deep copy, but that's expensive. instead, we make a copy of each array
         # or hash in the path above the node we point to. this node's content is modified by the
         # caller, and that is recursively merged up to the document root.
-            if empty?
-              Typelike.modified_copy(document, &block)
-            else
-              car = tokens[0]
-              cdr = Ptr.new(tokens[1..-1])
-              token, document_child = node_subscript_token_child(document, car)
-              modified_document_child = cdr.modified_document_copy(document_child, &block)
-              if modified_document_child.object_id == document_child.object_id
-                document
-              else
-                modified_document = document.respond_to?(:[]=) ? document.dup :
-                  document.respond_to?(:to_hash) ? document.to_hash.dup :
-                  document_child.respond_to?(:to_ary) ? document.to_ary.dup :
-                  raise(Bug) # not possible; node_subscript_token_child would have raised
-                modified_document[token] = modified_document_child
-                modified_document
-              end
-            end
+        if empty?
+          Typelike.modified_copy(document, &block)
+        else
+          car = tokens[0]
+          cdr = Ptr.new(tokens[1..-1])
+          token, document_child = node_subscript_token_child(document, car)
+          modified_document_child = cdr.modified_document_copy(document_child, &block)
+          if modified_document_child.object_id == document_child.object_id
+            document
+          else
+            modified_document = document.respond_to?(:[]=) ? document.dup :
+              document.respond_to?(:to_hash) ? document.to_hash.dup :
+              document_child.respond_to?(:to_ary) ? document.to_ary.dup :
+              raise(Bug) # not possible; node_subscript_token_child would have raised
+            modified_document[token] = modified_document_child
+            modified_document
+          end
+        end
       end
 
       # @return [String] a string representation of this pointer
