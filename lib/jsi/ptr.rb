@@ -110,31 +110,8 @@ module JSI
       # @raise [JSI::Ptr::ResolutionError] the document does not contain the path this pointer references
       def evaluate(document, *a)
         res = tokens.inject(document) do |value, token|
-          if value.respond_to?(:to_ary)
-            if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
-              token = token.to_i
-            elsif token == '-'
-              # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
-              # expected to raise an error condition.
-              raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
-            end
-            unless token.is_a?(Integer)
-              raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
-            end
-            unless (0...(value.respond_to?(:size) ? value : value.to_ary).size).include?(token)
-              raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid index of #{value.inspect}")
-            end
-
-            (value.respond_to?(:[]) ? value : value.to_ary)[token, *a]
-          elsif value.respond_to?(:to_hash)
-            unless (value.respond_to?(:key?) ? value : value.to_hash).key?(token)
-              raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid key of #{value.inspect}")
-            end
-
-            (value.respond_to?(:[]) ? value : value.to_hash)[token, *a]
-          else
-            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} cannot be resolved in #{value.inspect}")
-          end
+          _, child = node_subscript_token_child(value, token, *a)
+          child
         end
         res
       end
@@ -284,5 +261,36 @@ module JSI
         {class: Ptr, tokens: tokens}
       end
       include Util::FingerprintHash
+
+      private
+
+      def node_subscript_token_child(value, token, *a)
+        if value.respond_to?(:to_ary)
+          if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
+            token = token.to_i
+          elsif token == '-'
+            # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
+            # expected to raise an error condition.
+            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
+          end
+          unless token.is_a?(Integer)
+            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
+          end
+          unless (0...(value.respond_to?(:size) ? value : value.to_ary).size).include?(token)
+            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid index of #{value.inspect}")
+          end
+
+          child = (value.respond_to?(:[]) ? value : value.to_ary)[token, *a]
+        elsif value.respond_to?(:to_hash)
+          unless (value.respond_to?(:key?) ? value : value.to_hash).key?(token)
+            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid key of #{value.inspect}")
+          end
+
+          child = (value.respond_to?(:[]) ? value : value.to_hash)[token, *a]
+        else
+          raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} cannot be resolved in #{value.inspect}")
+        end
+        [token, child]
+      end
     end
 end
