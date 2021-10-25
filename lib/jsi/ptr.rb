@@ -7,8 +7,12 @@ module JSI
     class Ptr
       class Error < StandardError
       end
+
+      # raised when attempting to parse a JSON Pointer string with invalid syntax
       class PointerSyntaxError < Error
       end
+
+      # raised when a pointer refers to a path in a document that could not be resolved
       class ResolutionError < Error
       end
 
