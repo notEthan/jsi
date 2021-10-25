@@ -122,17 +122,17 @@ describe JSI::Ptr do
   describe 'errors' do
     describe 'evaluate' do
       it 'fails to evaluate' do
-        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr['-'].evaluate([]) }
+        err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr['-'].evaluate([]) }
         assert_match(/nonexistent element/, err.message)
-        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr['foo'].evaluate([]) }
+        err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr['foo'].evaluate([]) }
         assert_match(/not an integer/, err.message)
-        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr[1].evaluate([]) }
+        err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr[1].evaluate([]) }
         assert_match(/not a valid index/, err.message)
 
-        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr['a'].evaluate({}) }
+        err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr['a'].evaluate({}) }
         assert_match(/not a valid key/, err.message)
 
-        err = assert_raises(JSI::Ptr::ReferenceError) { JSI::Ptr['a'].evaluate(Object.new) }
+        err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr['a'].evaluate(Object.new) }
         assert_match(/cannot be resolved/, err.message)
       end
     end

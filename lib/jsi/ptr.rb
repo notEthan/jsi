@@ -9,7 +9,7 @@ module JSI
       end
       class PointerSyntaxError < Error
       end
-      class ReferenceError < Error
+      class ResolutionError < Error
       end
 
       # @param ary_ptr [#to_ary, JSI::Ptr] an array of tokens, or a pointer
@@ -103,7 +103,7 @@ module JSI
       # @param document [#to_ary, #to_hash] the document against which we will evaluate this pointer
       # @param a arguments are passed to each invocation of `#[]`
       # @return [Object] the content of the document pointed to by this pointer
-      # @raise [JSI::Ptr::ReferenceError] the document does not contain the path this pointer references
+      # @raise [JSI::Ptr::ResolutionError] the document does not contain the path this pointer references
       def evaluate(document, *a)
         res = tokens.inject(document) do |value, token|
           if value.respond_to?(:to_ary)
@@ -112,24 +112,24 @@ module JSI
             elsif token == '-'
               # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
               # expected to raise an error condition.
-              raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
+              raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
             end
             unless token.is_a?(Integer)
-              raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
+              raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
             end
             unless (0...(value.respond_to?(:size) ? value : value.to_ary).size).include?(token)
-              raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid index of #{value.inspect}")
+              raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid index of #{value.inspect}")
             end
 
             (value.respond_to?(:[]) ? value : value.to_ary)[token, *a]
           elsif value.respond_to?(:to_hash)
             unless (value.respond_to?(:key?) ? value : value.to_hash).key?(token)
-              raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid key of #{value.inspect}")
+              raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid key of #{value.inspect}")
             end
 
             (value.respond_to?(:[]) ? value : value.to_hash)[token, *a]
           else
-            raise(ReferenceError, "Invalid resolution for #{to_s}: #{token.inspect} cannot be resolved in #{value.inspect}")
+            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} cannot be resolved in #{value.inspect}")
           end
         end
         res
