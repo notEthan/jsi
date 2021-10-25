@@ -339,6 +339,15 @@ describe 'JSI::Base hash' do
       it('#[]')       { assert_equal(SortOfHash.new({'a' => 'b'}), subject['foo'].jsi_instance) }
       it('#as_json') { assert_equal({'foo' => {'a' => 'b'}}, subject.as_json) }
     end
+
+    describe 'modified copy' do
+      it 'modifies a copy' do
+        modified_root = subject.foo.select { false }.jsi_root_node
+        # modified_root instance ceases to be SortOfHash because SortOfHash has no #[]= method
+        # modified_root.foo instance ceases to be SortOfHash because SortOfHash has no #select method
+        assert_equal(schema.new_jsi({'foo' => {}}), modified_root)
+      end
+    end
   end
   describe 'modified copy methods' do
     it('#merge') { assert_equal(subject, subject.merge({})) }

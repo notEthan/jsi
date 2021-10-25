@@ -309,6 +309,15 @@ describe 'JSI::Base array' do
       it('#[]')     { assert_equal(SortOfArray.new(['q', 'r']), subject[2].jsi_instance) }
       it('#as_json') { assert_equal(['foo', {'lamp' => [3]}, ['q', 'r']], subject.as_json) }
     end
+
+    describe 'modified copy' do
+      it 'modifies a copy' do
+        modified_root = subject[2].select { false }.jsi_root_node
+        # modified_root instance ceases to be SortOfArray because SortOfArray has no #[]= method
+        # modified_root[2] ceases to be SortOfArray because SortOfArray has no #select method
+        assert_equal(schema.new_jsi(['foo', {'lamp' => SortOfArray.new([3])}, []]), modified_root)
+      end
+    end
   end
   describe 'modified copy methods' do
     it('#reject') { assert_equal(schema.new_jsi(['foo']), subject.reject { |e| e != 'foo' }) }
