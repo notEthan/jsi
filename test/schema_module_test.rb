@@ -48,4 +48,21 @@ describe 'JSI::SchemaModule' do
       )
     end
   end
+
+  describe 'DescribesSchemaModule' do
+    it 'extends a module which describes a schema' do
+      assert(JSI::JSONSchemaOrgDraft07.is_a?(JSI::DescribesSchemaModule))
+    end
+
+    it '#new_schema' do
+      schema = JSI::JSONSchemaOrgDraft07.new_schema({})
+      assert_is_a(JSI::JSONSchemaOrgDraft07, schema)
+      assert_equal(JSI::JSONSchemaOrgDraft07.schema.new_schema({}), schema)
+    end
+
+    it '#new_schema_module' do
+      mod = JSI::JSONSchemaOrgDraft07.new_schema_module({})
+      assert_equal(JSI::JSONSchemaOrgDraft07.new_schema({}).jsi_schema_module, mod)
+    end
+  end
 end
