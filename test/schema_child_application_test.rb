@@ -77,7 +77,7 @@ describe 'JSI Schema child application' do
   end
   {
     draft06: JSI::JSONSchemaOrgDraft06,
-    draft07: JSI::JSONSchemaOrgDraft06,
+    draft07: JSI::JSONSchemaOrgDraft07,
   }.each do |name, metaschema|
     describe "#{name} contains application" do
       let(:metaschema) { metaschema }
