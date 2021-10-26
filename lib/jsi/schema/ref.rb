@@ -105,9 +105,7 @@ module JSI
         check_schema_resource_root.call
 
         # find an anchor that resembles the fragment
-        result_schemas = schema_resource_root.jsi_each_child_node.select do |node|
-          node.is_a?(JSI::Schema) && node.respond_to?(:anchor) && node.anchor == fragment
-        end
+        result_schemas = schema_resource_root.jsi_anchor_subschemas(fragment)
 
         if result_schemas.size == 1
           result_schema = result_schemas.first

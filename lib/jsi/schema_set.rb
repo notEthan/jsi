@@ -89,7 +89,7 @@ module JSI
     #
     # @param instance (see Schema::Application::InplaceApplication#inplace_applicator_schemas)
     # @yield [JSI::Schema]
-    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_inplace_applicator_schema(instance, &block)
       return to_enum(__method__, instance) unless block
 
@@ -98,6 +98,21 @@ module JSI
       end
 
       nil
+    end
+
+    # validates the given instance against our schemas
+    #
+    # @param instance [Object] the instance to validate against our schemas
+    # @return [JSI::Validation::Result]
+    def instance_validate(instance)
+      results = map { |schema| schema.instance_validate(instance) }
+      results.inject(Validation::FullResult.new, &:merge).freeze
+    end
+
+    # @param instance [Object] the instance to validate against our schemas
+    # @return [Boolean] whether the given instance is valid against our schemas
+    def instance_valid?(instance)
+      all? { |schema| schema.instance_valid?(instance) }
     end
 
     def inspect

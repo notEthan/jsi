@@ -64,6 +64,25 @@ describe JSI::MetaschemaNode do
     it 'acts like a metaschema' do
       assert_metaschema_behaves
     end
+    it 'is pretty' do
+      inspect = %q(#{<JSI::MetaschemaNode (#) Metaschema> "properties" => #{<JSI::MetaschemaNode (#/properties/properties)> "properties" => #{<JSI::MetaschemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaschemaNode (#) Schema>}}})
+      assert_equal(inspect, metaschema.inspect)
+      pp = <<~PP
+        \#{<JSI::MetaschemaNode (#) Metaschema>
+          "properties" => \#{<JSI::MetaschemaNode (#/properties/properties)>
+            "properties" => \#{<JSI::MetaschemaNode (#) Schema>
+              "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema>
+                "$ref" => "#"
+              }
+            },
+            "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"
+            },
+            "$ref" => \#{<JSI::MetaschemaNode (#) Schema>}
+          }
+        }
+        PP
+      assert_equal(pp, metaschema.pretty_inspect)
+    end
   end
   describe 'json schema draft' do
     it 'type has a schema' do

@@ -31,11 +31,23 @@ module JSI
   module DescribesSchemaModule
     # instantiates the given schema content as a JSI Schema.
     #
+    # see {JSI::Schema::DescribesSchema#new_schema}
+    #
     # @param (see JSI::Schema::DescribesSchema#new_schema)
     # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
     #   consist of this module's schema.
     def new_schema(schema_content, **kw)
       schema.new_schema(schema_content, **kw)
+    end
+
+    # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+    #
+    # shortcut to chain {JSI::Schema::DescribesSchema#new_schema} + {Schema#jsi_schema_module}.
+    #
+    # @param (see JSI::Schema::DescribesSchema#new_schema)
+    # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
+    def new_schema_module(schema_content, **kw)
+      schema.new_schema(schema_content, **kw).jsi_schema_module
     end
   end
 
@@ -204,7 +216,7 @@ module JSI
     # return a NotASchemaModule; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
-    # @return [Class, NotASchemaModule, Object]
+    # @return [Module, NotASchemaModule, Object]
     def [](token)
       sub = @possibly_schema_node[token]
       if sub.is_a?(JSI::Schema)

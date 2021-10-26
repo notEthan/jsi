@@ -20,8 +20,13 @@ module JSI
   class Bug < NotImplementedError
   end
 
+  # @private
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
+
+  # @private
   RESOURCES_PATH = ROOT_PATH.join('{resources}')
+
+  # @private
   SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   autoload :Ptr, 'jsi/ptr'
@@ -64,7 +69,7 @@ module JSI
 
   # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
   #
-  # see {JSI::Schema.new_schema}
+  # shortcut to chain {JSI::Schema.new_schema} + {Schema#jsi_schema_module}.
   #
   # @param (see JSI::Schema.new_schema)
   # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
@@ -72,7 +77,7 @@ module JSI
     JSI::Schema.new_schema(schema_object, **kw).jsi_schema_module
   end
 
-  # @deprecated
+  # @private @deprecated
   def self.class_for_schemas(schemas)
     SchemaClasses.class_for_schemas(schemas.map { |schema| JSI.new_schema(schema) })
   end

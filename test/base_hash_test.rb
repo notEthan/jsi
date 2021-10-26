@@ -1,6 +1,7 @@
 require_relative 'test_helper'
 
 base = {
+  '$schema' => 'http://json-schema.org/draft-07/schema#',
   'description' => 'named hash schema',
   'type' => 'object',
   'properties' => {
@@ -25,7 +26,7 @@ describe 'JSI::Base hash' do
       },
     }
   end
-  let(:schema) { JSI.new_schema(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:subject) { schema.new_jsi(instance) }
 
   describe '#[] with a schema default that is a basic type' do
@@ -340,16 +341,21 @@ describe 'JSI::Base hash' do
     end
   end
   describe 'modified copy methods' do
-    # I'm going to rely on the #merge test above to test the modified copy functionality and just do basic
-    # tests of all the modified copy methods here
     it('#merge') { assert_equal(subject, subject.merge({})) }
     it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
     it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
     describe '#select' do
-      it 'yields properly too' do
+      it 'yields property too' do
         subject.select do |k, v|
           assert_equal(subject[k], v)
         end
+      end
+      it 'passes as_jsi' do
+        result = subject.select(as_jsi: true) do |k, v|
+          assert_equal(subject[k, as_jsi: true], v)
+          v.jsi_schemas.empty?
+        end
+        assert_equal(schema.new_jsi({'baz' => [true]}), result)
       end
     end
     # Hash#compact only available as of ruby 2.5.0

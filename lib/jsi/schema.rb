@@ -151,35 +151,81 @@ module JSI
 
       # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
       #
-      # see {.new_schema}
+      # shortcut to chain {#new_schema} + {Schema#jsi_schema_module}.
       #
-      # @param (see .new_schema)
+      # @param (see #new_schema)
       # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
-      def self.new_schema_module(schema_content, **kw)
+      def new_schema_module(schema_content, **kw)
         new_schema(schema_content, **kw).jsi_schema_module
       end
     end
 
     class << self
-      # @return [JSI::Schema] the default metaschema
+      # an application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
+      #
+      # @return [nil, #new_schema]
       def default_metaschema
-        JSI::JSONSchemaOrgDraft06.schema
+        return @default_metaschema if instance_variable_defined?(:@default_metaschema)
+        return JSONSchemaOrgDraft07
+      end
+
+      # sets an application-wide default metaschema used by {JSI.new_schema}
+      #
+      # @param default_metaschema [#new_schema] the default metaschema. this may be a metaschema or a
+      #   metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`).
+      def default_metaschema=(default_metaschema)
+        unless default_metaschema.respond_to?(:new_schema)
+          raise(TypeError, "given default_metaschema does not respond to #new_schema")
+        end
+        @default_metaschema = default_metaschema
       end
 
       # instantiates a given schema object as a JSI Schema.
       #
-      # schemas are instantiated according to their '$schema' property if specified. otherwise their schema
-      # will be the {JSI::Schema.default_metaschema}.
+      # the metaschema to use to instantiate the schema must be indicated.
+      #
+      # - if the schema object has a `$schema` property, that URI is resolved using the {JSI.schema_registry},
+      #   and that metaschema is used.
+      # - if no `$schema` property is present, the `default_metaschema` param is used, if the caller
+      #   specifies it.
+      # - if no `default_metaschema` param is specified, the application-wide default
+      #   {JSI::Schema.default_metaschema JSI::Schema.default_metaschema} is used,
+      #   if the application has set it.
+      #
+      # an ArgumentError is raised if none of these indicate a metaschema to use.
+      #
+      # note that if you are instantiating a schema known to have no `$schema` property, an alternative to
+      # passing the `default_metaschema` param is to use `.new_schema` on the metaschema or its module, e.g.
+      # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_object)`
       #
       # if the given schema_object is a JSI::Base but not already a JSI::Schema, an error
       # will be raised. schemas which describe schemas must have JSI::Schema in their
       # Schema#jsi_schema_instance_modules.
       #
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
-      #   if it's already a schema, it is returned as-is.
+      #   if it's already a JSI::Schema, it is returned as-is.
       # @param base_uri (see DescribesSchema#new_schema)
+      # @param default_metaschema [#new_schema] the metaschema to use if the schema_object does not have
+      #   a '$schema' property. this may be a metaschema or a metaschema's schema module
+      #   (e.g. `JSI::JSONSchemaOrgDraft07`).
       # @return [JSI::Schema] a JSI::Schema representing the given schema_object
-      def new_schema(schema_object, base_uri: nil)
+      def new_schema(schema_object, base_uri: nil, default_metaschema: nil)
+        default_metaschema_new_schema = -> {
+          default_metaschema ||= JSI::Schema.default_metaschema
+          if default_metaschema.nil?
+            raise(ArgumentError, [
+              "when instantiating a schema with no `$schema` property, you must specify the metaschema.",
+              "you may pass the `default_metaschema` param to this method.",
+              "JSI::Schema.default_metaschema may be set to an application-wide default metaschema.",
+              "you may alternatively use new_schema on the appropriate metaschema or its schema module.",
+              "instantiating schema_object: #{schema_object.pretty_inspect.chomp}",
+            ].join("\n"))
+          end
+          if !default_metaschema.respond_to?(:new_schema)
+            raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
+          end
+          default_metaschema.new_schema(schema_object, base_uri: base_uri)
+        }
         if schema_object.is_a?(Schema)
           schema_object
         elsif schema_object.is_a?(JSI::Base)
@@ -187,15 +233,15 @@ module JSI
         elsif schema_object.respond_to?(:to_hash)
           if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
             metaschema = Schema::Ref.new(schema_object['$schema']).deref_schema
-            unless metaschema.is_a?(Schema) && metaschema.describes_schema?
+            unless metaschema.describes_schema?
               raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
             metaschema.new_schema(schema_object, base_uri: base_uri)
           else
-            default_metaschema.new_schema(schema_object, base_uri: base_uri)
+            default_metaschema_new_schema.call
           end
         elsif [true, false].include?(schema_object)
-          default_metaschema.new_schema(schema_object, base_uri: base_uri)
+          default_metaschema_new_schema.call
         else
           raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
         end
@@ -288,7 +334,16 @@ module JSI
         resource.is_a?(Schema) && resource.schema_absolute_uri
       end
 
+      anchored = self.anchor
       parent_schemas.each do |parent_schema|
+        if anchored
+          if parent_schema.jsi_anchor_subschema(anchor) == self
+            yield parent_schema.schema_absolute_uri.merge(fragment: anchor)
+          else
+            anchored = false
+          end
+        end
+
         relative_ptr = self.jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
         yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
       end
@@ -303,6 +358,7 @@ module JSI
     # describes (see {#described_object_property_names}). these accessors wrap {Base#[]} and {Base#[]=}.
     #
     # some functionality is also defined on the module itself (its singleton class, not for its instances):
+    #
     # - the module is extended with {JSI::SchemaModule}, which defines .new_jsi to instantiate instances
     #   of this schema (see {#new_jsi}).
     # - properties described by this schema's metaschema are defined as methods to get subschemas' schema
@@ -352,6 +408,8 @@ module JSI
       return Set[].freeze
     end
 
+    # see {#jsi_schema_instance_modules}
+    #
     # @return [void]
     def jsi_schema_instance_modules=(jsi_schema_instance_modules)
       @jsi_schema_instance_modules = Util.ensure_module_set(jsi_schema_instance_modules)
@@ -375,7 +433,7 @@ module JSI
       jsi_ptr.root? || !!schema_absolute_uri
     end
 
-    # returns a subschema of this Schema
+    # a subschema of this Schema
     #
     # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
@@ -403,7 +461,7 @@ module JSI
 
     public
 
-    # returns a schema in the same schema resource as this one (see #schema_resource_root) at the given
+    # a schema in the same schema resource as this one (see #schema_resource_root) at the given
     # pointer relative to the root of the schema resource.
     #
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root

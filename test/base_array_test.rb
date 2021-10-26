@@ -1,6 +1,7 @@
 require_relative 'test_helper'
 
 base = {
+  '$schema' => 'http://json-schema.org/draft-07/schema#',
   'description' => 'named array schema',
   'type' => 'array',
   'items' => [
@@ -27,7 +28,7 @@ describe 'JSI::Base array' do
       ],
     }
   end
-  let(:schema) { JSI.new_schema(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:subject) { schema.new_jsi(instance) }
 
   describe '#[] with a default that is a basic type' do
@@ -319,6 +320,14 @@ describe 'JSI::Base array' do
     it('#select block var') do
       subj_a = subject.to_a
       subject.select { |e| assert_equal(e, subj_a.shift) }
+    end
+    describe '#select' do
+      it 'passes as_jsi' do
+        result = subject.select(as_jsi: true) do |e|
+          e.jsi_schemas.empty?
+        end
+        assert_equal(schema.new_jsi([{"four" => 4}]), result)
+      end
     end
     it('#compact') { assert_equal(subject, subject.compact) }
     describe 'at a depth' do

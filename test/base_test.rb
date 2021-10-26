@@ -1,10 +1,16 @@
 require_relative 'test_helper'
 
-NamedSchemaInstance = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_schema'}).jsi_schema_class
+NamedSchemaInstance = JSI.new_schema({
+  '$schema' => 'http://json-schema.org/draft-07/schema#',
+  '$id' => 'https://schemas.jsi.unth.net/test/base/named_schema',
+}).jsi_schema_class
 
 # hitting .tap(&:name) causes JSI to assign a constant name from the ID,
 # meaning the name NamedSchemaInstanceTwo is not known.
-NamedSchemaInstanceTwo = JSI.new_schema({'$id' => 'https://schemas.jsi.unth.net/test/base/named_schema_two'}).jsi_schema_class.tap(&:name)
+NamedSchemaInstanceTwo = JSI.new_schema({
+  '$schema' => 'http://json-schema.org/draft-07/schema#',
+  '$id' => 'https://schemas.jsi.unth.net/test/base/named_schema_two',
+}).jsi_schema_class.tap(&:name)
 
 Phonebook = JSI.new_schema_module(YAML.load(<<~YAML
   title: Phone Book
@@ -32,7 +38,7 @@ end
 
 describe JSI::Base do
   let(:schema_content) { {} }
-  let(:schema) { JSI.new_schema(schema_content) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
   describe 'class .inspect' do
@@ -169,7 +175,7 @@ describe JSI::Base do
       end
     end
     describe 'Schema invalid' do
-      let(:instance) { JSI.new_schema({}) }
+      let(:instance) { JSI::JSONSchemaOrgDraft06.new_schema({}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
         assert_equal("assigning a schema to a (JSI Schema Class: #) instance is incorrect. received: \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>}", err.message)
@@ -298,12 +304,12 @@ describe JSI::Base do
         )
       end
       it "selects the nodes" do
-        exp = schema.new_jsi(
+        exp = schema.new_jsi({
           'yyy' => [
             'y',
             {'yyy' => ['y', {'yyy' => 'y'}]},
           ]
-        )
+        })
         act = subject.jsi_select_children_node_first do |node|
           node.jsi_schemas.any?
         end
@@ -325,7 +331,7 @@ describe JSI::Base do
         )
       end
       it "selects the nodes" do
-        exp = schema.new_jsi(
+        exp = schema.new_jsi({
           'y' => {'y' => ['y']},
           'yyy' => [
             {
@@ -334,7 +340,7 @@ describe JSI::Base do
             },
             'yyy',
           ]
-        )
+        })
         act = subject.jsi_select_children_leaf_first(&:jsi_valid?)
         assert_equal(exp, act)
       end
@@ -775,9 +781,9 @@ describe JSI::Base do
   end
   describe '#as_json' do
     it '#as_json' do
-      assert_equal({'a' => 'b'}, JSI.new_schema({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
-      assert_equal(['a', 'b'], JSI.new_schema({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
-      assert_equal(['a'], JSI.new_schema({}).new_jsi(['a']).as_json(some_option: true))
+      assert_equal({'a' => 'b'}, JSI::JSONSchemaOrgDraft07.new_schema({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
+      assert_equal(['a', 'b'], JSI::JSONSchemaOrgDraft07.new_schema({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
+      assert_equal(['a'], JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi(['a']).as_json(some_option: true))
     end
   end
   describe 'equality between different classes of JSI::Base subclasses' do

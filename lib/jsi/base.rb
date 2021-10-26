@@ -30,7 +30,8 @@ module JSI
         new(instance, **kw, &b)
       end
 
-      # is the constant JSI::SchemaClasses::{self.schema_classes_const_name} defined?
+      # @private
+      # is the constant JSI::SchemaClasses::<self.schema_classes_const_name> defined?
       # (if so, we will prefer to use something more human-readable than that ugly mess.)
       def in_schema_classes
         # #name sets @in_schema_classes
@@ -53,7 +54,7 @@ module JSI
             elsif schema.schema_uri
               schema.schema_uri.to_s
             else
-              schema.jsi_ptr.uri
+              schema.jsi_ptr.uri.to_s
             end
           end
 
@@ -75,9 +76,8 @@ module JSI
 
       alias_method :to_s, :inspect
 
-      # @return [String, nil] a name for a constant for this class, generated from the constant name
-      #   or schema id of each schema this class represents. nil if any represented schema has no constant
-      #   name or schema id.
+      # @private
+      # see {.name}
       def schema_classes_const_name
         if respond_to?(:jsi_class_schemas)
           schema_names = jsi_class_schemas.map do |schema|
@@ -90,12 +90,18 @@ module JSI
             end
           end
           if !schema_names.any?(&:nil?) && !schema_names.empty?
-            schema_names.sort.map { |n| 'X' + n.gsub(/[^\w]/, '_') }.join('')
+            schema_names.sort.map { |n| 'X' + n.to_s.gsub(/[^\w]/, '_') }.join('')
           end
         end
       end
 
-      # @return [String] a constant name of this class
+      # a constant name of this class. this is generated from the schema module name or URI of each schema
+      # this class represents. nil if any represented schema has no schema module name or schema URI.
+      #
+      # this generated name is not too pretty but can be more helpful than an anonymous class, especially
+      # in error messages.
+      #
+      # @return [String]
       def name
         unless instance_variable_defined?(:@in_schema_classes)
           const_name = schema_classes_const_name
@@ -185,16 +191,16 @@ module JSI
       end
     end
 
-    # document containing the instance of this JSI
+    # document containing the instance of this JSI at our {#jsi_ptr}
     attr_reader :jsi_document
 
-    # JSI::Ptr pointing to this JSI's instance within the jsi_document
+    # {JSI::Ptr} pointing to this JSI's instance within our {#jsi_document}
     attr_reader :jsi_ptr
 
     # the JSI at the root of this JSI's document
     attr_reader :jsi_root_node
 
-    # the instance of the json-schema - the underlying JSON data used to instantiate this JSI
+    # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :jsi_node_content
 
     # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base #each
@@ -303,7 +309,7 @@ module JSI
     def jsi_parent_nodes
       parent = jsi_root_node
 
-      jsi_ptr.reference_tokens.map do |token|
+      jsi_ptr.tokens.map do |token|
         parent.tap do
           parent = parent[token, as_jsi: true]
         end
@@ -319,11 +325,15 @@ module JSI
 
     # @param token [String, Integer, Object] the token to subscript
     # @param as_jsi [:auto, true, false] whether to return the result value as a JSI. one of:
+    #
     #   - :auto (default): by default a JSI will be returned when either:
+    #
     #     - the result is a complex value (responds to #to_ary or #to_hash) and is described by some schemas
     #     - the result is a schema (including true/false schemas)
+    #
     #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
     #     simple type (anything unresponsive to #to_ary / #to_hash).
+    #
     #   - true: the result value will always be returned as a JSI. the #jsi_schemas of the result may be empty
     #     if no schemas describe the instance.
     #   - false: the result value will always be the plain instance.
@@ -440,13 +450,12 @@ module JSI
     #
     # @return [JSI::Validation::FullResult]
     def jsi_validate
-      results = jsi_schemas.map { |schema| schema.instance_validate(self) }
-      results.inject(Validation::FullResult.new, &:merge).freeze
+      jsi_schemas.instance_validate(self)
     end
 
     # @return [Boolean] whether this JSI's instance is valid against all of its schemas
     def jsi_valid?
-      jsi_schemas.all? { |schema| schema.instance_valid?(self) }
+      jsi_schemas.instance_valid?(self)
     end
 
     # @private
@@ -468,8 +477,8 @@ module JSI
       jsi_modified_copy(&:dup)
     end
 
-    # @return [String] a string representing this JSI, indicating its class
-    #   and inspecting its instance
+    # @return [String] a string representing this JSI, indicating its schemas (by schema module name
+    #   or URI) and inspecting its instance
     def inspect
       "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end

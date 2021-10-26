@@ -68,7 +68,7 @@ module JSI
         jsi_ptr: root_schema_ptr,
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
       )
-      our_bootstrap_schemas = jsi_ptr.reference_tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_schemas, tok|
+      our_bootstrap_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_schemas, tok|
         child_instance_for_schemas = instance_for_schemas[tok]
         bootstrap_schemas_for_instance = SchemaSet.build do |schemas|
           bootstrap_schemas.each do |bootstrap_schema|
