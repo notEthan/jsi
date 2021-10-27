@@ -23,7 +23,9 @@ end
 
 require 'bundler/setup'
 
-require 'byebug'
+if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
+  require 'byebug'
+end
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
