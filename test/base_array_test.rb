@@ -253,8 +253,7 @@ describe 'JSI::Base array' do
     it('#<=>')      { assert_equal(-1, [] <=> subject) }
     require 'abbrev'
     it('#abbrev')    { assert_equal({'a' => 'a'}, schema.new_jsi(['a']).abbrev) }
-    # assoc does not use to_ary in the jvm rubies. w/e just check nothing raised.
-    it('#assoc')      { subject.assoc('q') }
+    it('#assoc')      { assert_equal(subject[2], subject.assoc('q')) }
     it('#at')          { assert_equal('foo', subject.at(0)) }
     it('#bsearch')      { assert_equal(nil, subject.bsearch { false }) }
     it('#bsearch_index') { assert_equal(nil, subject.bsearch_index { false }) } if [].respond_to?(:bsearch_index)
@@ -274,14 +273,7 @@ describe 'JSI::Base array' do
     it('#pack')       { assert_equal(' ', schema.new_jsi([32]).pack('c')) }
     it('#permutation') { assert_equal([['foo'], [subject[1]], [subject[2]], [subject[3]]], subject.permutation(1).to_a) }
     it('#product')    { assert_equal([], subject.product([])) }
-    # due to differences in implementation between #assoc and #rassoc, the reason for which
-    # I cannot begin to fathom, assoc works but rassoc does not because rassoc has different
-    # type checking than assoc for the array(like) array elements.
-    # compare:
-    # assoc:  https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3780-L3813
-    # rassoc: https://github.com/ruby/ruby/blob/v2_5_0/array.c#L3815-L3847
-    # for this reason, rassoc is NOT defined on Arraylike and we call #jsi_instance to use it.
-    it('#rassoc')              { assert_equal(['q', 'r'], subject.jsi_instance.rassoc('r')) }
+    it('#rassoc')              { assert_equal(subject[2], subject.rassoc('r')) }
     it('#repeated_combination') { assert_equal([[]], subject.repeated_combination(0).to_a) }
     it('#repeated_permutation') { assert_equal([[]], subject.repeated_permutation(0).to_a) }
     it('#reverse')             { assert_equal([subject[3], subject[2], subject[1], 'foo'], subject.reverse) }

@@ -176,7 +176,7 @@ module JSI
     # methods which do not need to access the element.
     SAFE_INDEX_ONLY_METHODS = %w(each_index empty? length size)
     # there are some ambiguous ones that are omitted, like #sort, #map / #collect.
-    SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev assoc at bsearch bsearch_index combination compact count cycle dig drop drop_while fetch find_index first include? index join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip)
+    SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev at bsearch bsearch_index combination compact count cycle dig drop drop_while fetch find_index first include? index join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip)
     DESTRUCTIVE_METHODS = %w(<< clear collect! compact! concat delete delete_at delete_if fill flatten! insert keep_if map! pop push reject! replace reverse! rotate! select! shift shuffle! slice! sort! sort_by! uniq! unshift)
 
     # methods (well, method) that returns a modified copy and doesn't need any handling of block variable(s)
@@ -208,6 +208,20 @@ module JSI
           end
         end
       end
+    end
+
+    # see [Array#assoc](https://ruby-doc.org/core-2.7.0/Array.html#method-i-assoc)
+    def assoc(obj)
+      # note: assoc implemented here (instead of delegated) due to inconsistencies in whether
+      # other implementations expect each element to be an Array or to respond to #to_ary
+      detect { |e| e.respond_to?(:to_ary) and e[0] == obj }
+    end
+
+    # see [Array#rassoc](https://ruby-doc.org/core-2.7.0/Array.html#method-i-rassoc)
+    def rassoc(obj)
+      # note: rassoc implemented here (instead of delegated) due to inconsistencies in whether
+      # other implementations expect each element to be an Array or to respond to #to_ary
+      detect { |e| e.respond_to?(:to_ary) and e[1] == obj }
     end
 
     # @return [String] basically the same #inspect as Array, but has the
