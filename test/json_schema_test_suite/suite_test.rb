@@ -2,7 +2,8 @@ require_relative '../test_helper'
 
 $test_report_time["json_schema_test_suite/suite_test loading"]
 
-JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').open('r:UTF-8', &:read)))
+test_schema_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json')
+JSONSchemaTestSchema = JSI::JSONSchemaOrgDraft07.new_schema(JSON.parse(test_schema_path.open('r:UTF-8').read))
 $test_report_time["JSONSchemaTestSchema set up"]
 
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
