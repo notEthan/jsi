@@ -1,5 +1,8 @@
 if ENV['CI'] || ENV['COV']
   require 'simplecov'
+  SimpleCov.start do
+    coverage_dir '{coverage}'
+  end
 end
 
 require 'bundler/setup'

@@ -14,7 +14,6 @@ JSI_GEM_IGNORE_FILES = %w(
   .github/**/*
   .gitignore
   .gitmodules
-  .simplecov
   Gemfile
   jsi.gemspec
   test/**/*
