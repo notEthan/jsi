@@ -13,7 +13,6 @@ task :default => :test
 JSI_GEM_IGNORE_FILES = %w(
   .gitignore
   .gitmodules
-  .travis.yml
   .simplecov
   Gemfile
   jsi.gemspec
