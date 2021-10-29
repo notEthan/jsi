@@ -1,7 +1,23 @@
 if ENV['CI'] || ENV['COV']
   require 'simplecov'
   SimpleCov.start do
-    coverage_dir '{coverage}'
+    if ENV['CI']
+      require 'simplecov-lcov'
+
+      # TODO remove. see https://github.com/fortissimo1997/simplecov-lcov/pull/25
+      if !SimpleCov.respond_to?(:branch_coverage)
+        SimpleCov.define_singleton_method(:branch_coverage?) { false }
+      end
+
+      SimpleCov::Formatter::LcovFormatter.config do |c|
+        c.report_with_single_file = true
+        c.single_report_path = 'coverage/lcov.info'
+      end
+
+      formatter SimpleCov::Formatter::LcovFormatter
+    else
+      coverage_dir '{coverage}'
+    end
   end
 end
 
