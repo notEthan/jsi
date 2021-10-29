@@ -11,6 +11,7 @@ end
 task :default => :test
 
 JSI_GEM_IGNORE_FILES = %w(
+  .github/**/*
   .gitignore
   .gitmodules
   .simplecov
