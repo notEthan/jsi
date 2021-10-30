@@ -28,3 +28,16 @@ jobs:
       uses: coverallsapp/github-action@1.1.3
       with:
         github-token: ${{ secrets.github_token }}
+        flag-name: "test ruby: ${{ matrix.ruby-version }}"
+        parallel: true
+
+  finish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Report completion to Coveralls
+      uses: coverallsapp/github-action@1.1.3
+      with:
+        github-token: ${{ secrets.github_token }}
+        parallel-finished: true
