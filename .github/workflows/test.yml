@@ -8,8 +8,10 @@ jobs:
         ruby-version:
         - '2.3'
         - '2.7'
+        runs-on:
+        - ubuntu-latest
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runs-on }}
 
     steps:
 
@@ -28,7 +30,7 @@ jobs:
       uses: coverallsapp/github-action@1.1.3
       with:
         github-token: ${{ secrets.github_token }}
-        flag-name: "test ruby: ${{ matrix.ruby-version }}"
+        flag-name: "test ruby: ${{ matrix.ruby-version }} os: ${{ matrix.runs-on }}"
         parallel: true
 
   finish:
