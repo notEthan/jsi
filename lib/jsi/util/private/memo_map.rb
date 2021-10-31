@@ -63,13 +63,10 @@ module JSI
         end
 
         result_mutex.synchronize do
-          inputs_hash = inputs.hash
-          if @results.key?(key) && inputs_hash == @results[key].inputs_hash && inputs == @results[key].inputs
-            @results[key].value
+          if @results.key?(key)
+            @results[key]
           else
-            value = @block.call(**inputs)
-            @results[key] = Result.new(value: value, inputs: inputs, inputs_hash: inputs_hash)
-            value
+            @results[key] = @block.call(**inputs)
           end
         end
       end
