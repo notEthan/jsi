@@ -52,7 +52,11 @@ describe JSI::Schema::Ref do
 
       it 'finds none' do
         err = assert_raises(JSI::Schema::ReferenceError) { schema.new_jsi({}) }
-        assert_match(/could not find schema by fragment/, err.message)
+        msg = <<~MSG
+          could not find schema by fragment: "no"
+          in schema resource root: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#no"}
+          MSG
+        assert_equal(msg.chomp, err.message)
       end
     end
 
@@ -69,7 +73,12 @@ describe JSI::Schema::Ref do
 
       it 'finds a collision' do
         err = assert_raises(JSI::Schema::ReferenceError) { schema.definitions['ref'].new_jsi({}) }
-        assert_match(/found multiple schemas for plain name fragment/, err.message)
+        msg = <<~MSG
+          found multiple schemas for plain name fragment "collide":
+          \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$id" => "#collide"}
+          \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$id" => "#collide"}
+          MSG
+        assert_equal(msg.chomp, err.message)
       end
     end
   end
