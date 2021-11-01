@@ -30,8 +30,8 @@ module JSI
         unless schema_resource_root
           raise(Schema::ReferenceError, [
             "cannot find schema by ref: #{ref}",
-            "from schema: #{ref_schema.pretty_inspect.chomp}",
-          ].join("\n"))
+            ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
+          ].compact.join("\n"))
         end
       }
 
@@ -97,7 +97,15 @@ module JSI
       end
 
       if ptr_from_fragment
-        result_schema = resolve_fragment_ptr.call(ptr_from_fragment)
+        begin
+          result_schema = resolve_fragment_ptr.call(ptr_from_fragment)
+        rescue Ptr::ResolutionError
+          raise(Schema::ReferenceError, [
+            "could not resolve pointer: #{ptr_from_fragment.pointer.inspect}",
+            ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
+            ("in schema resource root: #{schema_resource_root.pretty_inspect.chomp}" if schema_resource_root),
+          ].compact.join("\n"))
+        end
       elsif fragment.nil?
         check_schema_resource_root.call
         result_schema = schema_resource_root
@@ -110,9 +118,15 @@ module JSI
         if result_schemas.size == 1
           result_schema = result_schemas.first
         elsif result_schemas.size == 0
-          raise(Schema::ReferenceError, "could not find schema by fragment: #{fragment.inspect} in schema resource root: #{schema_resource_root.pretty_inspect.chomp}")
+          raise(Schema::ReferenceError, [
+            "could not find schema by fragment: #{fragment.inspect}",
+            "in schema resource root: #{schema_resource_root.pretty_inspect.chomp}",
+          ].join("\n"))
         else
-          raise(Schema::ReferenceError, "found multiple schemas for plain name fragment #{fragment.inspect}:#{result_schemas.map { |s| "\n" + s.pretty_inspect.chomp }.join('')}")
+          raise(Schema::ReferenceError, [
+            "found multiple schemas for plain name fragment #{fragment.inspect}:",
+            *result_schemas.map { |s| s.pretty_inspect.chomp },
+          ].join("\n"))
         end
       end
 
