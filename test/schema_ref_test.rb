@@ -1,10 +1,14 @@
 require_relative 'test_helper'
 
 describe JSI::Schema::Ref do
+  let(:schema) do
+    JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07)
+  end
+
   describe 'anchors' do
     describe 'no anchor' do
-      let(:schema) do
-        JSI::JSONSchemaOrgDraft06.new_schema({"$ref" => "#no"})
+      let(:schema_content) do
+        {"$ref" => "#no"}
       end
 
       it 'finds none' do
@@ -14,14 +18,14 @@ describe JSI::Schema::Ref do
     end
 
     describe 'conflicting siblings' do
-      let(:schema) do
-        JSI::JSONSchemaOrgDraft06.new_schema(YAML.safe_load(%q({
+      let(:schema_content) do
+        JSON.parse(%q({
           "definitions": {
             "sibling1": {"$id": "#collide"},
             "sibling2": {"$id": "#collide"},
             "ref": {"$ref": "#collide"}
           }
-        })))
+        }))
       end
 
       it 'finds a collision' do
