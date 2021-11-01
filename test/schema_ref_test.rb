@@ -5,6 +5,45 @@ describe JSI::Schema::Ref do
     JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07)
   end
 
+  describe 'pointers' do
+    describe 'traces to nowhere' do
+      describe 'resource root schema' do
+        let(:schema_content) do
+          {"$ref" => "#/no"}
+        end
+
+        it 'finds none' do
+          err = assert_raises(JSI::Schema::ReferenceError) { schema.new_jsi({}) }
+          msg = <<~MSG
+            could not resolve pointer: "/no"
+            from: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#/no"}
+            in schema resource root: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#/no"}
+            MSG
+          assert_equal(msg.chomp, err.message)
+        end
+      end
+
+      describe 'resource root nonschema' do
+        it 'finds none' do
+          schemaschema = JSI.new_schema({
+            '$schema' => "http://json-schema.org/draft-07/schema#",
+            'items' => {'$ref' => "http://json-schema.org/draft-07/schema#"},
+          })
+
+          schema = schemaschema.new_jsi([{'$ref' => '#/no'}])[0]
+
+          err = assert_raises(JSI::Schema::ReferenceError) { schema.new_jsi({}) }
+          msg = <<~MSG
+            could not resolve pointer: "/no"
+            from: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#/no"}
+            in schema resource root: #[<JSI> \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#/no"}]
+            MSG
+          assert_equal(msg.chomp, err.message)
+        end
+      end
+    end
+  end
+
   describe 'anchors' do
     describe 'no anchor' do
       let(:schema_content) do
