@@ -271,24 +271,24 @@ module JSI
           elsif token == '-'
             # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
             # expected to raise an error condition.
-            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
+            raise(ResolutionError, "Invalid resolution: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
           end
           unless token.is_a?(Integer)
-            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
+            raise(ResolutionError, "Invalid resolution: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
           end
           unless (0...(value.respond_to?(:size) ? value : value.to_ary).size).include?(token)
-            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid index of #{value.inspect}")
+            raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid index of #{value.inspect}")
           end
 
           child = (value.respond_to?(:[]) ? value : value.to_ary)[token, *a]
         elsif value.respond_to?(:to_hash)
           unless (value.respond_to?(:key?) ? value : value.to_hash).key?(token)
-            raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} is not a valid key of #{value.inspect}")
+            raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid key of #{value.inspect}")
           end
 
           child = (value.respond_to?(:[]) ? value : value.to_hash)[token, *a]
         else
-          raise(ResolutionError, "Invalid resolution for #{to_s}: #{token.inspect} cannot be resolved in #{value.inspect}")
+          raise(ResolutionError, "Invalid resolution: #{token.inspect} cannot be resolved in #{value.inspect}")
         end
         [token, child]
       end
