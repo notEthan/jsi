@@ -68,8 +68,8 @@ module JSI
         unless schema_resource_root
           # HAX for how google does refs and ids
           if ref_schema && ref_schema.jsi_document.respond_to?(:to_hash) && ref_schema.jsi_document['schemas'].respond_to?(:to_hash)
-            ref_schema.jsi_document['schemas'].each_key do |k|
-              if Addressable::URI.parse(ref_schema.jsi_document['schemas'][k]['id']) == ref_uri_nofrag
+            ref_schema.jsi_document['schemas'].each do |k, v|
+              if Addressable::URI.parse(v['id']) == ref_uri_nofrag
                 schema_resource_root = ref_schema.resource_root_subschema(['schemas', k])
               end
             end
