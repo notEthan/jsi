@@ -81,8 +81,8 @@ module JSI
         if schema_resource_root.is_a?(Schema)
           resolve_fragment_ptr = schema_resource_root.method(:resource_root_subschema)
         else
-          # Note: reinstantiate_nonschemas_as_schemas, implemented in Schema#resource_root_subschema, is not
-          # implemented for remote refs when the schema_resource_root is not a schema.
+          # Note: Schema#resource_root_subschema will reinstantiate nonschemas as schemas.
+          # not implemented for remote refs when the schema_resource_root is not a schema.
           resolve_fragment_ptr = -> (ptr) { ptr.evaluate(schema_resource_root) }
         end
       end
