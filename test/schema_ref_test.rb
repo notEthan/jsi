@@ -34,4 +34,26 @@ describe JSI::Schema::Ref do
       end
     end
   end
+
+  describe 'not a schema' do
+    describe 'remote ref in resource root nonschema' do
+      let(:uri) { 'http://jsi/ref_to_not_a_schema' }
+      let(:schema_content) do
+        {'$ref' => uri}
+      end
+
+      it 'finds a thing that is not a schema' do
+        JSI.schema_registry.autoload_uri(uri) do
+          JSI.new_schema({}).new_jsi({}, base_uri: uri)
+        end
+
+        err = assert_raises(JSI::Schema::NotASchemaError) { schema.new_jsi({}) }
+        msg = <<~MSG
+          object identified by uri http://jsi/ref_to_not_a_schema is not a schema:
+          \#{<JSI>}
+          MSG
+        assert_equal(msg.chomp, err.message)
+      end
+    end
+  end
 end
