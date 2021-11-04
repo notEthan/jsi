@@ -115,7 +115,8 @@ describe JSI::Base do
 
       # the orig_abs does not change (it's already instantiated as a `as`).
       # its additionalItems remain `a`s.
-      refute(orig_abs.jsi_valid?)
+      assert(orig_abs.jsi_valid?) # validation uses indicated schemas (schema.properties['abs'])
+      refute(orig_abs.jsi_schemas.instance_valid?(orig_abs)) # but the applied schemas fail
       assert_schema(schema.definitions['as'], orig_abs)
       refute_schema(schema.definitions['bs'], orig_abs)
       assert_schema(schema.definitions['a'], orig_abs[1])
