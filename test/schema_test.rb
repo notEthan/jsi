@@ -136,6 +136,140 @@ describe JSI::Schema do
         assert_equal(all_exp_uris, all_act_uris)
       end
     end
+
+    describe 'draft4 example' do
+      let(:schema) do
+        # adapted from https://datatracker.ietf.org/doc/html/draft-zyp-json-schema-04#section-7.2.2
+        # but changed so only schemas use ids
+        JSI::JSONSchemaOrgDraft04.new_schema(JSON.parse(%q({
+          "id": "http://x.y.z/rootschema.json#",
+          "definitions": {
+            "schema1": {
+              "id": "#foo"
+            },
+            "schema2": {
+              "id": "otherschema.json",
+              "definitions": {
+                "nested": {
+                  "id": "#bar"
+                },
+                "alsonested": {
+                  "id": "t/inner.json#a"
+                }
+              }
+            },
+            "schema3": {
+              "id": "some://where.else/completely#"
+            }
+          }
+        })))
+      end
+
+      it 'has the specified uris' do
+        all_exp_uris = {
+          '#' => [
+            "http://x.y.z/rootschema.json",
+            "http://x.y.z/rootschema.json#",
+          ],
+          '#/definitions/schema1' => [
+            "http://x.y.z/rootschema.json#foo",
+            "http://x.y.z/rootschema.json#/definitions/schema1",
+          ],
+          '#/definitions/schema2' => [
+            'http://x.y.z/otherschema.json',
+            'http://x.y.z/otherschema.json#',
+            'http://x.y.z/rootschema.json#/definitions/schema2',
+          ],
+          '#/definitions/schema2/definitions/nested' => [
+            "http://x.y.z/otherschema.json#bar",
+            "http://x.y.z/otherschema.json#/definitions/nested",
+            "http://x.y.z/rootschema.json#bar",
+            "http://x.y.z/rootschema.json#/definitions/schema2/definitions/nested",
+          ],
+          '#/definitions/schema2/definitions/alsonested' => [
+            "http://x.y.z/t/inner.json",
+            "http://x.y.z/t/inner.json#a",
+            "http://x.y.z/t/inner.json#",
+            "http://x.y.z/otherschema.json#a",
+            "http://x.y.z/otherschema.json#/definitions/alsonested",
+            "http://x.y.z/rootschema.json#a",
+            "http://x.y.z/rootschema.json#/definitions/schema2/definitions/alsonested",
+          ],
+          '#/definitions/schema3' => [
+            "some://where.else/completely",
+            "some://where.else/completely#",
+            "http://x.y.z/rootschema.json#/definitions/schema3",
+          ],
+        }
+        all_act_uris = all_exp_uris.keys.map do |uri|
+          subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
+          {uri => subschema.schema_uris.map(&:to_s)}
+        end.inject({}, &:update)
+        assert_equal(all_exp_uris, all_act_uris)
+      end
+    end
+
+    describe 'draft6 example' do
+      let(:schema) do
+        # from https://datatracker.ietf.org/doc/html/draft-wright-json-schema-01#section-9.2
+        JSI::JSONSchemaOrgDraft06.new_schema(JSON.parse(%q({
+          "$id": "http://example.com/root.json",
+          "definitions": {
+            "A": { "$id": "#foo" },
+            "B": {
+              "$id": "other.json",
+              "definitions": {
+                "X": { "$id": "#bar" },
+                "Y": { "$id": "t/inner.json" }
+              }
+            },
+            "C": {
+              "$id": "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f"
+            }
+          }
+        })))
+      end
+
+      it 'has the specified uris' do
+        all_exp_uris = {
+          '#' => [
+            "http://example.com/root.json",
+            "http://example.com/root.json#",
+          ],
+          '#/definitions/A' => [
+            "http://example.com/root.json#foo",
+            "http://example.com/root.json#/definitions/A",
+          ],
+          '#/definitions/B' => [
+            'http://example.com/other.json',
+            'http://example.com/other.json#',
+            'http://example.com/root.json#/definitions/B',
+          ],
+          '#/definitions/B/definitions/X' => [
+            "http://example.com/other.json#bar",
+            "http://example.com/other.json#/definitions/X",
+            "http://example.com/root.json#bar",
+            "http://example.com/root.json#/definitions/B/definitions/X",
+          ],
+          '#/definitions/B/definitions/Y' => [
+            "http://example.com/t/inner.json",
+            "http://example.com/t/inner.json#",
+            "http://example.com/other.json#/definitions/Y",
+            "http://example.com/root.json#/definitions/B/definitions/Y",
+          ],
+          '#/definitions/C' => [
+            "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f",
+            "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f#",
+            "http://example.com/root.json#/definitions/C",
+          ],
+        }
+        all_act_uris = all_exp_uris.keys.map do |uri|
+          subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
+          {uri => subschema.schema_uris.map(&:to_s)}
+        end.inject({}, &:update)
+        assert_equal(all_exp_uris, all_act_uris)
+      end
+    end
   end
   describe '#schema_absolute_uri, #anchor' do
     describe 'draft 4' do
@@ -405,6 +539,39 @@ describe JSI::Schema do
       assert_equal(JSI::SchemaClasses.class_for_schemas([schema]), schema.jsi_schema_class)
     end
   end
+
+  describe '#subschema error conditions' do
+    describe 'the subschema is not a schema' do
+      it 'errors with a Base - subschema key is not described' do
+        schema = JSI::JSONSchemaOrgDraft07.new_schema({
+          'foo' => {},
+        })
+        err = assert_raises(JSI::Schema::NotASchemaError) do
+          schema.subschema(['foo'])
+        end
+        msg = <<~MSG
+          subschema is not a schema at pointer: /foo
+          \#{<JSI>}
+          MSG
+        assert_equal(msg.chomp, err.message)
+      end
+
+      it 'errors with a Base - subschema key is described, not a schema' do
+        schema = JSI::JSONSchemaOrgDraft07.new_schema({
+          'properties' => {},
+        })
+        err = assert_raises(JSI::Schema::NotASchemaError) do
+          schema.subschema(['properties'])
+        end
+        msg = <<~MSG
+          subschema is not a schema at pointer: /properties
+          \#{<JSI (JSI::JSONSchemaOrgDraft07.properties["properties"])>}
+          MSG
+        assert_equal(msg.chomp, err.message)
+      end
+    end
+  end
+
   describe '#child_applicator_schemas with an object' do
     let(:schema) do
       JSI::JSONSchemaOrgDraft07.new_schema({
