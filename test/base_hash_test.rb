@@ -353,6 +353,19 @@ describe 'JSI::Base hash' do
       subject.to_hash(as_jsi: true).each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
   end
+
+  describe 'to_a' do
+    it 'is an array' do
+      expect_ary = [['foo', subject.foo], ['bar', subject.bar], ['baz', subject['baz']]]
+      assert_equal(expect_ary, subject.to_a)
+    end
+
+    it 'is an array of keys + JSIs' do
+      expect_ary = [['foo', subject.foo], ['bar', subject.bar], ['baz', subject['baz', as_jsi: true]]]
+      assert_equal(expect_ary, subject.to_a(as_jsi: true))
+    end
+  end
+
   # these methods just delegate to Hash so not going to test excessively
   describe 'key only methods' do
     it('#each_key') { assert_equal(['foo', 'bar', 'baz'], subject.each_key.to_a) }

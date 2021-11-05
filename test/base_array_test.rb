@@ -296,6 +296,19 @@ describe 'JSI::Base array' do
       subject.to_ary(as_jsi: true).each { |e| assert_is_a(expect_modules.shift, e) }
     end
   end
+
+  describe 'to_a' do
+    it 'is an array' do
+      expect_ary = [subject[0], subject[1], subject[2], subject[3]]
+      assert_equal(expect_ary, subject.to_a)
+    end
+
+    it 'is an array of JSIs' do
+      expect_ary = [subject[0, as_jsi: true], subject[1], subject[2], subject[3, as_jsi: true]]
+      assert_equal(expect_ary, subject.to_a(as_jsi: true))
+    end
+  end
+
   # these methods just delegate to Array so not going to test excessively
   describe 'index only methods' do
     it('#each_index') { assert_equal([0, 1, 2, 3], subject.each_index.to_a) }
