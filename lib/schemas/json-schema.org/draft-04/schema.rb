@@ -6,7 +6,7 @@ module JSI
     metaschema_instance_modules: [JSI::Schema::Draft04],
   ).jsi_schema_module
 
-  # the JSI schema module for http://json-schema.org/draft-04/schema
+  # the JSI schema module for `http://json-schema.org/draft-04/schema`
   module JSONSchemaOrgDraft04
   end
 end
