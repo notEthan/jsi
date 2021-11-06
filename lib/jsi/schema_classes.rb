@@ -219,7 +219,8 @@ module JSI
     #
     # @param token [Object]
     # @return [Module, NotASchemaModule, Object]
-    def [](token)
+    def [](token, **kw)
+      raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       sub = @possibly_schema_node[token]
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module
