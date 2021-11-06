@@ -802,8 +802,8 @@ describe JSI::Base do
       let(:schema) { JSI::JSONSchemaOrgDraft06 }
       let(:instance) { {'$id' => '4c01'} }
       it 'is not equal' do
-        exp = schema.new_jsi(instance, base_uri: 'http://jsi/test/802d/')
-        act = schema.new_jsi(instance, base_uri: 'http://jsi/test/802e/')
+        exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
+        act = schema.new_jsi(instance, uri: 'http://jsi/test/802e/')
         refute_equal(exp, act)
         assert_equal('http://jsi/test/802d/4c01', exp.schema_absolute_uri.to_s)
         assert_equal('http://jsi/test/802e/4c01', act.schema_absolute_uri.to_s)
@@ -813,8 +813,8 @@ describe JSI::Base do
       let(:schema) { JSI::JSONSchemaOrgDraft06 }
       let(:instance) { {'$id' => 'http://jsi/test/a86e'} }
       it 'is not equal' do
-        exp = schema.new_jsi(instance, base_uri: 'http://jsi/test/802d/')
-        act = schema.new_jsi(instance, base_uri: 'http://jsi/test/802e/')
+        exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
+        act = schema.new_jsi(instance, uri: 'http://jsi/test/802e/')
         assert_equal(exp, act)
         assert_equal('http://jsi/test/a86e', exp.schema_absolute_uri.to_s)
         assert_equal('http://jsi/test/a86e', act.schema_absolute_uri.to_s)

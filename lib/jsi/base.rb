@@ -135,7 +135,7 @@ module JSI
     #   the path of this instance in the `jsi_document` param. `jsi_ptr` must be passed
     #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
     # @param jsi_root_node [JSI::Base] for internal use, specifies the JSI at the root of the document
-    # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param base_uri
+    # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base>]
     def initialize(instance,
         jsi_document: nil,

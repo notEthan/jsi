@@ -138,14 +138,14 @@ module JSI
       # the schema will be registered with the `JSI.schema_registry`.
       #
       # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
-      # @param base_uri [nil, #to_str, Addressable::URI] the URI of the schema document.
-      #   relative URIs within the document are resolved using this base_uri.
+      # @param uri [nil, #to_str, Addressable::URI] the URI of the schema document.
+      #   relative URIs within the document are resolved using this uri as their base.
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   are inplace applicators matched from self to the schema being instantiated.
-      def new_schema(schema_content, base_uri: nil)
+      def new_schema(schema_content, uri: nil)
         new_jsi(Util.deep_stringify_symbol_keys(schema_content),
-          base_uri: base_uri,
+          uri: uri,
         ).tap(&:register_schema)
       end
 
@@ -204,12 +204,12 @@ module JSI
       #
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a JSI::Schema, it is returned as-is.
-      # @param base_uri (see DescribesSchema#new_schema)
+      # @param uri (see DescribesSchema#new_schema)
       # @param default_metaschema [#new_schema] the metaschema to use if the schema_object does not have
       #   a '$schema' property. this may be a metaschema or a metaschema's schema module
       #   (e.g. `JSI::JSONSchemaOrgDraft07`).
       # @return [JSI::Schema] a JSI::Schema representing the given schema_object
-      def new_schema(schema_object, base_uri: nil, default_metaschema: nil)
+      def new_schema(schema_object, uri: nil, default_metaschema: nil)
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?
@@ -224,7 +224,7 @@ module JSI
           if !default_metaschema.respond_to?(:new_schema)
             raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
           end
-          default_metaschema.new_schema(schema_object, base_uri: base_uri)
+          default_metaschema.new_schema(schema_object, uri: uri)
         }
         if schema_object.is_a?(Schema)
           schema_object
@@ -236,7 +236,7 @@ module JSI
             unless metaschema.describes_schema?
               raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
-            metaschema.new_schema(schema_object, base_uri: base_uri)
+            metaschema.new_schema(schema_object, uri: uri)
           else
             default_metaschema_new_schema.call
           end
@@ -380,13 +380,13 @@ module JSI
     # instance.
     #
     # @param instance [Object] the JSON Schema instance to be represented as a JSI
-    # @param base_uri (see SchemaSet#new_jsi)
+    # @param uri (see SchemaSet#new_jsi)
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are matched
     #   from this schema.
     def new_jsi(instance,
-        base_uri: nil
+        uri: nil
     )
-      SchemaSet[self].new_jsi(instance, base_uri: base_uri)
+      SchemaSet[self].new_jsi(instance, uri: uri)
     end
 
     # registers this schema with `JSI.schema_registry`
