@@ -36,14 +36,16 @@ module JSI
       unless resource.is_a?(JSI::Base)
         raise(ArgumentError, "resource must be a JSI::Base. got: #{resource.pretty_inspect.chomp}")
       end
+      unless resource.is_a?(JSI::Schema) || resource.jsi_ptr.root?
+        # unsure, should this be allowed? the given JSI is not a "resource" as we define it, but
+        # if this check is removed it will just register any resources (schemas) below the given JSI.
+        raise(ArgumentError, "undefined behavior: registration of a JSI which is not a schema and is not at the root of a document")
+      end
 
-      # allow for registration of resources at the root of a document whether or not they are schemas
-      if resource.jsi_schema_base_uri
-        if resource.jsi_ptr.root?
-          register_single(resource.jsi_schema_base_uri, resource)
-        elsif !resource.is_a?(JSI::Schema)
-          raise(ArgumentError, "undefined behavior: registration of a JSI which has a base URI, but is not at the root of a document")
-        end
+      # allow for registration of resources at the root of a document whether or not they are schemas.
+      # jsi_schema_base_uri at the root comes from the `uri` parameter to new_jsi / new_schema.
+      if resource.jsi_schema_base_uri && resource.jsi_ptr.root?
+        register_single(resource.jsi_schema_base_uri, resource)
       end
 
       resource.jsi_each_child_node do |node|
