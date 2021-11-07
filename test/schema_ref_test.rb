@@ -74,6 +74,68 @@ describe JSI::Schema::Ref do
     end
   end
 
+  describe 'unfindable resources' do
+    describe 'absolute uri' do
+      let(:uri) { 'http://jsi/no' }
+      let(:schema_content) do
+        {'$ref' => uri}
+      end
+
+      it 'errors from the registry' do
+        err = assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema.new_jsi({}) }
+        assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
+      end
+
+      it 'errors from the registry (no ref_schema)' do
+        err = assert_raises(JSI::SchemaRegistry::ResourceNotFound) { JSI::Schema::Ref.new(uri).deref_schema  }
+        assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
+      end
+    end
+
+    describe 'relative uri' do
+      let(:uri) { 'no#x' }
+      let(:schema_content) do
+        {'$ref' => uri}
+      end
+
+      it 'errors' do
+        err = assert_raises(JSI::Schema::ReferenceError) { schema.new_jsi({}) }
+        msg = <<~MSG
+          cannot find schema by ref: no#x
+          from: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "no#x"}
+          MSG
+        assert_equal(msg.chomp, err.message)
+      end
+
+      it 'errors (no ref_schema)' do
+        err = assert_raises(JSI::Schema::ReferenceError) { JSI::Schema::Ref.new(uri).deref_schema  }
+        assert_equal('cannot find schema by ref: no#x', err.message)
+      end
+    end
+
+    describe 'pointer-only uri' do
+      it 'errors (no ref_schema)' do
+        err = assert_raises(JSI::Schema::ReferenceError) { JSI::Schema::Ref.new('#/no').deref_schema  }
+        msg = <<~MSG
+          cannot find schema by ref: #/no
+          with no ref schema
+          MSG
+        assert_equal(msg.chomp, err.message)
+      end
+    end
+
+    describe 'anchor-only uri' do
+      it 'errors (no ref_schema)' do
+        err = assert_raises(JSI::Schema::ReferenceError) { JSI::Schema::Ref.new('#no').deref_schema  }
+        msg = <<~MSG
+          cannot find schema by ref: #no
+          with no ref schema
+          MSG
+        assert_equal(msg.chomp, err.message)
+      end
+    end
+  end
+
   describe 'not a schema' do
     describe 'remote ref in resource root nonschema' do
       let(:uri) { 'http://jsi/ref_to_not_a_schema' }
