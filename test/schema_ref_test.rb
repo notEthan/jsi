@@ -166,4 +166,18 @@ describe JSI::Schema::Ref do
       end
     end
   end
+
+  describe 'pretty' do
+    let(:uri) { 'http://jsi/3tzc' }
+    let(:schema_content) do
+      {'$ref' => uri}
+    end
+
+    it 'is pretty' do
+      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', JSI::Schema::Ref.new(uri, schema).inspect)
+      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', JSI::Schema::Ref.new(uri, schema).pretty_inspect.chomp)
+      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', JSI::Schema::Ref.new(uri).inspect)
+      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', JSI::Schema::Ref.new(uri).pretty_inspect.chomp)
+    end
+  end
 end
