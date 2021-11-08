@@ -221,6 +221,7 @@ The following optional features are not completely supported:
 
 - The `format` keyword does not perform any validation.
 - Regular expressions are interpreted by Ruby's Regexp class, whereas JSON Schema recommends interpreting these as ECMA 262 regular expressions. Certain expressions behave differently, particularly `^` and `$`.
+- Keywords `contentMediaType` and `contentEncoding` do not perform validation.
 
 ## Metaschemas
 
