@@ -27,11 +27,6 @@ module JSI
     end
 
     class << self
-      # @private @deprecated
-      def new_jsi(instance, **kw, &b)
-        new(instance, **kw, &b)
-      end
-
       # @private
       # is the constant JSI::SchemaClasses::<self.schema_classes_const_name> defined?
       # (if so, we will prefer to use something more human-readable than that ugly mess.)
