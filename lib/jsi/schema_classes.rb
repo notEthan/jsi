@@ -186,7 +186,7 @@ module JSI
 
       return nil unless named_parent_schema
 
-      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_parent_schema.jsi_ptr).reference_tokens
+      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_parent_schema.jsi_ptr).tokens
       name = named_parent_schema.jsi_schema_module.name
       parent = named_parent_schema
       tokens.each do |token|
