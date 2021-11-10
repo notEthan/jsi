@@ -210,12 +210,7 @@ module JSI
       # passing the `default_metaschema` param is to use `.new_schema` on the metaschema or its module, e.g.
       # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_object)`
       #
-      # if the given schema_object is a JSI::Base but not already a JSI::Schema, an error
-      # will be raised. schemas which describe schemas must include JSI::Schema in their
-      # {Schema#jsi_schema_module}.
-      #
-      # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
-      #   if it's already a JSI::Schema, it is returned as-is.
+      # @param schema_object [#to_hash, Boolean] an object to be instantiated as a JSI Schema
       # @param uri (see DescribesSchema#new_schema)
       # @param default_metaschema [#new_schema] the metaschema to use if the schema_object does not have
       #   a '$schema' property. this may be a metaschema or a metaschema's schema module
@@ -241,9 +236,15 @@ module JSI
           default_metaschema.new_schema(schema_object, stringify_symbol_keys: stringify_symbol_keys, **kw)
         }
         if schema_object.is_a?(Schema)
-          schema_object
+          raise(TypeError, [
+            "Given schema_object is already a JSI::Schema. It cannot be instantiated as the content of a schema.",
+            "given: #{schema_object.pretty_inspect.chomp}",
+          ].join("\n"))
         elsif schema_object.is_a?(JSI::Base)
-          raise(NotASchemaError, "the given schema_object is a JSI::Base, but is not a JSI::Schema: #{schema_object.pretty_inspect.chomp}")
+          raise(TypeError, [
+            "Given schema_object is a JSI::Base. It cannot be instantiated as the content of a schema.",
+            "given: #{schema_object.pretty_inspect.chomp}",
+          ].join("\n"))
         elsif schema_object.respond_to?(:to_hash)
           id = schema_object['$schema'] || stringify_symbol_keys && schema_object[:'$schema']
           if id

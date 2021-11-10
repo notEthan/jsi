@@ -16,11 +16,15 @@ describe JSI::Schema do
       err = assert_raises(TypeError) { JSI.new_schema(Object.new, default_metaschema: JSI::JSONSchemaOrgDraft07) }
       assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
     end
-    it 'instantiating a schema from a schema returns that schema' do
-      assert_equal(
-        JSI.new_schema({}, default_metaschema: JSI::JSONSchemaOrgDraft07),
-        JSI.new_schema(JSI.new_schema({}, default_metaschema: JSI::JSONSchemaOrgDraft07), default_metaschema: JSI::JSONSchemaOrgDraft07)
-      )
+
+    it 'cannot instantiate from a JSI Schema' do
+      err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
+      assert_equal("Given schema_object is already a JSI::Schema. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}", err.message)
+    end
+
+    it 'cannot instantiate from a JSI' do
+      err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
+      assert_equal("Given schema_object is a JSI::Base. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI>}", err.message)
     end
   end
   describe 'as an instance of metaschema' do
