@@ -99,9 +99,6 @@ module JSI
 
       attr_reader :tokens
 
-      # @private @deprecated
-      alias_method :reference_tokens, :tokens
-
       # takes a root json document and evaluates this pointer through the document, returning the value
       # pointed to by this pointer.
       #
