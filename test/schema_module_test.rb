@@ -1,10 +1,10 @@
 require_relative 'test_helper'
 
-SchemaModuleTestModule = JSI::Schema.new({
+SchemaModuleTestModule = JSI.new_schema_module({
   '$schema' => 'http://json-schema.org/draft-07/schema#',
   'title' => 'a9b7',
   'properties' => {'foo' => {'items' => {'type' => 'string'}}}
-}).jsi_schema_module
+})
 
 describe 'JSI::SchemaModule' do
   let(:schema_content) { {'properties' => {'foo' => {'items' => {'type' => 'string'}}}} }
