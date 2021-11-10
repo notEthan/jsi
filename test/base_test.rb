@@ -13,6 +13,7 @@ NamedSchemaInstanceTwo = JSI.new_schema({
 }).new_jsi({}).class.tap(&:name)
 
 Phonebook = JSI.new_schema_module(YAML.load(<<~YAML
+  $schema: http://json-schema.org/draft-07/schema
   title: Phone Book
   properties:
     contacts:
