@@ -257,12 +257,6 @@ module JSI
         end
       end
 
-      # @deprecated
-      alias_method :new, :new_schema
-
-      # @deprecated
-      alias_method :from_object, :new_schema
-
       # ensure the given object is a JSI Schema
       #
       # @param schema [Object] the thing the caller wishes to ensure is a Schema
