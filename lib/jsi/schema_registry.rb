@@ -119,10 +119,10 @@ module JSI
 
     def ensure_uri_absolute(uri)
       if uri.fragment
-        raise(NonAbsoluteURI, "SchemaRegistry only registers absolute URIs. cannot access URI with fragment: #{uri}")
+        raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access URI with fragment: #{uri}")
       end
       if uri.relative?
-        raise(NonAbsoluteURI, "SchemaRegistry only registers absolute URIs. cannot access relative URI: #{uri}")
+        raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access relative URI: #{uri}")
       end
     end
   end
