@@ -33,6 +33,10 @@ module JSI
     # @param resource [JSI::Base] a JSI containing resources to register
     # @return [void]
     def register(resource)
+      unless resource.is_a?(JSI::Base)
+        raise(ArgumentError, "resource must be a JSI::Base. got: #{resource.pretty_inspect.chomp}")
+      end
+
       # allow for registration of resources at the root of a document whether or not they are schemas
       if resource.jsi_schema_base_uri
         if resource.jsi_ptr.root?
