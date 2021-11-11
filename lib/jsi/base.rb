@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Base is the class from which JSI schema classes inherit. a JSON schema instance is represented as a
-  # ruby instance of such a subclass of JSI::Base.
+  # JSI::Base is the base class of every JSI instance of a JSON schema.
   #
   # instances are described by a set of one or more JSON schemas. JSI dynamically creates a subclass of
-  # JSI::Base for each set of JSON schemas which describe a schema instance that is to be instantiated.
+  # JSI::Base for each set of JSON schemas which describe an instance that is to be instantiated.
+  #
   # a JSI instance of such a subclass represents a JSON schema instance described by that set of schemas.
+  #
+  # this subclass includes the JSI Schema Module of each schema it represents.
+  #
+  # the method {Base#jsi_schemas} is defined to indicate the schemas the class represents.
   #
   # the JSI::Base class itself is not intended to be instantiated.
   class Base
