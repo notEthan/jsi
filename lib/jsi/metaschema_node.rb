@@ -125,13 +125,19 @@ module JSI
     end
 
     # Set of modules to apply to schemas which are instances of (described by) the metaschema
+    # @return [Set<Module>]
     attr_reader :metaschema_instance_modules
 
     # ptr to the root of the metaschema in the jsi_document
+    # @return [JSI::Ptr]
     attr_reader :metaschema_root_ptr
+
     # ptr to the schema of the root of the jsi_document
+    # @return [JSI::Ptr]
     attr_reader :root_schema_ptr
-    # JSI::Schemas describing this MetaschemaNode
+
+    # JSI Schemas describing this MetaschemaNode
+    # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
 
     # @return [MetaschemaNode] document root MetaschemaNode

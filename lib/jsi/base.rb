@@ -203,9 +203,11 @@ module JSI
     attr_reader :jsi_document
 
     # {JSI::Ptr} pointing to this JSI's instance within our {#jsi_document}
+    # @return [JSI::Ptr]
     attr_reader :jsi_ptr
 
     # the JSI at the root of this JSI's document
+    # @return [JSI::Base]
     attr_reader :jsi_root_node
 
     # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
