@@ -193,6 +193,12 @@ module JSI
       end
     end
 
+    # @!method jsi_schemas
+    #   the set of schemas which describe this instance
+    #   @return [JSI::SchemaSet]
+    # note: defined on subclasses by JSI::SchemaClasses.class_for_schemas
+
+
     # document containing the instance of this JSI at our {#jsi_ptr}
     attr_reader :jsi_document
 
