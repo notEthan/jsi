@@ -27,7 +27,7 @@ module JSI
     # @param instance (see #inplace_applicator_schemas)
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @yield [JSI::Schema]
-    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_inplace_applicator_schema(instance, visited_refs: [], &block)
       return to_enum(__method__, instance, visited_refs: visited_refs) unless block
 

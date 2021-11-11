@@ -25,7 +25,7 @@ module JSI
 
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
-    # @param metaschema_instance_modules [Set<Module>] modules which implement the functionality of the
+    # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of the
     #   schema, to be applied to every schema which is an instance of the metaschema. this must include
     #   JSI::Schema directly or indirectly. these are the {Schema#jsi_schema_instance_modules} of the
     #   metaschema.

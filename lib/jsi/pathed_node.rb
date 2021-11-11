@@ -26,7 +26,7 @@ module JSI
     #
     # @param a arguments are passed to `#[]`
     # @yield [Object, Object] each key and value of this hash node
-    # @return [self, Enumerator] returns an Enumerator if invoked without a block; otherwise self
+    # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(*a, &block)
       return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
@@ -76,7 +76,7 @@ module JSI
     #
     # @param a arguments are passed to `#[]`
     # @yield [Object] each element of this array node
-    # @return [self, Enumerator] returns an Enumerator if invoked without a block; otherwise self
+    # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(*a, &block)
       return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
       jsi_node_content_ary_pubsend(:each_index) { |i| yield(self[i, *a]) }

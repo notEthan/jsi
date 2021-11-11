@@ -116,6 +116,7 @@ module JSI
       all? { |schema| schema.instance_valid?(instance) }
     end
 
+    # @return [String]
     def inspect
       "#{self.class}[#{map(&:inspect).join(", ")}]"
     end

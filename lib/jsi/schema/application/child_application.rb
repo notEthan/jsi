@@ -15,7 +15,7 @@ module JSI
     #
     # @param token [Object] the array index or object property name for the child instance
     # @param instance [Object] the instance to check any child applicators against
-    # @return [JSI::SchemaSet] child application subschemas of this schema for the given token
+    # @return [JSI::SchemaSet] child applicator subschemas of this schema for the given token
     #   of the instance
     def child_applicator_schemas(token, instance)
       SchemaSet.new(each_child_applicator_schema(token, instance))
@@ -26,7 +26,7 @@ module JSI
     #
     # @param (see #child_applicator_schemas)
     # @yield [JSI::Schema]
-    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_child_applicator_schema(token, instance, &block)
       return to_enum(__method__, token, instance) unless block
 

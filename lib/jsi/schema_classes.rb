@@ -100,8 +100,8 @@ module JSI
         end
       end
 
-      # @api private
       # see {Schema#jsi_schema_module}
+      # @api private
       # @return [Module]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
@@ -142,10 +142,12 @@ module JSI
       end
 
       # a module of accessors for described property names of the given schema.
+      # getters are always defined. setters are defined by default.
       # @param schema [JSI::Schema] a schema for which to define accessors for any described property names
       # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
       #   may be used alongside the accessor module. methods defined by any conflicting_module
       #   will not be defined as accessors.
+      # @param setters [Boolean] whether to define setter methods
       # @return [Module]
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         Schema.ensure_schema(schema)
@@ -238,7 +240,7 @@ module JSI
     end
   end
 
-  # a schema module is a module which represents a schema. a NotASchemaModule represents
+  # a JSI Schema Module is a module which represents a schema. a NotASchemaModule represents
   # a node in a schema's document which is not a schema, such as the 'properties'
   # object (which contains schemas but is not a schema).
   #

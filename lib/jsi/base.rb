@@ -225,7 +225,7 @@ module JSI
     # returns an Enumerator if no block is given.
     #
     # @yield [JSI::Base] each node in the document, starting with self
-    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def jsi_each_child_node(&block)
       return to_enum(__method__) unless block
 
