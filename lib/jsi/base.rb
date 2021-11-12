@@ -20,10 +20,6 @@ module JSI
     include Schema::SchemaAncestorNode
     include Util::Memoize
 
-    # not every JSI::Base is necessarily an Enumerable, but it's better to include Enumerable on
-    # the class than to conditionally extend the instance.
-    include Enumerable
-
     # an exception raised when {Base#[]} is invoked on an instance which is not an array or hash
     class CannotSubscriptError < StandardError
     end
@@ -183,12 +179,6 @@ module JSI
 
     # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :jsi_node_content
-
-    # each is overridden by Base::HashNode or Base::ArrayNode when appropriate. the base #each
-    # is not actually implemented, along with all the methods of Enumerable.
-    def each(*_)
-      raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
-    end
 
     # yields a JSI of each node at or below this one in this JSI's document.
     #
