@@ -159,11 +159,11 @@ module JSI
       jsi_ptr.parent.evaluate(jsi_root_node)
     end
 
-    # @param token [String, Integer, Object] the token to subscript
+    # subscripts to return a child value identified by the given token.
+    #
+    # @param token (see JSI::Base#[])
     # @param as_jsi (see JSI::Base#[])
-    # @return [MetaschemaNode, Object] the node content's subscript value at the given token.
-    #   if there is a subschema defined for that token on this MetaschemaNode's schema,
-    #   returns that value as a MetaschemaNode instantiation of that subschema.
+    # @return (see JSI::Base#[])
     def [](token, as_jsi: :auto)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)

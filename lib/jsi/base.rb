@@ -334,7 +334,10 @@ module JSI
       jsi_parent_nodes.first
     end
 
-    # @param token [String, Integer, Object] the token to subscript
+    # subscripts to return a child value identified by the given token.
+    #
+    # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
+    #   of the instance identifying the child value
     # @param as_jsi [:auto, true, false] whether to return the result value as a JSI. one of:
     #
     #   - :auto (default): by default a JSI will be returned when either:
@@ -365,7 +368,7 @@ module JSI
     #   defaults are specified across those schemas), nil is returned.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
-    # @return [JSI::Base, Object] the instance's subscript value at the given token.
+    # @return [JSI::Base, Object] the child value identified by the subscript token
     def [](token, as_jsi: :auto, use_default: true)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
