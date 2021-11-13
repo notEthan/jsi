@@ -415,26 +415,7 @@ module JSI
     # does this schema itself describe a schema?
     # @return [Boolean]
     def describes_schema?
-      jsi_schema_module <= JSI::Schema ||
-        # deprecated
-        jsi_schema_instance_modules.any? { |m| m <= JSI::Schema }
-    end
-
-    # modules to apply to instances described by this schema. these modules are included
-    # on this schema's {#jsi_schema_module}
-    # @deprecated reopen the jsi_schema_module to include such modules instead, or use describes_schema! if this schema describes a schema
-    # @return [Set<Module>]
-    def jsi_schema_instance_modules
-      return @jsi_schema_instance_modules if instance_variable_defined?(:@jsi_schema_instance_modules)
-      return Util::EMPTY_SET
-    end
-
-    # see {#jsi_schema_instance_modules}
-    #
-    # @deprecated
-    # @return [void]
-    def jsi_schema_instance_modules=(jsi_schema_instance_modules)
-      @jsi_schema_instance_modules = Util.ensure_module_set(jsi_schema_instance_modules)
+      jsi_schema_module <= JSI::Schema
     end
 
     # indicates that this schema describes a schema.

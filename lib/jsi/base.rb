@@ -546,8 +546,6 @@ module JSI
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
         jsi_resource_ancestor_uri: jsi_resource_ancestor_uri,
-        # only defined for JSI::Schema instances:
-        jsi_schema_instance_modules: is_a?(Schema) ? jsi_schema_instance_modules : nil,
       }
     end
     include Util::FingerprintHash

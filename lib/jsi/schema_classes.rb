@@ -129,13 +129,8 @@ module JSI
 
               extend SchemaModule
 
-              schema.jsi_schema_instance_modules.each do |mod|
-                include(mod)
-              end
-
               accessor_module = JSI::SchemaClasses.accessor_module_for_schema(schema,
-                conflicting_modules: Set[JSI::Base, JSI::Base::ArrayNode, JSI::Base::HashNode] +
-                  schema.jsi_schema_instance_modules,
+                conflicting_modules: Set[JSI::Base, JSI::Base::ArrayNode, JSI::Base::HashNode],
               )
               include accessor_module
 
