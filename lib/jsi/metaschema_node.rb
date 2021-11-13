@@ -26,9 +26,10 @@ module JSI
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
     # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of the
-    #   schema, to be applied to every schema which is an instance of the metaschema. this must include
-    #   JSI::Schema directly or indirectly. these are the {Schema#jsi_schema_instance_modules} of the
-    #   metaschema.
+    #   schema. these are included on the {Schema#jsi_schema_module} of the metaschema.
+    #   they extend any schema described by the metaschema, including those in the document containing
+    #   the metaschema, and the metaschema itself.
+    #   see {Schema#describes_schema!} param `metaschema_instance_modules`.
     # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the metaschema in the jsi_document
     # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
     def initialize(
@@ -93,7 +94,6 @@ module JSI
         if bootstrap_schema.jsi_ptr == jsi_ptr
           # this is the metaschema (it is described by itself)
           extend Metaschema
-          self.jsi_schema_instance_modules = metaschema_instance_modules
         end
       end
 
@@ -108,6 +108,11 @@ module JSI
         end
       end
 
+      # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
+      if is_a?(Metaschema)
+        describes_schema!(metaschema_instance_modules)
+      end
+
       @jsi_schemas.each do |schema|
         extend schema.jsi_schema_module
       end
@@ -116,12 +121,12 @@ module JSI
       begin # draft 4 boolean schema workaround
         # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
         # properties/additionalProperties and properties/additionalItems.
-        # since these describe schemas, their jsi_schema_instance_modules are the metaschema_instance_modules.
+        # these still describe schemas, despite not being described by the metaschema.
         addtlPropsanyOf = metaschema_root_ptr["properties"]["additionalProperties"]["anyOf"]
         addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
 
         if !jsi_ptr.root? && [addtlPropsanyOf, addtlItemsanyOf].include?(jsi_ptr.parent)
-          self.jsi_schema_instance_modules = metaschema_instance_modules
+          describes_schema!(metaschema_instance_modules)
         end
       end
     end

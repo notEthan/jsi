@@ -209,8 +209,8 @@ module JSI
       # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_object)`
       #
       # if the given schema_object is a JSI::Base but not already a JSI::Schema, an error
-      # will be raised. schemas which describe schemas must have JSI::Schema in their
-      # Schema#jsi_schema_instance_modules.
+      # will be raised. schemas which describe schemas must include JSI::Schema in their
+      # {Schema#jsi_schema_module}.
       #
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a JSI::Schema, it is returned as-is.
@@ -416,7 +416,9 @@ module JSI
     # does this schema itself describe a schema?
     # @return [Boolean]
     def describes_schema?
-      jsi_schema_instance_modules.any? { |m| m <= JSI::Schema }
+      jsi_schema_module <= JSI::Schema ||
+        # deprecated
+        jsi_schema_instance_modules.any? { |m| m <= JSI::Schema }
     end
 
     # modules to apply to instances described by this schema. these modules are included
@@ -432,6 +434,29 @@ module JSI
     # @return [void]
     def jsi_schema_instance_modules=(jsi_schema_instance_modules)
       @jsi_schema_instance_modules = Util.ensure_module_set(jsi_schema_instance_modules)
+    end
+
+    # indicates that this schema describes a schema.
+    # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
+    # with {DescribesSchemaModule}, and the JSI Schema Module will include the given modules.
+    #
+    # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of
+    #   the schema to extend schemas described by this schema.
+    #   this must include JSI::Schema (usually indirectly).
+    # @return [void]
+    def describes_schema!(metaschema_instance_modules)
+      unless metaschema_instance_modules.any? { |mod| mod <= Schema }
+        raise(ArgumentError, "metaschema_instance_modules for a schema must include #{Schema}")
+      end
+
+      metaschema_instance_modules.each do |mod|
+        jsi_schema_module.include(mod)
+      end
+      jsi_schema_module.extend(DescribesSchemaModule)
+
+      extend(DescribesSchema)
+
+      nil
     end
 
     # a resource containing this schema.
