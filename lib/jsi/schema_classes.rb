@@ -124,10 +124,6 @@ module JSI
 
               define_singleton_method(:jsi_property_accessors) { accessor_module.jsi_property_accessors }
 
-              if schema.describes_schema?
-                extend DescribesSchemaModule
-              end
-
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
               schema.jsi_schemas.each do |schema_schema|
