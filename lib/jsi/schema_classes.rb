@@ -9,8 +9,8 @@ module JSI
     # note: defined on JSI Schema Module by JSI::SchemaClasses.module_for_schema
 
 
-    # @return [String] absolute schema_uri of the schema this module represents.
-    #   see {Schema#schema_uri}.
+    # a URI which refers to the schema. see {Schema#schema_uri}.
+    # @return (see Schema#schema_uri)
     def schema_uri
       schema.schema_uri
     end
