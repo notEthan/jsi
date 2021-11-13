@@ -19,7 +19,8 @@ module JSI
 
     attr_reader :ref_schema
 
-    # @return [JSI::Schema] the schema this ref points to
+    # finds the schema this ref points to
+    # @return [JSI::Schema]
     # @raise [JSI::Schema::NotASchemaError] when the thing this ref points to is not a schema
     # @raise [JSI::Schema::ReferenceError] when this reference cannot be resolved
     def deref_schema

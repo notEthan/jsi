@@ -134,8 +134,9 @@ module JSI
       dup.update(other, &block)
     end
 
-    # @return [String] basically the same #inspect as Hash, but has the
-    #   class name and, if responsive, self's #jsi_object_group_text
+    # basically the same #inspect as Hash, but has the class name and, if responsive,
+    # self's #jsi_object_group_text
+    # @return [String]
     def inspect
       object_group_str = (respond_to?(:jsi_object_group_text) ? self.jsi_object_group_text : [self.class]).join(' ')
       "\#{<#{object_group_str}>#{self.map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
@@ -224,8 +225,9 @@ module JSI
       detect { |e| e.respond_to?(:to_ary) and e[1] == obj }
     end
 
-    # @return [String] basically the same #inspect as Array, but has the
-    #   class name and, if responsive, self's #jsi_object_group_text
+    # basically the same #inspect as Array, but has the class name and, if responsive,
+    # self's #jsi_object_group_text
+    # @return [String]
     def inspect
       object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
       "\#[<#{object_group_str}>#{self.map { |e| ' ' + e.inspect }.join(',')}]"

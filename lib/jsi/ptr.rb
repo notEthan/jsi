@@ -16,8 +16,9 @@ module JSI
       class ResolutionError < Error
       end
 
+      # instantiates a pointer or returns the given pointer
       # @param ary_ptr [#to_ary, JSI::Ptr] an array of tokens, or a pointer
-      # @return [JSI::Ptr] a pointer with the given tokens, or the given pointer
+      # @return [JSI::Ptr]
       def self.ary_ptr(ary_ptr)
         if ary_ptr.is_a?(Ptr)
           ary_ptr
@@ -139,31 +140,36 @@ module JSI
         res
       end
 
-      # @return [String] the pointer string representation of this pointer
+      # the pointer string representation of this pointer
+      # @return [String]
       def pointer
         tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('')
       end
 
-      # @return [String] the fragment string representation of this pointer
+      # the fragment string representation of this pointer
+      # @return [String]
       def fragment
         Addressable::URI.escape(pointer)
       end
 
-      # @return [Addressable::URI] a URI consisting of a fragment containing this pointer's fragment string
-      #   representation
+      # a URI consisting of a fragment containing this pointer's fragment string representation
+      # @return [Addressable::URI]
       def uri
         Addressable::URI.new(fragment: fragment)
       end
 
-      # @return [Boolean] whether this pointer is empty, i.e. it has no tokens
+      # whether this pointer is empty, i.e. it has no tokens
+      # @return [Boolean]
       def empty?
         tokens.empty?
       end
 
-      # @return [Boolean] whether this is a root pointer, indicated by an empty array of tokens
+      # whether this is a root pointer, indicated by an empty array of tokens
+      # @return [Boolean]
       alias_method :root?, :empty?
 
-      # @return [JSI::Ptr] pointer to the parent of where this pointer points
+      # pointer to the parent of where this pointer points
+      # @return [JSI::Ptr]
       # @raise [JSI::Ptr::Error] if this pointer has no parent (points to the root)
       def parent
         if root?
@@ -173,13 +179,15 @@ module JSI
         end
       end
 
-      # @return [Boolean] does this pointer contain the other_ptr - that is, is this pointer an
-      #   ancestor of other_ptr, a child pointer. contains? is inclusive; a pointer does contain itself.
+      # whether this pointer contains the other_ptr - that is, whether this pointer is an ancestor
+      # of `other_ptr`, a child pointer. `contains?` is inclusive; a pointer does contain itself.
+      # @return [Boolean]
       def contains?(other_ptr)
         self.tokens == other_ptr.tokens[0...self.tokens.size]
       end
 
-      # @return [JSI::Ptr] part of this pointer relative to the given ancestor_ptr
+      # part of this pointer relative to the given ancestor_ptr
+      # @return [JSI::Ptr]
       # @raise [JSI::Ptr::Error] if the given ancestor_ptr is not an ancestor of this pointer
       def ptr_relative_to(ancestor_ptr)
         unless ancestor_ptr.contains?(self)
@@ -188,8 +196,9 @@ module JSI
         Ptr.new(tokens[ancestor_ptr.tokens.size..-1])
       end
 
+      # a pointer with the tokens of this one plus the given `ptr`'s.
       # @param ptr [JSI::Ptr, #to_ary]
-      # @return [JSI::Ptr] a pointer with the tokens of this one plus the given ptr's.
+      # @return [JSI::Ptr]
       def +(ptr)
         if ptr.is_a?(Ptr)
           ptr_tokens = ptr.tokens
@@ -201,8 +210,9 @@ module JSI
         Ptr.new(self.tokens + ptr_tokens)
       end
 
+      # a pointer consisting of the first `n` of our tokens
       # @param n [Integer]
-      # @return [JSI::Ptr] a pointer consisting of the first n of our tokens
+      # @return [JSI::Ptr]
       # @raise [ArgumentError] if n is not between 0 and the size of our tokens
       def take(n)
         unless (0..tokens.size).include?(n)
@@ -278,7 +288,8 @@ module JSI
         modified_document
       end
 
-      # @return [String] a string representation of this pointer
+      # a string representation of this pointer
+      # @return [String]
       def inspect
         "#{self.class.name}[#{tokens.map(&:inspect).join(", ")}]"
       end

@@ -4,24 +4,26 @@ module JSI
   # a node in a document which may contain a schema somewhere within is extended with SchemaAncestorNode, for
   # tracking things necessary for a schema to function correctly
   module Schema::SchemaAncestorNode
+    # the base URI used to resolve the ids of schemas at or below this JSI.
+    # this is always an absolute URI (with no fragment).
+    # this may be the absolute schema URI of a parent schema or the URI from which the document was retrieved.
     # @private
-    # @return [Addressable::URI, nil] the base URI used to resolve the ids of schemas at or below this JSI.
-    #   this is always an absolute URI (with no fragment).
-    #   this may be the absolute schema URI of a parent schema or the URI from which the document was retrieved.
+    # @return [Addressable::URI, nil]
     attr_reader :jsi_schema_base_uri
 
+    # resources which are ancestors of this JSI in the document. this does not include self.
     # @private
-    # @return [Array<JSI::Schema>] resources which are ancestors of this JSI in the document.
-    #   this does not include self.
+    # @return [Array<JSI::Schema>]
     def jsi_schema_resource_ancestors
       return @jsi_schema_resource_ancestors if instance_variable_defined?(:@jsi_schema_resource_ancestors)
       [].freeze
     end
 
-    # @return [Addressable::URI, nil] the URI of the resource containing this node.
-    #   this is always an absolute URI (with no fragment).
-    #   if this node is a schema with an id, this is its absolute URI; otherwise a parent resource's URI,
-    #   or nil if not contained by a resource with a URI.
+    # the URI of the resource containing this node.
+    # this is always an absolute URI (with no fragment).
+    # if this node is a schema with an id, this is its absolute URI; otherwise a parent resource's URI,
+    # or nil if not contained by a resource with a URI.
+    # @return [Addressable::URI, nil]
     def jsi_resource_ancestor_uri
       if is_a?(Schema) && schema_absolute_uri
         schema_absolute_uri

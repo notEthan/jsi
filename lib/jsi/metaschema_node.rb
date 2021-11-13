@@ -140,7 +140,8 @@ module JSI
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
 
-    # @return [MetaschemaNode] document root MetaschemaNode
+    # document root MetaschemaNode
+    # @return [MetaschemaNode]
     def jsi_root_node
       if jsi_ptr.root?
         self
@@ -152,7 +153,8 @@ module JSI
       end
     end
 
-    # @return [MetaschemaNode] parent MetaschemaNode
+    # parent MetaschemaNode
+    # @return [MetaschemaNode]
     def jsi_parent_node
       jsi_ptr.parent.evaluate(jsi_root_node)
     end
@@ -187,6 +189,7 @@ module JSI
       end
     end
 
+    # instantiates a new MetaschemaNode whose instance is a modified copy of this MetaschemaNode's instance
     # @yield [Object] the node content of the instance. the block should result
     #   in a (nondestructively) modified copy of this.
     # @return [MetaschemaNode] modified copy of self
@@ -209,7 +212,7 @@ module JSI
       ].compact
     end
 
-    # @return [Object] an opaque fingerprint of this MetaschemaNode for FingerprintHash
+    # an opaque fingerprint of this MetaschemaNode for FingerprintHash
     def jsi_fingerprint
       {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
     end

@@ -41,8 +41,9 @@ module JSI
         @in_schema_classes
       end
 
-      # @return [String] a string indicating a class name if one is defined, as well as the schema module name
-      #   and/or schema URI of each schema the class represents.
+      # a string indicating a class name if one is defined, as well as the schema module name
+      # and/or schema URI of each schema the class represents.
+      # @return [String]
       def inspect
         if !respond_to?(:jsi_class_schemas)
           super
@@ -424,7 +425,8 @@ module JSI
       end
     end
 
-    # @return [Set<Module>] the set of JSI schema modules corresponding to the schemas that describe this JSI
+    # the set of JSI schema modules corresponding to the schemas that describe this JSI
+    # @return [Set<Module>]
     def jsi_schema_modules
       jsi_schemas.map(&:jsi_schema_module).to_set.freeze
     end
@@ -463,7 +465,8 @@ module JSI
       jsi_schemas.instance_validate(self)
     end
 
-    # @return [Boolean] whether this JSI's instance is valid against all of its schemas
+    # whether this JSI's instance is valid against all of its schemas
+    # @return [Boolean]
     def jsi_valid?
       jsi_schemas.instance_valid?(self)
     end
@@ -487,8 +490,8 @@ module JSI
       jsi_modified_copy(&:dup)
     end
 
-    # @return [String] a string representing this JSI, indicating its schemas (by schema module name
-    #   or URI) and inspecting its instance
+    # a string representing this JSI, indicating any named schemas and inspecting its instance
+    # @return [String]
     def inspect
       "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
@@ -548,13 +551,13 @@ module JSI
       ].compact
     end
 
-    # @return [Object] a jsonifiable representation of the instance
+    # a jsonifiable representation of the instance
+    # @return [Object]
     def as_json(*opt)
       Typelike.as_json(jsi_instance, *opt)
     end
 
-    # @return [Object] an opaque fingerprint of this JSI for FingerprintHash. JSIs are equal
-    #   if their instances are equal, and if the JSIs are of the same JSI class or subclass.
+    # an opaque fingerprint of this JSI for {Util::FingerprintHash}.
     def jsi_fingerprint
       {
         class: jsi_class,

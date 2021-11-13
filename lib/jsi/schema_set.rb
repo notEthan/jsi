@@ -109,8 +109,9 @@ module JSI
       results.inject(Validation::FullResult.new, &:merge).freeze
     end
 
+    # whether the given instance is valid against our schemas
     # @param instance [Object] the instance to validate against our schemas
-    # @return [Boolean] whether the given instance is valid against our schemas
+    # @return [Boolean]
     def instance_valid?(instance)
       all? { |schema| schema.instance_valid?(instance) }
     end

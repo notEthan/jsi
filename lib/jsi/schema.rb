@@ -31,7 +31,8 @@ module JSI
 
     # extends any schema which uses the keyword '$id' to identify its canonical URI
     module BigMoneyId
-      # @return [#to_str, nil] the contents of a $id keyword whose value is a string, or nil
+      # the contents of a $id keyword whose value is a string, or nil
+      # @return [#to_str, nil]
       def id
         if schema_content.respond_to?(:to_hash) && schema_content['$id'].respond_to?(:to_str)
           schema_content['$id']
@@ -43,7 +44,8 @@ module JSI
 
     # extends any schema which uses the keyword 'id' to identify its canonical URI
     module OldId
-      # @return [#to_str, nil] the contents of an id keyword whose value is a string, or nil
+      # the contents of an `id` keyword whose value is a string, or nil
+      # @return [#to_str, nil]
       def id
         if schema_content.respond_to?(:to_hash) && schema_content['id'].respond_to?(:to_str)
           schema_content['id']
@@ -55,8 +57,9 @@ module JSI
 
     # extends any schema which defines an anchor as a URI fragment in the schema id
     module IdWithAnchor
-      # @return [Addressable::URI, nil] a URI for the schema's id, unless the id defines an anchor in its
-      #   fragment. nil if the schema defines no id.
+      # a URI for the schema's id, unless the id defines an anchor in its
+      # fragment. nil if the schema defines no id.
+      # @return [Addressable::URI, nil]
       def id_without_fragment
         if id
           id_uri = Addressable::URI.parse(id)
@@ -87,7 +90,8 @@ module JSI
         end
       end
 
-      # @return [String] an anchor defined by a non-empty fragment in the id uri
+      # an anchor defined by a non-empty fragment in the id uri
+      # @return [String]
       def anchor
         if id
           id_uri = Addressable::URI.parse(id)
@@ -104,9 +108,10 @@ module JSI
 
     # @private
     module IntegerAllows0Fraction
+      # is `value` an integer?
       # @private
       # @param value
-      # @return [Boolean] is value an integer?
+      # @return [Boolean]
       def internal_integer?(value)
         value.is_a?(Integer) || (value.is_a?(Numeric) && value % 1.0 == 0.0)
       end
@@ -114,9 +119,10 @@ module JSI
 
     # @private
     module IntegerDisallows0Fraction
+      # is `value` an integer?
       # @private
       # @param value
-      # @return [Boolean] is value an integer?
+      # @return [Boolean]
       def internal_integer?(value)
         value.is_a?(Integer)
       end
@@ -295,8 +301,8 @@ module JSI
       jsi_node_content
     end
 
-    # @return [Addressable::URI, nil] the URI of this schema, calculated from our $id or id field
-    #   resolved against our jsi_schema_base_uri
+    # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
+    # @return [Addressable::URI, nil]
     def schema_absolute_uri
       if respond_to?(:id_without_fragment) && id_without_fragment
         if jsi_schema_base_uri
@@ -310,14 +316,16 @@ module JSI
       end
     end
 
-    # @return [Addressable::URI, nil] a URI which refers to this schema.
-    #   nil if no parent of this schema defines an id.
-    #   see {#schema_uris} for all URIs known to refer to this schema.
+    # a URI which refers to this schema.
+    # nil if no parent of this schema defines an id.
+    # see {#schema_uris} for all URIs known to refer to this schema.
+    # @return [Addressable::URI, nil]
     def schema_uri
       schema_uris.first
     end
 
-    # @return [Array<Addressable::URI>] URIs which refer to this schema
+    # URIs which refer to this schema
+    # @return [Array<Addressable::URI>]
     def schema_uris
       jsi_memoize(:schema_uris) do
         each_schema_uri.to_a
@@ -396,13 +404,15 @@ module JSI
       JSI.schema_registry.register(self)
     end
 
-    # @return [Boolean] does this schema itself describe a schema?
+    # does this schema itself describe a schema?
+    # @return [Boolean]
     def describes_schema?
       jsi_schema_instance_modules.any? { |m| m <= JSI::Schema }
     end
 
-    # @return [Set<Module>] modules to apply to instances described by this schema. these modules are included
-    #   on this schema's {#jsi_schema_module}
+    # modules to apply to instances described by this schema. these modules are included
+    # on this schema's {#jsi_schema_module}
+    # @return [Set<Module>]
     def jsi_schema_instance_modules
       return @jsi_schema_instance_modules if instance_variable_defined?(:@jsi_schema_instance_modules)
       return Set[].freeze
@@ -428,7 +438,8 @@ module JSI
       jsi_subschema_resource_ancestors.reverse_each.detect(&:schema_resource_root?) || jsi_root_node
     end
 
-    # @return [Boolean] is this schema the root of a schema resource?
+    # is this schema the root of a schema resource?
+    # @return [Boolean]
     def schema_resource_root?
       jsi_ptr.root? || !!schema_absolute_uri
     end
@@ -499,9 +510,10 @@ module JSI
 
     public
 
-    # @return [Set] any object property names this schema indicates may be present on its instances.
-    #   this includes any keys of this schema's "properties" object and any entries of this schema's
-    #   array of "required" property keys.
+    # any object property names this schema indicates may be present on its instances.
+    # this includes any keys of this schema's "properties" object and any entries of this schema's
+    # array of "required" property keys.
+    # @return [Set]
     def described_object_property_names
       jsi_memoize(:described_object_property_names) do
         Set.new.tap do |property_names|
@@ -530,8 +542,9 @@ module JSI
       internal_validate_instance(instance_ptr, instance_document)
     end
 
+    # whether the given instance is valid against this schema
     # @param instance [Object] the instance to validate against this schema
-    # @return [Boolean] whether the given instance is valid against this schema
+    # @return [Boolean]
     def instance_valid?(instance)
       if instance.is_a?(JSI::PathedNode)
         instance = instance.jsi_node_content
@@ -569,9 +582,10 @@ module JSI
       raise(NotImplementedError, "Schema#validate_schema! removed")
     end
 
+    # schema resources which are ancestors of any subschemas below this schema.
+    # this may include this JSI if this is a schema resource root.
     # @private
-    # @return [Array<JSI::Schema>] schema resources which are ancestors of any subschemas below this schema.
-    #   this may include this JSI if this is a schema resource root.
+    # @return [Array<JSI::Schema>]
     def jsi_subschema_resource_ancestors
       if schema_resource_root?
         jsi_schema_resource_ancestors + [self]
