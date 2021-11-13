@@ -85,11 +85,13 @@ module JSI
 
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
+          # this is described by the metaschema, i.e. this is a schema
           metaschema_instance_modules.each do |metaschema_instance_module|
             extend metaschema_instance_module
           end
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
+          # this is the metaschema (it is described by itself)
           extend Metaschema
           self.jsi_schema_instance_modules = metaschema_instance_modules
         end
