@@ -3,6 +3,12 @@
 module JSI
   # JSI Schema Modules are extended with JSI::SchemaModule
   module SchemaModule
+    # @!method schema
+    #   the schema of which this is the JSI Schema Module
+    #   @return [Schema]
+    # note: defined on JSI Schema Module by JSI::SchemaClasses.module_for_schema
+
+
     # @return [String] absolute schema_uri of the schema this module represents.
     #   see {Schema#schema_uri}.
     def schema_uri
