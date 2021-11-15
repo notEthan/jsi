@@ -238,8 +238,6 @@ module JSI
     # @yield [JSI::Base] each child node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_children_node_first(&block)
-      return to_enum(__method__) unless block
-
       jsi_modified_copy do |instance|
         if respond_to?(:to_hash)
           res = instance.class.new
@@ -274,8 +272,6 @@ module JSI
     # @yield [JSI::Base] each child node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_children_leaf_first(&block)
-      return to_enum(__method__) unless block
-
       jsi_modified_copy do |instance|
         if respond_to?(:to_hash)
           res = instance.class.new
