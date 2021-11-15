@@ -59,20 +59,20 @@ module JSI
     # in this SchemaSet which apply to the given instance.
     #
     # @param instance [Object] the JSON Schema instance to be represented as a JSI
-    # @param base_uri [nil, #to_str, Addressable::URI] for an instance document containing schemas, this is
+    # @param uri [nil, #to_str, Addressable::URI] for an instance document containing schemas, this is
     #   the URI of the document, whether or not the document is itself a schema.
-    #   in the normal case where the document does not contain any schemas, base_uri has no effect.
-    #   schemas within the document use the base_uri to resolve relative URIs.
+    #   in the normal case where the document does not contain any schemas, `uri` has no effect.
+    #   schemas within the document use this uri as the base URI to resolve relative URIs.
     #   the resulting JSI may be registered with a {SchemaRegistry} (see {JSI.schema_registry}).
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are inplace
     #   applicators matched to the instance from the schemas in this set.
     def new_jsi(instance,
-        base_uri: nil
+        uri: nil
     )
       applied_schemas = inplace_applicator_schemas(instance)
 
       JSI::SchemaClasses.class_for_schemas(applied_schemas).new(instance,
-        jsi_schema_base_uri: base_uri,
+        jsi_schema_base_uri: uri,
       )
     end
 
@@ -109,12 +109,14 @@ module JSI
       results.inject(Validation::FullResult.new, &:merge).freeze
     end
 
+    # whether the given instance is valid against our schemas
     # @param instance [Object] the instance to validate against our schemas
-    # @return [Boolean] whether the given instance is valid against our schemas
+    # @return [Boolean]
     def instance_valid?(instance)
       all? { |schema| schema.instance_valid?(instance) }
     end
 
+    # @return [String]
     def inspect
       "#{self.class}[#{map(&:inspect).join(", ")}]"
     end

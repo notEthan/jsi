@@ -28,7 +28,7 @@ module JSI
     # has an absolute URI (generally defined by the '$id' keyword).
     #
     # the given resource itself will be registered, whether or not it is a schema, if it is the root
-    # of its document and was instantiated with the option `base_uri` specified.
+    # of its document and was instantiated with the option `uri` specified.
     #
     # @param resource [JSI::Base] a JSI containing resources to register
     # @return [void]

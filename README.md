@@ -7,7 +7,11 @@ JSI offers an Object-Oriented representation for JSON data using JSON Schemas. G
 
 To learn more about JSON Schema see [https://json-schema.org/](https://json-schema.org/).
 
-A JSI class aims to be a fairly unobtrusive wrapper around its instance - "instance" here meaning the JSON data, usually a Hash or Array, which instantiate the JSON Schema. JSI schema modules and classes add accessors for property names described by its schema, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting `#to_ary` or `#to_hash`.
+JSI marries object-oriented programming with JSON Schemas by associating a module with each schema, and extending every instance described by a schema with that module. When an application adds methods to a schema module, those methods can be used on its instances.
+
+A JSI instance aims to offer a fairly unobtrusive wrapper around its JSON data, which is usually a Hash (JSON Object) or Array described by one or more JSON Schemas. JSI instances have accessors for property names described by schemas, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting `#to_ary` or `#to_hash`.
+
+Note: The canonical location of this README is on [RubyDoc](http://rubydoc.info/gems/jsi/). When viewed on [Github](https://github.com/notEthan/jsi/), it may be inconsistent with the latest released gem, and Yardoc links will not work.
 
 ## Example
 
@@ -29,7 +33,7 @@ properties:
         number: {type: "string"}
 ```
 
-Using that schema, we instantiate a JSI::Schema to represent it:
+We pass that to {JSI.new_schema} which will instantiate a JSI Schema which represents it:
 
 ```ruby
 # this would usually load YAML or JSON; the schema object is inlined for copypastability.
@@ -69,7 +73,7 @@ bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "nu
 # }
 ```
 
-Note that the keys are strings. JSI, being designed with JSON in mind, is geared toward string keys. Symbol keys will not match to schema properties, and so act the same as any other key not recognized from the schema.
+Note that the hash keys are strings. JSI, being designed with JSON in mind, is geared toward string keys.
 
 We get accessors for the Contact:
 
@@ -131,7 +135,7 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 - `JSI::Base` is the base class for each JSI schema class representing instances of JSON Schemas.
 - a "JSI Schema" is a JSON Schema, instantiated as (usually) a JSI::Base described by a metaschema (see the sections on Metaschemas below). a JSI Schema is an instance of the module `JSI::Schema`.
-- a "JSI schema module" is a module which represents one schema. Instances of that schema are extended with its JSI schema module. applications may reopen these modules to add functionality to JSI instances described by a given schema.
+- a "JSI Schema Module" is a module which represents one schema, dynamically created by that Schema. Instances of that schema are extended with its JSI schema module. applications may reopen these modules to add functionality to JSI instances described by a given schema.
 - a "JSI schema class" is a subclass of `JSI::Base` representing one or more JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
@@ -213,6 +217,10 @@ module ContactPhone
 end
 ```
 
+### A note on Classes
+
+The classes used to instantiate JSIs are dynamically generated subclasses of JSI::Base which include the JSI Schema Module of each schema describing the given instance. These are mostly intended to be ignored: applications aren't expected to instantiate these directly (rather, `#new_jsi` on a Schema or Schema Module is intended), and they are not intended for subclassing or method definition (applications should instead define methods on a schema's {JSI::Schema#jsi_schema_module}).
+
 ## Validation
 
 JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications. To validate instances, see methods {JSI::Base#jsi_validate}, {JSI::Base#jsi_valid?}, {JSI::Schema#instance_validate}, {JSI::Schema#instance_valid?}.
@@ -221,6 +229,7 @@ The following optional features are not completely supported:
 
 - The `format` keyword does not perform any validation.
 - Regular expressions are interpreted by Ruby's Regexp class, whereas JSON Schema recommends interpreting these as ECMA 262 regular expressions. Certain expressions behave differently, particularly `^` and `$`.
+- Keywords `contentMediaType` and `contentEncoding` do not perform validation.
 
 ## Metaschemas
 

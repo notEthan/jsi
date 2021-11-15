@@ -3,8 +3,14 @@
 module JSI
   # JSI Schema Modules are extended with JSI::SchemaModule
   module SchemaModule
-    # @return [String] absolute schema_uri of the schema this module represents.
-    #   see {Schema#schema_uri}.
+    # @!method schema
+    #   the schema of which this is the JSI Schema Module
+    #   @return [Schema]
+    # note: defined on JSI Schema Module by JSI::SchemaClasses.module_for_schema
+
+
+    # a URI which refers to the schema. see {Schema#schema_uri}.
+    # @return (see Schema#schema_uri)
     def schema_uri
       schema.schema_uri
     end
@@ -56,10 +62,11 @@ module JSI
     extend Util::Memoize
 
     class << self
+      # a JSI Schema Class which represents the given schemas.
+      # an instance of the class is a JSON Schema instance described by all of the given schemas.
       # @private
       # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
-      # @return [Class subclassing JSI::Base] a JSI Schema Class which represents the given schemas.
-      #   an instance of the class is a JSON Schema instance described by all of the given schemas.
+      # @return [Class subclassing JSI::Base]
       def class_for_schemas(schemas)
         schemas = SchemaSet.ensure_schema_set(schemas)
 
@@ -77,8 +84,9 @@ module JSI
       end
 
       # @private
+      # a subclass of MetaschemaNode::BootstrapSchema with the given modules included
       # @param modules [Set<Module>] metaschema instance modules
-      # @return [Class] a subclass of MetaschemaNode::BootstrapSchema with the given modules included
+      # @return [Class]
       def bootstrap_schema_class(modules)
         modules = Util.ensure_module_set(modules)
         jsi_memoize(__method__, modules) do |modules|
@@ -92,8 +100,8 @@ module JSI
         end
       end
 
-      # @api private
       # see {Schema#jsi_schema_module}
+      # @api private
       # @return [Module]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
@@ -133,12 +141,14 @@ module JSI
         end
       end
 
+      # a module of accessors for described property names of the given schema.
+      # getters are always defined. setters are defined by default.
       # @param schema [JSI::Schema] a schema for which to define accessors for any described property names
       # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
       #   may be used alongside the accessor module. methods defined by any conflicting_module
       #   will not be defined as accessors.
-      # @return [Module] a module of accessors (setters and getters) for described property names of the given
-      #   schema
+      # @param setters [Boolean] whether to define setter methods
+      # @return [Module]
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         Schema.ensure_schema(schema)
         jsi_memoize(:accessor_module_for_schema, schema, conflicting_modules, setters) do |schema, conflicting_modules, setters|
@@ -149,17 +159,8 @@ module JSI
               end.inject(Set.new, &:|)
 
               accessors_to_define = schema.described_object_property_names.select do |name|
-                do_define = true
-                # must be a string
-                do_define &&= name.respond_to?(:to_str)
-                # must not begin with a digit
-                do_define &&= name !~ /\A[0-9]/
-                # must not contain characters special to ruby syntax
-                do_define &&= name !~ /[\\\s\#;\.,\(\)\[\]\{\}'"`%\+\-\/\*\^\|&=<>\?:!@\$~]/
                 # must not conflict with any method on a conflicting module
-                do_define &&= !conflicting_instance_methods.any? { |mn| mn.to_s == name }
-
-                do_define
+                Util.ok_ruby_method_name?(name) && !conflicting_instance_methods.any? { |mn| mn.to_s == name }
               end.to_set.freeze
 
               define_singleton_method(:jsi_property_accessors) { accessors_to_define }
@@ -186,16 +187,17 @@ module JSI
   module SchemaModulePossibly
     attr_reader :possibly_schema_node
 
-    # @return [String, nil] a name relative to a named schema module of an ancestor schema.
-    #   for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
-    #   then the module `Foos.items` will have a name_from_ancestor of `"Foos.items"`
+    # a name relative to a named schema module of an ancestor schema.
+    # for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
+    # then the module `Foos.items` will have a name_from_ancestor of `"Foos.items"`
+    # @return [String, nil]
     def name_from_ancestor
       schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
       named_parent_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
 
       return nil unless named_parent_schema
 
-      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_parent_schema.jsi_ptr).reference_tokens
+      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_parent_schema.jsi_ptr).tokens
       name = named_parent_schema.jsi_schema_module.name
       parent = named_parent_schema
       tokens.each do |token|
@@ -229,7 +231,7 @@ module JSI
     end
   end
 
-  # a schema module is a module which represents a schema. a NotASchemaModule represents
+  # a JSI Schema Module is a module which represents a schema. a NotASchemaModule represents
   # a node in a schema's document which is not a schema, such as the 'properties'
   # object (which contains schemas but is not a schema).
   #

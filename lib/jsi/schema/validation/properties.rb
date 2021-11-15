@@ -51,7 +51,7 @@ module JSI
               value.keys.each do |value_property_pattern|
                 begin
                   # TODO ECMA 262
-                  if value_property_pattern.respond_to?(:to_str) && property_name.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name)
+                  if value_property_pattern.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name.to_s)
                     evaluated_property_names << property_name
                     results[property_name] = result_builder.child_subschema_validate(
                       ['patternProperties', value_property_pattern],

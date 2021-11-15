@@ -19,7 +19,8 @@ module JSI
 
     attr_reader :ref_schema
 
-    # @return [JSI::Schema] the schema this ref points to
+    # finds the schema this ref points to
+    # @return [JSI::Schema]
     # @raise [JSI::Schema::NotASchemaError] when the thing this ref points to is not a schema
     # @raise [JSI::Schema::ReferenceError] when this reference cannot be resolved
     def deref_schema
@@ -30,8 +31,8 @@ module JSI
         unless schema_resource_root
           raise(Schema::ReferenceError, [
             "cannot find schema by ref: #{ref}",
-            "from schema: #{ref_schema.pretty_inspect.chomp}",
-          ].join("\n"))
+            ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
+          ].compact.join("\n"))
         end
       }
 
@@ -81,8 +82,8 @@ module JSI
         if schema_resource_root.is_a?(Schema)
           resolve_fragment_ptr = schema_resource_root.method(:resource_root_subschema)
         else
-          # Note: reinstantiate_nonschemas_as_schemas, implemented in Schema#resource_root_subschema, is not
-          # implemented for remote refs when the schema_resource_root is not a schema.
+          # Note: Schema#resource_root_subschema will reinstantiate nonschemas as schemas.
+          # not implemented for remote refs when the schema_resource_root is not a schema.
           resolve_fragment_ptr = -> (ptr) { ptr.evaluate(schema_resource_root) }
         end
       end
@@ -97,7 +98,15 @@ module JSI
       end
 
       if ptr_from_fragment
-        result_schema = resolve_fragment_ptr.call(ptr_from_fragment)
+        begin
+          result_schema = resolve_fragment_ptr.call(ptr_from_fragment)
+        rescue Ptr::ResolutionError
+          raise(Schema::ReferenceError, [
+            "could not resolve pointer: #{ptr_from_fragment.pointer.inspect}",
+            ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
+            ("in schema resource root: #{schema_resource_root.pretty_inspect.chomp}" if schema_resource_root),
+          ].compact.join("\n"))
+        end
       elsif fragment.nil?
         check_schema_resource_root.call
         result_schema = schema_resource_root
@@ -110,9 +119,15 @@ module JSI
         if result_schemas.size == 1
           result_schema = result_schemas.first
         elsif result_schemas.size == 0
-          raise(Schema::ReferenceError, "could not find schema by fragment: #{fragment.inspect} in schema resource root: #{schema_resource_root.pretty_inspect.chomp}")
+          raise(Schema::ReferenceError, [
+            "could not find schema by fragment: #{fragment.inspect}",
+            "in schema resource root: #{schema_resource_root.pretty_inspect.chomp}",
+          ].join("\n"))
         else
-          raise(Schema::ReferenceError, "found multiple schemas for plain name fragment #{fragment.inspect}:#{result_schemas.map { |s| "\n" + s.pretty_inspect.chomp }.join('')}")
+          raise(Schema::ReferenceError, [
+            "found multiple schemas for plain name fragment #{fragment.inspect}:",
+            *result_schemas.map { |s| s.pretty_inspect.chomp },
+          ].join("\n"))
         end
       end
 

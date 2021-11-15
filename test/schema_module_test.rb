@@ -1,9 +1,10 @@
 require_relative 'test_helper'
 
-SchemaModuleTestModule = JSI::Schema.new({
+SchemaModuleTestModule = JSI.new_schema_module({
+  '$schema' => 'http://json-schema.org/draft-07/schema#',
   'title' => 'a9b7',
   'properties' => {'foo' => {'items' => {'type' => 'string'}}}
-}).jsi_schema_module
+})
 
 describe 'JSI::SchemaModule' do
   let(:schema_content) { {'properties' => {'foo' => {'items' => {'type' => 'string'}}}} }
@@ -35,7 +36,7 @@ describe 'JSI::SchemaModule' do
       )
     end
     it 'shows a pointer fragment uri with no named parent module' do
-      mod = JSI.new_schema_module({
+      mod = JSI::JSONSchemaOrgDraft07.new_schema_module({
         'title' => 'lhzm', 'properties' => {'foo' => {'items' => {'type' => 'string'}}}
       })
       assert_equal(

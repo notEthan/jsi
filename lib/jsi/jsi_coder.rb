@@ -55,6 +55,7 @@ module JSI
       object
     end
 
+    # dumps the object for the database
     # @param object [JSI::Base, Array<JSI::Base>, nil] the JSI or array of JSIs containing
     #   the schema instance(s)
     # @return [Object, Array, nil] the schema instance(s) of the JSI(s), or nil if object is nil

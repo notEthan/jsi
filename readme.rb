@@ -9,7 +9,8 @@ require 'jsi'
 puts "creating a schema and assigning its schema module to a constant"
 puts
 
-contact_schema = JSI::Schema.new({
+contact_schema = JSI.new_schema({
+  "$schema" => "http://json-schema.org/draft-07/schema",
   "description" => "A Contact",
   "type" => "object",
   "properties" => {

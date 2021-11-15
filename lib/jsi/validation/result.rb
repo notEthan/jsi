@@ -83,7 +83,8 @@ module JSI
         )
       end
 
-      # @return [Boolean] is the instance valid against its schemas?
+      # is the instance valid against its schemas?
+      # @return [Boolean]
       def valid?
         # :nocov:
         virtual_method

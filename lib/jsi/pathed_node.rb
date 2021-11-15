@@ -8,7 +8,7 @@ module JSI
   # - `#jsi_document` [Object] the document
   # - `#jsi_ptr` [JSI::Ptr] a pointer to the node in the document
   module PathedNode
-    # @return [Object] the content of this node
+    # the content of this node
     def jsi_node_content
       content = jsi_ptr.evaluate(jsi_document)
       content
@@ -26,7 +26,7 @@ module JSI
     #
     # @param a arguments are passed to `#[]`
     # @yield [Object, Object] each key and value of this hash node
-    # @return [self, Enumerator] returns an Enumerator if invoked without a block; otherwise self
+    # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(*a, &block)
       return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
@@ -37,15 +37,17 @@ module JSI
       self
     end
 
+    # a hash in which each key is a key of the jsi_node_content hash and each value is the
+    # result of `self[key]`
     # @param a arguments are passed to `#[]`
-    # @return [Hash] a hash in which each key is a key of the jsi_node_content hash and
-    #   each value is the result of self[key] (see #[]).
+    # @return [Hash]
     def to_hash(*a)
       {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k, *a] } }
     end
 
     include Hashlike
 
+    # invokes the method with the given name on the jsi_node_content (if defined) or its #to_hash
     # @param method_name [String, Symbol]
     # @param a arguments and block are passed to the invocation of method_name
     # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_hash
@@ -74,22 +76,24 @@ module JSI
     #
     # @param a arguments are passed to `#[]`
     # @yield [Object] each element of this array node
-    # @return [self, Enumerator] returns an Enumerator if invoked without a block; otherwise self
+    # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(*a, &block)
       return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
       jsi_node_content_ary_pubsend(:each_index) { |i| yield(self[i, *a]) }
       self
     end
 
+    # an array, the same size as the jsi_node_content, in which the element at each index is the
+    # result of `self[index]`
     # @param a arguments are passed to `#[]`
-    # @return [Array] an array, the same size as the jsi_node_content, in which the
-    #   element at each index is the result of self[index] (see #[])
+    # @return [Array]
     def to_ary(*a)
       to_a(*a)
     end
 
     include Arraylike
 
+    # invokes the method with the given name on the jsi_node_content (if defined) or its #to_ary
     # @param method_name [String, Symbol]
     # @param a arguments and block are passed to the invocation of method_name
     # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_ary

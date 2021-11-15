@@ -19,13 +19,17 @@ module JSI
     # no effect (in specifications which define `additionalItems`), but is not an invalid schema.
     #
     # @!attribute level
-    #   @return [Symbol] :error or :warning
+    #   :error or :warning
+    #   @return [Symbol]
     # @!attribute message
-    #   @return [String] a message describing the issue
+    #   a message describing the issue
+    #   @return [String]
     # @!attribute keyword
-    #   @return [String] the keyword of the schema that has an issue
+    #   the keyword of the schema that has an issue
+    #   @return [String]
     # @!attribute schema
-    #   @return [JSI::Schema] the schema that has an issue
+    #   the schema that has an issue
+    #   @return [JSI::Schema]
     class Issue
     end
   end

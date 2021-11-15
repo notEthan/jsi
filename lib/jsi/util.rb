@@ -78,6 +78,18 @@ module JSI
       set
     end
 
+    # is the given name ok to use as a ruby method name?
+    def ok_ruby_method_name?(name)
+      # must be a string
+      return false unless name.respond_to?(:to_str)
+      # must not begin with a digit
+      return false if name =~ /\A[0-9]/
+      # must not contain characters special to ruby syntax
+      return false if name =~ /[\\\s\#;\.,\(\)\[\]\{\}'"`%\+\-\/\*\^\|&=<>\?:!@\$~]/
+
+      return true
+    end
+
     # this is the Y-combinator, which allows anonymous recursive functions. for a simple example,
     # to define a recursive function to return the length of an array:
     #

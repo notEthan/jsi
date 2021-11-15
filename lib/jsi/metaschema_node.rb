@@ -25,7 +25,7 @@ module JSI
 
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
-    # @param metaschema_instance_modules [Set<Module>] modules which implement the functionality of the
+    # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of the
     #   schema, to be applied to every schema which is an instance of the metaschema. this must include
     #   JSI::Schema directly or indirectly. these are the {Schema#jsi_schema_instance_modules} of the
     #   metaschema.
@@ -125,16 +125,23 @@ module JSI
     end
 
     # Set of modules to apply to schemas which are instances of (described by) the metaschema
+    # @return [Set<Module>]
     attr_reader :metaschema_instance_modules
 
     # ptr to the root of the metaschema in the jsi_document
+    # @return [JSI::Ptr]
     attr_reader :metaschema_root_ptr
+
     # ptr to the schema of the root of the jsi_document
+    # @return [JSI::Ptr]
     attr_reader :root_schema_ptr
-    # JSI::Schemas describing this MetaschemaNode
+
+    # JSI Schemas describing this MetaschemaNode
+    # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
 
-    # @return [MetaschemaNode] document root MetaschemaNode
+    # document root MetaschemaNode
+    # @return [MetaschemaNode]
     def jsi_root_node
       if jsi_ptr.root?
         self
@@ -146,16 +153,17 @@ module JSI
       end
     end
 
-    # @return [MetaschemaNode] parent MetaschemaNode
+    # parent MetaschemaNode
+    # @return [MetaschemaNode]
     def jsi_parent_node
       jsi_ptr.parent.evaluate(jsi_root_node)
     end
 
-    # @param token [String, Integer, Object] the token to subscript
+    # subscripts to return a child value identified by the given token.
+    #
+    # @param token (see JSI::Base#[])
     # @param as_jsi (see JSI::Base#[])
-    # @return [MetaschemaNode, Object] the node content's subscript value at the given token.
-    #   if there is a subschema defined for that token on this MetaschemaNode's schema,
-    #   returns that value as a MetaschemaNode instantiation of that subschema.
+    # @return (see JSI::Base#[])
     def [](token, as_jsi: :auto)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
@@ -181,6 +189,7 @@ module JSI
       end
     end
 
+    # instantiates a new MetaschemaNode whose instance is a modified copy of this MetaschemaNode's instance
     # @yield [Object] the node content of the instance. the block should result
     #   in a (nondestructively) modified copy of this.
     # @return [MetaschemaNode] modified copy of self
@@ -203,7 +212,7 @@ module JSI
       ].compact
     end
 
-    # @return [Object] an opaque fingerprint of this MetaschemaNode for FingerprintHash
+    # an opaque fingerprint of this MetaschemaNode for FingerprintHash
     def jsi_fingerprint
       {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
     end

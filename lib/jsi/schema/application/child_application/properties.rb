@@ -11,7 +11,7 @@ module JSI
       end
       if schema_content['patternProperties'].respond_to?(:to_hash)
         schema_content['patternProperties'].each_key do |pattern|
-          if property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
+          if pattern.respond_to?(:to_str) && property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
             apply_additional = false
             yield subschema(['patternProperties', pattern])
           end

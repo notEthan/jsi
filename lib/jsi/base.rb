@@ -1,12 +1,16 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Base is the class from which JSI schema classes inherit. a JSON schema instance is represented as a
-  # ruby instance of such a subclass of JSI::Base.
+  # JSI::Base is the base class of every JSI instance of a JSON schema.
   #
   # instances are described by a set of one or more JSON schemas. JSI dynamically creates a subclass of
-  # JSI::Base for each set of JSON schemas which describe a schema instance that is to be instantiated.
+  # JSI::Base for each set of JSON schemas which describe an instance that is to be instantiated.
+  #
   # a JSI instance of such a subclass represents a JSON schema instance described by that set of schemas.
+  #
+  # this subclass includes the JSI Schema Module of each schema it represents.
+  #
+  # the method {Base#jsi_schemas} is defined to indicate the schemas the class represents.
   #
   # the JSI::Base class itself is not intended to be instantiated.
   class Base
@@ -37,8 +41,9 @@ module JSI
         @in_schema_classes
       end
 
-      # @return [String] a string indicating a class name if one is defined, as well as the schema module name
-      #   and/or schema URI of each schema the class represents.
+      # a string indicating a class name if one is defined, as well as the schema module name
+      # and/or schema URI of each schema the class represents.
+      # @return [String]
       def inspect
         if !respond_to?(:jsi_class_schemas)
           super
@@ -135,7 +140,7 @@ module JSI
     #   the path of this instance in the `jsi_document` param. `jsi_ptr` must be passed
     #   iff `jsi_document` is passed, i.e. when `instance` is `NOINSTANCE`
     # @param jsi_root_node [JSI::Base] for internal use, specifies the JSI at the root of the document
-    # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param base_uri
+    # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base>]
     def initialize(instance,
         jsi_document: nil,
@@ -189,13 +194,21 @@ module JSI
       end
     end
 
+    # @!method jsi_schemas
+    #   the set of schemas which describe this instance
+    #   @return [JSI::SchemaSet]
+    # note: defined on subclasses by JSI::SchemaClasses.class_for_schemas
+
+
     # document containing the instance of this JSI at our {#jsi_ptr}
     attr_reader :jsi_document
 
     # {JSI::Ptr} pointing to this JSI's instance within our {#jsi_document}
+    # @return [JSI::Ptr]
     attr_reader :jsi_ptr
 
     # the JSI at the root of this JSI's document
+    # @return [JSI::Base]
     attr_reader :jsi_root_node
 
     # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
@@ -212,7 +225,7 @@ module JSI
     # returns an Enumerator if no block is given.
     #
     # @yield [JSI::Base] each node in the document, starting with self
-    # @return [nil, Enumerator] returns an Enumerator if invoked without a block; otherwise nil
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def jsi_each_child_node(&block)
       return to_enum(__method__) unless block
 
@@ -238,8 +251,6 @@ module JSI
     # @yield [JSI::Base] each child node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_children_node_first(&block)
-      return to_enum(__method__) unless block
-
       jsi_modified_copy do |instance|
         if respond_to?(:to_hash)
           res = instance.class.new
@@ -274,8 +285,6 @@ module JSI
     # @yield [JSI::Base] each child node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_children_leaf_first(&block)
-      return to_enum(__method__) unless block
-
       jsi_modified_copy do |instance|
         if respond_to?(:to_hash)
           res = instance.class.new
@@ -321,7 +330,10 @@ module JSI
       jsi_parent_nodes.first
     end
 
-    # @param token [String, Integer, Object] the token to subscript
+    # subscripts to return a child value identified by the given token.
+    #
+    # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
+    #   of the instance identifying the child value
     # @param as_jsi [:auto, true, false] whether to return the result value as a JSI. one of:
     #
     #   - :auto (default): by default a JSI will be returned when either:
@@ -352,7 +364,7 @@ module JSI
     #   defaults are specified across those schemas), nil is returned.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
-    # @return [JSI::Base, Object] the instance's subscript value at the given token.
+    # @return [JSI::Base, Object] the child value identified by the subscript token
     def [](token, as_jsi: :auto, use_default: true)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
@@ -412,7 +424,8 @@ module JSI
       end
     end
 
-    # @return [Set<Module>] the set of JSI schema modules corresponding to the schemas that describe this JSI
+    # the set of JSI schema modules corresponding to the schemas that describe this JSI
+    # @return [Set<Module>]
     def jsi_schema_modules
       jsi_schemas.map(&:jsi_schema_module).to_set.freeze
     end
@@ -451,7 +464,8 @@ module JSI
       jsi_schemas.instance_validate(self)
     end
 
-    # @return [Boolean] whether this JSI's instance is valid against all of its schemas
+    # whether this JSI's instance is valid against all of its schemas
+    # @return [Boolean]
     def jsi_valid?
       jsi_schemas.instance_valid?(self)
     end
@@ -475,8 +489,8 @@ module JSI
       jsi_modified_copy(&:dup)
     end
 
-    # @return [String] a string representing this JSI, indicating its schemas (by schema module name
-    #   or URI) and inspecting its instance
+    # a string representing this JSI, indicating any named schemas and inspecting its instance
+    # @return [String]
     def inspect
       "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
@@ -536,20 +550,20 @@ module JSI
       ].compact
     end
 
-    # @return [Object] a jsonifiable representation of the instance
+    # a jsonifiable representation of the instance
+    # @return [Object]
     def as_json(*opt)
       Typelike.as_json(jsi_instance, *opt)
     end
 
-    # @return [Object] an opaque fingerprint of this JSI for FingerprintHash. JSIs are equal
-    #   if their instances are equal, and if the JSIs are of the same JSI class or subclass.
+    # an opaque fingerprint of this JSI for {Util::FingerprintHash}.
     def jsi_fingerprint
       {
         class: jsi_class,
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
-        jsi_schema_base_uri: jsi_resource_ancestor_uri,
+        jsi_resource_ancestor_uri: jsi_resource_ancestor_uri,
         # only defined for JSI::Schema instances:
         jsi_schema_instance_modules: is_a?(Schema) ? jsi_schema_instance_modules : nil,
       }
