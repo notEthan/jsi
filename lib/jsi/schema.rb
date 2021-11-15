@@ -316,7 +316,7 @@ module JSI
       end
     end
 
-    # a URI which refers to this schema.
+    # a nonrelative URI which refers to this schema.
     # nil if no parent of this schema defines an id.
     # see {#schema_uris} for all URIs known to refer to this schema.
     # @return [Addressable::URI, nil]
@@ -324,7 +324,7 @@ module JSI
       schema_uris.first
     end
 
-    # URIs which refer to this schema
+    # nonrelative URIs (that is, absolute, but possibly with a fragment) which refer to this schema
     # @return [Array<Addressable::URI>]
     def schema_uris
       jsi_memoize(:schema_uris) do
@@ -332,7 +332,9 @@ module JSI
       end
     end
 
-    # @yield [Addressable::URI] each URI which refers to this schema
+    # see {#schema_uris}
+    # @yield [Addressable::URI]
+    # @return [Enumerator, nil]
     def each_schema_uri
       return to_enum(__method__) unless block_given?
 
