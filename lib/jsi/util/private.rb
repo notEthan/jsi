@@ -36,6 +36,17 @@ module JSI
       proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
     end
 
+    # is a hash as the last argument passed to keyword params? (false in ruby 3; true before - generates
+    # a warning in 2.7 but no way to make 2.7 behave like 3 so the warning is useless)
+    #
+    # TODO remove eventually (keyword argument compatibility)
+    LAST_ARGUMENT_AS_KEYWORD_PARAMETERS = begin
+      -> (k: ) { k }[{k: nil}]
+      true
+    rescue ArgumentError
+      false
+    end
+
     module FingerprintHash
       # overrides BasicObject#==
       def ==(other)
