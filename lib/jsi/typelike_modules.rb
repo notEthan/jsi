@@ -83,6 +83,7 @@ module JSI
     safe_to_hash_methods.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+        ruby2_keywords(method_name) if respond_to?(:ruby2_keywords)
       else
         define_method(method_name) { |*a, **kw, &b| to_hash.public_send(method_name, *a, **kw, &b) }
       end
@@ -95,6 +96,7 @@ module JSI
             responsive_object.public_send(method_name, *a, &b)
           end
         end
+        ruby2_keywords(method_name) if respond_to?(:ruby2_keywords)
       else
         define_method(method_name) do |*a, **kw, &b|
           jsi_modified_copy do |object_to_modify|
@@ -113,6 +115,7 @@ module JSI
           end
         end
       end
+#      ruby2_keywords(method_name) if respond_to?(:ruby2_keywords)
     end
 
     # like [Hash#update](https://ruby-doc.org/core/Hash.html#method-i-update)
@@ -204,6 +207,7 @@ module JSI
     safe_to_ary_methods.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         define_method(method_name) { |*a, &b| to_ary.public_send(method_name, *a, &b) }
+        ruby2_keywords(method_name) if respond_to?(:ruby2_keywords)
       else
         define_method(method_name) { |*a, **kw, &b| to_ary.public_send(method_name, *a, **kw, &b) }
       end
@@ -216,6 +220,7 @@ module JSI
             responsive_object.public_send(method_name, *a, &b)
           end
         end
+        ruby2_keywords(method_name) if respond_to?(:ruby2_keywords)
       else
         define_method(method_name) do |*a, **kw, &b|
           jsi_modified_copy do |object_to_modify|
@@ -235,6 +240,7 @@ module JSI
           end
         end
       end
+#      ruby2_keywords(method_name) if respond_to?(:ruby2_keywords)
     end
 
     # see [Array#assoc](https://ruby-doc.org/core/Array.html#method-i-assoc)

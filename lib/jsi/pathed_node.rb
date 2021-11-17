@@ -60,6 +60,7 @@ module JSI
           jsi_node_content.to_hash.public_send(method_name, *a, &b)
         end
       end
+      ruby2_keywords(:jsi_node_content_hash_pubsend) if respond_to?(:ruby2_keywords)
     else
       # invokes the method with the given name on the jsi_node_content (if defined) or its #to_hash
       # @param method_name [String, Symbol]
@@ -82,6 +83,7 @@ module JSI
         define_method(method_name) do |*a, &b|
           jsi_node_content_hash_pubsend(method_name, *a, &b)
         end
+        ruby2_keywords(method_name) if respond_to?(:ruby2_keywords)
       else
         define_method(method_name) do |*a, **kw, &b|
           jsi_node_content_hash_pubsend(method_name, *a, **kw, &b)
@@ -129,6 +131,7 @@ module JSI
           jsi_node_content.to_ary.public_send(method_name, *a, &b)
         end
       end
+      ruby2_keywords(:jsi_node_content_ary_pubsend) if respond_to?(:ruby2_keywords)
     else
       # invokes the method with the given name on the jsi_node_content (if defined) or its #to_ary
       # @param method_name [String, Symbol]
@@ -152,6 +155,7 @@ module JSI
         define_method(method_name) do |*a, &b|
           jsi_node_content_ary_pubsend(method_name, *a, &b)
         end
+        ruby2_keywords(method_name) if respond_to?(:ruby2_keywords)
       else
         define_method(method_name) do |*a, **kw, &b|
           jsi_node_content_ary_pubsend(method_name, *a, **kw, &b)
