@@ -39,7 +39,7 @@ require 'minitest/around/spec'
 require 'minitest/reporters'
 
 module Minitest
-  class SpecReporterWithEndSummary < Minitest::Reporters::SpecReporter
+  module WithEndSummary
     def report
       super
       skip_messages = results.select(&:skipped?).group_by { |r| r.failure.message }
@@ -55,7 +55,7 @@ module Minitest
     end
   end
 end
-Minitest::Reporters.use! MiniTest::SpecReporterWithEndSummary.new
+Minitest::Reporters.use!(Minitest::Reporters::SpecReporter.new.extend(Minitest::WithEndSummary))
 Minitest::Test.make_my_diffs_pretty!
 
 class JSISpec < Minitest::Spec
