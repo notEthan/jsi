@@ -55,7 +55,33 @@ module Minitest
     end
   end
 end
-Minitest::Reporters.use!(Minitest::Reporters::SpecReporter.new.extend(Minitest::WithEndSummary))
+
+mkreporters = {
+  'spec' => -> {
+    Minitest::Reporters::SpecReporter.new
+  },
+  'default' => -> {
+    Minitest::Reporters::DefaultReporter.new(
+      detailed_skip: false
+    )
+  },
+  'progress' => -> {
+    Minitest::Reporters::ProgressReporter.new(
+      detailed_skip: false,
+      format: '%e (%c/%C • %p%%) [%B]'
+    )
+  },
+}
+
+mkreporter = if ENV['JSI_TESTREPORT']
+  mkreporters[ENV['JSI_TESTREPORT']] || raise("JSI_TESTREPORT must be one of: #{mkreporters.keys}")
+elsif ENV['CI']
+  mkreporters['spec']
+else
+  mkreporters['progress']
+end
+
+Minitest::Reporters.use!(mkreporter.call.extend(Minitest::WithEndSummary))
 Minitest::Test.make_my_diffs_pretty!
 
 class JSISpec < Minitest::Spec
