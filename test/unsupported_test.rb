@@ -131,7 +131,7 @@ describe 'unsupported behavior' do
         end
         it 'applies properties' do
           assert_is_a(schema.properties[[1]].jsi_schema_module, subject[[1]])
-          assert_equal({}, subject[[]]) # not a jsi
+          assert_empty(subject[[]].jsi_schemas)
 
           assert(subject.jsi_valid?)
         end
@@ -146,7 +146,7 @@ describe 'unsupported behavior' do
         end
         it 'applies properties' do
           assert_is_a(schema.properties[[1]].jsi_schema_module, subject[[1]])
-          assert_equal({}, subject[[]]) # not a jsi
+          assert_empty(subject[[]].jsi_schemas)
 
           assert_equal([
             "instance type does not match `type` value",
