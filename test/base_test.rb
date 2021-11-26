@@ -704,6 +704,27 @@ describe JSI::Base do
           assert_raises(NoMethodError) { subject.send('1') }
         end
       end
+
+      describe 'property named unicode 😀' do
+        let(:schema_content) do
+          {
+            'type' => 'object',
+            'properties' => {
+              '😀' => {}
+           },
+          }
+        end
+        let(:instance) do
+          {
+            '😀' => '💜'
+          }
+        end
+        it 'defines reader and writer' do
+          assert_equal('💜', subject.😀)
+          subject.😀= '💚'
+          assert_equal('💚', subject.😀)
+        end
+      end
     end
     describe 'writers' do
       it 'writes attributes described as properties' do
