@@ -373,7 +373,7 @@ module JSI
         token_in_range = jsi_node_content_ary_pubsend(:each_index).include?(token)
         value = jsi_node_content_ary_pubsend(:[], token)
       else
-        raise(CannotSubscriptError, "cannot subcript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
+        raise(CannotSubscriptError, "cannot subscript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
       end
 
       begin
@@ -415,7 +415,7 @@ module JSI
     # @param value [JSI::Base, Object] the value to be assigned
     def []=(token, value)
       unless respond_to?(:to_hash) || respond_to?(:to_ary)
-        raise(NoMethodError, "cannot assign subcript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
+        raise(NoMethodError, "cannot assign subscript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
       end
       if value.is_a?(Base)
         self[token] = value.jsi_instance

@@ -115,7 +115,7 @@ describe 'JSI::Base array' do
       let(:instance) { nil }
       it 'errors' do
         err = assert_raises(NoMethodError) { subject[2] = 0 }
-        assert_equal("cannot assign subcript (using token: 2) to instance: nil", err.message)
+        assert_equal("cannot assign subscript (using token: 2) to instance: nil", err.message)
       end
     end
     describe '#inspect' do

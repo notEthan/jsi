@@ -612,7 +612,7 @@ describe JSI::Base do
         let(:instance) { nil }
         it 'errors' do
           err = assert_raises(JSI::Base::CannotSubscriptError) { subject.foo }
-          assert_equal(%q(cannot subcript (using token: "foo") from instance: nil), err.message)
+          assert_equal(%q(cannot subscript (using token: "foo") from instance: nil), err.message)
         end
       end
       describe 'properties with the same names as instance methods' do
@@ -729,7 +729,7 @@ describe JSI::Base do
         let(:instance) { nil }
         it 'errors' do
           err = assert_raises(NoMethodError) { subject.foo = 0 }
-          assert_equal('cannot assign subcript (using token: "foo") to instance: nil', err.message)
+          assert_equal('cannot assign subscript (using token: "foo") to instance: nil', err.message)
         end
       end
     end
