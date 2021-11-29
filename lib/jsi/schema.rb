@@ -11,6 +11,8 @@ module JSI
   # The content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
   # typically a Hash (JSON object) or a boolean.
   module Schema
+    autoload(:Element, 'jsi/schema/element')
+
     autoload :Application, 'jsi/schema/application'
     autoload :Validation, 'jsi/schema/validation'
 
