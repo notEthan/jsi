@@ -801,7 +801,6 @@ module JSI
       )
 
       catch(:jsi_validation_result) do
-          internal_validate_keywords(result_builder)
         dialect.invoke(:validate, result_builder)
 
         result

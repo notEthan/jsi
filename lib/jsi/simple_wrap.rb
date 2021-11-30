@@ -16,9 +16,6 @@ module JSI
     define_method(:dialect) do
       dialect
     end
-
-    def internal_validate_keywords(result_builder)
-    end
   end
 
   simple_wrap_metaschema = JSI.new_metaschema(nil, schema_implementation_modules: [simple_wrap_implementation])
