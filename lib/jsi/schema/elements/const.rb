@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::Const
-    # @private
-    def internal_validate_const(result_builder)
+  module Schema::Elements
+    CONST = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('const')
         value = schema_content['const']
         # The value of this keyword MAY be of any type, including null.
@@ -15,6 +16,8 @@ module JSI
           keyword: 'const',
         )
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # CONST = element_map
+  end # module Schema::Elements
 end

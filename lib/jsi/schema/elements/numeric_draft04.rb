@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::Draft04::MinMax
-    # @private
-    def internal_validate_maximum(result_builder)
+  module Schema::Elements
+    MAXIMUM_BOOLEAN_EXCLUSIVE = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('exclusiveMaximum')
         value = schema_content['exclusiveMaximum']
         # The value of "exclusiveMaximum" MUST be a boolean.
@@ -44,10 +45,15 @@ module JSI
           result_builder.schema_error('`maximum` is not a number', 'maximum')
         end
       end
-    end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MAXIMUM_BOOLEAN_EXCLUSIVE = element_map
+  end # module Schema::Elements
 
-    # @private
-    def internal_validate_minimum(result_builder)
+  module Schema::Elements
+    MINIMUM_BOOLEAN_EXCLUSIVE = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('exclusiveMinimum')
         value = schema_content['exclusiveMinimum']
         # The value of "exclusiveMinimum" MUST be a boolean.
@@ -88,6 +94,8 @@ module JSI
           result_builder.schema_error('`minimum` is not a number', 'minimum')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MINIMUM_BOOLEAN_EXCLUSIVE = element_map
+  end # module Schema::Elements
 end

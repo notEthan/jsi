@@ -20,30 +20,7 @@ module JSI
     autoload :Contains,  'jsi/schema/validation/contains'
     autoload :Properties, 'jsi/schema/validation/properties'
 
-    # property names subschema application
-    autoload(:PropertyNames, 'jsi/schema/elements/property_names')
-
-    # any type validation
-    autoload(:Type, 'jsi/schema/elements/type')
-    autoload(:Enum, 'jsi/schema/elements/enum')
-    autoload(:Const, 'jsi/schema/elements/const')
-    autoload(:Not,  'jsi/schema/elements/not')
-
     # object validation
-    autoload(:Required,    'jsi/schema/elements/required')
     autoload :Dependencies, 'jsi/schema/validation/dependencies'
-    autoload(:MinMaxProperties, 'jsi/schema/elements/object_validation')
-
-    # array validation
-    autoload(:ArrayLength, 'jsi/schema/elements/array_validation')
-    autoload(:UniqueItems, 'jsi/schema/elements/array_validation')
-
-    # string validation
-    autoload(:StringLength, 'jsi/schema/elements/string_validation')
-    autoload(:Pattern, 'jsi/schema/elements/pattern')
-
-    # numeric validation
-    autoload(:MultipleOf, 'jsi/schema/elements/numeric')
-    autoload(:MinMax,    'jsi/schema/elements/numeric')
   end
 end

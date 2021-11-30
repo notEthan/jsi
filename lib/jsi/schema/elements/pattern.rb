@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::Pattern
-    # @private
-    def internal_validate_pattern(result_builder)
+  module Schema::Elements
+    PATTERN = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('pattern')
         value = schema_content['pattern']
         # The value of this keyword MUST be a string.
@@ -29,6 +30,8 @@ module JSI
           result_builder.schema_error('`pattern` is not a string', 'pattern')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # PATTERN = element_map
+  end # module Schema::Elements
 end

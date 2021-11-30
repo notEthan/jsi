@@ -818,6 +818,8 @@ module JSI
         else
           result_builder.schema_error('schema is not a boolean or a JSON object')
         end
+        dialect.invoke(:validate, result_builder)
+
         result
       end.freeze
     end

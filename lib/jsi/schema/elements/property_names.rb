@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::PropertyNames
-    # @private
-    def internal_validate_propertyNames(result_builder)
+  module Schema::Elements
+    PROPERTY_NAMES = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('propertyNames')
         # The value of "propertyNames" MUST be a valid JSON Schema.
         #
@@ -27,6 +28,8 @@ module JSI
           )
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # PROPERTY_NAMES = element_map
+  end # module Schema::Elements
 end

@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::Required
-    # @private
-    def internal_validate_required(result_builder)
+  module Schema::Elements
+    REQUIRED = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('required')
         value = schema_content['required']
         # The value of this keyword MUST be an array. Elements of this array, if any, MUST be strings, and MUST be unique.
@@ -22,6 +23,8 @@ module JSI
           result_builder.schema_error('`required` is not an array', 'required')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # REQUIRED = element_map
+  end # module Schema::Elements
 end

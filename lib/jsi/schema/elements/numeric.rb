@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::MultipleOf
-    # @private
-    def internal_validate_multipleOf(result_builder)
+  module Schema::Elements
+    MULTIPLE_OF = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('multipleOf')
         value = schema_content['multipleOf']
         # The value of "multipleOf" MUST be a number, strictly greater than 0.
@@ -30,12 +31,15 @@ module JSI
           result_builder.schema_error('`multipleOf` is not a number greater than 0', 'multipleOf')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MULTIPLE_OF = element_map
+  end # module Schema::Elements
 
-  module Schema::Validation::MinMax
-    # @private
-    def internal_validate_maximum(result_builder)
+  module Schema::Elements
+    MAXIMUM = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('maximum')
         value = schema_content['maximum']
         # The value of "maximum" MUST be a number, representing an inclusive upper limit for a numeric instance.
@@ -53,10 +57,15 @@ module JSI
           result_builder.schema_error('`maximum` is not a number', 'maximum')
         end
       end
-    end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MAXIMUM = element_map
+  end # module Schema::Elements
 
-    # @private
-    def internal_validate_exclusiveMaximum(result_builder)
+  module Schema::Elements
+    EXCLUSIVE_MAXIMUM = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('exclusiveMaximum')
         value = schema_content['exclusiveMaximum']
         # The value of "exclusiveMaximum" MUST be number, representing an exclusive upper limit for a numeric instance.
@@ -74,10 +83,15 @@ module JSI
           result_builder.schema_error('`exclusiveMaximum` is not a number', 'exclusiveMaximum')
         end
       end
-    end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # EXCLUSIVE_MAXIMUM = element_map
+  end # module Schema::Elements
 
-    # @private
-    def internal_validate_minimum(result_builder)
+  module Schema::Elements
+    MINIMUM = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('minimum')
         value = schema_content['minimum']
         # The value of "minimum" MUST be a number, representing an inclusive lower limit for a numeric instance.
@@ -95,10 +109,15 @@ module JSI
           result_builder.schema_error('`minimum` is not a number', 'minimum')
         end
       end
-    end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MINIMUM = element_map
+  end # module Schema::Elements
 
-    # @private
-    def internal_validate_exclusiveMinimum(result_builder)
+  module Schema::Elements
+    EXCLUSIVE_MINIMUM = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('exclusiveMinimum')
         value = schema_content['exclusiveMinimum']
         # The value of "exclusiveMinimum" MUST be number, representing an exclusive lower limit for a numeric instance.
@@ -116,6 +135,8 @@ module JSI
           result_builder.schema_error('`exclusiveMinimum` is not a number', 'exclusiveMinimum')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # EXCLUSIVE_MINIMUM = element_map
+  end # module Schema::Elements
 end

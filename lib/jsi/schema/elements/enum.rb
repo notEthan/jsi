@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::Enum
-    # @private
-    def internal_validate_enum(result_builder)
+  module Schema::Elements
+    ENUM = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('enum')
         value = schema_content['enum']
         # The value of this keyword MUST be an array. This array SHOULD have at least one element.
@@ -20,6 +21,8 @@ module JSI
           result_builder.schema_error('`enum` is not an array', 'enum')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # ENUM = element_map
+  end # module Schema::Elements
 end

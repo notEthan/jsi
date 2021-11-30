@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::Type
-    # @private
-    def internal_validate_type(result_builder)
+  module Schema::Elements
+    TYPE = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('type')
         value = schema_content['type']
         instance = result_builder.instance
@@ -44,6 +45,8 @@ module JSI
           result_builder.schema_error('`type` is not a string or array', 'type')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # TYPE = element_map
+  end # module Schema::Elements
 end

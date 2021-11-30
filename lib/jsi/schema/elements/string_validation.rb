@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::StringLength
-    # @private
-    def internal_validate_maxLength(result_builder)
+  module Schema::Elements
+    MAX_LENGTH = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('maxLength')
         value = schema_content['maxLength']
         # The value of this keyword MUST be a non-negative integer.
@@ -21,10 +22,15 @@ module JSI
           result_builder.schema_error('`maxLength` is not a non-negative integer', 'maxLength')
         end
       end
-    end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MAX_LENGTH = element_map
+  end # module Schema::Elements
 
-    # @private
-    def internal_validate_minLength(result_builder)
+  module Schema::Elements
+    MIN_LENGTH = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('minLength')
         value = schema_content['minLength']
         # The value of this keyword MUST be a non-negative integer.
@@ -42,6 +48,8 @@ module JSI
           result_builder.schema_error('`minLength` is not a non-negative integer', 'minLength')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MIN_LENGTH = element_map
+  end # module Schema::Elements
 end

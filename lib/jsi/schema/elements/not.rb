@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::Not
-    # @private
-    def internal_validate_not(result_builder)
+  module Schema::Elements
+    NOT = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('not')
         # This keyword's value MUST be a valid JSON Schema.
         # An instance is valid against this keyword if it fails to validate successfully against the schema
@@ -15,6 +16,8 @@ module JSI
           keyword: 'not',
         )
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # NOT = element_map
+  end # module Schema::Elements
 end

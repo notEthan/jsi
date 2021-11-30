@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Validation::ArrayLength
-    # @private
-    def internal_validate_maxItems(result_builder)
+  module Schema::Elements
+    MAX_ITEMS = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('maxItems')
         value = schema_content['maxItems']
         # The value of this keyword MUST be a non-negative integer.
@@ -20,10 +21,15 @@ module JSI
           result_builder.schema_error('`maxItems` is not a non-negative integer', 'maxItems')
         end
       end
-    end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MAX_ITEMS = element_map
+  end # module Schema::Elements
 
-    # @private
-    def internal_validate_minItems(result_builder)
+  module Schema::Elements
+    MIN_ITEMS = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('minItems')
         value = schema_content['minItems']
         # The value of this keyword MUST be a non-negative integer.
@@ -40,11 +46,15 @@ module JSI
           result_builder.schema_error('`minItems` is not a non-negative integer', 'minItems')
         end
       end
-    end
-  end
-  module Schema::Validation::UniqueItems
-    # @private
-    def internal_validate_uniqueItems(result_builder)
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # MIN_ITEMS = element_map
+  end # module Schema::Elements
+
+  module Schema::Elements
+    UNIQUE_ITEMS = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:validate) do
       if keyword?('uniqueItems')
         value = schema_content['uniqueItems']
         # The value of this keyword MUST be a boolean.
@@ -64,6 +74,8 @@ module JSI
           result_builder.schema_error('`uniqueItems` is not a boolean', 'uniqueItems')
         end
       end
-    end
-  end
+        end # element.add_action(:validate)
+      end # Schema::Element.new
+    end # UNIQUE_ITEMS = element_map
+  end # module Schema::Elements
 end
