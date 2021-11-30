@@ -28,9 +28,6 @@ module JSI
     autoload :Draft07, 'jsi/schema/draft07'
     autoload(:Draft202012, 'jsi/schema/draft202012')
 
-    class Error < StandardError
-    end
-
     # an exception raised when a thing is expected to be a JSI::Schema, but is not
     class NotASchemaError < TypeError
     end
