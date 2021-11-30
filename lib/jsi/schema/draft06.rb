@@ -8,6 +8,19 @@ module JSI
       include IntegerAllows0Fraction
       include Schema::Application::Draft06
       include Schema::Validation::Draft06
+
+      VOCABULARY = Vocabulary.new(
+        elements: [
+        ],
+      )
+
+      DIALECT = Dialect.new(
+        vocabularies: [VOCABULARY],
+      )
+
+      def dialect
+        DIALECT
+      end
     end
   end
 end
