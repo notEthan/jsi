@@ -19,7 +19,6 @@ Gem::Specification.new do |spec|
     'README.md',
     'readme.rb',
     '.yardopts',
-    'Rakefile.rb',
     *Dir['lib/**/*'],
     *Dir['\\{resources\\}/schemas/**/*'],
   ].reject { |f| File.lstat(f).ftype == 'directory' }

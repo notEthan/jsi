@@ -16,6 +16,7 @@ JSI_GEM_IGNORE_FILES = %w(
   .gitmodules
   Gemfile
   jsi.gemspec
+  Rakefile.rb
   test/**/*
   \\{resources\\}/icons/**/*
   \\{resources\\}/test/**/*
