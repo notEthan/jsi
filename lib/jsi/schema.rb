@@ -163,6 +163,8 @@ module JSI
       #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
       #       rather than an id declared in the schema - the schema is resolvable by this URI in the
       #       {JSI::SchemaRegistry}.
+      # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
+      #   will be registered in the schema registry indicated by param `schema_registry`.
       # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
@@ -172,14 +174,15 @@ module JSI
       #   the given `schema_content` and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
           uri: nil,
+          register: true,
           stringify_symbol_keys: true,
           &block
       )
         schema_jsi = new_jsi(schema_content,
           uri: uri,
+          register: register,
           stringify_symbol_keys: stringify_symbol_keys,
         )
-        JSI.schema_registry.register(schema_jsi)
         if block
           schema_jsi.jsi_schema_module_exec(&block)
         end
@@ -267,6 +270,7 @@ module JSI
       #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::DescribesSchema#new_schema)
+      # @param register (see DescribesSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
       # @yield (see Schema::DescribesSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
@@ -276,11 +280,13 @@ module JSI
           # params of DescribesSchema#new_schema have their default values repeated here. delegating in a splat
           # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
+          register: true,
           stringify_symbol_keys: true,
           &block
       )
         new_schema_params = {
           uri: uri,
+          register: register,
           stringify_symbol_keys: stringify_symbol_keys,
         }
         default_metaschema_new_schema = -> {
