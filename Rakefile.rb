@@ -57,7 +57,7 @@ task :gem do
           if JSI_GEM_IGNORE_FILES.include?(file)
             # pass
           else
-            file_error.("git file not in spec: #{file}")
+            file_error.("git file not in gemspec: #{file}")
           end
         end
       else
