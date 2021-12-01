@@ -155,7 +155,7 @@ module JSI
         schema_jsi = new_jsi(Util.deep_stringify_symbol_keys(schema_content),
           uri: uri,
         )
-        schema_jsi.register_schema
+        JSI.schema_registry.register(schema_jsi)
         schema_jsi
       end
 
@@ -411,13 +411,6 @@ module JSI
         uri: nil
     )
       SchemaSet[self].new_jsi(instance, uri: uri)
-    end
-
-    # registers this schema with `JSI.schema_registry`
-    #
-    # @return [void]
-    def register_schema
-      JSI.schema_registry.register(self)
     end
 
     # does this schema itself describe a schema?
