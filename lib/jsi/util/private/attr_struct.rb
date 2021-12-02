@@ -60,12 +60,14 @@ module JSI
         unless attributes.respond_to?(:to_hash)
           raise(TypeError, "expected attributes to be a Hash; got: #{attributes.inspect}")
         end
-        attributes = attributes.map { |k, v| {self.class.convert_key(k) => v} }.inject({}, &:update)
-        bad = attributes.keys.reject { |k| attribute_keys.include?(k) }
+        @attributes = {}
+        attributes.each do |k, v|
+          @attributes[self.class.convert_key(k)] = v
+        end
+        bad = @attributes.keys.reject { |k| attribute_keys.include?(k) }
         unless bad.empty?
           raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
         end
-        @attributes = attributes
       end
 
       def [](key)
