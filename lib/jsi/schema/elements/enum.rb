@@ -12,13 +12,13 @@ module JSI
         if value.respond_to?(:to_ary)
           # An instance validates successfully against this keyword if its value is equal to one of the
           # elements in this keyword's array value.
-          result_builder.validate(
-            value.include?(result_builder.instance),
+          validate(
+            value.include?(instance),
             'instance is not equal to any `enum` value',
             keyword: 'enum',
           )
         else
-          result_builder.schema_error('`enum` is not an array', 'enum')
+          schema_error('`enum` is not an array', 'enum')
         end
       end
         end # element.add_action(:validate)

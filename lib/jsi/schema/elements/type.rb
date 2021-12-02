@@ -7,7 +7,6 @@ module JSI
         element.add_action(:validate) do
       if keyword?('type')
         value = schema_content['type']
-        instance = result_builder.instance
         # The value of this keyword MUST be either a string or an array. If it is an array, elements of
         # the array MUST be strings and MUST be unique.
         if value.respond_to?(:to_str) || value.respond_to?(:to_ary)
@@ -30,19 +29,19 @@ module JSI
               when 'integer'
                 internal_integer?(instance)
               else
-                result_builder.schema_error("`type` is not one of: null, boolean, object, array, string, number, or integer", 'type')
+                schema_error("`type` is not one of: null, boolean, object, array, string, number, or integer", 'type')
               end
             else
-              result_builder.schema_error("`type` is not a string at index #{i}", 'type')
+              schema_error("`type` is not a string at index #{i}", 'type')
             end
           end
-          result_builder.validate(
+          validate(
             matched_type,
             'instance type does not match `type` value',
             keyword: 'type',
           )
         else
-          result_builder.schema_error('`type` is not a string or array', 'type')
+          schema_error('`type` is not a string or array', 'type')
         end
       end
         end # element.add_action(:validate)

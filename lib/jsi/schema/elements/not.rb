@@ -9,8 +9,8 @@ module JSI
         # This keyword's value MUST be a valid JSON Schema.
         # An instance is valid against this keyword if it fails to validate successfully against the schema
         # defined by this keyword.
-        not_valid = result_builder.inplace_subschema_validate(['not']).valid?
-        result_builder.validate(
+        not_valid = inplace_subschema_validate(['not']).valid?
+        validate(
           !not_valid,
           'instance is valid against the schema specified as `not` value',
           keyword: 'not',

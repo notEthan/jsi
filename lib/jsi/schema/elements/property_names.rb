@@ -11,16 +11,16 @@ module JSI
         # If the instance is an object, this keyword validates if every property name in the instance
         # validates against the provided schema. Note the property name that the schema is testing will
         # always be a string.
-        if result_builder.instance.respond_to?(:to_hash)
+        if instance.respond_to?(:to_hash)
           results = {}
-          result_builder.instance.keys.each do |property_name|
+          instance.keys.each do |property_name|
             results[property_name] = subschema(['propertyNames']).internal_validate_instance(
               Ptr[],
               property_name,
-              validate_only: result_builder.validate_only,
+              validate_only: validate_only,
             )
           end
-          result_builder.validate(
+          validate(
             results.values.all?(&:valid?),
             'instance object property names are not all valid against `propertyNames` schema value',
             keyword: 'propertyNames',
