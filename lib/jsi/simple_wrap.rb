@@ -17,9 +17,6 @@ module JSI
       dialect
     end
 
-    def internal_child_applicate_keywords(token, instance)
-    end
-
     def internal_validate_keywords(result_builder)
     end
   end

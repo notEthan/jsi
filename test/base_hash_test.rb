@@ -332,8 +332,6 @@ describe 'JSI::Base hash' do
     describe "when a schema's `propertyNames` is not a schema" do
       let(:schema) do
         JSI.new_metaschema({}, schema_implementation_modules: [Module.new {
-          define_method(:internal_child_applicate_keywords) { |*| }
-
           dialect = JSI::Schema::Dialect.new(vocabularies: [
             JSI::Schema::Vocabulary.new(elements: [
               JSI::Schema::Elements::SELF[],

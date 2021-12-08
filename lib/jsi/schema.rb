@@ -716,8 +716,6 @@ module JSI
     def each_child_applicator_schema(token, instance, &block)
       return to_enum(__method__, token, instance) unless block
 
-      internal_child_applicate_keywords(token, instance, &block)
-
       cxt = Cxt::ChildApplication.new(
         schema: self,
         instance: instance,
