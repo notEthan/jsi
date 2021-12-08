@@ -147,7 +147,12 @@ describe 'JSI::SchemaRegistry' do
       err = assert_raises(JSI::SchemaRegistry::ResourceNotFound) do
         schema_registry.find(uri)
       end
-      assert(err.message.start_with?("URI #{uri} is not registered."))
+      msg = <<~MSG
+        URI http://jsi/schema_registry/6d86 was registered with autoload_uri but the result did not contain a resource with that URI.
+        the resource resulting from autoload_uri was:
+        \#{<JSI>}
+        MSG
+      assert_equal(msg.chomp, err.message)
     end
 
     it 'autoloads a uri but the block does not result in a JSI' do

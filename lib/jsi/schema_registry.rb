@@ -89,11 +89,21 @@ module JSI
       uri = Addressable::URI.parse(uri)
       ensure_uri_absolute(uri)
       if @autoload_uris.key?(uri) && !@resources.key?(uri)
-        register(@autoload_uris[uri].call)
+        autoloaded = @autoload_uris[uri].call
+        register(autoloaded)
       end
       registered_uris = @resources.keys
       if !registered_uris.include?(uri)
-        raise(ResourceNotFound, "URI #{uri} is not registered. registered URIs:\n#{registered_uris.join("\n")}")
+        if @autoload_uris.key?(uri)
+          msg = [
+            "URI #{uri} was registered with autoload_uri but the result did not contain a resource with that URI.",
+            "the resource resulting from autoload_uri was:",
+            autoloaded.pretty_inspect.chomp,
+          ]
+        else
+          msg = ["URI #{uri} is not registered. registered URIs:", *registered_uris]
+        end
+        raise(ResourceNotFound, msg.join("\n"))
       end
       @resources[uri]
     end
