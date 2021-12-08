@@ -18,5 +18,10 @@ module JSI
     autoload(:ALL_OF, 'jsi/schema/elements/some_of')
     autoload(:ANY_OF, 'jsi/schema/elements/some_of')
     autoload(:ONE_OF, 'jsi/schema/elements/some_of')
+
+    # child subschema application
+    autoload(:ITEMS, 'jsi/schema/elements/items')
+    autoload(:CONTAINS, 'jsi/schema/elements/contains')
+    autoload(:PROPERTIES, 'jsi/schema/elements/properties')
   end
 end

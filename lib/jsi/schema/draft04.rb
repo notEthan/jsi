@@ -19,7 +19,15 @@ module JSI
 
           # draft-fge-json-schema-validation-00 5.  Validation keywords sorted by instance types
 
+          # draft-fge-json-schema-validation-00 5.3.  Validation keywords for arrays
+
+          # draft-fge-json-schema-validation-00 5.3.1.  additionalItems and items
+          Schema::Elements::ITEMS[],
+
           # draft-fge-json-schema-validation-00 5.4.  Validation keywords for objects
+
+          # draft-fge-json-schema-validation-00 5.4.4.  additionalProperties, properties and patternProperties
+          Schema::Elements::PROPERTIES[],
 
           # draft-fge-json-schema-validation-00 5.4.5.  dependencies
           Schema::Elements::DEPENDENCIES[],

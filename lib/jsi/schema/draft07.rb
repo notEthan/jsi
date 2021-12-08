@@ -21,7 +21,21 @@ module JSI
 
           # draft-handrews-json-schema-validation-01 6.  Validation Keywords
 
+          # draft-handrews-json-schema-validation-01 6.4.  Validation Keywords for Arrays
+
+          # draft-handrews-json-schema-validation-01 6.4.1.  items
+          # draft-handrews-json-schema-validation-01 6.4.2.  additionalItems
+          Schema::Elements::ITEMS[],
+
+          # draft-handrews-json-schema-validation-01 6.4.6.  contains
+          Schema::Elements::CONTAINS[],
+
           # draft-handrews-json-schema-validation-01 6.5.  Validation Keywords for Objects
+
+          # draft-handrews-json-schema-validation-01 6.5.4.  properties
+          # draft-handrews-json-schema-validation-01 6.5.5.  patternProperties
+          # draft-handrews-json-schema-validation-01 6.5.6.  additionalProperties
+          Schema::Elements::PROPERTIES[],
 
           # draft-handrews-json-schema-validation-01 6.5.7.  dependencies
           Schema::Elements::DEPENDENCIES[],

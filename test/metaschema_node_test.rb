@@ -5,6 +5,7 @@ BASIC_DIALECT = JSI::Schema::Dialect.new(
     JSI::Schema::Vocabulary.new(elements: [
       JSI::Schema::Elements::REF[],
       JSI::Schema::Elements::SELF[],
+      JSI::Schema::Elements::PROPERTIES[],
     ]),
   ],
 )
