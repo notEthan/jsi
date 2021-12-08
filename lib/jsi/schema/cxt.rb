@@ -25,6 +25,7 @@ module JSI
 
     class Cxt
       autoload(:InplaceApplication, 'jsi/schema/cxt/inplace_application')
+      autoload(:ChildApplication, 'jsi/schema/cxt/child_application')
     end
 
     Cxt::Block = Cxt.subclass('block')
