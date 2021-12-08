@@ -51,11 +51,11 @@ module JSI
       nil
     end
 
-    # takes a URI identifying a schema to be loaded by the given block
+    # takes a URI identifying a resource to be loaded by the given block
     # when a reference to the URI is followed.
     #
     # @param uri [Addressable::URI]
-    # @yieldreturn [JSI::Base] a document containing the schema identified by the given uri
+    # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
       uri = Addressable::URI.parse(uri)
