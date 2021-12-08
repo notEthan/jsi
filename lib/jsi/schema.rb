@@ -720,6 +720,15 @@ module JSI
 
       internal_child_applicate_keywords(token, instance, &block)
 
+      cxt = Cxt::ChildApplication.new(
+        schema: self,
+        instance: instance,
+        token: token,
+        block: block,
+      )
+
+      dialect.invoke(:child_applicate, cxt)
+
       nil
     end
 
