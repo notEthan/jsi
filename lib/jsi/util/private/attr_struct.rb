@@ -15,7 +15,7 @@ module JSI
       class << self
         # creates a AttrStruct subclass with the given attribute keys.
         # @param attribute_keys [Enumerable<String, Symbol>]
-        def [](*attribute_keys)
+        def subclass(*attribute_keys)
           unless self == AttrStruct
             # :nocov:
             raise(NotImplementedError, "AttrStruct multiple inheritance not supported")
@@ -44,6 +44,8 @@ module JSI
             end
           end
         end
+
+        alias_method :[], :subclass
 
         # returns a frozen string, given a string or symbol.
         # returns anything else as-is for the caller to handle.
