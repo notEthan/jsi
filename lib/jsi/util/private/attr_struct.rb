@@ -118,6 +118,11 @@ module JSI
         self.class.attribute_keys
       end
 
+      def freeze
+        @attributes.freeze
+        super
+      end
+
       include FingerprintHash
 
       # see {Util::Private::FingerprintHash}
