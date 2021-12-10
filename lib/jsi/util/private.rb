@@ -7,6 +7,10 @@ module JSI
   module Util::Private
     autoload :AttrStruct, 'jsi/util/private/attr_struct'
 
+    EMPTY_ARY = [].freeze
+
+    EMPTY_SET = Set[].freeze
+
     # is the given name ok to use as a ruby method name?
     def ok_ruby_method_name?(name)
       # must be a string
