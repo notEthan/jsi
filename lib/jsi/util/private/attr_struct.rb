@@ -16,21 +16,17 @@ module JSI
         # creates a AttrStruct subclass with the given attribute keys.
         # @param attribute_keys [Enumerable<String, Symbol>]
         def subclass(*attribute_keys)
-          unless self == AttrStruct
-            # :nocov:
-            raise(NotImplementedError, "AttrStruct multiple inheritance not supported")
-            # :nocov:
-          end
-
           bad = attribute_keys.reject { |key| key.respond_to?(:to_str) || key.is_a?(Symbol) }
           unless bad.empty?
             raise ArgumentError, "attribute keys must be String or Symbol; got keys: #{bad.map(&:inspect).join(', ')}"
           end
           attribute_keys = attribute_keys.map { |key| convert_key(key) }
 
-          Class.new(AttrStruct).tap do |klass|
-            klass.define_singleton_method(:attribute_keys) { attribute_keys }
-            klass.send(:define_method, :attribute_keys) { attribute_keys }
+          all_attribute_keys = (self.attribute_keys + attribute_keys).freeze
+
+          Class.new(self).tap do |klass|
+            klass.define_singleton_method(:attribute_keys) { all_attribute_keys }
+
             attribute_keys.each do |attribute_key|
               # reader
               klass.send(:define_method, attribute_key) do
@@ -46,6 +42,13 @@ module JSI
         end
 
         alias_method :[], :subclass
+
+        # the attribute keys defined for this class
+        # @return [Set<String>]
+        def attribute_keys
+          # empty for AttrStruct itself; redefined on each subclass
+          Util::Private::EMPTY_SET
+        end
 
         # returns a frozen string, given a string or symbol.
         # returns anything else as-is for the caller to handle.
@@ -106,6 +109,11 @@ module JSI
         }
         q.breakable ''
         q.text '>'
+      end
+
+      # (see AttrStruct.attribute_keys)
+      def attribute_keys
+        self.class.attribute_keys
       end
 
       include FingerprintHash
