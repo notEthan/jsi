@@ -7,9 +7,6 @@ module JSI
 
     # @private
     def internal_inplace_applicate_keywords(instance, visited_refs, &block)
-      # self is the first applicator schema if $ref has not short-circuited it
-      yield self
-
       # 5.4.5.  dependencies
       internal_applicate_dependencies(instance, visited_refs, &block)
 

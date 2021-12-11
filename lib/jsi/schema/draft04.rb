@@ -13,6 +13,9 @@ module JSI
         elements: [
           # draft-pbryan-zyp-json-ref-03
           Schema::Elements::REF[],
+
+          # the schema itself
+          Schema::Elements::SELF[],
         ],
       )
 

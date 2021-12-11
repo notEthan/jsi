@@ -15,6 +15,9 @@ module JSI
 
           # draft-handrews-json-schema-01 8.3.  Schema References With "$ref"
           Schema::Elements::REF[],
+
+          # the schema itself
+          Schema::Elements::SELF[],
         ],
       )
 
