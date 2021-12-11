@@ -11,6 +11,10 @@ module JSI
 
       VOCABULARY = Vocabulary.new(
         elements: [
+          # draft-handrews-json-schema-01 8.  Base URI and Dereferencing
+
+          # draft-handrews-json-schema-01 8.3.  Schema References With "$ref"
+          Schema::Elements::REF[],
         ],
       )
 

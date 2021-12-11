@@ -6,5 +6,7 @@ module JSI
   end
 
   module Schema::Elements
+    # $ref in-place application
+    autoload(:REF, 'jsi/schema/elements/ref')
   end
 end

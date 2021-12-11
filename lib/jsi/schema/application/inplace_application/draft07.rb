@@ -2,16 +2,12 @@
 
 module JSI
   module Schema::Application::InplaceApplication::Draft07
-    include Schema::Application::InplaceApplication::Ref
     include Schema::Application::InplaceApplication::Dependencies
     include Schema::Application::InplaceApplication::IfThenElse
     include Schema::Application::InplaceApplication::SomeOf
 
     # @private
     def internal_inplace_applicate_keywords(instance, visited_refs, &block)
-      # json-schema 8.  Schema references with $ref
-      internal_applicate_ref(instance, visited_refs, throw_done: true, &block)
-
       # self is the first applicator schema if $ref has not short-circuited it
       block.call(self)
 

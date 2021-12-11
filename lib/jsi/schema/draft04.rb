@@ -11,6 +11,8 @@ module JSI
 
       VOCABULARY = Vocabulary.new(
         elements: [
+          # draft-pbryan-zyp-json-ref-03
+          Schema::Elements::REF[],
         ],
       )
 
