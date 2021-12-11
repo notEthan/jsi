@@ -16,6 +16,8 @@ module JSI
     autoload(:Dialect, 'jsi/schema/dialect')
     autoload(:Cxt, 'jsi/schema/cxt')
 
+    autoload(:Elements, 'jsi/schema/elements')
+
     autoload :Application, 'jsi/schema/application'
     autoload :Validation, 'jsi/schema/validation'
 
