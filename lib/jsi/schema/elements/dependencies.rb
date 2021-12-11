@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Application::InplaceApplication::Dependencies
-    # @private
-    def internal_applicate_dependencies(instance, visited_refs, &block)
+  module Schema::Elements
+    DEPENDENCIES = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:inplace_applicate) do
       if keyword?('dependencies')
         value = schema_content['dependencies']
         # This keyword's value MUST be an object. Each property specifies a dependency.  Each dependency
@@ -23,6 +24,8 @@ module JSI
           end
         end
       end
-    end
-  end
+        end # element.add_action(:inplace_applicate)
+      end # Schema::Element.new
+    end # DEPENDENCIES = element_map
+  end # module Schema::Elements
 end

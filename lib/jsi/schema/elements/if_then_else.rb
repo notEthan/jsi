@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Application::InplaceApplication::IfThenElse
-    # @private
-    def internal_applicate_ifthenelse(instance, visited_refs, &block)
+  module Schema::Elements
+    IF_THEN_ELSE = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:inplace_applicate) do
       if keyword?('if')
         if subschema(['if']).instance_valid?(instance)
           if keyword?('then')
@@ -15,6 +16,8 @@ module JSI
           end
         end
       end
-    end
-  end
+        end # element.add_action(:inplace_applicate)
+      end # Schema::Element.new
+    end # IF_THEN_ELSE = element_map
+  end # module Schema::Elements
 end

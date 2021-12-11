@@ -16,6 +16,20 @@ module JSI
 
           # the schema itself
           Schema::Elements::SELF[],
+
+          # draft-fge-json-schema-validation-00 5.  Validation keywords sorted by instance types
+
+          # draft-fge-json-schema-validation-00 5.4.  Validation keywords for objects
+
+          # draft-fge-json-schema-validation-00 5.4.5.  dependencies
+          Schema::Elements::DEPENDENCIES[],
+
+          # draft-fge-json-schema-validation-00 5.5.  Validation keywords for any instance type
+
+          # draft-fge-json-schema-validation-00 5.5.3.  allOf
+          # draft-fge-json-schema-validation-00 5.5.4.  anyOf
+          # draft-fge-json-schema-validation-00 5.5.5.  oneOf
+          Schema::Elements::SOME_OF[],
         ],
       )
 

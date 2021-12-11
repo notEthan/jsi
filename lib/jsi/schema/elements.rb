@@ -11,5 +11,10 @@ module JSI
 
     # $ref in-place application
     autoload(:REF, 'jsi/schema/elements/ref')
+
+    # in-place subschema application
+    autoload(:IF_THEN_ELSE, 'jsi/schema/elements/if_then_else')
+    autoload(:DEPENDENCIES, 'jsi/schema/elements/dependencies')
+    autoload(:SOME_OF, 'jsi/schema/elements/some_of')
   end
 end

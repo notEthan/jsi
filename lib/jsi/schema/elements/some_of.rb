@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Schema::Application::InplaceApplication::SomeOf
-    # @private
-    def internal_applicate_someOf(instance, visited_refs, &block)
+  module Schema::Elements
+    SOME_OF = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:inplace_applicate) do
       if keyword?('allOf') && schema_content['allOf'].respond_to?(:to_ary)
         schema_content['allOf'].each_index do |i|
           subschema(['allOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
@@ -39,6 +40,8 @@ module JSI
           subschema(['oneOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
         end
       end
-    end
-  end
+        end # element.add_action(:inplace_applicate)
+      end # Schema::Element.new
+    end # SOME_OF = element_map
+  end # module Schema::Elements
 end

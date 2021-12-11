@@ -16,6 +16,16 @@ module JSI
 
           # the schema itself
           Schema::Elements::SELF[],
+
+          # draft-wright-json-schema-validation-01 6.  Validation keywords
+
+          # draft-wright-json-schema-validation-01 6.21.  dependencies
+          Schema::Elements::DEPENDENCIES[],
+
+          # draft-wright-json-schema-validation-01 6.26.  allOf
+          # draft-wright-json-schema-validation-01 6.27.  anyOf
+          # draft-wright-json-schema-validation-01 6.28.  oneOf
+          Schema::Elements::SOME_OF[],
         ],
       )
 
