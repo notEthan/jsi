@@ -683,6 +683,15 @@ module JSI
       return to_enum(__method__, instance, visited_refs: visited_refs) unless block
 
       catch(:jsi_application_done) do
+      cxt = Cxt::InplaceApplication.new(
+        schema: self,
+        instance: instance,
+        visited_refs: visited_refs,
+        block: block,
+      )
+
+      dialect.invoke(:inplace_applicate, cxt)
+
         internal_inplace_applicate_keywords(instance, visited_refs, &block)
       end
 
