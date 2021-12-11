@@ -13,7 +13,7 @@ module JSI
         resolve_ref = proc do
           next if !keyword_value_str?('$ref')
           ref = schema.schema_ref('$ref')
-          next if visited_refs.include?(ref)
+          raise(ResolutionError, "cyclical $ref application") if visited_refs.include?(ref)
           resolved_schema = ref.deref_schema
           [resolved_schema, ref]
         end

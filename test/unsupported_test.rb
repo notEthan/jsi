@@ -143,8 +143,9 @@ describe 'unsupported behavior' do
         }
       end
 
-      it("doesn't choke") do
-        assert(subject.jsi_valid?)
+      it("raises ResolutionError") do
+        assert_raises(JSI::ResolutionError) { subject }
+        assert_raises(JSI::ResolutionError) { schema.instance_validate(instance) }
       end
     end
 
@@ -163,8 +164,9 @@ describe 'unsupported behavior' do
         }
       end
 
-      it("doesn't choke") do
-        assert(subject.jsi_valid?)
+      it("raises ResolutionError") do
+        assert_raises(JSI::ResolutionError) { subject }
+        assert_raises(JSI::ResolutionError) { schema.instance_validate(instance) }
       end
     end
   end
