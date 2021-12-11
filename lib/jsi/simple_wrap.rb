@@ -20,9 +20,6 @@ module JSI
     def internal_child_applicate_keywords(token, instance)
     end
 
-    def internal_inplace_applicate_keywords(instance, visited_refs)
-    end
-
     def internal_validate_keywords(result_builder)
     end
   end

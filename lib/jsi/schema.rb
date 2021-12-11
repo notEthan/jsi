@@ -691,8 +691,6 @@ module JSI
       )
 
       dialect.invoke(:inplace_applicate, cxt)
-
-        internal_inplace_applicate_keywords(instance, visited_refs, &block)
       end
 
       nil
