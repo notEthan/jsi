@@ -16,6 +16,38 @@ module JSI
         end
       end
         end # element.add_action(:inplace_applicate)
+
+        element.add_action(:validate) do
+          if keyword?('$ref')
+            value = schema_content['$ref']
+
+            if value.respond_to?(:to_str)
+              schema_ref = schema.schema_ref('$ref')
+
+              if visited_refs.include?(schema_ref)
+                schema_error('self-referential schema structure', '$ref')
+              else
+                ref_result = schema_ref.deref_schema.internal_validate_instance(
+                  instance_ptr,
+                  instance_document,
+                  validate_only: validate_only,
+                  visited_refs: visited_refs + [schema_ref],
+                )
+                validate(
+                  ref_result.valid?,
+                  'instance is not valid against the schema referenced by `$ref` value',
+                  keyword: '$ref',
+                  results: [ref_result],
+                )
+                if exclusive
+                  throw(:jsi_validation_result, result)
+                end
+              end
+            else
+              schema_error("`$ref` is not a string", '$ref')
+            end
+          end
+        end # element.add_action(:validate)
       end # Schema::Element.new
     end # REF = element_map
   end # module Schema::Elements
