@@ -6,8 +6,8 @@ module JSI
     autoload :Draft06, 'jsi/schema/application/child_application/draft06'
     autoload :Draft07, 'jsi/schema/application/child_application/draft07'
 
-    autoload :Items, 'jsi/schema/application/child_application/items'
-    autoload :Contains, 'jsi/schema/application/child_application/contains'
-    autoload :Properties, 'jsi/schema/application/child_application/properties'
+    autoload(:Items, 'jsi/schema/elements/items')
+    autoload(:Contains, 'jsi/schema/elements/contains')
+    autoload(:Properties, 'jsi/schema/elements/properties')
   end
 end
