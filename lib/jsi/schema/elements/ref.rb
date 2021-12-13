@@ -5,6 +5,11 @@ module JSI
     # exclusive [Boolean]: whether to abort invocation of subsequent actions when a $ref is evaluated
     REF = element_map do |exclusive: |
       Schema::Element.new do |element|
+        if exclusive
+          # $ref must come before all other elements to abort evaluation
+          element.required_before_elements { |_| true }
+        end
+
         element.add_action(:inplace_applicate) do
       if keyword?('$ref') && schema_content['$ref'].respond_to?(:to_str)
         ref = schema.schema_ref('$ref')
