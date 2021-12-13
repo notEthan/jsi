@@ -6,6 +6,9 @@ module JSI
   end
 
   module Schema::Elements
+    # the schema itself
+    autoload(:SELF, 'jsi/schema/elements/self')
+
     # $ref in-place application
     autoload(:REF, 'jsi/schema/elements/ref')
   end
