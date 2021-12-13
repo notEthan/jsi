@@ -26,7 +26,7 @@ module JSI
           unless bad.empty?
             raise ArgumentError, "attribute keys must be String or Symbol; got keys: #{bad.map(&:inspect).join(', ')}"
           end
-          attribute_keys = attribute_keys.map { |key| key.is_a?(Symbol) ? key.to_s : key }
+          attribute_keys = attribute_keys.map { |key| convert_key(key) }
 
           Class.new(AttrStruct).tap do |klass|
             klass.define_singleton_method(:attribute_keys) { attribute_keys }
@@ -44,13 +44,21 @@ module JSI
             end
           end
         end
+
+        # returns a frozen string, given a string or symbol.
+        # returns anything else as-is for the caller to handle.
+        # @api private
+        def convert_key(key)
+          # TODO use Symbol#name when available on supported rubies
+          key.is_a?(Symbol) ? key.to_s.freeze : key.frozen? ? key : key.is_a?(String) ? key.dup.freeze : key
+        end
       end
 
       def initialize(attributes = {})
         unless attributes.respond_to?(:to_hash)
           raise(TypeError, "expected attributes to be a Hash; got: #{attributes.inspect}")
         end
-        attributes = attributes.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
+        attributes = attributes.map { |k, v| {self.class.convert_key(k) => v} }.inject({}, &:update)
         bad = attributes.keys.reject { |k| attribute_keys.include?(k) }
         unless bad.empty?
           raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
@@ -59,12 +67,11 @@ module JSI
       end
 
       def [](key)
-        key = key.to_s if key.is_a?(Symbol)
-        @attributes[key]
+        @attributes[key.is_a?(Symbol) ? key.to_s : key]
       end
 
       def []=(key, value)
-        key = key.to_s if key.is_a?(Symbol)
+        key = self.class.convert_key(key)
         unless attribute_keys.include?(key)
           raise UndefinedAttributeKey, "undefined attribute key: #{key.inspect}"
         end
