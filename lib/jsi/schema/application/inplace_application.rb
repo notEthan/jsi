@@ -6,9 +6,9 @@ module JSI
     autoload :Draft06, 'jsi/schema/application/inplace_application/draft06'
     autoload :Draft07, 'jsi/schema/application/inplace_application/draft07'
 
-    autoload :Ref, 'jsi/schema/application/inplace_application/ref'
-    autoload :SomeOf, 'jsi/schema/application/inplace_application/someof'
-    autoload :IfThenElse, 'jsi/schema/application/inplace_application/ifthenelse'
-    autoload :Dependencies, 'jsi/schema/application/inplace_application/dependencies'
+    autoload(:Ref, 'jsi/schema/elements/ref')
+    autoload(:SomeOf, 'jsi/schema/elements/some_of')
+    autoload(:IfThenElse, 'jsi/schema/elements/if_then_else')
+    autoload(:Dependencies, 'jsi/schema/elements/dependencies')
   end
 end
