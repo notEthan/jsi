@@ -21,29 +21,29 @@ module JSI
     autoload :Properties, 'jsi/schema/validation/properties'
 
     # property names subschema application
-    autoload :PropertyNames, 'jsi/schema/validation/property_names'
+    autoload(:PropertyNames, 'jsi/schema/elements/property_names')
 
     # any type validation
-    autoload :Type, 'jsi/schema/validation/type'
-    autoload :Enum, 'jsi/schema/validation/enum'
-    autoload :Const, 'jsi/schema/validation/const'
-    autoload :Not,  'jsi/schema/validation/not'
+    autoload(:Type, 'jsi/schema/elements/type')
+    autoload(:Enum, 'jsi/schema/elements/enum')
+    autoload(:Const, 'jsi/schema/elements/const')
+    autoload(:Not,  'jsi/schema/elements/not')
 
     # object validation
-    autoload :Required,    'jsi/schema/validation/required'
+    autoload(:Required,    'jsi/schema/elements/required')
     autoload :Dependencies, 'jsi/schema/validation/dependencies'
-    autoload :MinMaxProperties, 'jsi/schema/validation/object'
+    autoload(:MinMaxProperties, 'jsi/schema/elements/object_validation')
 
     # array validation
-    autoload :ArrayLength, 'jsi/schema/validation/array'
-    autoload :UniqueItems, 'jsi/schema/validation/array'
+    autoload(:ArrayLength, 'jsi/schema/elements/array_validation')
+    autoload(:UniqueItems, 'jsi/schema/elements/array_validation')
 
     # string validation
-    autoload :StringLength, 'jsi/schema/validation/string'
-    autoload :Pattern, 'jsi/schema/validation/pattern'
+    autoload(:StringLength, 'jsi/schema/elements/string_validation')
+    autoload(:Pattern, 'jsi/schema/elements/pattern')
 
     # numeric validation
-    autoload :MultipleOf, 'jsi/schema/validation/numeric'
-    autoload :MinMax,    'jsi/schema/validation/numeric'
+    autoload(:MultipleOf, 'jsi/schema/elements/numeric')
+    autoload(:MinMax,    'jsi/schema/elements/numeric')
   end
 end

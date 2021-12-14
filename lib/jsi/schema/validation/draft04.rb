@@ -2,7 +2,7 @@
 
 module JSI
   module Schema::Validation::Draft04
-    autoload :MinMax, 'jsi/schema/validation/draft04/minmax'
+    autoload(:MinMax, 'jsi/schema/elements/numeric_draft04')
 
     include Schema::Validation::Ref
 
