@@ -13,6 +13,7 @@ module JSI
   module Schema
     autoload(:Element, 'jsi/schema/element')
     autoload(:Vocabulary, 'jsi/schema/vocabulary')
+    autoload(:Dialect, 'jsi/schema/dialect')
 
     autoload :Application, 'jsi/schema/application'
     autoload :Validation, 'jsi/schema/validation'
