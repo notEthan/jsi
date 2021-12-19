@@ -23,9 +23,13 @@ module JSI
           Schema::Elements::DEPENDENCIES[],
 
           # draft-wright-json-schema-validation-01 6.26.  allOf
+          Schema::Elements::ALL_OF[],
+
           # draft-wright-json-schema-validation-01 6.27.  anyOf
+          Schema::Elements::ANY_OF[],
+
           # draft-wright-json-schema-validation-01 6.28.  oneOf
-          Schema::Elements::SOME_OF[],
+          Schema::Elements::ONE_OF[],
         ],
       )
 

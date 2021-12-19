@@ -27,9 +27,13 @@ module JSI
           # draft-fge-json-schema-validation-00 5.5.  Validation keywords for any instance type
 
           # draft-fge-json-schema-validation-00 5.5.3.  allOf
+          Schema::Elements::ALL_OF[],
+
           # draft-fge-json-schema-validation-00 5.5.4.  anyOf
+          Schema::Elements::ANY_OF[],
+
           # draft-fge-json-schema-validation-00 5.5.5.  oneOf
-          Schema::Elements::SOME_OF[],
+          Schema::Elements::ONE_OF[],
         ],
       )
 

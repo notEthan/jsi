@@ -36,9 +36,13 @@ module JSI
           # draft-handrews-json-schema-validation-01 6.7.  Keywords for Applying Subschemas With Boolean Logic
 
           # draft-handrews-json-schema-validation-01 6.7.1.  allOf
+          Schema::Elements::ALL_OF[],
+
           # draft-handrews-json-schema-validation-01 6.7.2.  anyOf
+          Schema::Elements::ANY_OF[],
+
           # draft-handrews-json-schema-validation-01 6.7.3.  oneOf
-          Schema::Elements::SOME_OF[],
+          Schema::Elements::ONE_OF[],
         ],
       )
 

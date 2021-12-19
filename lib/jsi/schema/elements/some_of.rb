@@ -2,7 +2,7 @@
 
 module JSI
   module Schema::Elements
-    SOME_OF = element_map do
+    ALL_OF = element_map do
       Schema::Element.new do |element|
         element.add_action(:inplace_applicate) do
       if keyword?('allOf') && schema_content['allOf'].respond_to?(:to_ary)
@@ -10,6 +10,15 @@ module JSI
           subschema(['allOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
         end
       end
+        end # element.add_action(:inplace_applicate)
+      end # Schema::Element.new
+    end # ALL_OF = element_map
+  end # module Schema::Elements
+
+  module Schema::Elements
+    ANY_OF = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:inplace_applicate) do
       if keyword?('anyOf') && schema_content['anyOf'].respond_to?(:to_ary)
         anyOf = schema_content['anyOf'].each_index.map { |i| subschema(['anyOf', i]) }
         validOf = anyOf.select { |schema| schema.instance_valid?(instance) }
@@ -24,6 +33,15 @@ module JSI
           applicator.each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
         end
       end
+        end # element.add_action(:inplace_applicate)
+      end # Schema::Element.new
+    end # ANY_OF = element_map
+  end # module Schema::Elements
+
+  module Schema::Elements
+    ONE_OF = element_map do
+      Schema::Element.new do |element|
+        element.add_action(:inplace_applicate) do
       if keyword?('oneOf') && schema_content['oneOf'].respond_to?(:to_ary)
         oneOf_idxs = schema_content['oneOf'].each_index
         subschema_idx_valid = Hash.new { |h, i| h[i] = subschema(['oneOf', i]).instance_valid?(instance) }
@@ -42,6 +60,6 @@ module JSI
       end
         end # element.add_action(:inplace_applicate)
       end # Schema::Element.new
-    end # SOME_OF = element_map
+    end # ONE_OF = element_map
   end # module Schema::Elements
 end
