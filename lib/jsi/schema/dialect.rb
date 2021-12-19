@@ -16,6 +16,20 @@ module JSI
 
       # @return [Set<Schema::Element>]
       attr_reader(:elements)
+
+      # Invoke the indicated action of each Element on the given context
+      # @param action_name [Symbol]
+      # @param cxt [Schema::Cxt] the `self` of the action
+      # @return given `cxt`
+      def invoke(action_name, cxt)
+        elements.each do |element|
+          element.actions[action_name].each do |action|
+            cxt.instance_exec(&action)
+          end
+        end
+
+        cxt
+      end
     end
   end
 end
