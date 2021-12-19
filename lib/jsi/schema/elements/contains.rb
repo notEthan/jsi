@@ -24,6 +24,25 @@ module JSI
       end
     end # if instance.respond_to?(:to_ary)
         end # element.add_action(:child_applicate)
+
+        element.add_action(:validate) do
+          if keyword?('contains')
+            # An array instance is valid against "contains" if at least one of its elements is valid against
+            # the given schema.
+            if instance.respond_to?(:to_ary)
+              results = {}
+              instance.each_index do |i|
+                results[i] = child_subschema_validate(i, ['contains'])
+              end
+              validate(
+                results.values.any?(&:valid?),
+                'instance array does not contain any items valid against `contains` schema value',
+                keyword: 'contains',
+                results: results.values,
+              )
+            end
+          end
+        end # element.add_action(:validate)
       end # Schema::Element.new
     end # CONTAINS = element_map
   end # module Schema::Elements

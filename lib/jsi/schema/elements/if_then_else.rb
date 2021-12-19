@@ -17,6 +17,46 @@ module JSI
         end
       end
         end # element.add_action(:inplace_applicate)
+
+        element.add_action(:validate) do
+          if keyword?('if')
+            # This keyword's value MUST be a valid JSON Schema.
+            # This validation outcome of this keyword's subschema has no direct effect on the overall validation
+            # result. Rather, it controls which of the "then" or "else" keywords are evaluated.
+            if_result = inplace_subschema_validate(['if'])
+
+            merge_schema_issues(if_result)
+
+            if if_result.valid?
+              if keyword?('then')
+                then_result = inplace_subschema_validate(['then'])
+                validate(
+                  then_result.valid?,
+                  'instance did not validate against the schema defined by `then` value after validating against the schema defined by the `if` value',
+                  keyword: 'if',
+                  results: [then_result],
+                )
+              end
+            else
+              if keyword?('else')
+                else_result = inplace_subschema_validate(['else'])
+                validate(
+                  else_result.valid?,
+                  'instance did not validate against the schema defined by `else` value after not validating against the schema defined by the `if` value',
+                  keyword: 'if',
+                  results: [else_result],
+                )
+              end
+            end
+          else
+            if keyword?('then')
+              schema_warning('`then` has no effect without adjacent `if` keyword', 'then')
+            end
+            if keyword?('else')
+              schema_warning('`else` has no effect without adjacent `if` keyword', 'else')
+            end
+          end
+        end # element.add_action(:validate)
       end # Schema::Element.new
     end # IF_THEN_ELSE = element_map
   end # module Schema::Elements
