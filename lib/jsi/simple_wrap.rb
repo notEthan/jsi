@@ -6,6 +6,7 @@ module JSI
       Schema::Vocabulary.new(elements: [
         Schema::Element.new do |element|
           element.add_action(:inplace_applicate) { cxt_yield(schema) }
+          element.add_action(:child_applicate) { cxt_yield(schema) }
         end,
       ]),
     ],
@@ -17,7 +18,6 @@ module JSI
     end
 
     def internal_child_applicate_keywords(token, instance)
-      yield self
     end
 
     def internal_inplace_applicate_keywords(instance, visited_refs)
