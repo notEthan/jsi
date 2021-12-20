@@ -18,9 +18,6 @@ module JSI
 
     autoload(:Elements, 'jsi/schema/elements')
 
-    autoload :Application, 'jsi/schema/application'
-    autoload :Validation, 'jsi/schema/validation'
-
     autoload :Issue, 'jsi/schema/issue'
     autoload :Ref, 'jsi/schema/ref'
 

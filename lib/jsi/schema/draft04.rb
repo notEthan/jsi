@@ -6,8 +6,6 @@ module JSI
       include OldId
       include IdWithAnchor
       include IntegerDisallows0Fraction
-      include Schema::Application::Draft04
-      include Schema::Validation::Draft04
 
       VOCABULARY = Vocabulary.new(
         elements: [

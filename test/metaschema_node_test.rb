@@ -11,8 +11,6 @@ BASIC_DIALECT = JSI::Schema::Dialect.new(
 )
 
 module BasicMetaSchemaImplementation
-  include JSI::Schema::Application::Draft06
-
   define_method(:dialect) { BASIC_DIALECT }
 end
 

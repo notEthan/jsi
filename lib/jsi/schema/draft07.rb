@@ -6,8 +6,6 @@ module JSI
       include BigMoneyId
       include IdWithAnchor
       include IntegerAllows0Fraction
-      include Schema::Application::Draft07
-      include Schema::Validation::Draft07
 
       VOCABULARY = Vocabulary.new(
         elements: [
