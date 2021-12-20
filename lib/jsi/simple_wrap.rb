@@ -4,6 +4,9 @@ module JSI
   dialect = Schema::Dialect.new(
     vocabularies: [
       Schema::Vocabulary.new(elements: [
+        Schema::Element.new do |element|
+          element.add_action(:inplace_applicate) { cxt_yield(schema) }
+        end,
       ]),
     ],
   )
@@ -18,7 +21,6 @@ module JSI
     end
 
     def internal_inplace_applicate_keywords(instance, visited_refs)
-      yield self
     end
 
     def internal_validate_keywords(result_builder)
