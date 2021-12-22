@@ -805,19 +805,7 @@ module JSI
       )
 
       catch(:jsi_validation_result) do
-        # note: true/false are not valid as schemas in draft 4; they are only values of
-        # additionalProperties / additionalItems. since their behavior is undefined, though,
-        # it's fine for them to behave the same as boolean schemas in later drafts.
-        # I don't care about draft 4 to implement a different structuring for that.
-        if schema_content == true
-          # noop
-        elsif schema_content == false
-          result_builder.validate(false, 'instance is not valid against `false` schema')
-        elsif schema_content.respond_to?(:to_hash)
           internal_validate_keywords(result_builder)
-        else
-          result_builder.schema_error('schema is not a boolean or a JSON object')
-        end
         dialect.invoke(:validate, result_builder)
 
         result
