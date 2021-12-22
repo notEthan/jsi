@@ -302,6 +302,13 @@ module JSI
       jsi_node_content
     end
 
+    # does this schema contain the given keyword?
+    # @return [Boolean]
+    def keyword?(keyword)
+      schema_content = jsi_node_content
+      schema_content.respond_to?(:to_hash) && schema_content.key?(keyword)
+    end
+
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
     # @return [Addressable::URI, nil]
     def schema_absolute_uri
