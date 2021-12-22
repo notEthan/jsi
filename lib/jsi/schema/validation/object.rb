@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::MinMaxProperties
     # @private
     def internal_validate_maxProperties(result_builder)
-      if schema_content.key?('maxProperties')
+      if keyword?('maxProperties')
         value = schema_content['maxProperties']
         # The value of this keyword MUST be a non-negative integer.
         if internal_integer?(value) && value >= 0
@@ -24,7 +24,7 @@ module JSI
 
     # @private
     def internal_validate_minProperties(result_builder)
-      if schema_content.key?('minProperties')
+      if keyword?('minProperties')
         value = schema_content['minProperties']
         # The value of this keyword MUST be a non-negative integer.
         if internal_integer?(value) && value >= 0

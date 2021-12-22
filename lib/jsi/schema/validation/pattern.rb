@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Pattern
     # @private
     def internal_validate_pattern(result_builder)
-      if schema_content.key?('pattern')
+      if keyword?('pattern')
         value = schema_content['pattern']
         # The value of this keyword MUST be a string.
         if value.respond_to?(:to_str)

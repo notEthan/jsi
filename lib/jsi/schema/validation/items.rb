@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Items
     # @private
     def internal_validate_items(result_builder)
-      if schema_content.key?('items')
+      if keyword?('items')
         value = schema_content['items']
         # The value of "items" MUST be either a valid JSON Schema or an array of valid JSON Schemas.
         if value.respond_to?(:to_ary)
@@ -15,7 +15,7 @@ module JSI
             result_builder.instance.each_index do |i|
               if i < value.size
                 results[i] = result_builder.child_subschema_validate(['items', i], [i])
-              elsif schema_content.key?('additionalItems')
+              elsif keyword?('additionalItems')
                 results[i] = result_builder.child_subschema_validate(['additionalItems'], [i])
               end
             end
@@ -40,12 +40,12 @@ module JSI
               results: results,
             )
           end
-          if schema_content.key?('additionalItems')
+          if keyword?('additionalItems')
             result_builder.schema_warning('`additionalItems` has no effect when adjacent `items` keyword is not an array', 'items')
           end
         end
       else
-        if schema_content.key?('additionalItems')
+        if keyword?('additionalItems')
           result_builder.schema_warning('`additionalItems` has no effect without adjacent `items` keyword', 'items')
         end
       end

@@ -5,7 +5,7 @@ module JSI
     # @private
     def internal_applicate_properties(property_name, &block)
       apply_additional = true
-      if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
+      if keyword?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
         apply_additional = false
         yield subschema(['properties', property_name])
       end
@@ -17,7 +17,7 @@ module JSI
           end
         end
       end
-      if apply_additional && schema_content.key?('additionalProperties')
+      if apply_additional && keyword?('additionalProperties')
         yield subschema(['additionalProperties'])
       end
     end

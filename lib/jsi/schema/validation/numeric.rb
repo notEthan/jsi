@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::MultipleOf
     # @private
     def internal_validate_multipleOf(result_builder)
-      if schema_content.key?('multipleOf')
+      if keyword?('multipleOf')
         value = schema_content['multipleOf']
         # The value of "multipleOf" MUST be a number, strictly greater than 0.
         if value.is_a?(Numeric) && value > 0
@@ -36,7 +36,7 @@ module JSI
   module Schema::Validation::MinMax
     # @private
     def internal_validate_maximum(result_builder)
-      if schema_content.key?('maximum')
+      if keyword?('maximum')
         value = schema_content['maximum']
         # The value of "maximum" MUST be a number, representing an inclusive upper limit for a numeric instance.
         if value.is_a?(Numeric)
@@ -57,7 +57,7 @@ module JSI
 
     # @private
     def internal_validate_exclusiveMaximum(result_builder)
-      if schema_content.key?('exclusiveMaximum')
+      if keyword?('exclusiveMaximum')
         value = schema_content['exclusiveMaximum']
         # The value of "exclusiveMaximum" MUST be number, representing an exclusive upper limit for a numeric instance.
         if value.is_a?(Numeric)
@@ -78,7 +78,7 @@ module JSI
 
     # @private
     def internal_validate_minimum(result_builder)
-      if schema_content.key?('minimum')
+      if keyword?('minimum')
         value = schema_content['minimum']
         # The value of "minimum" MUST be a number, representing an inclusive lower limit for a numeric instance.
         if value.is_a?(Numeric)
@@ -99,7 +99,7 @@ module JSI
 
     # @private
     def internal_validate_exclusiveMinimum(result_builder)
-      if schema_content.key?('exclusiveMinimum')
+      if keyword?('exclusiveMinimum')
         value = schema_content['exclusiveMinimum']
         # The value of "exclusiveMinimum" MUST be number, representing an exclusive lower limit for a numeric instance.
         if value.is_a?(Numeric)

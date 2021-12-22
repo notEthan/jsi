@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::PropertyNames
     # @private
     def internal_validate_propertyNames(result_builder)
-      if schema_content.key?('propertyNames')
+      if keyword?('propertyNames')
         # The value of "propertyNames" MUST be a valid JSON Schema.
         #
         # If the instance is an object, this keyword validates if every property name in the instance

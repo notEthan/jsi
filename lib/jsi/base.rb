@@ -370,7 +370,7 @@ module JSI
           if use_default
             defaults = Set.new
             subinstance_schemas.each do |subinstance_schema|
-              if subinstance_schema.respond_to?(:to_hash) && subinstance_schema.key?('default')
+              if subinstance_schema.keyword?('default')
                 defaults << subinstance_schema['default']
               end
             end

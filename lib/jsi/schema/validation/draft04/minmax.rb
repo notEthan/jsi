@@ -4,18 +4,18 @@ module JSI
   module Schema::Validation::Draft04::MinMax
     # @private
     def internal_validate_maximum(result_builder)
-      if schema_content.key?('exclusiveMaximum')
+      if keyword?('exclusiveMaximum')
         value = schema_content['exclusiveMaximum']
         # The value of "exclusiveMaximum" MUST be a boolean.
         unless [true, false].include?(value)
           result_builder.schema_error('`exclusiveMaximum` is not true or false', 'exclusiveMaximum')
         end
-        if !schema_content.key?('maximum')
+        if !keyword?('maximum')
           result_builder.schema_error('`exclusiveMaximum` has no effect without adjacent `maximum` keyword', 'exclusiveMaximum')
         end
       end
 
-      if schema_content.key?('maximum')
+      if keyword?('maximum')
         value = schema_content['maximum']
         # The value of "maximum" MUST be a JSON number.
         if value.is_a?(Numeric)
@@ -47,18 +47,18 @@ module JSI
 
     # @private
     def internal_validate_minimum(result_builder)
-      if schema_content.key?('exclusiveMinimum')
+      if keyword?('exclusiveMinimum')
         value = schema_content['exclusiveMinimum']
         # The value of "exclusiveMinimum" MUST be a boolean.
         unless [true, false].include?(value)
           result_builder.schema_error('`exclusiveMinimum` is not true or false', 'exclusiveMinimum')
         end
-        if !schema_content.key?('minimum')
+        if !keyword?('minimum')
           result_builder.schema_error('`exclusiveMinimum` has no effect without adjacent `minimum` keyword', 'exclusiveMinimum')
         end
       end
 
-      if schema_content.key?('minimum')
+      if keyword?('minimum')
         value = schema_content['minimum']
         # The value of "minimum" MUST be a JSON number.
         if value.is_a?(Numeric)

@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::AllOf
     # @private
     def internal_validate_allOf(result_builder)
-      if schema_content.key?('allOf')
+      if keyword?('allOf')
         value = schema_content['allOf']
         # This keyword's value MUST be a non-empty array. Each item of the array MUST be a valid JSON Schema.
         if value.respond_to?(:to_ary)
@@ -29,7 +29,7 @@ module JSI
   module Schema::Validation::AnyOf
     # @private
     def internal_validate_anyOf(result_builder)
-      if schema_content.key?('anyOf')
+      if keyword?('anyOf')
         value = schema_content['anyOf']
         # This keyword's value MUST be a non-empty array. Each item of the array MUST be a valid JSON Schema.
         if value.respond_to?(:to_ary)
@@ -56,7 +56,7 @@ module JSI
   module Schema::Validation::OneOf
     # @private
     def internal_validate_oneOf(result_builder)
-      if schema_content.key?('oneOf')
+      if keyword?('oneOf')
         value = schema_content['oneOf']
         # This keyword's value MUST be a non-empty array. Each item of the array MUST be a valid JSON Schema.
         if value.respond_to?(:to_ary)

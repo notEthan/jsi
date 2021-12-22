@@ -7,10 +7,10 @@ module JSI
       if schema_content['items'].respond_to?(:to_ary)
         if schema_content['items'].each_index.to_a.include?(idx)
           yield subschema(['items', idx])
-        elsif schema_content.key?('additionalItems')
+        elsif keyword?('additionalItems')
           yield subschema(['additionalItems'])
         end
-      elsif schema_content.key?('items')
+      elsif keyword?('items')
         yield subschema(['items'])
       end
     end

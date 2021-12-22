@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Enum
     # @private
     def internal_validate_enum(result_builder)
-      if schema_content.key?('enum')
+      if keyword?('enum')
         value = schema_content['enum']
         # The value of this keyword MUST be an array. This array SHOULD have at least one element.
         # Elements in the array SHOULD be unique.

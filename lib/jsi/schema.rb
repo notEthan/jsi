@@ -34,7 +34,7 @@ module JSI
       # the contents of a $id keyword whose value is a string, or nil
       # @return [#to_str, nil]
       def id
-        if schema_content.respond_to?(:to_hash) && schema_content['$id'].respond_to?(:to_str)
+        if keyword?('$id') && schema_content['$id'].respond_to?(:to_str)
           schema_content['$id']
         else
           nil
@@ -47,7 +47,7 @@ module JSI
       # the contents of an `id` keyword whose value is a string, or nil
       # @return [#to_str, nil]
       def id
-        if schema_content.respond_to?(:to_hash) && schema_content['id'].respond_to?(:to_str)
+        if keyword?('id') && schema_content['id'].respond_to?(:to_str)
           schema_content['id']
         else
           nil

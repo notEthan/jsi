@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Type
     # @private
     def internal_validate_type(result_builder)
-      if schema_content.key?('type')
+      if keyword?('type')
         value = schema_content['type']
         instance = result_builder.instance
         # The value of this keyword MUST be either a string or an array. If it is an array, elements of

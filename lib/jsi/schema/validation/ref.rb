@@ -6,7 +6,7 @@ module JSI
     # @param throw_result [Boolean] if a $ref is present, whether to throw the result being built after
     #   validating the $ref, bypassing subsequent keyword validation
     def internal_validate_ref(result_builder, throw_result: false)
-      if schema_content.key?('$ref')
+      if keyword?('$ref')
         value = schema_content['$ref']
 
         if value.respond_to?(:to_str)

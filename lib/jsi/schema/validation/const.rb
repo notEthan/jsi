@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Const
     # @private
     def internal_validate_const(result_builder)
-      if schema_content.key?('const')
+      if keyword?('const')
         value = schema_content['const']
         # The value of this keyword MAY be of any type, including null.
         # An instance validates successfully against this keyword if its value is equal to the value of

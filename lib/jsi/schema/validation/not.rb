@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Not
     # @private
     def internal_validate_not(result_builder)
-      if schema_content.key?('not')
+      if keyword?('not')
         # This keyword's value MUST be a valid JSON Schema.
         # An instance is valid against this keyword if it fails to validate successfully against the schema
         # defined by this keyword.
