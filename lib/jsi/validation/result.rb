@@ -4,17 +4,16 @@ module JSI
   module Validation
     # a result of validating an instance against schemas which describe it.
     class Result
-      Builder = Util::AttrStruct[*%w(
+      Builder = Schema::Cxt.subclass(*%w(
         result
-        schema
         instance_ptr
         instance_document
         validate_only
         visited_refs
-      )]
+      ))
 
       # @private
-      # a structure used to build a Result. virtual base class.
+      # context to build a Validation::Result
       class Builder
         def instance
           instance_ptr.evaluate(instance_document)
