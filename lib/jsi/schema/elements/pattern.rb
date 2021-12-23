@@ -22,12 +22,10 @@ module JSI
                 'instance string does not match `pattern` regular expression value',
                 keyword: 'pattern',
               )
-            rescue RegexpError => e
-              schema_error(-"`pattern` is not a valid regular expression: #{e.message}", 'pattern')
+            rescue RegexpError
+              # cannot validate
             end
           end
-        else
-          schema_error('`pattern` is not a string', 'pattern')
         end
       end
         end # element.add_action(:validate)

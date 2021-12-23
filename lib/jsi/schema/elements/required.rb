@@ -19,8 +19,6 @@ module JSI
               keyword: 'required',
             )
           end
-        else
-          schema_error('`required` is not an array', 'required')
         end
       end
         end # element.add_action(:validate)

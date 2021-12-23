@@ -27,8 +27,6 @@ module JSI
               keyword: 'multipleOf',
             )
           end
-        else
-          schema_error('`multipleOf` is not a number greater than 0', 'multipleOf')
         end
       end
         end # element.add_action(:validate)
@@ -53,8 +51,6 @@ module JSI
               keyword: 'maximum',
             )
           end
-        else
-          schema_error('`maximum` is not a number', 'maximum')
         end
       end
         end # element.add_action(:validate)
@@ -79,8 +75,6 @@ module JSI
               keyword: 'exclusiveMaximum',
             )
           end
-        else
-          schema_error('`exclusiveMaximum` is not a number', 'exclusiveMaximum')
         end
       end
         end # element.add_action(:validate)
@@ -105,8 +99,6 @@ module JSI
               keyword: 'minimum',
             )
           end
-        else
-          schema_error('`minimum` is not a number', 'minimum')
         end
       end
         end # element.add_action(:validate)
@@ -131,8 +123,6 @@ module JSI
               keyword: 'exclusiveMinimum',
             )
           end
-        else
-          schema_error('`exclusiveMinimum` is not a number', 'exclusiveMinimum')
         end
       end
         end # element.add_action(:validate)

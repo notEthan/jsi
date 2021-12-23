@@ -63,8 +63,6 @@ module JSI
                   end
                 end
               end
-            else
-              schema_error('`dependencies` is not an object', 'dependencies')
             end
           end
         end # element.add_action(:validate)

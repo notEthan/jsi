@@ -18,8 +18,6 @@ module JSI
               keyword: 'maxLength',
             )
           end
-        else
-          schema_error('`maxLength` is not a non-negative integer', 'maxLength')
         end
       end
         end # element.add_action(:validate)
@@ -44,8 +42,6 @@ module JSI
               keyword: 'minLength',
             )
           end
-        else
-          schema_error('`minLength` is not a non-negative integer', 'minLength')
         end
       end
         end # element.add_action(:validate)

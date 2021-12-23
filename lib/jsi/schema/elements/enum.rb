@@ -17,8 +17,6 @@ module JSI
             "instance is not equal to any `enum` item",
             keyword: 'enum',
           )
-        else
-          schema_error('`enum` is not an array', 'enum')
         end
       end
         end # element.add_action(:validate)

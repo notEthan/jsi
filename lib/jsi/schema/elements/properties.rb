@@ -53,8 +53,6 @@ module JSI
                   results: results.each_value,
                 )
               end
-            else
-              schema_error('`properties` is not an object', 'properties')
             end
           end
 
@@ -81,7 +79,7 @@ module JSI
                         )
                       end
                     rescue ::RegexpError
-                      schema_error("`patternProperties` key #{property_name.inspect} is not a valid regular expression: #{e.message}", 'patternProperties')
+                      # cannot validate
                     end
                   end
                 end
@@ -92,8 +90,6 @@ module JSI
                   results: results.each_value,
                 )
               end
-            else
-              schema_error('`patternProperties` is not an object', 'patternProperties')
             end
           end
 

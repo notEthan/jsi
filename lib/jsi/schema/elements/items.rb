@@ -60,13 +60,6 @@ module JSI
                   results: items_results.each_value,
                 )
               end
-              if keyword?('additionalItems')
-                schema_warning('`additionalItems` has no effect when adjacent `items` keyword is not an array', 'items')
-              end
-            end
-          else
-            if keyword?('additionalItems')
-              schema_warning('`additionalItems` has no effect without adjacent `items` keyword', 'items')
             end
           end
         end # element.add_action(:validate)

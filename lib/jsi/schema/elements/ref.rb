@@ -25,8 +25,9 @@ module JSI
               schema_ref = schema.schema_ref('$ref')
 
               if visited_refs.include?(schema_ref)
-                schema_error('self-referential schema structure', '$ref')
-              else
+                next
+              end
+
                 ref_result = schema_ref.deref_schema.internal_validate_instance(
                   instance_ptr,
                   instance_document,
@@ -42,9 +43,6 @@ module JSI
                 if exclusive
                   throw(:jsi_validation_result, result)
                 end
-              end
-            else
-              schema_error("`$ref` is not a string", '$ref')
             end
           end
         end # element.add_action(:validate)

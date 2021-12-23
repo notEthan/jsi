@@ -28,8 +28,6 @@ module JSI
                 keyword: 'allOf',
                 results: allOf_results,
               )
-            else
-              schema_error('`allOf` is not an array', 'allOf')
             end
           end
         end # element.add_action(:validate)
@@ -75,8 +73,6 @@ module JSI
                 keyword: 'anyOf',
                 results: anyOf_results,
               )
-            else
-              schema_error('`anyOf` is not an array', 'anyOf')
             end
           end
         end # element.add_action(:validate)
@@ -132,8 +128,6 @@ module JSI
                   results: oneOf_results,
                 )
               end
-            else
-              schema_error('`oneOf` is not an array', 'oneOf')
             end
           end
         end # element.add_action(:validate)

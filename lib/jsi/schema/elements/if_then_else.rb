@@ -25,8 +25,6 @@ module JSI
             # result. Rather, it controls which of the "then" or "else" keywords are evaluated.
             if_result = inplace_subschema_validate(['if'])
 
-            merge_schema_issues(if_result)
-
             if if_result.valid?
               if keyword?('then')
                 then_result = inplace_subschema_validate(['then'])
@@ -47,13 +45,6 @@ module JSI
                   results: [else_result],
                 )
               end
-            end
-          else
-            if keyword?('then')
-              schema_warning('`then` has no effect without adjacent `if` keyword', 'then')
-            end
-            if keyword?('else')
-              schema_warning('`else` has no effect without adjacent `if` keyword', 'else')
             end
           end
         end # element.add_action(:validate)

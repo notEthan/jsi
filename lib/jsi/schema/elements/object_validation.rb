@@ -17,8 +17,6 @@ module JSI
               keyword: 'maxProperties',
             )
           end
-        else
-          schema_error('`maxProperties` is not a non-negative integer', 'maxProperties')
         end
       end
         end # element.add_action(:validate)
@@ -42,8 +40,6 @@ module JSI
               keyword: 'minProperties',
             )
           end
-        else
-          schema_error('`minProperties` is not a non-negative integer', 'minProperties')
         end
       end
         end # element.add_action(:validate)
