@@ -4,6 +4,29 @@ module JSI
   module Schema::Elements
     PROPERTIES = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          #> The value of "properties" MUST be an object.
+          if keyword_value_hash?('properties')
+            schema_content['properties'].each_key do |property_name|
+              #> Each value of this object MUST be a valid JSON Schema.
+              cxt_yield(['properties', property_name])
+            end
+          end
+
+          #> The value of "patternProperties" MUST be an object.
+          if keyword_value_hash?('patternProperties')
+            schema_content['patternProperties'].each_key do |pattern|
+              #> Each property value of this object MUST be a valid JSON Schema.
+              cxt_yield(['patternProperties', pattern])
+            end
+          end
+
+          if keyword?('additionalProperties')
+            #> The value of "additionalProperties" MUST be a valid JSON Schema.
+            cxt_yield(['additionalProperties'])
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:child_applicate) do
     if instance.respond_to?(:to_hash)
       apply_additional = true

@@ -4,6 +4,13 @@ module JSI
   module Schema::Elements
     PROPERTY_NAMES = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          if keyword?('propertyNames')
+            #> The value of "propertyNames" MUST be a valid JSON Schema.
+            cxt_yield(['propertyNames'])
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:validate) do
       if keyword?('propertyNames')
         # The value of "propertyNames" MUST be a valid JSON Schema.

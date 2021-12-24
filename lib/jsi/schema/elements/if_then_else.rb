@@ -4,6 +4,23 @@ module JSI
   module Schema::Elements
     IF_THEN_ELSE = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          if keyword?('if')
+            #> This keyword's value MUST be a valid JSON Schema.
+            cxt_yield(['if'])
+          end
+
+          if keyword?('then')
+            #> This keyword's value MUST be a valid JSON Schema.
+            cxt_yield(['then'])
+          end
+
+          if keyword?('else')
+            #> This keyword's value MUST be a valid JSON Schema.
+            cxt_yield(['else'])
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:inplace_applicate) do
       if keyword?('if')
         if subschema(['if']).instance_valid?(instance)

@@ -4,6 +4,19 @@ module JSI
   module Schema::Elements
     DEPENDENCIES = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          #> This keyword's value MUST be an object.
+          if keyword_value_hash?('dependencies')
+            schema_content['dependencies'].each_pair do |property_name, dependency|
+              #> Each property specifies a dependency.
+              #> Each dependency value MUST be an array or a valid JSON Schema.
+              if !dependency.respond_to?(:to_ary)
+                cxt_yield(['dependencies', property_name])
+              end
+            end
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:inplace_applicate) do
       if keyword?('dependencies')
         value = schema_content['dependencies']

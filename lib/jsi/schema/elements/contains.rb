@@ -4,6 +4,13 @@ module JSI
   module Schema::Elements
     CONTAINS = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          if keyword?('contains')
+            #> The value of this keyword MUST be a valid JSON Schema.
+            cxt_yield(['contains'])
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:child_applicate) do
     if instance.respond_to?(:to_ary)
       if keyword?('contains')

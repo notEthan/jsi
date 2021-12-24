@@ -4,6 +4,24 @@ module JSI
   module Schema::Elements
     ITEMS = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          if keyword?('items')
+            #> The value of "items" MUST be either a valid JSON Schema or an array of valid JSON Schemas.
+            if keyword_value_ary?('items')
+              schema_content['items'].each_index do |i|
+                cxt_yield(['items', i])
+              end
+            else
+              cxt_yield(['items'])
+            end
+          end
+
+          if keyword?('additionalItems')
+            #> The value of "additionalItems" MUST be a valid JSON Schema.
+            cxt_yield(['additionalItems'])
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:child_applicate) do
     if instance.respond_to?(:to_ary)
       if keyword?('items') && schema_content['items'].respond_to?(:to_ary)

@@ -4,6 +4,16 @@ module JSI
   module Schema::Elements
     ALL_OF = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          #> This keyword's value MUST be a non-empty array.
+          if keyword_value_ary?('allOf')
+            schema_content['allOf'].each_index do |i|
+              #> Each item of the array MUST be a valid JSON Schema.
+              cxt_yield(['allOf', i])
+            end
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:inplace_applicate) do
       if keyword?('allOf') && schema_content['allOf'].respond_to?(:to_ary)
         schema_content['allOf'].each_index do |i|
@@ -40,6 +50,16 @@ module JSI
   module Schema::Elements
     ANY_OF = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          #> This keyword's value MUST be a non-empty array.
+          if keyword_value_ary?('anyOf')
+            schema_content['anyOf'].each_index do |i|
+              #> Each item of the array MUST be a valid JSON Schema.
+              cxt_yield(['anyOf', i])
+            end
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:inplace_applicate) do
       if keyword?('anyOf') && schema_content['anyOf'].respond_to?(:to_ary)
         anyOf = schema_content['anyOf'].each_index.map { |i| subschema(['anyOf', i]) }
@@ -87,6 +107,16 @@ module JSI
   module Schema::Elements
     ONE_OF = element_map do
       Schema::Element.new do |element|
+        element.add_action(:subschema) do
+          #> This keyword's value MUST be a non-empty array.
+          if keyword_value_ary?('oneOf')
+            schema_content['oneOf'].each_index do |i|
+              #> Each item of the array MUST be a valid JSON Schema.
+              cxt_yield(['oneOf', i])
+            end
+          end
+        end # element.add_action(:subschema)
+
         element.add_action(:inplace_applicate) do
       if keyword?('oneOf') && schema_content['oneOf'].respond_to?(:to_ary)
         oneOf_idxs = schema_content['oneOf'].each_index
