@@ -427,7 +427,6 @@ describe JSI::Base do
         result = subject.jsi_validate
         assert_equal(true, result.valid?)
         assert_equal(Set[], result.validation_errors)
-        assert_equal(Set[], result.schema_issues)
       end
       it '#jsi_valid?' do
         assert_equal(true, subject.jsi_valid?)
@@ -465,7 +464,6 @@ describe JSI::Base do
             child_errors: Set[],
           }),
         ], result.validation_errors)
-        assert_equal(Set[], result.schema_issues)
       end
     end
     describe 'at a depth' do

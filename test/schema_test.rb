@@ -922,7 +922,6 @@ describe JSI::Schema do
         result = schema.instance_validate(instance)
         assert_equal(true, result.valid?)
         assert_equal(Set[], result.validation_errors)
-        assert_equal(Set[], result.schema_issues)
       end
       it '#instance_valid?' do
         assert_equal(true, schema.instance_valid?(instance))
@@ -942,7 +941,6 @@ describe JSI::Schema do
             :child_errors => Set[],
           }),
         ], result.validation_errors)
-        assert_equal(Set[], result.schema_issues)
       end
       it '#instance_valid?' do
         assert_equal(false, schema.instance_valid?(instance))
