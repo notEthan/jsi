@@ -11,6 +11,9 @@ module JSI
         elements: [
           # draft-handrews-json-schema-01 8.  Base URI and Dereferencing
 
+          # draft-handrews-json-schema-01 8.2.  The "$id" Keyword
+          Schema::Elements::ID[keyword: '$id'],
+
           # draft-handrews-json-schema-01 8.3.  Schema References With "$ref"
           Schema::Elements::REF[],
 

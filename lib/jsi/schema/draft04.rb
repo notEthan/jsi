@@ -15,6 +15,11 @@ module JSI
           # the schema itself
           Schema::Elements::SELF[],
 
+          # draft-zyp-json-schema-04 7.  URI resolution scopes and dereferencing
+
+          # draft-zyp-json-schema-04 7.2.  URI resolution scope alteration with the "id" keyword
+          Schema::Elements::ID[keyword: 'id'],
+
           # draft-fge-json-schema-validation-00 5.  Validation keywords sorted by instance types
 
           # draft-fge-json-schema-validation-00 5.1.  Validation keywords for numeric instances (number and integer)
