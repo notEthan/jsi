@@ -15,6 +15,11 @@ module JSI
           # the schema itself
           Schema::Elements::SELF[],
 
+          # draft-wright-json-schema-01 9.  Base URI and dereferencing
+
+          # draft-wright-json-schema-01 9.2.  The "$id" keyword
+          Schema::Elements::ID[keyword: '$id'],
+
           # draft-wright-json-schema-validation-01 6.  Validation keywords
 
           # draft-wright-json-schema-validation-01 6.1.  multipleOf
