@@ -41,32 +41,6 @@ module JSI
     # an exception raised when we are unable to resolve a schema reference
     ReferenceError = ResolutionError
 
-    # extends any schema which uses the keyword '$id' to identify its canonical URI
-    module BigMoneyId
-      # the contents of a $id keyword whose value is a string, or nil
-      # @return [#to_str, nil]
-      def id
-        if keyword?('$id') && schema_content['$id'].respond_to?(:to_str)
-          schema_content['$id']
-        else
-          nil
-        end
-      end
-    end
-
-    # extends any schema which uses the keyword 'id' to identify its canonical URI
-    module OldId
-      # the contents of an `id` keyword whose value is a string, or nil
-      # @return [#to_str, nil]
-      def id
-        if keyword?('id') && schema_content['id'].respond_to?(:to_str)
-          schema_content['id']
-        else
-          nil
-        end
-      end
-    end
-
     # extends any schema which defines an anchor as a URI fragment in the schema id
     module IdWithAnchor
       # a URI for the schema's id, unless the id defines an anchor in its
@@ -467,6 +441,12 @@ module JSI
     def keyword?(keyword)
       schema_content = jsi_node_content
       schema_content.respond_to?(:to_hash) && schema_content.key?(keyword)
+    end
+
+    # the string contents of an `$id`/`id` keyword, or nil
+    # @return [#to_str, nil]
+    def id
+      dialect_invoke_each(:id).first
     end
 
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`

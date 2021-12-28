@@ -3,7 +3,6 @@
 module JSI
   module Schema
     module Draft06
-      include BigMoneyId
       include IdWithAnchor
       include IntegerAllows0Fraction
 
