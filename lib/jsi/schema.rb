@@ -595,7 +595,7 @@ module JSI
     end
 
     # schema resources which are ancestors of any subschemas below this schema.
-    # this may include this JSI if this is a schema resource root.
+    # this may include this schema if this is a schema resource root.
     # @private
     # @return [Array<JSI::Schema>]
     def jsi_subschema_resource_ancestors
