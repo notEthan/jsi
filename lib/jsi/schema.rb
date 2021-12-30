@@ -149,7 +149,9 @@ module JSI
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   are inplace applicators matched from self to the schema being instantiated.
-      def new_schema(schema_content, uri: nil)
+      def new_schema(schema_content,
+          uri: nil
+      )
         schema_jsi = new_jsi(Util.deep_stringify_symbol_keys(schema_content),
           uri: uri,
         )
