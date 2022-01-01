@@ -219,7 +219,7 @@ module JSI
       #   a '$schema' property. this may be a metaschema or a metaschema's schema module
       #   (e.g. `JSI::JSONSchemaOrgDraft07`).
       # @return [JSI::Schema] a JSI::Schema representing the given schema_object
-      def new_schema(schema_object, uri: nil, default_metaschema: nil)
+      def new_schema(schema_object, default_metaschema: nil, **kw)
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?
@@ -234,7 +234,7 @@ module JSI
           if !default_metaschema.respond_to?(:new_schema)
             raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
           end
-          default_metaschema.new_schema(schema_object, uri: uri)
+          default_metaschema.new_schema(schema_object, **kw)
         }
         if schema_object.is_a?(Schema)
           schema_object
@@ -246,7 +246,7 @@ module JSI
             unless metaschema.describes_schema?
               raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
-            metaschema.new_schema(schema_object, uri: uri)
+            metaschema.new_schema(schema_object, **kw)
           else
             default_metaschema_new_schema.call
           end
