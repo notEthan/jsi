@@ -62,6 +62,33 @@ module JSI
       proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
     end
 
+    def require_jmespath
+      return if instance_variable_defined?(:@jmespath_required)
+      begin
+        require 'jmespath'
+      rescue ::LoadError => e
+        # :nocov:
+        msg = [
+          "please install and/or add to your Gemfile the `jmespath` gem to use this. jmespath is not a dependency of JSI.",
+          "original error message:",
+          e.message,
+        ].join("\n")
+        raise(e.class, msg, e.backtrace)
+        # :nocov:
+      end
+      hashlike = JSI::SchemaSet[].new_jsi({'test' => 0})
+      unless JMESPath.search('test', hashlike) == 0
+        # :nocov:
+        raise(::LoadError, [
+          "the loaded version of jmespath cannot be used with JSI.",
+          "jmespath is compatible with JSI objects as of version 1.5.0",
+        ].join("\n"))
+        # :nocov:
+      end
+      @jmespath_required = true
+      nil
+    end
+
     module FingerprintHash
       # overrides BasicObject#==
       def ==(other)

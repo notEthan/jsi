@@ -462,6 +462,23 @@ module JSI
       jsi_schemas.instance_valid?(self)
     end
 
+    # queries this JSI using the [JMESPath Ruby](https://rubygems.org/gems/jmespath) gem.
+    # see [https://jmespath.org/](https://jmespath.org/) to learn the JMESPath query language.
+    #
+    # the JMESPath gem is not a dependency of JSI, so must be installed / added to your Gemfile to use.
+    # e.g. `gem 'jmespath', '~> 1.5'`. note that versions below 1.5 are not compatible with JSI.
+    #
+    # @param expression [String] a [JMESPath](https://jmespath.org/) expression
+    # @param runtime_options passed to [JMESPath.search](https://rubydoc.info/gems/jmespath/JMESPath#search-class_method),
+    #   though no runtime_options are publicly documented or normally used.
+    # @return [Array, Object, nil] query results.
+    #   see [JMESPath.search](https://rubydoc.info/gems/jmespath/JMESPath#search-class_method)
+    def jmespath_search(expression, **runtime_options)
+      Util.require_jmespath
+
+      JMESPath.search(expression, self, **runtime_options)
+    end
+
     def dup
       jsi_modified_copy(&:dup)
     end
