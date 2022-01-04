@@ -4,7 +4,8 @@ module JSI
   module Schema
     class Element
       # @yield [Schema::Element] self
-      def initialize
+      def initialize(keywords: Util::EMPTY_SET)
+        @keywords = Set.new(keywords).freeze
         @actions = Hash.new(Util::EMPTY_ARY)
         @required_before_element_selector = nil
         @depends_on_element_selector = nil
@@ -14,6 +15,9 @@ module JSI
         @actions.freeze
         freeze
       end
+
+      # @return [Set]
+      attr_reader(:keywords)
 
       # @return [Hash<Symbol, Array<Proc>>]
       attr_reader(:actions)
