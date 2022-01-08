@@ -525,7 +525,7 @@ describe 'JSI Schema inplace application' do
         let(:schema_content) do
           YAML.load(<<~YAML
             if: false
-            then: whatever
+            then: true
             else:
               if: false
               else: false
