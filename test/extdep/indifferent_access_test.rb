@@ -2,12 +2,23 @@ require_relative '../test_helper'
 
 require "active_support/core_ext/hash/indifferent_access"
 
-describe 'JSI::Base whose instance is ActiveSupport::HashWithIndifferentAccess' do
-  let(:subject) { schema.new_jsi(instance) }
-  describe 'subscripting with strings and symbols' do
+require "hashie"
+
+class IAHash < Hash
+  include Hashie::Extensions::MergeInitializer
+  include Hashie::Extensions::IndifferentAccess
+end
+
+other_instantiations = [
+  {name: ActiveSupport::HashWithIndifferentAccess, class: ActiveSupport::HashWithIndifferentAccess},
+  {name: 'Hashie with IndifferentAccess', class: IAHash},
+]
+other_instantiations.each do |inst|
+  describe "JSI::Base whose instance is #{inst[:name]}: subscripting with strings and symbols" do
+    let(:subject) { schema.new_jsi(instance) }
     let(:schema) { JSI::SimpleWrap }
     let(:instance) do
-      instance = ActiveSupport::HashWithIndifferentAccess.new({
+      instance = inst[:class].new({
         :a => 'alfa',
         'b' => 'brossard',
         :c => {

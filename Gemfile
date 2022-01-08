@@ -24,4 +24,5 @@ group(:extdep) do
   gem 'scorpio', '~> 0.6'
   gem 'spreedly_openapi', github: 'notEthan/spreedly_openapi', tag: 'v0.2.0'
   gem 'activesupport'
+  gem 'hashie'
 end
