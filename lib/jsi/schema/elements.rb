@@ -9,6 +9,9 @@ module JSI
     # the schema itself
     autoload(:SELF, 'jsi/schema/elements/self')
 
+    # $schema
+    autoload(:XSCHEMA, 'jsi/schema/elements/xschema')
+
     # id
     autoload(:ID, 'jsi/schema/elements/id')
 
