@@ -6,6 +6,12 @@ describe JSI::Schema do
       schema = JSI.new_schema({'type' => 'object'}, default_metaschema: JSI::JSONSchemaOrgDraft07)
       assert_equal({'type' => 'object'}, schema.jsi_instance)
     end
+
+    it 'cannot instantiate from a non-string $schema' do
+      err = assert_raises(ArgumentError) { JSI.new_schema({'$schema' => Object.new}) }
+      assert_equal("given schema_object keyword `$schema` is not a string", err.message)
+    end
+
     it 'cannot instantiate from some unknown object' do
       err = assert_raises(TypeError) { JSI.new_schema(Object.new, default_metaschema: JSI::JSONSchemaOrgDraft07) }
       assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
