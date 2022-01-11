@@ -435,6 +435,20 @@ module JSI
       Util.ensure_module_set(jsi_schemas.map(&:jsi_schema_module))
     end
 
+    # Is this JSI described by the given schema (or schema module)?
+    #
+    # @param schema [Schema, SchemaModule]
+    # @return [Boolean]
+    def described_by?(schema)
+      if schema.is_a?(Schema)
+        jsi_schemas.include?(schema)
+      elsif schema.is_a?(SchemaModule)
+        jsi_schema_modules.include?(schema)
+      else
+        raise(TypeError, "expected a Schema or Schema Module; got: #{schema.pretty_inspect.chomp}")
+      end
+    end
+
     # yields the content of this JSI's instance. the block must result in
     # a modified copy of the yielded instance (not modified in place, which would alter this JSI
     # as well) which will be used to instantiate and return a new JSI with the modified content.

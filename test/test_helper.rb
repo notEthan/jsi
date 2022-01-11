@@ -217,6 +217,7 @@ class JSISpec < Minitest::Spec
 
     assert_includes(instance.jsi_schemas, schema)
     assert_is_a(schema.jsi_schema_module, instance)
+    assert(instance.described_by?(schema))
   end
 
   # @param schema [JSI::Schema]
@@ -228,6 +229,7 @@ class JSISpec < Minitest::Spec
 
     refute_includes(instance.jsi_schemas, schema)
     refute_is_a(schema.jsi_schema_module, instance)
+    refute(instance.described_by?(schema))
   end
 end
 
