@@ -96,7 +96,7 @@ bill.jsi_valid?
 # => true
 ```
 
-... and validations on the nested schema instances (`#phone` here), showing in this example validation failure:
+... and validations on the nested schema instances (`#phone` here), showing in this example validation failure on /phone/0/number:
 
 ```ruby
 bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
@@ -113,6 +113,10 @@ bad.phone.jsi_validate
 #   #<Set: {#<JSI::Validation::Error
 #      message: "instance type does not match `type` value",
 #      keyword: "type",
+#      schema: #{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "type" => "string"},
+#      instance_ptr: JSI::Ptr["phone", 0, "number"],
+#      instance_document: {"phone"=>[{"number"=>[5, 5, 5]}]}
+#   >,
 #  ...
 # >
 ```
