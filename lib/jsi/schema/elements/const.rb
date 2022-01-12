@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     CONST = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'const') do |element|
         element.add_action(:validate) do
       if keyword?('const')
         value = schema_content['const']

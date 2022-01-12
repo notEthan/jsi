@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     ITEMS = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keywords: %w(items additionalItems)) do |element|
         element.add_action(:subschema) do
           if keyword?('items')
             #> The value of "items" MUST be either a valid JSON Schema or an array of valid JSON Schemas.

@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     PATTERN = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'pattern') do |element|
         element.add_action(:validate) do
       if keyword?('pattern')
         value = schema_content['pattern']

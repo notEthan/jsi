@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     PROPERTY_NAMES = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'propertyNames') do |element|
         element.add_action(:subschema) do
           if keyword?('propertyNames')
             #> The value of "propertyNames" MUST be a valid JSON Schema.

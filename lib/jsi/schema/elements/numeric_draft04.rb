@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     MAXIMUM_BOOLEAN_EXCLUSIVE = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keywords: %w(maximum exclusiveMaximum)) do |element|
         element.add_action(:validate) do
       if keyword?('maximum')
         value = schema_content['maximum']
@@ -40,7 +40,7 @@ module JSI
 
   module Schema::Elements
     MINIMUM_BOOLEAN_EXCLUSIVE = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keywords: %w(minimum exclusiveMinimum)) do |element|
         element.add_action(:validate) do
       if keyword?('minimum')
         value = schema_content['minimum']

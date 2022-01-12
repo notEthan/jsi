@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     CONTAINS = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'contains') do |element|
         element.add_action(:subschema) do
           if keyword?('contains')
             #> The value of this keyword MUST be a valid JSON Schema.

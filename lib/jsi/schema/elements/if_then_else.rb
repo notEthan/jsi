@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     IF_THEN_ELSE = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keywords: %w(if then else)) do |element|
         element.add_action(:subschema) do
           if keyword?('if')
             #> This keyword's value MUST be a valid JSON Schema.

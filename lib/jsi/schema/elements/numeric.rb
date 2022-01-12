@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     MULTIPLE_OF = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'multipleOf') do |element|
         element.add_action(:validate) do
       if keyword?('multipleOf')
         value = schema_content['multipleOf']
@@ -37,7 +37,7 @@ module JSI
 
   module Schema::Elements
     MAXIMUM = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'maximum') do |element|
         element.add_action(:validate) do
       if keyword?('maximum')
         value = schema_content['maximum']
@@ -62,7 +62,7 @@ module JSI
 
   module Schema::Elements
     EXCLUSIVE_MAXIMUM = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'exclusiveMaximum') do |element|
         element.add_action(:validate) do
       if keyword?('exclusiveMaximum')
         value = schema_content['exclusiveMaximum']
@@ -87,7 +87,7 @@ module JSI
 
   module Schema::Elements
     MINIMUM = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'minimum') do |element|
         element.add_action(:validate) do
       if keyword?('minimum')
         value = schema_content['minimum']
@@ -112,7 +112,7 @@ module JSI
 
   module Schema::Elements
     EXCLUSIVE_MINIMUM = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'exclusiveMinimum') do |element|
         element.add_action(:validate) do
       if keyword?('exclusiveMinimum')
         value = schema_content['exclusiveMinimum']

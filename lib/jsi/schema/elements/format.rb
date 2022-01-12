@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     FORMAT = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'format') do |element|
       end # Schema::Element.new
     end # FORMAT = element_map
   end # module Schema::Elements

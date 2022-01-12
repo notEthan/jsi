@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     ALL_OF = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'allOf') do |element|
         element.add_action(:subschema) do
           #> This keyword's value MUST be a non-empty array.
           if keyword_value_ary?('allOf')
@@ -49,7 +49,7 @@ module JSI
 
   module Schema::Elements
     ANY_OF = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'anyOf') do |element|
         element.add_action(:subschema) do
           #> This keyword's value MUST be a non-empty array.
           if keyword_value_ary?('anyOf')
@@ -107,7 +107,7 @@ module JSI
 
   module Schema::Elements
     ONE_OF = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'oneOf') do |element|
         element.add_action(:subschema) do
           #> This keyword's value MUST be a non-empty array.
           if keyword_value_ary?('oneOf')

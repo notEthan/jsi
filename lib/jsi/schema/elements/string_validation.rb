@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     MAX_LENGTH = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'maxLength') do |element|
         element.add_action(:validate) do
       if keyword?('maxLength')
         value = schema_content['maxLength']
@@ -30,7 +30,7 @@ module JSI
 
   module Schema::Elements
     MIN_LENGTH = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'minLength') do |element|
         element.add_action(:validate) do
       if keyword?('minLength')
         value = schema_content['minLength']

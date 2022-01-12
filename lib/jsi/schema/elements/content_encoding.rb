@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     CONTENT_ENCODING = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'contentEncoding') do |element|
       end # Schema::Element.new
     end # CONTENT_ENCODING = element_map
   end # module Schema::Elements

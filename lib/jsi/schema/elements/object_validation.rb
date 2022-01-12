@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     MAX_PROPERTIES = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'maxProperties') do |element|
         element.add_action(:validate) do
       if keyword?('maxProperties')
         value = schema_content['maxProperties']
@@ -29,7 +29,7 @@ module JSI
 
   module Schema::Elements
     MIN_PROPERTIES = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'minProperties') do |element|
         element.add_action(:validate) do
       if keyword?('minProperties')
         value = schema_content['minProperties']

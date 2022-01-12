@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     NOT = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'not') do |element|
         element.add_action(:subschema) do
           if keyword?('not')
             #> This keyword's value MUST be a valid JSON Schema.

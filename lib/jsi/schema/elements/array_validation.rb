@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     MAX_ITEMS = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'maxItems') do |element|
         element.add_action(:validate) do
       if keyword?('maxItems')
         value = schema_content['maxItems']
@@ -29,7 +29,7 @@ module JSI
 
   module Schema::Elements
     MIN_ITEMS = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'minItems') do |element|
         element.add_action(:validate) do
       if keyword?('minItems')
         value = schema_content['minItems']
@@ -55,7 +55,7 @@ module JSI
 
   module Schema::Elements
     UNIQUE_ITEMS = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'uniqueItems') do |element|
         element.add_action(:validate) do
       if keyword?('uniqueItems')
         value = schema_content['uniqueItems']

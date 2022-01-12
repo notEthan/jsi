@@ -16,7 +16,7 @@ module JSI
     }.freeze
 
     TYPE = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'type') do |element|
         element.add_action(:validate) do
           next if !keyword?('type')
           value = schema_content['type']

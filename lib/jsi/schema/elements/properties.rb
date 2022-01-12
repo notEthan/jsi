@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     PROPERTIES = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keywords: %w(properties patternProperties additionalProperties)) do |element|
         element.add_action(:subschema) do
           #> The value of "properties" MUST be an object.
           if keyword_value_hash?('properties')

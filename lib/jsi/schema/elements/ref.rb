@@ -4,7 +4,7 @@ module JSI
   module Schema::Elements
     # exclusive [Boolean]: whether to abort invocation of subsequent actions when a $ref is evaluated
     REF = element_map do |exclusive: |
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: '$ref') do |element|
         if exclusive
           # $ref must come before all other elements to abort evaluation
           element.required_before_elements { |_| true }

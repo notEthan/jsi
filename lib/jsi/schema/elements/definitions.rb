@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     DEFINITIONS = element_map do |keyword: |
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: keyword) do |element|
         element.add_action(:subschema) do
           #> This keyword's value MUST be an object.
           if keyword_value_hash?(keyword)

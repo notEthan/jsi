@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     DEPENDENCIES = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'dependencies') do |element|
         element.add_action(:subschema) do
           #> This keyword's value MUST be an object.
           if keyword_value_hash?('dependencies')

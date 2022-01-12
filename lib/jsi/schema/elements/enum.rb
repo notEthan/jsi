@@ -3,7 +3,7 @@
 module JSI
   module Schema::Elements
     ENUM = element_map do
-      Schema::Element.new do |element|
+      Schema::Element.new(keyword: 'enum') do |element|
         element.add_action(:validate) do
       if keyword?('enum')
         value = schema_content['enum']
