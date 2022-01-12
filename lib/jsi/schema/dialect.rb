@@ -62,10 +62,12 @@ module JSI
       # @return given `cxt`
       def invoke(action_name, cxt)
         @elements_performing[action_name].each do |element|
+          #chkbug cxt.using_element(element) do
           element.actions[action_name].each do |action|
             cxt.instance_exec(&action)
             return(cxt) if cxt.abort
           end
+          #chkbug end
         end
 
         cxt
