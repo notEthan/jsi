@@ -4,8 +4,8 @@ module JSI
   module Schema
     class Element
       # @yield [Schema::Element] self
-      def initialize(keywords: Util::EMPTY_SET)
-        @keywords = Set.new(keywords).freeze
+      def initialize(keyword: nil, keywords: Util::EMPTY_SET)
+        @keywords = keyword ? (keywords.empty? ? Set[keyword].freeze : raise(ArgumentError)) : Set.new(keywords).freeze
         @actions = Hash.new(Util::EMPTY_ARY)
         @required_before_element_selector = nil
         @depends_on_element_selector = nil
