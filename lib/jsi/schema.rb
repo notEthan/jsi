@@ -629,7 +629,7 @@ module JSI
 
     def jsi_schema_initialize
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
-        Schema::Ref.new(value, self)
+        Schema::Ref.new(value, ref_schema: self)
       end
     end
   end
