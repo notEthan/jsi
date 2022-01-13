@@ -71,9 +71,11 @@ module JSI
     )
       applied_schemas = inplace_applicator_schemas(instance)
 
-      JSI::SchemaClasses.class_for_schemas(applied_schemas).new(instance,
+      jsi = JSI::SchemaClasses.class_for_schemas(applied_schemas).new(instance,
         jsi_schema_base_uri: uri,
       )
+
+      jsi
     end
 
     # a set of inplace applicator schemas of each schema in this set which apply to the given instance.
