@@ -111,6 +111,7 @@ module JSI
         jsi_indicated_schemas: ,
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
+        jsi_schema_registry: ,
         jsi_root_node: nil
     )
       raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
@@ -122,6 +123,7 @@ module JSI
       self.jsi_indicated_schemas = jsi_indicated_schemas
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
+      self.jsi_schema_registry = jsi_schema_registry
       if @jsi_ptr.root?
         raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
@@ -684,6 +686,7 @@ module JSI
           jsi_indicated_schemas: child_indicated_schemas,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
+          jsi_schema_registry: jsi_schema_registry,
           jsi_root_node: @jsi_root_node,
         )
     end

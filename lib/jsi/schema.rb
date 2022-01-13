@@ -364,6 +364,7 @@ module JSI
               jsi_indicated_schemas: schema.jsi_indicated_schemas,
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
+              jsi_schema_registry: schema.jsi_schema_registry,
               jsi_root_node: schema.jsi_ptr.root? ? nil : schema.jsi_root_node, # bad
             )
           else

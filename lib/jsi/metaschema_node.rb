@@ -39,12 +39,14 @@ module JSI
         metaschema_root_ptr: Ptr[],
         root_schema_ptr: Ptr[],
         jsi_schema_base_uri: nil,
+        jsi_schema_registry: nil,
         jsi_root_node: nil
     )
       super(jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: SchemaSet[],
         jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_schema_registry: jsi_schema_registry,
         jsi_root_node: jsi_root_node,
       )
 
@@ -219,6 +221,7 @@ module JSI
         metaschema_root_ptr: metaschema_root_ptr,
         root_schema_ptr: root_schema_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_schema_registry: jsi_schema_registry,
       }
     end
 

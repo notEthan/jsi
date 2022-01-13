@@ -28,6 +28,10 @@ module JSI
     # @return [Array<JSI::Schema>]
     attr_reader :jsi_schema_resource_ancestors
 
+    # See {SchemaSet#new_jsi} param `schema_registry`
+    # @return [SchemaRegistry]
+    attr_reader(:jsi_schema_registry)
+
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
     # if this node is a schema with an id, this is its absolute URI; otherwise a parent resource's URI,
@@ -101,6 +105,8 @@ module JSI
 
       @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
     end
+
+    attr_writer(:jsi_schema_registry)
 
     def jsi_anchor_subschemas_compute(anchor: )
         jsi_each_descendent_node.select do |node|

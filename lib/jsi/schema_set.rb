@@ -114,6 +114,7 @@ module JSI
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
         jsi_schema_base_uri: uri,
+        jsi_schema_registry: JSI.schema_registry,
       )
 
       if register
