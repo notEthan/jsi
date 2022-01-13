@@ -7,11 +7,15 @@ module JSI
     # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
     # @param ref_schema [JSI::Schema] A schema from which the reference originated.
     #   Optional if the ref is to be resolved only from the schema registry.
-    def initialize(ref, ref_schema: nil)
+    # @param schema_registry [SchemaRegistry] The registry in which the resource this ref refers to will be found.
+    #   This should only be specified in the absence of a `ref_schema`.
+    #   If neither is specified, {JSI.schema_registry} is used.
+    def initialize(ref, ref_schema: nil, schema_registry: nil)
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Util.uri(ref)
       @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
+      @schema_registry = schema_registry || (ref_schema ? ref_schema.jsi_schema_registry : JSI.schema_registry)
       @deref_schema = nil
     end
 
@@ -23,6 +27,9 @@ module JSI
 
     # @return [Schema, nil]
     attr_reader :ref_schema
+
+    # @return [SchemaRegistry, nil]
+    attr_reader(:schema_registry)
 
     # finds the schema this ref points to
     # @return [JSI::Schema]
@@ -67,7 +74,14 @@ module JSI
           ref_abs_uri = nil
         end
         if ref_abs_uri
-          schema_resource_root = JSI.schema_registry.find(ref_abs_uri)
+          unless schema_registry
+            raise(Schema::ReferenceError, [
+              "could not resolve remote ref with no schema_registry specified",
+              "ref URI: #{ref_uri.to_s}",
+              ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
+            ].compact.join("\n"))
+          end
+          schema_resource_root = schema_registry.find(ref_abs_uri)
         end
 
         unless schema_resource_root
