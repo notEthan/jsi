@@ -146,7 +146,8 @@ module JSI
     module DescribesSchema
       # Instantiates the given schema content as a JSI Schema.
       #
-      # the schema will be registered with the `JSI.schema_registry`.
+      # By default, the schema will be registered with the {JSI.schema_registry}.
+      # This can be controlled by params `register` and `schema_registry`.
       #
       # By default, the `schema_content` will have any Symbol keys of Hashes replaced with Strings
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
@@ -165,6 +166,11 @@ module JSI
       #       {JSI::SchemaRegistry}.
       # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
       #   will be registered in the schema registry indicated by param `schema_registry`.
+      # @param schema_registry [SchemaRegistry, nil] The registry this schema will use.
+      #
+      #   - The schema and subschemas will be registered here with any declared URI,
+      #     unless the `register` param is false.
+      #   - References from within the schema (typically from `$ref` keywords) are resolved using this registry.
       # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
@@ -175,12 +181,14 @@ module JSI
       def new_schema(schema_content,
           uri: nil,
           register: true,
+          schema_registry: JSI.schema_registry,
           stringify_symbol_keys: true,
           &block
       )
         schema_jsi = new_jsi(schema_content,
           uri: uri,
           register: register,
+          schema_registry: schema_registry,
           stringify_symbol_keys: stringify_symbol_keys,
         )
         if block
@@ -231,8 +239,8 @@ module JSI
       #
       # The metaschema which describes the schema must be indicated:
       #
-      # - if the schema object has a `$schema` property, that URI is resolved using the {JSI.schema_registry},
-      #   and that metaschema is used. For example:
+      # - If the schema object has a `$schema` property, that URI is resolved using the `schema_registry`
+      #   param (by default {JSI.schema_registry}), and that metaschema is used. For example:
       #
       #   ```ruby
       #   JSI.new_schema({
@@ -271,6 +279,7 @@ module JSI
       #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::DescribesSchema#new_schema)
       # @param register (see DescribesSchema#new_schema)
+      # @param schema_registry (see DescribesSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
       # @yield (see Schema::DescribesSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
@@ -281,12 +290,14 @@ module JSI
           # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
           register: true,
+          schema_registry: JSI.schema_registry,
           stringify_symbol_keys: true,
           &block
       )
         new_schema_params = {
           uri: uri,
           register: register,
+          schema_registry: schema_registry,
           stringify_symbol_keys: stringify_symbol_keys,
         }
         default_metaschema_new_schema = -> {

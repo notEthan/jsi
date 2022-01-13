@@ -533,6 +533,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
           uri: @jsi_root_node.jsi_schema_base_uri,
           register: false, # default is already false but this is a place to be explicit
+          schema_registry: jsi_schema_registry,
         )
         modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
     end

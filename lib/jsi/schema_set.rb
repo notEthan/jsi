@@ -82,6 +82,9 @@ module JSI
     #   This is only useful when the JSI is a schema or contains schemas.
     #   The JSI's root will be registered with the `uri` param, if specified, whether or not the
     #   root is a schema.
+    # @param schema_registry [SchemaRegistry, nil] The registry to use for references to other schemas and,
+    #    depending on `register` and `uri` params, to register this JSI and/or any contained schemas with
+    #    declared URIs.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
@@ -90,6 +93,7 @@ module JSI
     def new_jsi(instance,
         uri: nil,
         register: false,
+        schema_registry: JSI.schema_registry,
         stringify_symbol_keys: false
     )
       if stringify_symbol_keys
@@ -114,11 +118,11 @@ module JSI
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
         jsi_schema_base_uri: uri,
-        jsi_schema_registry: JSI.schema_registry,
+        jsi_schema_registry: schema_registry,
       )
 
       if register
-        JSI.schema_registry.register(jsi)
+        schema_registry.register(jsi)
       end
 
       jsi
