@@ -335,7 +335,7 @@ module JSI
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
-            metaschema = Schema.ensure_describes_schema(id, name: '$schema')
+            metaschema = Schema.ensure_describes_schema(id, name: '$schema', schema_registry: schema_registry)
             metaschema.new_schema(schema_content, **new_schema_params, &block)
           else
             default_metaschema_new_schema.call
