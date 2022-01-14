@@ -62,7 +62,7 @@ module JSI
         end
 
         # @param other_result [JSI::Validation::Result]
-        # @return [Void]
+        # @return [void]
         def merge_schema_issues(other_result)
           unless validate_only
             # schema_issues are always merged from subschema results (not depending on validation results)
