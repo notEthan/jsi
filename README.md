@@ -221,6 +221,14 @@ end
 
 The classes used to instantiate JSIs are dynamically generated subclasses of JSI::Base which include the JSI Schema Module of each schema describing the given instance. These are mostly intended to be ignored: applications aren't expected to instantiate these directly (rather, `#new_jsi` on a Schema or Schema Module is intended), and they are not intended for subclassing or method definition (applications should instead define methods on a schema's {JSI::Schema#jsi_schema_module}).
 
+## Registration
+
+In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry which associates URIs with schemas (or resources containing schemas). This registry is accessible on {JSI.schema_registry} and is a {JSI::SchemaRegistry}.
+
+Schemas instantiated with `.new_schema`, and their subschemas, are automatically registered with `JSI.schema_registry` if they identify an absolute URI.
+
+Schemas can automatically be lazily loaded by registering a block which instantiates them with {JSI::SchemaRegistry#autoload_uri} (see its documentation).
+
 ## Validation
 
 JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications. To validate instances, see methods {JSI::Base#jsi_validate}, {JSI::Base#jsi_valid?}, {JSI::Schema#instance_validate}, {JSI::Schema#instance_valid?}.
