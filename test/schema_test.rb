@@ -532,6 +532,12 @@ describe JSI::Schema do
       assert_is_a(JSI::SchemaModule, schema.jsi_schema_module)
       assert_equal(schema, schema.jsi_schema_module.schema)
     end
+
+    it 'returns the same module for equal schemas' do
+      schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
+      schema_again = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
+      assert_equal(schema.jsi_schema_module, schema_again.jsi_schema_module)
+    end
   end
 
   describe '#jsi_schema_module_exec' do

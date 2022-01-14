@@ -92,6 +92,9 @@ describe JSI::Base do
       class_for_schema = JSI::SchemaClasses.class_for_schemas([schema])
       # same class every time
       assert_equal(JSI::SchemaClasses.class_for_schemas([schema]), class_for_schema)
+      # schema_again same as `schema` but different instantiation; class_for_schemas returns same class
+      schema_again = JSI::JSONSchemaOrgDraft07.new_schema({})
+      assert_equal(JSI::SchemaClasses.class_for_schemas([schema_again]), class_for_schema)
       assert_operator(class_for_schema, :<, JSI::Base)
     end
     it 'raises given a nonschema' do
