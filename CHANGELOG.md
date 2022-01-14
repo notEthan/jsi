@@ -1,3 +1,18 @@
+# v0.6.0
+
+- initial validation; remove gem `json-schema` dependency
+- initial schema issue collection
+- JSI.new_schema / new_schema_module
+- JSI::SchemaSet
+- JSI::SchemaRegistry
+- JSI::Schema::Ref
+- Base#jsi_each_child_node, jsi_select_children_node_first, jsi_select_children_leaf_first
+- JSI::JSON::Pointer → JSI::Ptr
+- deprecate JSI.class_for_schemas
+- remove test/development files from gem
+- remove JSI::JSON::Node
+- as always too much more to list
+
 # v0.4.0
 
 - a JSI::Base has multiple jsi_schemas https://github.com/notEthan/jsi/pull/88
