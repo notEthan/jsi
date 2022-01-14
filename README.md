@@ -142,6 +142,16 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
   - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_instance`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
 - "schema" refers to either a parsed JSON schema (generally a ruby Hash) or a JSI schema.
 
+## Supported specification versions
+
+JSI supports these JSON Schema specification versions:
+
+| Version | `$schema` URI                             | JSI Schema Module |
+| ---     | ---                                       | ---               |
+| Draft 4 | `http://json-schema.org/draft-04/schema#` | {JSI::JSONSchemaOrgDraft04} |
+| Draft 6 | `http://json-schema.org/draft-06/schema#` | {JSI::JSONSchemaOrgDraft06} |
+| Draft 7 | `http://json-schema.org/draft-07/schema#` | {JSI::JSONSchemaOrgDraft07} |
+
 ## JSI and Object Oriented Programming
 
 Instantiating your schema is a starting point. But, since the major point of object-oriented programming is applying methods to your objects, of course you want to be able to define your own methods. To do this we reopen the JSI module we defined. Referring back to the Example section above, we reopen the `Contact` module:
