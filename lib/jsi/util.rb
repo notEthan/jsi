@@ -58,7 +58,7 @@ module JSI
     # returns the param if it is already that, otherwise initializes and freezes such a Set.
     #
     # @param modules [Set, Enumerable] the object to ensure becomes a frozen Set of Modules
-    # @return [SchemaSet] the given SchemaSet, or a SchemaSet initialized from the given Enumerable
+    # @return [Set] frozen Set containing the given modules
     # @raise [ArgumentError] when the modules param is not an Enumerable
     # @raise [Schema::NotASchemaError] when the modules param contains objects which are not Schemas
     def ensure_module_set(modules)
