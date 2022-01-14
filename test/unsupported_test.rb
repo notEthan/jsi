@@ -289,8 +289,8 @@ describe 'unsupported behavior' do
       {}
     end
     it "defines both; an undefined one wins" do
-      schema.definitions['a'].jsi_schema_module.module_eval { define_method(:foo) { :a } }
-      schema.definitions['b'].jsi_schema_module.module_eval { define_method(:foo) { :b } }
+      schema.definitions['a'].jsi_schema_module_exec { define_method(:foo) { :a } }
+      schema.definitions['b'].jsi_schema_module_exec { define_method(:foo) { :b } }
       assert_includes([:a, :b], subject.foo)
     end
   end
