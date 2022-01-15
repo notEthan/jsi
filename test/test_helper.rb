@@ -27,14 +27,9 @@ if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
   require 'byebug'
 end
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'jsi'
+require_relative 'jsi_helper'
 
 require 'yaml'
-
-module JSI
-  TEST_RESOURCES_PATH = RESOURCES_PATH.join('test')
-end
 
 # NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
@@ -121,33 +116,5 @@ Minitest.after_run do
   if ENV['JSI_EXITDEBUG']
     byebug
     nil
-  end
-end
-
-# tests support of things that duck-type #to_hash
-class SortOfHash
-  def initialize(hash)
-    @hash = hash
-  end
-  def to_hash
-    @hash
-  end
-  include JSI::Util::FingerprintHash
-  def jsi_fingerprint
-    {class: self.class, hash: @hash}
-  end
-end
-
-# tests support of things that duck-type #to_ary
-class SortOfArray
-  def initialize(ary)
-    @ary = ary
-  end
-  def to_ary
-    @ary
-  end
-  include JSI::Util::FingerprintHash
-  def jsi_fingerprint
-    {class: self.class, ary: @ary}
   end
 end
