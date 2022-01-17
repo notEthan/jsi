@@ -3,6 +3,15 @@
 module JSI
   module Base::Enumerable
     include ::Enumerable
+
+    # a jsonifiable representation of the node content
+    # @return [Object]
+    def as_json(*opt)
+      # include Enumerable (above) means, if ActiveSupport is loaded, its undesirable #as_json is included
+      # https://github.com/rails/rails/blob/v7.0.0/activesupport/lib/active_support/core_ext/object/json.rb#L139-L143
+      # although Base#as_json does clobber activesupport's, I want as_json defined correctly on the module too.
+      Typelike.as_json(jsi_node_content, *opt)
+    end
   end
 
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
