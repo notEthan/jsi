@@ -381,7 +381,10 @@ module JSI
 
         if token_in_range
           jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi) do
-            jsi_subinstance_memos[token: token, subinstance_schemas: subinstance_schemas]
+            jsi_subinstance_memos[
+              token: token,
+              subinstance_schemas: subinstance_schemas,
+            ]
           end
         else
           if use_default
