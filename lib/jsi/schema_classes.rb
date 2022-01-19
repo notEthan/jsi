@@ -65,6 +65,15 @@ module JSI
     extend Util::Memoize
 
     class << self
+      # @api private
+      # @return [Set<Module>]
+      def includes_for(instance)
+        includes = Set[]
+        includes << Base::ArrayNode if instance.respond_to?(:to_ary)
+        includes << Base::HashNode if instance.respond_to?(:to_hash)
+        includes.freeze
+      end
+
       # a JSI Schema Class which represents the given schemas.
       # an instance of the class is a JSON Schema instance described by all of the given schemas.
       # @api private

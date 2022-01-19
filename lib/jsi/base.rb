@@ -153,11 +153,8 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
-      if jsi_instance.respond_to?(:to_hash)
-        extend HashNode
-      end
-      if jsi_instance.respond_to?(:to_ary)
-        extend ArrayNode
+      SchemaClasses.includes_for(jsi_instance).each do |node_include|
+        extend node_include
       end
 
       if jsi_instance.is_a?(JSI::Base)
