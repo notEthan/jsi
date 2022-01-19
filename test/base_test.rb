@@ -810,6 +810,21 @@ describe JSI::Base do
       assert_equal(['a', 'b'], JSI::JSONSchemaOrgDraft07.new_schema({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
       assert_equal(['a'], JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi(['a']).as_json(some_option: true))
     end
+
+    describe 'overriding as_json' do
+      it 'overrides' do
+        # note that since JSIs are extended with PathedArrayNode/PathedHashNode in #initialize, methods of
+        # those modules are not overridden by schema modules (which are included on the instance's class).
+        # Enumerable is included on Base (rather than conditionally extending hash/array nodes) so
+        # that Enumerable methods can be overridden (in particular as_json - although not defined on
+        # Enumerable normally, ActiveSupport defines it)
+        schema = JSI::JSONSchemaOrgDraft06.new_schema({'$id' => 'http://jsi/base/def_as_json'})
+        schema.jsi_schema_module_exec { define_method(:as_json) { :foo } }
+        assert_equal(:foo, schema.new_jsi({}).as_json)
+        assert_equal(:foo, schema.new_jsi([]).as_json)
+        assert_equal(:foo, schema.new_jsi(0).as_json)
+      end
+    end
   end
   describe 'equality between different classes of JSI::Base subclasses' do
     let(:subject_subclass) { Class.new(schema.new_jsi({}).class).new(instance) }
