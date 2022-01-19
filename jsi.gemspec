@@ -24,4 +24,6 @@ Gem::Specification.new do |spec|
   ].reject { |f| File.lstat(f).ftype == 'directory' }
 
   spec.require_paths = ["lib"]
+
+  spec.add_dependency "addressable", '~> 2.3'
 end
