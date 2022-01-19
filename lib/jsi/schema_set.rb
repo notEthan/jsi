@@ -80,7 +80,9 @@ module JSI
     )
       applied_schemas = inplace_applicator_schemas(instance)
 
-      jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas)
+      jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
+        includes: SchemaClasses.includes_for(instance),
+      )
       jsi = jsi_class.new(instance,
         jsi_schema_base_uri: uri,
       )

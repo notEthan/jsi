@@ -277,7 +277,9 @@ module JSI
 
             result_schema_schemas = schema.jsi_schemas + reinstantiate_as
 
-            result_schema_class = JSI::SchemaClasses.class_for_schemas(result_schema_schemas)
+            result_schema_class = JSI::SchemaClasses.class_for_schemas(result_schema_schemas,
+              includes: SchemaClasses.includes_for(schema.jsi_node_content)
+            )
 
             result_schema_class.new(schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,

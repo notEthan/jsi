@@ -78,15 +78,18 @@ module JSI
       # an instance of the class is a JSON Schema instance described by all of the given schemas.
       # @api private
       # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
+      # @param includes [Enumerable<Module>] modules which will be included on the class
       # @return [Class subclassing JSI::Base]
-      def class_for_schemas(schemas)
+      def class_for_schemas(schemas, includes: )
         schemas = SchemaSet.ensure_schema_set(schemas)
+        includes = Util.ensure_module_set(includes)
 
-        jsi_memoize(:class_for_schemas, schemas: schemas) do |schemas: |
-          Class.new(Base).instance_exec(schemas) do |schemas|
+        jsi_memoize(:class_for_schemas, schemas: schemas, includes: includes) do |schemas: , includes: |
+          Class.new(Base).instance_exec(schemas: schemas, includes: includes) do |schemas: , includes: |
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
             schemas.each { |schema| include(schema.jsi_schema_module) }
+            includes.each { |m| include(m) }
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
 

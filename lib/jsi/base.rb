@@ -153,10 +153,6 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
-      SchemaClasses.includes_for(jsi_instance).each do |node_include|
-        extend node_include
-      end
-
       if jsi_instance.is_a?(JSI::Base)
         raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
       end
@@ -373,6 +369,7 @@ module JSI
             jsi_subinstance_memos[
               token: token,
               subinstance_schemas: subinstance_schemas,
+              includes: SchemaClasses.includes_for(value),
             ]
           end
         else
@@ -558,8 +555,8 @@ module JSI
     end
 
     def jsi_subinstance_memos
-      jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , subinstance_schemas: |
-        jsi_class = JSI::SchemaClasses.class_for_schemas(subinstance_schemas)
+      jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , subinstance_schemas: , includes: |
+        jsi_class = JSI::SchemaClasses.class_for_schemas(subinstance_schemas, includes: includes)
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_root_node: @jsi_root_node,
