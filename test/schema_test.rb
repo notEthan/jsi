@@ -31,13 +31,13 @@ describe JSI::Schema do
     it "hasn't got one" do
       assert_nil(JSI::JSONSchemaOrgDraft07.new_schema({}).schema_uri)
     end
-    it 'uses a given id with a fragment' do
+    it 'uses a given id ignoring an empty fragment' do
       schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/given_id_with_fragment#'})
-      assert_equal(Addressable::URI.parse('http://jsi/schema/given_id_with_fragment#'), schema.schema_uri)
+      assert_equal(Addressable::URI.parse('http://jsi/schema/given_id_with_fragment'), schema.schema_uri)
     end
-    it 'uses a given id (adding a fragment)' do
+    it 'uses a given id with no fragment' do
       schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/given_id'})
-      assert_equal(Addressable::URI.parse('http://jsi/schema/given_id#'), schema.schema_uri)
+      assert_equal(Addressable::URI.parse('http://jsi/schema/given_id'), schema.schema_uri)
     end
     it 'uses a pointer in the fragment' do
       schema = JSI::JSONSchemaOrgDraft07.new_schema({
