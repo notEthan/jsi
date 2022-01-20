@@ -550,36 +550,6 @@ module JSI
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?
     end
 
-    # @private
-    def fully_validate_instance(other_instance, errors_as_objects: false)
-      raise(NotImplementedError, "Schema#fully_validate_instance removed: see new validation interface Schema#instance_validate")
-    end
-
-    # @private
-    def validate_instance(other_instance)
-      raise(NotImplementedError, "Schema#validate_instance renamed: see Schema#instance_valid?")
-    end
-
-    # @private
-    def validate_instance!(other_instance)
-      raise(NotImplementedError, "Schema#validate_instance! removed")
-    end
-
-    # @private
-    def fully_validate_schema(errors_as_objects: false)
-      raise(NotImplementedError, "Schema#fully_validate_schema removed: use validation interface Base#jsi_validate on the schema")
-    end
-
-    # @private
-    def validate_schema
-      raise(NotImplementedError, "Schema#validate_schema removed: use validation interface Base#jsi_valid? on the schema")
-    end
-
-    # @private
-    def validate_schema!
-      raise(NotImplementedError, "Schema#validate_schema! removed")
-    end
-
     # schema resources which are ancestors of any subschemas below this schema.
     # this may include this schema if this is a schema resource root.
     # @private

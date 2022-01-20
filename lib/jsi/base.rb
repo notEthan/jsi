@@ -465,21 +465,6 @@ module JSI
       jsi_schemas.instance_valid?(self)
     end
 
-    # @private
-    def fully_validate(errors_as_objects: false)
-      raise(NotImplementedError, "Base#fully_validate removed: see new validation interface Base#jsi_validate")
-    end
-
-    # @private
-    def validate
-      raise(NotImplementedError, "Base#validate renamed: see Base#jsi_valid?")
-    end
-
-    # @private
-    def validate!
-      raise(NotImplementedError, "Base#validate! removed")
-    end
-
     def dup
       jsi_modified_copy(&:dup)
     end
