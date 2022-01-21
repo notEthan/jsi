@@ -49,6 +49,8 @@ module JSI
       type_err = proc { raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}") }
       if object.is_a?(JSI::Base)
         as_json(object.jsi_node_content, **options)
+      elsif object.is_a?(Addressable::URI)
+        object.to_s
       elsif object.respond_to?(:to_hash)
         (object.respond_to?(:map) ? object : object.to_hash).map do |k, v|
           unless k.is_a?(Symbol) || k.respond_to?(:to_str)

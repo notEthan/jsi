@@ -50,6 +50,9 @@ describe JSI::Util do
       # JSI
       assert_equal(['a'], JSI::Util.as_json(schema.new_jsi(['a'])))
 
+      # Addressable::URI, which responds to both #to_hash and #to_str
+      assert_equal('tag:x', JSI::Util.as_json(Addressable::URI.parse('tag:x')))
+
       # #as_json
       assert_equal(['a'], JSI::Util.as_json(JSONifiable.new(['a'])))
 
