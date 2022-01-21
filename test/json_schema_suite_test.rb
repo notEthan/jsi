@@ -18,7 +18,7 @@ JSI::Util.ycomb do |rec|
             '$schema' => 'http://json-schema.org/draft-07/schema',
             'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
           })
-          subSchemas = subSchemas_schema.new_jsi(remote_content, uri: uri)
+          subSchemas_schema.new_jsi(remote_content, uri: uri)
         else
           JSI.new_schema(remote_content, uri: uri, default_metaschema: JSI::JSONSchemaOrgDraft07)
         end

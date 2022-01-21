@@ -57,11 +57,23 @@ module JSI
       nil
     end
 
-    # takes a URI identifying a schema to be loaded by the given block
+    # takes a URI identifying a resource to be loaded by the given block
     # when a reference to the URI is followed.
     #
+    # for example:
+    #
+    #     JSI.schema_registry.autoload_uri('http://example.com/schema.json') do
+    #       JSI.new_schema({
+    #         '$schema' => 'http://json-schema.org/draft-07/schema#',
+    #         '$id' => 'http://example.com/schema.json',
+    #         'title' => 'my schema',
+    #       })
+    #     end
+    #
+    # the block would normally load JSON from the filesystem or similar.
+    #
     # @param uri [Addressable::URI]
-    # @yieldreturn [JSI::Base] a document containing the schema identified by the given uri
+    # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
       uri = Addressable::URI.parse(uri)

@@ -172,7 +172,7 @@ module JSI
         token_in_range = jsi_node_content_ary_pubsend(:each_index).include?(token)
         value = jsi_node_content_ary_pubsend(:[], token)
       else
-        raise(NoMethodError, "cannot subcript (using token: #{token.inspect}) from content: #{jsi_node_content.pretty_inspect.chomp}")
+        raise(NoMethodError, "cannot subscript (using token: #{token.inspect}) from content: #{jsi_node_content.pretty_inspect.chomp}")
       end
 
       begin

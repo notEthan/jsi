@@ -96,7 +96,7 @@ bill.jsi_valid?
 # => true
 ```
 
-... and validations on the nested schema instances (`#phone` here), showing in this example validation failure:
+... and validations on the nested schema instances (`#phone` here), showing in this example validation failure on /phone/0/number:
 
 ```ruby
 bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
@@ -113,6 +113,10 @@ bad.phone.jsi_validate
 #   #<Set: {#<JSI::Validation::Error
 #      message: "instance type does not match `type` value",
 #      keyword: "type",
+#      schema: #{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "type" => "string"},
+#      instance_ptr: JSI::Ptr["phone", 0, "number"],
+#      instance_document: {"phone"=>[{"number"=>[5, 5, 5]}]}
+#   >,
 #  ...
 # >
 ```
@@ -141,6 +145,16 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
   - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_instance`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
 - "schema" refers to either a parsed JSON schema (generally a ruby Hash) or a JSI schema.
+
+## Supported specification versions
+
+JSI supports these JSON Schema specification versions:
+
+| Version | `$schema` URI                             | JSI Schema Module |
+| ---     | ---                                       | ---               |
+| Draft 4 | `http://json-schema.org/draft-04/schema#` | {JSI::JSONSchemaOrgDraft04} |
+| Draft 6 | `http://json-schema.org/draft-06/schema#` | {JSI::JSONSchemaOrgDraft06} |
+| Draft 7 | `http://json-schema.org/draft-07/schema#` | {JSI::JSONSchemaOrgDraft07} |
 
 ## JSI and Object Oriented Programming
 
@@ -220,6 +234,14 @@ end
 ### A note on Classes
 
 The classes used to instantiate JSIs are dynamically generated subclasses of JSI::Base which include the JSI Schema Module of each schema describing the given instance. These are mostly intended to be ignored: applications aren't expected to instantiate these directly (rather, `#new_jsi` on a Schema or Schema Module is intended), and they are not intended for subclassing or method definition (applications should instead define methods on a schema's {JSI::Schema#jsi_schema_module}).
+
+## Registration
+
+In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry which associates URIs with schemas (or resources containing schemas). This registry is accessible on {JSI.schema_registry} and is a {JSI::SchemaRegistry}.
+
+Schemas instantiated with `.new_schema`, and their subschemas, are automatically registered with `JSI.schema_registry` if they identify an absolute URI.
+
+Schemas can automatically be lazily loaded by registering a block which instantiates them with {JSI::SchemaRegistry#autoload_uri} (see its documentation).
 
 ## Validation
 

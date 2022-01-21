@@ -2,14 +2,14 @@ require_relative 'test_helper'
 
 NamedSchemaInstance = JSI.new_schema({
   '$schema' => 'http://json-schema.org/draft-07/schema#',
-  '$id' => 'https://schemas.jsi.unth.net/test/base/named_schema',
+  '$id' => 'http://jsi/base/named_schema',
 }).new_jsi({}).class
 
 # hitting .tap(&:name) causes JSI to assign a constant name from the ID,
 # meaning the name NamedSchemaInstanceTwo is not known.
 NamedSchemaInstanceTwo = JSI.new_schema({
   '$schema' => 'http://json-schema.org/draft-07/schema#',
-  '$id' => 'https://schemas.jsi.unth.net/test/base/named_schema_two',
+  '$id' => 'http://jsi/base/named_schema_two',
 }).new_jsi({}).class.tap(&:name)
 
 Phonebook = JSI.new_schema_module(YAML.load(<<~YAML
@@ -56,11 +56,11 @@ describe JSI::Base do
       end
     end
     it 'is the constant name plus id for a class assigned to a constant' do
-      assert_equal(%q(NamedSchemaInstance (https://schemas.jsi.unth.net/test/base/named_schema)), NamedSchemaInstance.inspect)
+      assert_equal(%q(NamedSchemaInstance (http://jsi/base/named_schema)), NamedSchemaInstance.inspect)
     end
     it 'is not the constant name when the constant name has been generated from the schema_uri' do
-      assert_equal("JSI::SchemaClasses::Xhttps___schemas_jsi_unth_net_test_base_named_schema_two", NamedSchemaInstanceTwo.name)
-      assert_equal("(JSI Schema Class: https://schemas.jsi.unth.net/test/base/named_schema_two)", NamedSchemaInstanceTwo.inspect)
+      assert_equal("JSI::SchemaClasses::Xhttp___jsi_base_named_schema_two", NamedSchemaInstanceTwo.name)
+      assert_equal("(JSI Schema Class: http://jsi/base/named_schema_two)", NamedSchemaInstanceTwo.inspect)
     end
   end
   describe 'class name' do
@@ -92,6 +92,9 @@ describe JSI::Base do
       class_for_schema = JSI::SchemaClasses.class_for_schemas([schema])
       # same class every time
       assert_equal(JSI::SchemaClasses.class_for_schemas([schema]), class_for_schema)
+      # schema_again same as `schema` but different instantiation; class_for_schemas returns same class
+      schema_again = JSI::JSONSchemaOrgDraft07.new_schema({})
+      assert_equal(JSI::SchemaClasses.class_for_schemas([schema_again]), class_for_schema)
       assert_operator(class_for_schema, :<, JSI::Base)
     end
     it 'raises given a nonschema' do
@@ -443,7 +446,7 @@ describe JSI::Base do
     describe 'with errors' do
       let(:schema_content) {
         {
-          '$id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::with errors',
+          '$id' => 'http://jsi/base/validation/with errors',
           'type' => 'object',
           'properties' => {
             'some_number' => {
@@ -477,7 +480,7 @@ describe JSI::Base do
     describe 'at a depth' do
       let(:schema_content) do
         {
-          '$id' => 'https://schemas.jsi.unth.net/test/JSI::Base::validation::at a depth',
+          '$id' => 'http://jsi/base/validation/at a depth',
           'description' => 'hash schema',
           'type' => 'object',
           'properties' => {
@@ -612,7 +615,7 @@ describe JSI::Base do
         let(:instance) { nil }
         it 'errors' do
           err = assert_raises(JSI::Base::CannotSubscriptError) { subject.foo }
-          assert_equal(%q(cannot subcript (using token: "foo") from instance: nil), err.message)
+          assert_equal(%q(cannot subscript (using token: "foo") from instance: nil), err.message)
         end
       end
       describe 'properties with the same names as instance methods' do
@@ -704,6 +707,27 @@ describe JSI::Base do
           assert_raises(NoMethodError) { subject.send('1') }
         end
       end
+
+      describe 'property named unicode 😀' do
+        let(:schema_content) do
+          {
+            'type' => 'object',
+            'properties' => {
+              '😀' => {}
+           },
+          }
+        end
+        let(:instance) do
+          {
+            '😀' => '💜'
+          }
+        end
+        it 'defines reader and writer' do
+          assert_equal('💜', subject.😀)
+          subject.😀= '💚'
+          assert_equal('💚', subject.😀)
+        end
+      end
     end
     describe 'writers' do
       it 'writes attributes described as properties' do
@@ -729,7 +753,7 @@ describe JSI::Base do
         let(:instance) { nil }
         it 'errors' do
           err = assert_raises(NoMethodError) { subject.foo = 0 }
-          assert_equal('cannot assign subcript (using token: "foo") to instance: nil', err.message)
+          assert_equal('cannot assign subscript (using token: "foo") to instance: nil', err.message)
         end
       end
     end

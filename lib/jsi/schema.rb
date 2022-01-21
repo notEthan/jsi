@@ -149,10 +149,14 @@ module JSI
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
       # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
       #   are inplace applicators matched from self to the schema being instantiated.
-      def new_schema(schema_content, uri: nil)
-        new_jsi(Util.deep_stringify_symbol_keys(schema_content),
+      def new_schema(schema_content,
+          uri: nil
+      )
+        schema_jsi = new_jsi(Util.deep_stringify_symbol_keys(schema_content),
           uri: uri,
-        ).tap(&:register_schema)
+        )
+        JSI.schema_registry.register(schema_jsi)
+        schema_jsi
       end
 
       # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
@@ -215,7 +219,7 @@ module JSI
       #   a '$schema' property. this may be a metaschema or a metaschema's schema module
       #   (e.g. `JSI::JSONSchemaOrgDraft07`).
       # @return [JSI::Schema] a JSI::Schema representing the given schema_object
-      def new_schema(schema_object, uri: nil, default_metaschema: nil)
+      def new_schema(schema_object, default_metaschema: nil, **kw)
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?
@@ -230,7 +234,7 @@ module JSI
           if !default_metaschema.respond_to?(:new_schema)
             raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
           end
-          default_metaschema.new_schema(schema_object, uri: uri)
+          default_metaschema.new_schema(schema_object, **kw)
         }
         if schema_object.is_a?(Schema)
           schema_object
@@ -242,7 +246,7 @@ module JSI
             unless metaschema.describes_schema?
               raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
-            metaschema.new_schema(schema_object, uri: uri)
+            metaschema.new_schema(schema_object, **kw)
           else
             default_metaschema_new_schema.call
           end
@@ -404,16 +408,9 @@ module JSI
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are matched
     #   from this schema.
     def new_jsi(instance,
-        uri: nil
+        **kw
     )
-      SchemaSet[self].new_jsi(instance, uri: uri)
-    end
-
-    # registers this schema with `JSI.schema_registry`
-    #
-    # @return [void]
-    def register_schema
-      JSI.schema_registry.register(self)
+      SchemaSet[self].new_jsi(instance, **kw)
     end
 
     # does this schema itself describe a schema?
@@ -595,7 +592,7 @@ module JSI
     end
 
     # schema resources which are ancestors of any subschemas below this schema.
-    # this may include this JSI if this is a schema resource root.
+    # this may include this schema if this is a schema resource root.
     # @private
     # @return [Array<JSI::Schema>]
     def jsi_subschema_resource_ancestors

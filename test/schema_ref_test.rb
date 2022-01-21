@@ -154,7 +154,7 @@ describe JSI::Schema::Ref do
 
       it 'finds a thing that is not a schema' do
         JSI.schema_registry.autoload_uri(uri) do
-          JSI.new_schema({}).new_jsi({}, uri: uri)
+          JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}, uri: uri)
         end
 
         err = assert_raises(JSI::Schema::NotASchemaError) { schema.new_jsi({}) }
