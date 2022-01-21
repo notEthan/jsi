@@ -98,7 +98,7 @@ module JSI
     end
 
     def deep_stringify_symbol_keys(object)
-      if object.respond_to?(:to_hash)
+      if object.respond_to?(:to_hash) && !object.is_a?(Addressable::URI)
         JSI::Util.modified_copy(object) do |hash|
           out = {}
           (hash.respond_to?(:each) ? hash : hash.to_hash).each do |k, v|
