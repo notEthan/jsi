@@ -48,7 +48,7 @@ module JSI
         unless data.respond_to?(:to_ary)
           raise TypeError, "expected array-like column data; got: #{data.class}: #{data.inspect}"
         end
-        data.map { |el| load_object(el) }
+        data.to_ary.map { |el| load_object(el) }
       else
         load_object(data)
       end
@@ -66,7 +66,7 @@ module JSI
           unless object.respond_to?(:to_ary)
             raise(TypeError, "expected array-like attribute; got: #{object.class}: #{object.inspect}")
           end
-          object.map do |el|
+          object.to_ary.map do |el|
             dump_object(el)
           end
         else
