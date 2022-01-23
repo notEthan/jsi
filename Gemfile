@@ -11,6 +11,10 @@ gem 'minitest-around'
 gem 'minitest-reporters'
 gem 'simplecov'
 gem 'simplecov-lcov'
-gem 'scorpio', '~> 0.6'
-gem 'spreedly_openapi', github: 'notEthan/spreedly_openapi', tag: 'v0.2.0'
-gem 'activesupport'
+
+# jsi does not depend on these, but we wish to test integration with them
+group(:extdep) do
+  gem 'scorpio', '~> 0.6'
+  gem 'spreedly_openapi', github: 'notEthan/spreedly_openapi', tag: 'v0.2.0'
+  gem 'activesupport'
+end

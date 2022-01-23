@@ -21,7 +21,9 @@ if ENV['CI'] || ENV['COV']
   end
 end
 
-require 'bundler/setup'
+require 'bundler'
+bundler_groups = ENV['JSI_TEST_EXTDEP'] ? [:extdep, :default] : [:default]
+Bundler.setup(*bundler_groups)
 
 if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
   require 'byebug'

@@ -32,11 +32,28 @@ namespace 'test' do
     description: 'run JSI unit tests',
     pattern: "test/*_test.rb",
   )
+
+  task('extdep:env')  { ENV['JSI_TEST_EXTDEP'] = 'y' }
+  task('extdep:unenv') { ENV.delete('JSI_TEST_EXTDEP') }
+
+  # tests which rely on libraries jsi does not itself depend on are run separately.
+  # if code is added to JSI which inadvertantly relies on these, and the tests require that dependency,
+  # then tests might pass when applications without that dependency would fail.
+  # the JSI_TEST_EXTDEP variable causes the :extdep bundler group in the Gemfile to be set up.
+  JSITestTask.new(
+    name: 'extdep:run',
+    title: 'external dependencies',
+    description: 'run tests which rely on libraries JSI does not itself depend on',
+    pattern: "test/extdep/*_test.rb",
+  )
+
+  task('extdep' => ['extdep:env', 'extdep:run', 'extdep:unenv'])
 end
 
 desc 'run all tests'
 task 'test' => [
   'test:unit',
+  'test:extdep'
 ]
 
 task :default => :test
