@@ -58,7 +58,10 @@ module JSI
         end.inject({}, &:update)
       elsif object.respond_to?(:to_ary)
         (object.respond_to?(:map) ? object : object.to_ary).map { |e| as_json(e, **options) }
-      elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| object.is_a?(c) }
+      elsif [String, Integer, TrueClass, FalseClass, NilClass].any? { |c| object.is_a?(c) }
+        object
+      elsif object.is_a?(Float)
+        type_err.call unless object.finite?
         object
       elsif object.is_a?(Symbol)
         object.to_s

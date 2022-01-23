@@ -38,6 +38,11 @@ describe JSI::Util do
       err = assert_raises(TypeError) { JSI::Util.as_json({nil => 0}) }
       assert_equal('json object (hash) cannot be keyed with: nil', err.message)
 
+      # numbers
+      assert_equal(2.0, JSI::Util.as_json(2.0))
+      assert_raises(TypeError) { JSI::Util.as_json(1.0 / 0) }
+      assert_raises(TypeError) { JSI::Util.as_json(0.0 / 0) }
+
       # schema
       schema = JSI::JSONSchemaDraft07.new_schema({'type' => 'array'})
       assert_equal({'type' => 'array'}, JSI::Util.as_json(schema))
