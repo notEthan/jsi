@@ -4,7 +4,7 @@ module JSI
   # JSI::Util classes, modules, constants, and methods are internal, and will be added and removed without warning.
   #
   # @api private
-  module Util
+  module Util::Private
     autoload :AttrStruct, 'jsi/util/attr_struct'
 
     # a hash copied from the given hashlike, in which any symbol keys are
