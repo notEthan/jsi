@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  module Util
+  module Util::Private
     # like a Struct, but stores all the attributes in one @attributes Hash, instead of individual instance
     # variables for each attribute.
     # this tends to be easier to work with and more flexible. keys which are symbols are converted to strings.
