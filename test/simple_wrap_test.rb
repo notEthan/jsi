@@ -18,13 +18,13 @@ describe 'JSI::SimpleWrap' do
     end
 
     it 'wraps' do
-      assert_equal(Set[schema], subject.jsi_schemas)
+      assert_schemas([schema], subject)
       assert(subject.jsi_valid?)
-      assert_equal(Set[schema], subject['b', as_jsi: true].jsi_schemas)
-      assert_equal(Set[schema], subject[:c].jsi_schemas)
-      assert_equal(Set[schema], subject[:c]['f'].jsi_schemas)
-      assert_equal(Set[schema], subject[:c]['f'][0].jsi_schemas)
-      assert_equal(Set[schema], subject[:c]['f'][0]['g', as_jsi: true].jsi_schemas)
+      assert_schemas([schema], subject['b', as_jsi: true])
+      assert_schemas([schema], subject[:c])
+      assert_schemas([schema], subject[:c]['f'])
+      assert_schemas([schema], subject[:c]['f'][0])
+      assert_schemas([schema], subject[:c]['f'][0]['g', as_jsi: true])
       assert(subject[:c]['f'][0]['g', as_jsi: true].jsi_valid?)
     end
   end
