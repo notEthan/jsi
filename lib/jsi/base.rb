@@ -22,7 +22,7 @@ module JSI
     # the class than to conditionally extend the instance.
     include Enumerable
 
-    # an exception raised when #[] is invoked on an instance which is not an array or hash
+    # an exception raised when {Base#[]} is invoked on an instance which is not an array or hash
     class CannotSubscriptError < StandardError
     end
 
@@ -344,8 +344,8 @@ module JSI
     #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
     #     simple type (anything unresponsive to #to_ary / #to_hash).
     #
-    #   - true: the result value will always be returned as a JSI. the #jsi_schemas of the result may be empty
-    #     if no schemas describe the instance.
+    #   - true: the result value will always be returned as a JSI. the {#jsi_schemas} of the result may be
+    #     empty if no schemas describe the instance.
     #   - false: the result value will always be the plain instance.
     #
     #   note that nil is returned (regardless of as_jsi) when there is no value to return because the token

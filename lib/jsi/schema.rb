@@ -437,7 +437,7 @@ module JSI
 
     # a resource containing this schema.
     #
-    # if any parent, or this schema itself, is a schema with an absolute uri (see #schema_absolute_uri),
+    # if any parent, or this schema itself, is a schema with an absolute uri (see {#schema_absolute_uri}),
     # the resource root is the closest schema with an absolute uri.
     #
     # if no parent schema has an absolute uri, the schema_resource_root is the root of the document
@@ -482,7 +482,7 @@ module JSI
 
     public
 
-    # a schema in the same schema resource as this one (see #schema_resource_root) at the given
+    # a schema in the same schema resource as this one (see {#schema_resource_root}) at the given
     # pointer relative to the root of the schema resource.
     #
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
