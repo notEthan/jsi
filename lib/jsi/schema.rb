@@ -147,8 +147,8 @@ module JSI
       # @param uri [nil, #to_str, Addressable::URI] the URI of the schema document.
       #   relative URIs within the document are resolved using this uri as their base.
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
-      # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
-      #   are inplace applicators matched from self to the schema being instantiated.
+      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_content`
+      #   and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
           uri: nil
       )
@@ -218,7 +218,8 @@ module JSI
       # @param default_metaschema [#new_schema] the metaschema to use if the schema_object does not have
       #   a '$schema' property. this may be a metaschema or a metaschema's schema module
       #   (e.g. `JSI::JSONSchemaOrgDraft07`).
-      # @return [JSI::Schema] a JSI::Schema representing the given schema_object
+      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_object`
+      #   and whose schemas are the metaschema's inplace applicators.
       def new_schema(schema_object, default_metaschema: nil, **kw)
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
