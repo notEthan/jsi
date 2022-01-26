@@ -206,8 +206,8 @@ describe JSI::Base do
     end
     let(:instance) { {'phone' => [{}]} }
     it 'has jsi_schemas' do
-      assert_equal(Set[schema], subject.jsi_schemas)
-      assert_equal(Set[schema.properties['phone']], subject.phone.jsi_schemas)
+      assert_schemas([schema], subject)
+      assert_schemas([schema.properties['phone']], subject.phone)
     end
   end
 
@@ -428,8 +428,8 @@ describe JSI::Base do
         end
         assert_equal([[]], modified.jsi_instance)
         assert_equal([{}], subject.jsi_instance)
-        assert_equal(Set[schema.items, schema.items.oneOf[1]], modified.first.jsi_schemas)
-        assert_equal(Set[schema.items, schema.items.oneOf[0]], subject.first.jsi_schemas)
+        assert_schemas([schema.items, schema.items.oneOf[1]], modified.first)
+        assert_schemas([schema.items, schema.items.oneOf[0]], subject.first)
         assert(!modified.first.respond_to?(:to_hash))
         assert(modified.first.respond_to?(:to_ary))
         assert(subject.first.respond_to?(:to_hash))
@@ -666,7 +666,7 @@ describe JSI::Base do
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
-          assert_equal(Set[schema], subject.jsi_schemas)
+          assert_schemas([schema], subject)
         end
       end
       describe 'properties with names to ignore' do

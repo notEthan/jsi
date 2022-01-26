@@ -19,9 +19,9 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { [{}] }
         it 'applies items' do
-          assert_equal(Set[
+          assert_schemas([
             schema.items,
-          ], subject[0].jsi_schemas)
+          ], subject[0])
           assert_is_a(schema.items.jsi_schema_module, subject[0])
         end
       end
@@ -34,9 +34,9 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { [{}, {}] }
         it 'applies corresponding items' do
-          assert_equal(Set[
+          assert_schemas([
             schema.items[0],
-          ], subject[0].jsi_schemas)
+          ], subject[0])
           assert_is_a(schema.items[0].jsi_schema_module, subject[0])
           refute_is_a(schema.items[0].jsi_schema_module, subject[1])
         end
@@ -51,12 +51,12 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { [{}, {}] }
         it 'applies items, additionalItems' do
-          assert_equal(Set[
+          assert_schemas([
             schema.items[0],
-          ], subject[0].jsi_schemas)
-          assert_equal(Set[
+          ], subject[0])
+          assert_schemas([
             schema.additionalItems,
-          ], subject[1].jsi_schemas)
+          ], subject[1])
           assert_is_a(schema.items[0].jsi_schema_module, subject[0])
           assert_is_a(schema.additionalItems.jsi_schema_module, subject[1])
         end
@@ -92,12 +92,12 @@ describe 'JSI Schema child application' do
         let(:instance) { [{}, [], [], {}] }
         it 'applies' do
           assert_empty(subject[0].jsi_schemas)
-          assert_equal(Set[
+          assert_schemas([
             schema.contains,
-          ], subject[1].jsi_schemas)
-          assert_equal(Set[
+          ], subject[1])
+          assert_schemas([
             schema.contains,
-          ], subject[2].jsi_schemas)
+          ], subject[2])
           assert_empty(subject[3].jsi_schemas)
           refute_is_a(schema.contains.jsi_schema_module, subject[0])
           assert_is_a(schema.contains.jsi_schema_module, subject[1])
@@ -140,9 +140,9 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { {'foo' => []} }
         it 'applies properties' do
-          assert_equal(Set[
+          assert_schemas([
             schema.properties['foo'],
-          ], subject['foo'].jsi_schemas)
+          ], subject['foo'])
           assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
         end
       end
@@ -157,12 +157,12 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { {'foo' => [], 'bar' => []} }
         it 'applies properties, additionalProperties' do
-          assert_equal(Set[
+          assert_schemas([
             schema.properties['foo'],
-          ], subject['foo'].jsi_schemas)
-          assert_equal(Set[
+          ], subject['foo'])
+          assert_schemas([
             schema.additionalProperties,
-          ], subject['bar'].jsi_schemas)
+          ], subject['bar'])
           assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
           assert_is_a(schema.additionalProperties.jsi_schema_module, subject['bar'])
         end
@@ -176,9 +176,9 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { {'foo' => []} }
         it 'applies additionalProperties' do
-          assert_equal(Set[
+          assert_schemas([
             schema.additionalProperties,
-          ], subject['foo'].jsi_schemas)
+          ], subject['foo'])
           assert_is_a(schema.additionalProperties.jsi_schema_module, subject['foo'])
         end
       end
@@ -191,9 +191,9 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { {'foo' => []} }
         it 'applies additionalProperties' do
-          assert_equal(Set[
+          assert_schemas([
             schema.additionalProperties,
-          ], subject['foo'].jsi_schemas)
+          ], subject['foo'])
           assert_is_a(schema.additionalProperties.jsi_schema_module, subject['foo'])
         end
       end
@@ -223,19 +223,19 @@ describe 'JSI Schema child application' do
           )
         end
         it 'applies those applicable' do
-          assert_equal(Set[
+          assert_schemas([
             schema.properties['foo'],
-          ], subject['foo'].jsi_schemas)
-          assert_equal(Set[
+          ], subject['foo'])
+          assert_schemas([
             schema.patternProperties['^b'],
-          ], subject['bar'].jsi_schemas)
-          assert_equal(Set[
+          ], subject['bar'])
+          assert_schemas([
             schema.properties['baz'],
             schema.patternProperties['^b'],
-          ], subject['baz'].jsi_schemas)
-          assert_equal(Set[
+          ], subject['baz'])
+          assert_schemas([
             schema.additionalProperties,
-          ], subject['qux'].jsi_schemas)
+          ], subject['qux'])
 
           assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
           refute_is_a(schema.properties['baz'].jsi_schema_module, subject['foo'])

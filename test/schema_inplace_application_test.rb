@@ -21,9 +21,9 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies $ref, excludes the schema containing $ref' do
-          assert_equal(Set[
+          assert_schemas([
             schema.definitions['A'],
-          ], subject.jsi_schemas)
+          ], subject)
           refute_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
         end
@@ -42,9 +42,9 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies final $ref' do
-          assert_equal(Set[
+          assert_schemas([
             schema.definitions['B'],
-          ], subject.jsi_schemas)
+          ], subject)
           refute_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.definitions['A'].jsi_schema_module, subject)
           assert_is_a(schema.definitions['B'].jsi_schema_module, subject)
@@ -63,9 +63,9 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'ignores' do
-          assert_equal(Set[
+          assert_schemas([
             schema.definitions['A'],
-          ], subject.jsi_schemas)
+          ], subject)
           refute_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
           refute_is_a(schema.allOf[0].jsi_schema_module, subject)
@@ -84,10 +84,10 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies' do
-          assert_equal(Set[
+          assert_schemas([
             schema.definitions['A'],
             schema.definitions['A'].allOf[0],
-          ], subject.jsi_schemas)
+          ], subject)
           refute_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
           assert_is_a(schema.definitions['A'].allOf[0].jsi_schema_module, subject)
@@ -113,11 +113,11 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.allOf[0],
             schema.allOf[1],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].jsi_schema_module, subject)
           assert_is_a(schema.allOf[1].jsi_schema_module, subject)
@@ -136,13 +136,13 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies all' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.allOf[0],
             schema.allOf[0].allOf[0],
             schema.allOf[1],
             schema.allOf[1].oneOf[0],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].allOf[0].jsi_schema_module, subject)
@@ -164,13 +164,13 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'still applies all' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.allOf[0],
             schema.allOf[0].allOf[0],
             schema.allOf[0].allOf[1],
             schema.allOf[1],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].jsi_schema_module, subject)
           assert_is_a(schema.allOf[0].allOf[0].jsi_schema_module, subject)
@@ -191,11 +191,11 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies the ones that validate' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.anyOf[0],
             schema.anyOf[2],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[1].jsi_schema_module, subject)
@@ -217,13 +217,13 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies those that validate' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.anyOf[0],
             schema.anyOf[0].anyOf[0],
             schema.anyOf[1],
             schema.anyOf[1].oneOf[0],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.anyOf[0].jsi_schema_module, subject)
           assert_is_a(schema.anyOf[0].anyOf[0].jsi_schema_module, subject)
@@ -247,9 +247,9 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies none' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[0].anyOf[0].jsi_schema_module, subject)
@@ -270,10 +270,10 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies the one that validates' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.oneOf[2],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[1].jsi_schema_module, subject)
@@ -296,11 +296,11 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies one' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.oneOf[1],
             schema.oneOf[1].anyOf[0],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[0].jsi_schema_module, subject)
@@ -325,9 +325,9 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies none' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[0].jsi_schema_module, subject)
@@ -356,10 +356,10 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {'foo' => [0], 'baz' => {}} }
         it 'applies the ones present' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.dependencies['foo'],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
@@ -383,13 +383,13 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {'foo' => [0], 'baz' => {}} }
         it 'applies the ones present' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.dependencies['foo'],
             schema.dependencies['foo'].allOf[0],
             schema.dependencies['foo'].allOf[1],
             schema.dependencies['foo'].allOf[1].dependencies['foo']
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].allOf[0].jsi_schema_module, subject)
@@ -418,13 +418,13 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {'foo' => [0], 'baz' => {}} }
         it 'applies the ones present (regardless of validation)' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema.dependencies['foo'],
             schema.dependencies['foo'].allOf[0],
             schema.dependencies['foo'].allOf[1],
             schema.dependencies['foo'].allOf[1].dependencies['foo']
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
           assert_is_a(schema.dependencies['foo'].allOf[0].jsi_schema_module, subject)
@@ -453,10 +453,10 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies then' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema['then'],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
           assert_is_a(schema['then'].jsi_schema_module, subject)
@@ -474,10 +474,10 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies else' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema['else'],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
           refute_is_a(schema['then'].jsi_schema_module, subject)
@@ -503,13 +503,13 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies then' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema['then'],
             schema['then'].allOf[0],
             schema['then'].allOf[0].oneOf[0],
             schema['then'].allOf[1],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
           refute_is_a(schema['if'].oneOf[0].jsi_schema_module, subject)
@@ -534,11 +534,11 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies else' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema['else'],
             schema['else']['else'],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
           refute_is_a(schema['then'].jsi_schema_module, subject)
@@ -558,10 +558,10 @@ describe 'JSI Schema inplace application' do
         end
         let(:instance) { {} }
         it 'applies then' do
-          assert_equal(Set[
+          assert_schemas([
             schema,
             schema['then'],
-          ], subject.jsi_schemas)
+          ], subject)
           assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
           assert_is_a(schema['then'].jsi_schema_module, subject)

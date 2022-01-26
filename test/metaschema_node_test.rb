@@ -91,8 +91,8 @@ describe JSI::MetaschemaNode do
     describe '#jsi_schemas' do
       let(:metaschema) { JSI::JSONSchemaOrgDraft06.schema }
       it 'has jsi_schemas' do
-        assert_equal(Set[metaschema], metaschema.jsi_schemas)
-        assert_equal(Set[metaschema.properties['properties']], metaschema.properties.jsi_schemas)
+        assert_schemas([metaschema], metaschema)
+        assert_schemas([metaschema.properties['properties']], metaschema.properties)
       end
     end
   end

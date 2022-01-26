@@ -53,7 +53,7 @@ describe 'JSI::SchemaSet' do
         schema_b,
         schema_c,
       ]
-      assert_equal(Set[schema_a, schema_b.definitions['b'], schema_c, schema_c.allOf[0]], schema_set.new_jsi({}).jsi_schemas)
+      assert_schemas([schema_a, schema_b.definitions['b'], schema_c, schema_c.allOf[0]], schema_set.new_jsi({}))
     end
   end
   describe '#inspect' do

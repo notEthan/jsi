@@ -257,12 +257,12 @@ describe 'unsupported behavior' do
         child['on'] = child
         root = {'a' => ['world'], 'on' => child}
         jsi = schema.new_jsi(root)
-        assert_equal(Set[schema.properties['a']], jsi.a.jsi_schemas)
-        assert_equal(Set[schema], jsi.on.jsi_schemas)
+        assert_schemas([schema.properties['a']], jsi.a)
+        assert_schemas([schema], jsi.on)
         # little deeper
         deep_parent_ptr = JSI::Ptr['on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on']
-        assert_equal(Set[schema.properties['a']], deep_parent_ptr.evaluate(jsi).a.jsi_schemas)
-        assert_equal(Set[schema], deep_parent_ptr.evaluate(jsi).jsi_schemas)
+        assert_schemas([schema.properties['a']], deep_parent_ptr.evaluate(jsi).a)
+        assert_schemas([schema], deep_parent_ptr.evaluate(jsi))
 
         # lul
         #assert_raises(SystemStackError) do
