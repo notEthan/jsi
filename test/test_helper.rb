@@ -112,6 +112,19 @@ class JSISpec < Minitest::Spec
 
     assert !obj.is_a?(mod), msg
   end
+
+  # @param schemas [Enumerable<JSI::Schema>]
+  # @param instance [JSI::Base]
+  def assert_schemas(schemas, instance)
+    schemas = JSI::SchemaSet.new(schemas)
+
+    assert_is_a(JSI::Base, instance)
+
+    assert_equal(instance.jsi_schemas, schemas)
+    schemas.each do |schema|
+      assert_is_a(schema.jsi_schema_module, instance)
+    end
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec
