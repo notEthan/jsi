@@ -52,14 +52,16 @@ module JSI
       elsif object.is_a?(Addressable::URI)
         object.to_s
       elsif object.respond_to?(:to_hash)
-        (object.respond_to?(:map) ? object : object.to_hash).map do |k, v|
+        result = {}
+        object.to_hash.each_pair do |k, v|
           unless k.is_a?(Symbol) || k.respond_to?(:to_str)
             raise(TypeError, "json object (hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
           end
-          {k.to_s => as_json(v, **options)}
-        end.inject({}, &:update)
+          result[k.to_s] = as_json(v, **options)
+        end
+        result
       elsif object.respond_to?(:to_ary)
-        (object.respond_to?(:map) ? object : object.to_ary).map { |e| as_json(e, **options) }
+        object.to_ary.map { |e| as_json(e, **options) }
       elsif [String, Integer, TrueClass, FalseClass, NilClass].any? { |c| object.is_a?(c) }
         object
       elsif object.is_a?(Float)
@@ -69,6 +71,10 @@ module JSI
         object.to_s
       elsif object.is_a?(Set)
         as_json(object.to_a, **options)
+      elsif object.respond_to?(:to_str)
+        object.to_str
+      elsif object.respond_to?(:to_int)
+        object.to_int
       else
         type_err.call
       end
