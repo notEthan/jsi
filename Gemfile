@@ -5,6 +5,7 @@ gemspec
 gem 'irb'
 gem 'byebug'
 gem 'rake'
+gem 'gig'
 gem 'minitest'
 gem 'minitest-around'
 gem 'minitest-reporters'
