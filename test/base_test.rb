@@ -231,9 +231,9 @@ describe JSI::Base do
     describe 'jsi_parent_nodes not described by schemas' do
       let(:instance) { {'foo' => {'a' => {'b' => ['c']}}} }
       it 'has more' do
-        a = subject.foo['a', as_jsi: true]
-        b = a['b', as_jsi: true]
-        c = b[0, as_jsi: true] # TODO use jsi_child_node or evaluate
+        a = subject.jsi_descendent_node(['foo', 'a'])
+        b = subject.jsi_descendent_node(['foo', 'a', 'b'])
+        c = subject.jsi_descendent_node(['foo', 'a', 'b', 0])
         assert_equal([b, a, subject.foo, subject], c.jsi_parent_nodes)
         assert_equal(b, c.jsi_parent_node)
         assert_equal(a, b.jsi_parent_node)
