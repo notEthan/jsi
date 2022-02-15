@@ -112,7 +112,7 @@ module JSI
     module FingerprintHash
       # overrides BasicObject#==
       def ==(other)
-        __id__ == other.__id__ || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == jsi_fingerprint)
+        __id__ == other.__id__ || (other.is_a?(FingerprintHash) && jsi_fingerprint == other.jsi_fingerprint)
       end
 
       alias_method :eql?, :==
