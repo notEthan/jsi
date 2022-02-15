@@ -182,7 +182,7 @@ module JSI
         elsif ptr.respond_to?(:to_ary)
           ptr_tokens = ptr
         else
-          raise(TypeError, "ptr must be a JSI::Ptr or Array of tokens; got: #{ptr.inspect}")
+          raise(TypeError, "ptr must be a #{Ptr} or Array of tokens; got: #{ptr.inspect}")
         end
         Ptr.new(tokens + ptr_tokens)
       end
