@@ -369,7 +369,7 @@ module JSI
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
         value = jsi_node_content_hash_pubsend(:[], token)
       elsif respond_to?(:to_ary)
-        token_in_range = jsi_node_content_ary_pubsend(:each_index).include?(token)
+        token_in_range = token.is_a?(Integer) && token >= 0 && token < jsi_node_content_ary_pubsend(:size)
         value = jsi_node_content_ary_pubsend(:[], token)
       else
         raise(CannotSubscriptError, "cannot subscript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
