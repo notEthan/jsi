@@ -578,7 +578,7 @@ module JSI
         as_jsi
       elsif as_jsi == :auto
         complex_value = value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
-        schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
+        schema_value = subinstance_schemas.any?(&:describes_schema?)
         complex_value || schema_value
       else
         raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
