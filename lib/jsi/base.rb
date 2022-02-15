@@ -329,6 +329,32 @@ module JSI
       nil
     end
 
+    # Does the given token identify a child of this node?
+    #
+    # In other words, is the given token an array index or hash key of the instance?
+    #
+    # Always false if this is not a complex node.
+    #
+    # @param token [String, Integer]
+    # @return [Boolean]
+    def jsi_child_token_in_range?(token)
+      # note: overridden by Base::HashNode, Base::ArrayNode
+      false
+    end
+
+    # The child of the {#jsi_node_content} identified by the given token,
+    # or `nil` if the token does not identify an existing child.
+    #
+    # In other words, the element of the instance array at the given index,
+    # or the value of the instance hash/object for the given key.
+    #
+    # @return [Object, nil]
+    # @raise [CannotSubscriptError] if this node is not complex (its instance is not array or hash)
+    def jsi_node_content_child(token)
+      # note: overridden by Base::HashNode, Base::ArrayNode
+      raise(CannotSubscriptError, "cannot subscript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
+    end
+
     # subscripts to return a child value identified by the given token.
     #
     # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
@@ -365,21 +391,13 @@ module JSI
     #   unspecified behavior.)
     # @return [JSI::Base, Object] the child value identified by the subscript token
     def [](token, as_jsi: :auto, use_default: true)
-      if respond_to?(:to_hash)
-        token_in_range = jsi_node_content_hash_pubsend(:key?, token)
-        value = jsi_node_content_hash_pubsend(:[], token)
-      elsif respond_to?(:to_ary)
-        token_in_range = token.is_a?(Integer) && token >= 0 && token < jsi_node_content_ary_pubsend(:size)
-        value = jsi_node_content_ary_pubsend(:[], token)
-      else
-        raise(CannotSubscriptError, "cannot subscript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
-      end
+      value = jsi_node_content_child(token)
 
       begin
         child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
         child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(value)
 
-        if token_in_range
+        if jsi_child_token_in_range?(token)
           jsi_subinstance_as_jsi(value, child_applied_schemas, as_jsi) do
             jsi_subinstance_memos[
               token: token,
@@ -403,10 +421,6 @@ module JSI
             # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
             dup.tap { |o| o[token] = defaults.first }[token, as_jsi: as_jsi]
           else
-            # I kind of want to just return nil here. the preferred mechanism for
-            # a JSI's default value should be its schema. but returning nil ignores
-            # any value returned by Hash#default/#default_proc. there's no compelling
-            # reason not to support both, so I'll return that.
             value
           end
         end

@@ -69,6 +69,20 @@ module JSI
       nil
     end
 
+    # See {Base#jsi_child_token_in_range?}
+    def jsi_child_token_in_range?(token)
+      jsi_node_content_hash_pubsend(:key?, token)
+    end
+
+    # See {Base#jsi_node_content_child}
+    def jsi_node_content_child(token)
+      # I could check token_in_range? and return nil here (as ArrayNode does).
+      # without that check, if the instance defines Hash#default or #default_proc, that result is returned.
+      # the preferred mechanism for a JSI's default value should be its schema.
+      # but there's no compelling reason not to support both, so I'll return what #[] returns.
+      jsi_node_content_hash_pubsend(:[], token)
+    end
+
     # yields each hash key and value of this node.
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
@@ -155,6 +169,22 @@ module JSI
       return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
       jsi_node_content_ary_pubsend(:each_index, &block)
       nil
+    end
+
+    # See {Base#jsi_child_token_in_range?}
+    def jsi_child_token_in_range?(token)
+      token.is_a?(Integer) && token >= 0 && token < jsi_node_content_ary_pubsend(:size)
+    end
+
+    # See {Base#jsi_node_content_child}
+    def jsi_node_content_child(token)
+      # we check token_in_range? here (unlike HashNode) because we do not want to pass
+      # negative indices, Ranges, or non-Integers to Array#[]
+      if jsi_child_token_in_range?(token)
+        jsi_node_content_ary_pubsend(:[], token)
+      else
+        nil
+      end
     end
 
     # yields each array element of this node.

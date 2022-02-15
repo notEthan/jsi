@@ -149,21 +149,11 @@ module JSI
     # @param as_jsi (see JSI::Base#[])
     # @return (see JSI::Base#[])
     def [](token, as_jsi: :auto)
-      if respond_to?(:to_hash)
-        token_in_range = jsi_node_content_hash_pubsend(:key?, token)
-        value = jsi_node_content_hash_pubsend(:[], token)
-      elsif respond_to?(:to_ary)
-        token_in_range = jsi_node_content_ary_pubsend(:each_index).include?(token)
-        value = jsi_node_content_ary_pubsend(:[], token)
-      else
-        raise(NoMethodError, "cannot subscript (using token: #{token.inspect}) from content: #{jsi_node_content.pretty_inspect.chomp}")
-      end
-
       begin
-        if token_in_range
+        if jsi_child_token_in_range?(token)
           value_node = jsi_subinstance_memos[token: token]
 
-          jsi_subinstance_as_jsi(value, value_node.jsi_schemas, as_jsi) do
+          jsi_subinstance_as_jsi(jsi_node_content_child(token), value_node.jsi_schemas, as_jsi) do
             value_node
           end
         else
