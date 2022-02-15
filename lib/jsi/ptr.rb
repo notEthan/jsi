@@ -195,7 +195,7 @@ module JSI
       # @return [JSI::Ptr]
       # @raise [ArgumentError] if n is not between 0 and the size of our tokens
       def take(n)
-        unless (0..tokens.size).include?(n)
+        unless n.is_a?(Integer) && n >= 0 && n <= tokens.size
           raise(ArgumentError, "n not in range (0..#{tokens.size}): #{n.inspect}")
         end
         Ptr.new(tokens.take(n))
