@@ -123,6 +123,30 @@ module JSI
       end
     end
 
+    module FingerprintHash::Immutable
+      include FingerprintHash
+
+      def ==(other)
+        return true if __id__ == other.__id__
+        return false unless other.is_a?(FingerprintHash)
+        # FingerprintHash::Immutable#hash being memoized, comparing that is basically free.
+        # not done with FingerprintHash, its #hash can be expensive.
+        return false if other.is_a?(FingerprintHash::Immutable) && hash != other.hash
+        jsi_fingerprint == other.jsi_fingerprint
+      end
+
+      alias_method :eql?, :==
+
+      def hash
+        @jsi_fingerprint_hash ||= jsi_fingerprint.hash
+      end
+
+      def freeze
+        hash
+        super
+      end
+    end
+
     module Memoize
       def self.extended(object)
         object.send(:jsi_initialize_memos)
