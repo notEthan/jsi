@@ -192,12 +192,9 @@ module JSI
     # then the module `Foos.items` will have a name_from_ancestor of `"Foos.items"`
     # @return [String, nil]
     def name_from_ancestor
-      schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
-      named_parent_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
-
+      named_parent_schema, tokens = named_ancestor_schema_tokens
       return nil unless named_parent_schema
 
-      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_parent_schema.jsi_ptr).tokens
       name = named_parent_schema.jsi_schema_module.name
       parent = named_parent_schema
       tokens.each do |token|
@@ -228,6 +225,17 @@ module JSI
       else
         sub
       end
+    end
+
+    private
+
+    # @return [Array<JSI::Schema, Array>, nil]
+    def named_ancestor_schema_tokens
+      schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
+      named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
+      return nil unless named_ancestor_schema
+      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_ancestor_schema.jsi_ptr).tokens
+      [named_ancestor_schema, tokens]
     end
   end
 
