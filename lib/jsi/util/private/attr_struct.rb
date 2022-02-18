@@ -51,7 +51,7 @@ module JSI
           raise(TypeError, "expected attributes to be a Hash; got: #{attributes.inspect}")
         end
         attributes = attributes.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
-        bad = attributes.keys.reject { |k| self.attribute_keys.include?(k) }
+        bad = attributes.keys.reject { |k| attribute_keys.include?(k) }
         unless bad.empty?
           raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
         end
@@ -65,7 +65,7 @@ module JSI
 
       def []=(key, value)
         key = key.to_s if key.is_a?(Symbol)
-        unless self.attribute_keys.include?(key)
+        unless attribute_keys.include?(key)
           raise UndefinedAttributeKey, "undefined attribute key: #{key.inspect}"
         end
         @attributes[key] = value

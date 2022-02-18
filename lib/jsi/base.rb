@@ -186,10 +186,10 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
-      if self.jsi_instance.respond_to?(:to_hash)
+      if jsi_instance.respond_to?(:to_hash)
         extend PathedHashNode
       end
-      if self.jsi_instance.respond_to?(:to_ary)
+      if jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
       end
     end

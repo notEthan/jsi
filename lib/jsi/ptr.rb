@@ -160,7 +160,7 @@ module JSI
       # of `other_ptr`, a child pointer. `contains?` is inclusive; a pointer does contain itself.
       # @return [Boolean]
       def contains?(other_ptr)
-        self.tokens == other_ptr.tokens[0...self.tokens.size]
+        tokens == other_ptr.tokens[0...tokens.size]
       end
 
       # part of this pointer relative to the given ancestor_ptr
@@ -184,7 +184,7 @@ module JSI
         else
           raise(TypeError, "ptr must be a JSI::Ptr or Array of tokens; got: #{ptr.inspect}")
         end
-        Ptr.new(self.tokens + ptr_tokens)
+        Ptr.new(tokens + ptr_tokens)
       end
 
       # a pointer consisting of the first `n` of our tokens

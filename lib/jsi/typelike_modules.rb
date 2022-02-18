@@ -112,7 +112,7 @@ module JSI
       unless other.respond_to?(:to_hash)
         raise(TypeError, "cannot update with argument that does not respond to #to_hash: #{other.pretty_inspect.chomp}")
       end
-      self_respondingto_key = self.respond_to?(:key?) ? self : to_hash
+      self_respondingto_key = respond_to?(:key?) ? self : to_hash
       other.to_hash.each_pair do |key, value|
         if block && self_respondingto_key.key?(key)
           value = yield(key, self[key], value)
@@ -139,7 +139,7 @@ module JSI
     # @return [String]
     def inspect
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
-      "\#{<#{object_group_str}>#{self.map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
+      "\#{<#{object_group_str}>#{map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
     end
 
     alias_method :to_s, :inspect
@@ -230,7 +230,7 @@ module JSI
     # @return [String]
     def inspect
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
-      "\#[<#{object_group_str}>#{self.map { |e| ' ' + e.inspect }.join(',')}]"
+      "\#[<#{object_group_str}>#{map { |e| ' ' + e.inspect }.join(',')}]"
     end
 
     alias_method :to_s, :inspect
