@@ -138,7 +138,7 @@ module JSI
     # self's #jsi_object_group_text
     # @return [String]
     def inspect
-      object_group_str = (respond_to?(:jsi_object_group_text) ? self.jsi_object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       "\#{<#{object_group_str}>#{self.map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
     end
 
@@ -147,7 +147,7 @@ module JSI
     # pretty-prints a representation of this hashlike to the given printer
     # @return [void]
     def pretty_print(q)
-      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#{<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {
@@ -229,7 +229,7 @@ module JSI
     # self's #jsi_object_group_text
     # @return [String]
     def inspect
-      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       "\#[<#{object_group_str}>#{self.map { |e| ' ' + e.inspect }.join(',')}]"
     end
 
@@ -238,7 +238,7 @@ module JSI
     # pretty-prints a representation of this arraylike to the given printer
     # @return [void]
     def pretty_print(q)
-      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#[<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {
