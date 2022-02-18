@@ -84,8 +84,9 @@ module JSI
       def schema_classes_const_name
         if respond_to?(:jsi_class_schemas)
           schema_names = jsi_class_schemas.map do |schema|
-            if schema.jsi_schema_module.name
-              schema.jsi_schema_module.name
+            named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
+            if named_ancestor_schema
+              [named_ancestor_schema.jsi_schema_module.name, *tokens].join('_')
             elsif schema.schema_uri
               schema.schema_uri.to_s
             else
