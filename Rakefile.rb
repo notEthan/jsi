@@ -17,7 +17,6 @@ ignore_files = %w(
   .gitignore
   .gitmodules
   Gemfile
-  jsi.gemspec
   Rakefile.rb
   test/**/*
   \\{resources\\}/icons/**/*

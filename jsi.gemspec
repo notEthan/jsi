@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
     'README.md',
     'readme.rb',
     '.yardopts',
+    'jsi.gemspec',
     *Dir['lib/**/*'],
     *Dir['\\{resources\\}/schemas/**/*'],
   ].reject { |f| File.lstat(f).ftype == 'directory' }
