@@ -144,20 +144,16 @@ module JSI
 
       jsi_initialize_memos
 
-        self.jsi_document = jsi_document
-        self.jsi_ptr = jsi_ptr
-        if @jsi_ptr.root?
-          raise(Bug, "jsi_root_node cannot be specified for root JSI") if jsi_root_node
-          @jsi_root_node = self
-        else
-          if !jsi_root_node.is_a?(JSI::Base)
-            raise(TypeError, "jsi_root_node must be a JSI::Base; got: #{jsi_root_node.inspect}")
-          end
-          if !jsi_root_node.jsi_ptr.root?
-            raise(Bug, "jsi_root_node ptr #{jsi_root_node.jsi_ptr.inspect} is not root")
-          end
-          @jsi_root_node = jsi_root_node
-        end
+      self.jsi_document = jsi_document
+      self.jsi_ptr = jsi_ptr
+      if @jsi_ptr.root?
+        raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
+        @jsi_root_node = self
+      else
+        raise(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
+        raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
+        @jsi_root_node = jsi_root_node
+      end
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
