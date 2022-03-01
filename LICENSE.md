@@ -2,7 +2,7 @@ Copright © [Ethan](https://github.com/notEthan/) &lt;ethan.jsi@unth.net&gt;
 
 [<img align="right" src="https://github.com/notEthan/jsi/raw/master/resources/icons/AGPL-3.0.png">](https://www.gnu.org/licenses/agpl-3.0.html)
 
-JSI is Open Source Software licensed under the terms of the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
+JSI is licensed under the terms of the [GNU Affero General Public License version 3](https://www.gnu.org/licenses/agpl-3.0.html).
 
 GNU Affero General Public License
 =================================

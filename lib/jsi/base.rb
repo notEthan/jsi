@@ -381,7 +381,10 @@ module JSI
 
         if token_in_range
           jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi) do
-            jsi_subinstance_memos[token: token, subinstance_schemas: subinstance_schemas]
+            jsi_subinstance_memos[
+              token: token,
+              subinstance_schemas: subinstance_schemas,
+            ]
           end
         else
           if use_default
@@ -443,11 +446,8 @@ module JSI
     def jsi_modified_copy(&block)
       if @jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        self.class.new(Base::NOINSTANCE,
-          jsi_document: modified_document,
-          jsi_ptr: @jsi_ptr,
-          jsi_schema_base_uri: @jsi_schema_base_uri,
-          jsi_schema_resource_ancestors: @jsi_schema_resource_ancestors, # this can only be empty but included for consistency
+        jsi_schemas.new_jsi(modified_document,
+          uri: jsi_schema_base_uri,
         )
       else
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|

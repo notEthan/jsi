@@ -348,7 +348,7 @@ module JSI
         resource.is_a?(Schema) && resource.schema_absolute_uri
       end
 
-      anchored = self.anchor
+      anchored = respond_to?(:anchor) ? self.anchor : nil
       parent_schemas.each do |parent_schema|
         if anchored
           if parent_schema.jsi_anchor_subschema(anchor) == self
