@@ -20,12 +20,12 @@ describe 'JSI::SimpleWrap' do
     it 'wraps' do
       assert_schemas([schema], subject)
       assert(subject.jsi_valid?)
-      assert_schemas([schema], subject['b', as_jsi: true])
-      assert_schemas([schema], subject[:c])
-      assert_schemas([schema], subject[:c]['f'])
-      assert_schemas([schema], subject[:c]['f'][0])
-      assert_schemas([schema], subject[:c]['f'][0]['g', as_jsi: true])
-      assert(subject[:c]['f'][0]['g', as_jsi: true].jsi_valid?)
+      assert_schemas([schema], subject.jsi_descendent_node(['b']))
+      assert_schemas([schema], subject.jsi_descendent_node([:c]))
+      assert_schemas([schema], subject.jsi_descendent_node([:c, 'f']))
+      assert_schemas([schema], subject.jsi_descendent_node([:c, 'f', 0]))
+      assert_schemas([schema], subject.jsi_descendent_node([:c, 'f', 0, 'g']))
+      assert(subject.jsi_descendent_node([:c, 'f', 0, 'g']).jsi_valid?)
     end
   end
 end
