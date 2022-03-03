@@ -272,6 +272,11 @@ describe JSI::Base do
           JSI::Ptr["bar", 0] => Set[],
         }, descendent_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
       end
+
+      it 'greps' do
+        grepped = subject.jsi_each_descendent_node.grep(/x/)
+        assert_equal([subject / %w(foo 0)], grepped)
+      end
     end
     describe 'iterating a simple structure' do
       let(:instance) { 0 }

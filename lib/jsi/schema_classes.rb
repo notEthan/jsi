@@ -72,6 +72,7 @@ module JSI
         includes = Set[]
         includes << Base::ArrayNode if instance.respond_to?(:to_ary)
         includes << Base::HashNode if instance.respond_to?(:to_hash)
+        includes << Base::StringNode if instance.respond_to?(:to_str)
         includes.freeze
       end
 

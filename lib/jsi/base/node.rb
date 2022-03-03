@@ -295,4 +295,10 @@ module JSI
       end
     end
   end
+
+  module Base::StringNode
+    def to_str
+      jsi_node_content.to_str
+    end
+  end
 end
