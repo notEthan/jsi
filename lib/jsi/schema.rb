@@ -399,9 +399,7 @@ module JSI
     # @param uri (see SchemaSet#new_jsi)
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are
     #   inplace applicator schemas matched from this schema.
-    def new_jsi(instance,
-        **kw
-    )
+    def new_jsi(instance, **kw)
       SchemaSet[self].new_jsi(instance, **kw)
     end
 
