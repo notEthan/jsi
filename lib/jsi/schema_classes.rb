@@ -28,8 +28,8 @@ module JSI
     #
     # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base] a JSI whose instance is the given instance
-    def new_jsi(instance, **kw, &b)
-      schema.new_jsi(instance, **kw, &b)
+    def new_jsi(instance, **kw)
+      schema.new_jsi(instance, **kw)
     end
   end
 
