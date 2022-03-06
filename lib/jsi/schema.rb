@@ -355,7 +355,7 @@ module JSI
           end
         end
 
-        relative_ptr = jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
+        relative_ptr = jsi_ptr.relative_to(parent_schema.jsi_ptr)
         yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
       end
 

@@ -239,7 +239,7 @@ module JSI
       schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
       named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
       return nil unless named_ancestor_schema
-      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_ancestor_schema.jsi_ptr).tokens
+      tokens = possibly_schema_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
       [named_ancestor_schema, tokens]
     end
   end

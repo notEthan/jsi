@@ -141,7 +141,7 @@ describe JSI::Ptr do
         err = assert_raises(JSI::Ptr::Error) { JSI::Ptr[].parent }
         assert_match(/cannot access parent of root pointer/, err.message)
 
-        err = assert_raises(JSI::Ptr::Error) { JSI::Ptr['a', 'b'].ptr_relative_to(JSI::Ptr['c']) }
+        err = assert_raises(JSI::Ptr::Error) { JSI::Ptr['a', 'b'].relative_to(JSI::Ptr['c']) }
         assert_match(/is not ancestor/, err.message)
       end
     end

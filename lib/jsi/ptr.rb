@@ -163,12 +163,15 @@ module JSI
       # part of this pointer relative to the given ancestor_ptr
       # @return [JSI::Ptr]
       # @raise [JSI::Ptr::Error] if the given ancestor_ptr is not an ancestor of this pointer
-      def ptr_relative_to(ancestor_ptr)
+      def relative_to(ancestor_ptr)
         unless ancestor_ptr.contains?(self)
           raise(Error, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
         Ptr.new(tokens[ancestor_ptr.tokens.size..-1])
       end
+
+      # @deprecated after v0.6
+      alias_method :ptr_relative_to, :relative_to
 
       # a pointer with the tokens of this one plus the given `ptr`'s.
       # @param ptr [JSI::Ptr, #to_ary]
