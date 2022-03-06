@@ -1,7 +1,7 @@
 require_relative 'test_helper'
 
 describe JSI::MetaschemaNode do
-  let(:metaschema_instance_modules) do
+  let(:schema_implementation_modules) do
     [
       JSI::Schema,
       JSI::Schema::Application::Draft06,
@@ -9,7 +9,7 @@ describe JSI::MetaschemaNode do
   end
   let(:root_node) do
     JSI::MetaschemaNode.new(jsi_document,
-      metaschema_instance_modules: metaschema_instance_modules,
+      schema_implementation_modules: schema_implementation_modules,
       metaschema_root_ptr: metaschema_root_ptr,
       root_schema_ptr: root_schema_ptr,
     )

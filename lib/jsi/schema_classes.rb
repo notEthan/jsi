@@ -57,7 +57,7 @@ module JSI
     end
 
     # @return [Set<Module>]
-    attr_reader :metaschema_instance_modules
+    attr_reader :schema_implementation_modules
   end
 
   # this module is a namespace for building schema classes and schema modules.
@@ -88,14 +88,14 @@ module JSI
 
       # a subclass of MetaschemaNode::BootstrapSchema with the given modules included
       # @api private
-      # @param modules [Set<Module>] metaschema instance modules
+      # @param modules [Set<Module>] schema implementation modules
       # @return [Class]
       def bootstrap_schema_class(modules)
         modules = Util.ensure_module_set(modules)
         jsi_memoize(__method__, modules: modules) do |modules: |
           Class.new(MetaschemaNode::BootstrapSchema).instance_exec(modules) do |modules|
-            define_singleton_method(:metaschema_instance_modules) { modules }
-            define_method(:metaschema_instance_modules) { modules }
+            define_singleton_method(:schema_implementation_modules) { modules }
+            define_method(:schema_implementation_modules) { modules }
             modules.each { |mod| include(mod) }
 
             self

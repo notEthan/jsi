@@ -434,30 +434,30 @@ module JSI
     # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
     # with {DescribesSchemaModule}, and the JSI Schema Module will include the given modules.
     #
-    # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of
+    # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality of
     #   the schema to extend schemas described by this schema.
     #   this must include JSI::Schema (usually indirectly).
     # @return [void]
-    def describes_schema!(metaschema_instance_modules)
-      metaschema_instance_modules = Util.ensure_module_set(metaschema_instance_modules)
+    def describes_schema!(schema_implementation_modules)
+      schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
 
-      unless metaschema_instance_modules.any? { |mod| mod <= Schema }
-        raise(ArgumentError, "metaschema_instance_modules for a schema must include #{Schema}")
+      unless schema_implementation_modules.any? { |mod| mod <= Schema }
+        raise(ArgumentError, "schema_implementation_modules for a schema must include #{Schema}")
       end
 
       if describes_schema?
         # this schema, or one equal to it, has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
-        # it is a bug if it was called different times with different metaschema_instance_modules, though.
-        unless jsi_schema_module.metaschema_instance_modules == metaschema_instance_modules
-          raise(ArgumentError, "this schema already describes a schema with different metaschema_instance_modules")
+        # it is a bug if it was called different times with different schema_implementation_modules, though.
+        unless jsi_schema_module.schema_implementation_modules == schema_implementation_modules
+          raise(ArgumentError, "this schema already describes a schema with different schema_implementation_modules")
         end
       else
-        metaschema_instance_modules.each do |mod|
+        schema_implementation_modules.each do |mod|
           jsi_schema_module.include(mod)
         end
         jsi_schema_module.extend(DescribesSchemaModule)
-        jsi_schema_module.instance_variable_set(:@metaschema_instance_modules, metaschema_instance_modules)
+        jsi_schema_module.instance_variable_set(:@schema_implementation_modules, schema_implementation_modules)
       end
 
       extend(DescribesSchema)
