@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  # a module relating to objects that act like Hash or Array instances
+  # @deprecated after v0.6
   module Typelike
     extend Util
   end
