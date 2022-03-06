@@ -358,7 +358,7 @@ describe 'JSI::Base hash' do
       it('#compact') { assert_equal(subject, subject.compact) }
     end
   end
-  JSI::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+  JSI::Util::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
       assert(!subject.respond_to?(destructive_method_name))
     end

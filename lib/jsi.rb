@@ -30,8 +30,6 @@ module JSI
 
   autoload :Ptr, 'jsi/ptr'
   autoload :Typelike, 'jsi/util/typelike'
-  autoload :Hashlike, 'jsi/util/typelike'
-  autoload :Arraylike, 'jsi/util/typelike'
   autoload :Schema, 'jsi/schema'
   autoload :SchemaSet, 'jsi/schema_set'
   autoload :Base, 'jsi/base'

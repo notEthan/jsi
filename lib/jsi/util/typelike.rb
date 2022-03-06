@@ -10,7 +10,7 @@ module JSI
   #
   # this module is intended to be internal to JSI. no guarantees or API promises
   # are made for non-JSI classes including this module.
-  module Hashlike
+  module Util::Hashlike
     # safe methods which can be delegated to #to_hash (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 
@@ -131,7 +131,7 @@ module JSI
   #
   # this module is intended to be internal to JSI. no guarantees or API promises
   # are made for non-JSI classes including this module.
-  module Arraylike
+  module Util::Arraylike
     # safe methods which can be delegated to #to_ary (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 

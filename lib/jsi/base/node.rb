@@ -30,7 +30,7 @@ module JSI
       {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k, **kw] } }
     end
 
-    include Hashlike
+    include Util::Hashlike
 
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       # invokes the method with the given name on the jsi_node_content (if defined) or its #to_hash
@@ -101,7 +101,7 @@ module JSI
       to_a(**kw)
     end
 
-    include Arraylike
+    include Util::Arraylike
 
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       # invokes the method with the given name on the jsi_node_content (if defined) or its #to_ary

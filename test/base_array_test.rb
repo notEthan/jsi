@@ -326,7 +326,7 @@ describe 'JSI::Base array' do
       end
     end
   end
-  JSI::Arraylike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+  JSI::Util::Arraylike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
       assert(!subject.respond_to?(destructive_method_name))
     end
