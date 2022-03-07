@@ -225,7 +225,7 @@ module JSI
         # or hash in the path above the node we point to. this node's content is modified by the
         # caller, and that is recursively merged up to the document root.
         if empty?
-          Typelike.modified_copy(document, &block)
+          Util.modified_copy(document, &block)
         else
           car = tokens[0]
           cdr = Ptr.new(tokens[1..-1])

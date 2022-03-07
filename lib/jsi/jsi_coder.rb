@@ -86,7 +86,7 @@ module JSI
     # @param object [JSI::Base, Object]
     # @return [Object]
     def dump_object(object)
-      JSI::Typelike.as_json(object)
+      JSI::Util.as_json(object)
     end
   end
 end

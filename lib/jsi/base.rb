@@ -535,7 +535,7 @@ module JSI
     # a jsonifiable representation of the instance
     # @return [Object]
     def as_json(*opt)
-      Typelike.as_json(jsi_instance, *opt)
+      Util.as_json(jsi_instance, *opt)
     end
 
     # an opaque fingerprint of this JSI for {Util::FingerprintHash}.
