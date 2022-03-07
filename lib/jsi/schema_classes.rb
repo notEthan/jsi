@@ -64,7 +64,7 @@ module JSI
     class << self
       # a JSI Schema Class which represents the given schemas.
       # an instance of the class is a JSON Schema instance described by all of the given schemas.
-      # @private
+      # @api private
       # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
       # @return [Class subclassing JSI::Base]
       def class_for_schemas(schemas)
@@ -143,6 +143,8 @@ module JSI
 
       # a module of accessors for described property names of the given schema.
       # getters are always defined. setters are defined by default.
+      #
+      # @api private
       # @param schema [JSI::Schema] a schema for which to define accessors for any described property names
       # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
       #   may be used alongside the accessor module. methods defined by any conflicting_module
@@ -190,6 +192,7 @@ module JSI
     # a name relative to a named schema module of an ancestor schema.
     # for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
     # then the module `Foos.items` will have a name_from_ancestor of `"Foos.items"`
+    # @api private
     # @return [String, nil]
     def name_from_ancestor
       schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
