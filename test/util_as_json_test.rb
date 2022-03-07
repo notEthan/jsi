@@ -9,7 +9,7 @@ class JSONifiable
   end
 end
 
-describe JSI::Typelike do
+describe JSI::Util do
   describe 'as_json' do
     it 'expresses as json' do
       assert_equal({}, JSI::Typelike.as_json({}))
