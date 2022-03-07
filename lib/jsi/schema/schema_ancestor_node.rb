@@ -16,7 +16,7 @@ module JSI
     # @return [Array<JSI::Schema>]
     def jsi_schema_resource_ancestors
       return @jsi_schema_resource_ancestors if instance_variable_defined?(:@jsi_schema_resource_ancestors)
-      [].freeze
+      Util::EMPTY_ARY
     end
 
     # the URI of the resource containing this node.
@@ -104,7 +104,7 @@ module JSI
 
         @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors.to_ary.freeze
       else
-        @jsi_schema_resource_ancestors = [].freeze
+        @jsi_schema_resource_ancestors = Util::EMPTY_ARY
       end
     end
 

@@ -427,7 +427,7 @@ module JSI
     # @return [Set<Module>]
     def jsi_schema_instance_modules
       return @jsi_schema_instance_modules if instance_variable_defined?(:@jsi_schema_instance_modules)
-      return Set[].freeze
+      return Util::EMPTY_SET
     end
 
     # see {#jsi_schema_instance_modules}
