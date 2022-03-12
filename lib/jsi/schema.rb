@@ -445,7 +445,7 @@ module JSI
     #   the schema to extend schemas described by this schema.
     #   this must include JSI::Schema (usually indirectly).
     # @return [void]
-    def describes_schema!(schema_implementation_modules)
+    def describes_schema!(schema_implementation_modules, objectspace: false)
       schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
 
       unless schema_implementation_modules.any? { |mod| mod <= Schema }
@@ -462,6 +462,13 @@ module JSI
       else
         schema_implementation_modules.each do |mod|
           jsi_schema_module.include(mod)
+        end
+        if objectspace
+          ObjectSpace.each_object(jsi_schema_module) do |schema|
+            schema_implementation_modules.each do |mod|
+              schema.extend(mod)
+            end
+          end
         end
         jsi_schema_module.extend(DescribesSchemaModule)
         jsi_schema_module.instance_variable_set(:@schema_implementation_modules, schema_implementation_modules)
