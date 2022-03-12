@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  module SimpleWrapImplementation
+  simple_wrap_implementation = Module.new do
     include Schema
     include Schema::Application::ChildApplication
     include Schema::Application::InplaceApplication
@@ -19,10 +19,13 @@ module JSI
     end
   end
 
-  simple_wrap_metaschema = MetaschemaNode.new(nil, metaschema_instance_modules: [JSI::SimpleWrapImplementation])
+  simple_wrap_metaschema = MetaschemaNode.new(nil, metaschema_instance_modules: [simple_wrap_implementation])
   SimpleWrap = simple_wrap_metaschema.new_schema_module({})
 
   # SimpleWrap is a JSI schema module which recursively wraps nested structures
   module SimpleWrap
   end
+
+  SimpleWrap::Implementation = simple_wrap_implementation
+  SimpleWrap::Metaschema = simple_wrap_metaschema
 end
