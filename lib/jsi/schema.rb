@@ -453,11 +453,20 @@ module JSI
         raise(ArgumentError, "metaschema_instance_modules for a schema must include #{Schema}")
       end
 
-      metaschema_instance_modules.each do |mod|
-        jsi_schema_module.include(mod)
+      if describes_schema?
+        # this schema, or one equal to it, has already had describes_schema! called on it.
+        # this is to be avoided, but is not particularly a problem.
+        # it is a bug if it was called different times with different metaschema_instance_modules, though.
+        unless jsi_schema_module.metaschema_instance_modules == metaschema_instance_modules
+          raise(ArgumentError, "this schema already describes a schema with different metaschema_instance_modules")
+        end
+      else
+        metaschema_instance_modules.each do |mod|
+          jsi_schema_module.include(mod)
+        end
+        jsi_schema_module.extend(DescribesSchemaModule)
+        jsi_schema_module.instance_variable_set(:@metaschema_instance_modules, metaschema_instance_modules)
       end
-      jsi_schema_module.extend(DescribesSchemaModule)
-      jsi_schema_module.instance_variable_set(:@metaschema_instance_modules, metaschema_instance_modules)
 
       extend(DescribesSchema)
 
