@@ -457,6 +457,7 @@ module JSI
         jsi_schema_module.include(mod)
       end
       jsi_schema_module.extend(DescribesSchemaModule)
+      jsi_schema_module.instance_variable_set(:@metaschema_instance_modules, metaschema_instance_modules)
 
       extend(DescribesSchema)
 

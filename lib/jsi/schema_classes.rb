@@ -55,6 +55,9 @@ module JSI
     def new_schema_module(schema_content, **kw)
       schema.new_schema(schema_content, **kw).jsi_schema_module
     end
+
+    # @return [Set<Module>]
+    attr_reader :metaschema_instance_modules
   end
 
   # this module is a namespace for building schema classes and schema modules.
