@@ -633,10 +633,7 @@ module JSI
     # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
     def subschema(subptr)
-      @subschema_map[subptr: Ptr.ary_ptr(subptr)]
-    end
-
-    private def subschema_compute(subptr: )
+          subptr = Ptr.ary_ptr(subptr)
           Schema.ensure_schema(jsi_descendent_node(subptr), msg: [
             "subschema is not a schema at pointer: #{subptr.pointer}"
           ])
@@ -648,10 +645,7 @@ module JSI
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-      @resource_root_subschema_map[ptr: Ptr.ary_ptr(ptr)]
-    end
-
-    private def resource_root_subschema_compute(ptr: )
+          ptr = Ptr.ary_ptr(ptr)
           Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
             reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
@@ -822,8 +816,6 @@ module JSI
         Schema::Ref.new(value, ref_schema: self)
       end
       @schema_uris_map = jsi_memomap(&method(:schema_uris_compute))
-      @subschema_map = jsi_memomap(&method(:subschema_compute))
-      @resource_root_subschema_map = jsi_memomap(&method(:resource_root_subschema_compute))
       @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
     end
   end
