@@ -447,6 +447,8 @@ module JSI
     #   this must include JSI::Schema (usually indirectly).
     # @return [void]
     def describes_schema!(metaschema_instance_modules)
+      metaschema_instance_modules = Util.ensure_module_set(metaschema_instance_modules)
+
       unless metaschema_instance_modules.any? { |mod| mod <= Schema }
         raise(ArgumentError, "metaschema_instance_modules for a schema must include #{Schema}")
       end
