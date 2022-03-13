@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').read))
+JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').open('r:UTF-8').read))
 
 JSI::Util.ycomb do |rec|
   proc do |subpath|
@@ -10,7 +10,7 @@ JSI::Util.ycomb do |rec|
       with_directory = false
       path.children(with_directory).each { |c| rec.call(subpath + [c.to_s]) }
     elsif path.file? && path.to_s =~ /\.json\z/
-      remote_content = ::JSON.parse(path.read)
+      remote_content = ::JSON.parse(path.open('r:UTF-8').read)
       uri = File.join('http://localhost:1234/', *subpath)
       JSI.schema_registry.autoload_uri(uri) do
         if subpath == ['subSchemas.json']
@@ -44,7 +44,7 @@ describe 'JSON Schema Test Suite' do
           elsif path.file? && path.to_s =~ /\.json\z/
             describe(subpath.join('/')) do
               begin
-                tests_desc_object = ::JSON.parse(path.read)
+                tests_desc_object = ::JSON.parse(path.open('r:UTF-8').read)
               rescue JSON::ParserError => e
                 # :nocov:
                 # known json/pure issue https://github.com/flori/json/pull/483
