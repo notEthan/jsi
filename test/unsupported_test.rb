@@ -50,6 +50,51 @@ describe 'unsupported behavior' do
           )
         end
       end
+
+      describe("in a location described by the metaschema as a nonschema") do
+        let(:schema_content) do
+          YAML.safe_load(<<~YAML
+            const: true
+            properties:
+              additionalProperties:
+                $ref: "#/const"
+            items:
+              $ref: "#/properties"
+            YAML
+          )
+        end
+        let(:instance) do
+          [{'x' => {}}]
+        end
+
+        it("instantiates") do
+          assert_equal(
+            [JSI::Ptr["properties"]],
+            subject[0].jsi_schemas.map(&:jsi_ptr)
+          )
+          # the schema that describes subject[0] is both a schema and a 'properties' object
+          assert_schemas(
+            [
+              JSI::JSONSchemaOrgDraft07.schema,
+              JSI::JSONSchemaOrgDraft07.schema.properties['properties'],
+            ],
+            subject[0].jsi_schemas.first
+          )
+          assert_equal(
+            [JSI::Ptr["const"]],
+            subject[0]['x'].jsi_schemas.map(&:jsi_ptr)
+          )
+          # the schema that describes subject[0]['x'] is both a schema and a 'const' value
+          assert_schemas(
+            [
+              JSI::JSONSchemaOrgDraft07.schema,
+              JSI::JSONSchemaOrgDraft07.schema.properties['const'],
+            ],
+            subject[0]['x'].jsi_schemas.first
+          )
+        end
+      end
+
       describe 'below nonschema root' do
         it "instantiates" do
           schema_doc_schema = JSI::JSONSchemaDraft04.new_schema({
