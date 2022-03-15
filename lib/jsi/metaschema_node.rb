@@ -70,17 +70,10 @@ module JSI
       )
       our_bootstrap_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_schemas, tok|
         child_instance_for_schemas = instance_for_schemas[tok]
-        bootstrap_schemas_for_instance = SchemaSet.build do |schemas|
-          bootstrap_schemas.each do |bootstrap_schema|
-            bootstrap_schema.each_child_applicator_schema(tok, instance_for_schemas) do |child_app_schema|
-              child_app_schema.each_inplace_applicator_schema(child_instance_for_schemas) do |child_inpl_app_schema|
-                schemas << child_inpl_app_schema
-              end
-            end
-          end
-        end
+        child_indicated_schemas = bootstrap_schemas.child_applicator_schemas(tok, instance_for_schemas)
+        child_schemas = child_indicated_schemas.inplace_applicator_schemas(child_instance_for_schemas)
         instance_for_schemas = child_instance_for_schemas
-        bootstrap_schemas_for_instance
+        child_schemas
       end
 
       our_bootstrap_schemas.each do |bootstrap_schema|
