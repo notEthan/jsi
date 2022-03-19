@@ -43,7 +43,7 @@ module JSI
       inspect
     end
 
-    # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
+    # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given parameters.
     #
     # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
