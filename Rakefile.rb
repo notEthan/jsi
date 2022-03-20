@@ -26,12 +26,12 @@ namespace 'test' do
     end
   end
 
-  Rake::TestTask.new('unit') do |t|
-    t.libs << "test"
-    t.test_files = FileList["test/*_test.rb"]
-    t.verbose = true
-    t.warning = true
-  end
+  JSITestTask.new(
+    name: 'unit',
+    title: 'unit tests',
+    description: 'run JSI unit tests',
+    pattern: "test/*_test.rb",
+  )
 end
 
 desc 'run all tests'
