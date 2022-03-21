@@ -1,19 +1,5 @@
 require_relative 'test_helper'
 
-base = {
-  '$schema' => 'http://json-schema.org/draft-07/schema#',
-  'description' => 'named hash schema',
-  'type' => 'object',
-  'properties' => {
-    'foo' => {'type' => 'object'},
-    'bar' => {},
-  },
-}
-NAMED_HASH_SCHEMA = JSI.new_schema(base)
-NAMED_ID_HASH_SCHEMA = JSI.new_schema({'$id' => 'http://jsi/base/named_hash_schema'}.merge(base))
-NamedHashInstance = NAMED_HASH_SCHEMA.new_jsi({}).class
-NamedIdHashInstance = NAMED_ID_HASH_SCHEMA.new_jsi({}).class
-
 describe 'JSI::Base hash' do
   let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
   let(:schema_content) do
@@ -191,86 +177,6 @@ describe 'JSI::Base hash' do
           \#{<JSI SortOfHash>
             "foo" => \#{<JSI> "x" => "y"},
             "bar" => #[<JSI> 9],
-            "baz" => #[<JSI> true]
-          }
-          PP
-        assert_equal(pp, subject.pretty_inspect)
-      end
-    end
-    describe '#inspect named' do
-      let(:subject) { NAMED_HASH_SCHEMA.new_jsi(instance) }
-      it 'inspects' do
-        assert_equal("\#{<NamedHashInstance> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
-      end
-    end
-    describe '#pretty_print named' do
-      let(:subject) { NAMED_HASH_SCHEMA.new_jsi(instance) }
-      it 'pretty prints' do
-        pp = <<~PP
-          \#{<NamedHashInstance>
-            "foo" => \#{<JSI> "x" => "y"},
-            "bar" => #[<JSI> 9],
-            "baz" => #[<JSI> true]
-          }
-          PP
-        assert_equal(pp, subject.pretty_inspect)
-      end
-    end
-    describe '#inspect named SortOfHash' do
-      let(:subject) { NAMED_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
-      it 'inspects' do
-        assert_equal("\#{<NamedHashInstance SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
-      end
-    end
-    describe '#pretty_print named SortOfHash' do
-      let(:subject) { NAMED_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
-      it 'pretty prints' do
-        pp = <<~PP
-          \#{<NamedHashInstance SortOfHash>
-            "foo" => \#{<JSI> "x" => "y"},
-            "bar" => #[<JSI> 9],
-            "baz" => #[<JSI> true]
-          }
-          PP
-        assert_equal(pp, subject.pretty_inspect)
-      end
-    end
-    describe '#inspect named with id' do
-      let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(instance) }
-      it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance> \"foo\" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
-      end
-    end
-    describe '#pretty_print named with id' do
-      let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(instance) }
-      it 'inspects' do
-        pp = <<~PP
-          \#{<NamedIdHashInstance>
-            "foo" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)>
-              "x" => "y"
-            },
-            "bar" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9],
-            "baz" => #[<JSI> true]
-          }
-          PP
-        assert_equal(pp, subject.pretty_inspect)
-      end
-    end
-    describe '#inspect named SortOfHash with id' do
-      let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
-      it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance SortOfHash> \"foo\" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
-      end
-    end
-    describe '#pretty_print named with id SortOfHash' do
-      let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
-      it 'inspects' do
-        pp = <<~PP
-          \#{<NamedIdHashInstance SortOfHash>
-            "foo" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)>
-              "x" => "y"
-            },
-            "bar" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9],
             "baz" => #[<JSI> true]
           }
           PP

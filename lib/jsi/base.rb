@@ -496,24 +496,11 @@ module JSI
     # @private
     # @return [Array<String>]
     def jsi_object_group_text
-      class_name = self.class.name unless self.class.in_schema_classes
-      class_txt = begin
-        if class_name
-          # ignore ID
-          schema_module_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name }.compact
-          if schema_module_names.empty?
-            class_name
-          else
-            "#{class_name} (#{schema_module_names.join(', ')})"
-          end
-        else
-          schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_uri }.compact
-          if schema_names.empty?
-            "JSI"
-          else
-            "JSI (#{schema_names.join(', ')})"
-          end
-        end
+      schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_uri }.compact
+      if schema_names.empty?
+        class_txt = "JSI"
+      else
+        class_txt = "JSI (#{schema_names.join(', ')})"
       end
 
       if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(jsi_node_content.class)
