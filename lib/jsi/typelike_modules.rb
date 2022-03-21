@@ -79,7 +79,11 @@ module JSI
     # select and reject will return a modified copy but need the yielded block variable value from #[]
     safe_kv_block_modified_copy_methods = %w(select reject)
     SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
-    safe_to_hash_methods = SAFE_METHODS - safe_modified_copy_methods - safe_kv_block_modified_copy_methods
+    custom_methods = %w(merge) # defined below
+    safe_to_hash_methods = SAFE_METHODS -
+      safe_modified_copy_methods -
+      safe_kv_block_modified_copy_methods -
+      custom_methods
     safe_to_hash_methods.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
