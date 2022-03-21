@@ -113,19 +113,6 @@ module JSI
       @jsi_schemas.each do |schema|
         extend schema.jsi_schema_module
       end
-
-      # workarounds
-      begin # draft 4 boolean schema workaround
-        # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
-        # properties/additionalProperties and properties/additionalItems.
-        # these still describe schemas, despite not being described by the metaschema.
-        addtlPropsanyOf = metaschema_root_ptr["properties"]["additionalProperties"]["anyOf"]
-        addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
-
-        if !jsi_ptr.root? && [addtlPropsanyOf, addtlItemsanyOf].include?(jsi_ptr.parent)
-          describes_schema!(schema_implementation_modules)
-        end
-      end
     end
 
     # Set of modules to apply to schemas which are instances of (described by) the metaschema
