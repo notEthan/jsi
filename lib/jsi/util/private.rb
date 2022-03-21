@@ -48,7 +48,7 @@ module JSI
       if Object.const_defined?(:Warning)
         warn = ::Warning.instance_method(:warn)
         ::Warning.send(:remove_method, :warn)
-        ::Warning.send(:define_method, :warn) { |*_a, **_kw| }
+        ::Warning.send(:define_method, :warn) { |*, **| }
       end
 
       -> (k: ) { k }[{k: nil}]
