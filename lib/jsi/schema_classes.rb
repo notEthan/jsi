@@ -28,8 +28,8 @@ module JSI
     #
     # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base] a JSI whose instance is the given instance
-    def new_jsi(instance, **kw, &b)
-      schema.new_jsi(instance, **kw, &b)
+    def new_jsi(instance, **kw)
+      schema.new_jsi(instance, **kw)
     end
   end
 
@@ -55,6 +55,9 @@ module JSI
     def new_schema_module(schema_content, **kw)
       schema.new_schema(schema_content, **kw).jsi_schema_module
     end
+
+    # @return [Set<Module>]
+    attr_reader :metaschema_instance_modules
   end
 
   # this module is a namespace for building schema classes and schema modules.
@@ -64,13 +67,13 @@ module JSI
     class << self
       # a JSI Schema Class which represents the given schemas.
       # an instance of the class is a JSON Schema instance described by all of the given schemas.
-      # @private
+      # @api private
       # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
       # @return [Class subclassing JSI::Base]
       def class_for_schemas(schemas)
         schemas = SchemaSet.ensure_schema_set(schemas)
 
-        jsi_memoize(:class_for_schemas, schemas) do |schemas|
+        jsi_memoize(:class_for_schemas, schemas: schemas) do |schemas: |
           Class.new(Base).instance_exec(schemas) do |schemas|
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
@@ -83,13 +86,13 @@ module JSI
         end
       end
 
-      # @private
       # a subclass of MetaschemaNode::BootstrapSchema with the given modules included
+      # @api private
       # @param modules [Set<Module>] metaschema instance modules
       # @return [Class]
       def bootstrap_schema_class(modules)
         modules = Util.ensure_module_set(modules)
-        jsi_memoize(__method__, modules) do |modules|
+        jsi_memoize(__method__, modules: modules) do |modules: |
           Class.new(MetaschemaNode::BootstrapSchema).instance_exec(modules) do |modules|
             define_singleton_method(:metaschema_instance_modules) { modules }
             define_method(:metaschema_instance_modules) { modules }
@@ -105,7 +108,7 @@ module JSI
       # @return [Module]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
-        jsi_memoize(:module_for_schema, schema) do |schema|
+        jsi_memoize(:module_for_schema, schema: schema) do |schema: |
           Module.new.tap do |m|
             m.module_eval do
               define_singleton_method(:schema) { schema }
@@ -124,10 +127,6 @@ module JSI
 
               define_singleton_method(:jsi_property_accessors) { accessor_module.jsi_property_accessors }
 
-              if schema.describes_schema?
-                extend DescribesSchemaModule
-              end
-
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
               schema.jsi_schemas.each do |schema_schema|
@@ -143,6 +142,8 @@ module JSI
 
       # a module of accessors for described property names of the given schema.
       # getters are always defined. setters are defined by default.
+      #
+      # @api private
       # @param schema [JSI::Schema] a schema for which to define accessors for any described property names
       # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
       #   may be used alongside the accessor module. methods defined by any conflicting_module
@@ -151,9 +152,11 @@ module JSI
       # @return [Module]
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         Schema.ensure_schema(schema)
-        jsi_memoize(:accessor_module_for_schema, schema, conflicting_modules, setters) do |schema, conflicting_modules, setters|
+        jsi_memoize(:accessor_module_for_schema, schema: schema, conflicting_modules: conflicting_modules, setters: setters) do |schema: , conflicting_modules: , setters: |
           Module.new.tap do |m|
             m.module_eval do
+              define_singleton_method(:inspect) { '(JSI Schema Accessor Module)' }
+
               conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
                 mod.instance_methods + mod.private_instance_methods
               end.inject(Set.new, &:|)
@@ -166,8 +169,8 @@ module JSI
               define_singleton_method(:jsi_property_accessors) { accessors_to_define }
 
               accessors_to_define.each do |property_name|
-                define_method(property_name) do |*a|
-                  self[property_name, *a]
+                define_method(property_name) do |**kw|
+                  self[property_name, **kw]
                 end
                 if setters
                   define_method("#{property_name}=") do |value|
@@ -190,14 +193,12 @@ module JSI
     # a name relative to a named schema module of an ancestor schema.
     # for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
     # then the module `Foos.items` will have a name_from_ancestor of `"Foos.items"`
+    # @api private
     # @return [String, nil]
     def name_from_ancestor
-      schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
-      named_parent_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
-
+      named_parent_schema, tokens = named_ancestor_schema_tokens
       return nil unless named_parent_schema
 
-      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_parent_schema.jsi_ptr).tokens
       name = named_parent_schema.jsi_schema_module.name
       parent = named_parent_schema
       tokens.each do |token|
@@ -219,7 +220,8 @@ module JSI
     #
     # @param token [Object]
     # @return [Module, NotASchemaModule, Object]
-    def [](token)
+    def [](token, **kw)
+      raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       sub = @possibly_schema_node[token]
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module
@@ -228,6 +230,17 @@ module JSI
       else
         sub
       end
+    end
+
+    private
+
+    # @return [Array<JSI::Schema, Array>, nil]
+    def named_ancestor_schema_tokens
+      schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
+      named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
+      return nil unless named_ancestor_schema
+      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_ancestor_schema.jsi_ptr).tokens
+      [named_ancestor_schema, tokens]
     end
   end
 

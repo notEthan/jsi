@@ -7,6 +7,10 @@ module JSI
   module Util::Private
     autoload :AttrStruct, 'jsi/util/private/attr_struct'
 
+    EMPTY_ARY = [].freeze
+
+    EMPTY_SET = Set[].freeze
+
     # is the given name ok to use as a ruby method name?
     def ok_ruby_method_name?(name)
       # must be a string
@@ -36,10 +40,32 @@ module JSI
       proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
     end
 
+    # is a hash as the last argument passed to keyword params? (false in ruby 3; true before - generates
+    # a warning in 2.7 but no way to make 2.7 behave like 3 so the warning is useless)
+    #
+    # TODO remove eventually (keyword argument compatibility)
+    LAST_ARGUMENT_AS_KEYWORD_PARAMETERS = begin
+      if Object.const_defined?(:Warning)
+        warn = ::Warning.instance_method(:warn)
+        ::Warning.send(:remove_method, :warn)
+        ::Warning.send(:define_method, :warn) { |*_a, **_kw| }
+      end
+
+      -> (k: ) { k }[{k: nil}]
+      true
+    rescue ArgumentError
+      false
+    ensure
+      if Object.const_defined?(:Warning)
+        ::Warning.send(:remove_method, :warn)
+        ::Warning.send(:define_method, :warn, warn)
+      end
+    end
+
     module FingerprintHash
       # overrides BasicObject#==
       def ==(other)
-        __id__ == other.__id__ || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == self.jsi_fingerprint)
+        __id__ == other.__id__ || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == jsi_fingerprint)
       end
 
       alias_method :eql?, :==
@@ -72,9 +98,9 @@ module JSI
         @results = {}
       end
 
-      def [](*inputs)
+      def [](**inputs)
         if @key_by
-          key = @key_by.call(*inputs)
+          key = @key_by.call(**inputs)
         else
           key = inputs
         end
@@ -87,7 +113,7 @@ module JSI
           if @results.key?(key) && inputs_hash == @results[key].inputs_hash && inputs == @results[key].inputs
             @results[key].value
           else
-            value = @block.call(*inputs)
+            value = @block.call(**inputs)
             @results[key] = Result.new(value: value, inputs: inputs, inputs_hash: inputs_hash)
             value
           end
@@ -120,8 +146,8 @@ module JSI
         @jsi_memomaps[name]
       end
 
-      def jsi_memoize(name, *inputs, &block)
-        jsi_memomap(name, &block)[*inputs]
+      def jsi_memoize(name, **inputs, &block)
+        jsi_memomap(name, &block)[**inputs]
       end
     end
 

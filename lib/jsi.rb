@@ -30,13 +30,6 @@ module JSI
   SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   autoload :Ptr, 'jsi/ptr'
-
-  # @private
-  # @deprecated
-  module JSON
-    Pointer = Ptr
-  end
-
   autoload :PathedNode, 'jsi/pathed_node'
   autoload :Typelike, 'jsi/typelike_modules'
   autoload :Hashlike, 'jsi/typelike_modules'
@@ -75,11 +68,6 @@ module JSI
   # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
   def self.new_schema_module(schema_object, **kw)
     JSI::Schema.new_schema(schema_object, **kw).jsi_schema_module
-  end
-
-  # @private @deprecated
-  def self.class_for_schemas(schemas)
-    SchemaClasses.class_for_schemas(schemas.map { |schema| JSI.new_schema(schema) })
   end
 
   # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.

@@ -7,16 +7,16 @@ module JSI
     # the base URI used to resolve the ids of schemas at or below this JSI.
     # this is always an absolute URI (with no fragment).
     # this may be the absolute schema URI of a parent schema or the URI from which the document was retrieved.
-    # @private
+    # @api private
     # @return [Addressable::URI, nil]
     attr_reader :jsi_schema_base_uri
 
     # resources which are ancestors of this JSI in the document. this does not include self.
-    # @private
+    # @api private
     # @return [Array<JSI::Schema>]
     def jsi_schema_resource_ancestors
       return @jsi_schema_resource_ancestors if instance_variable_defined?(:@jsi_schema_resource_ancestors)
-      [].freeze
+      Util::EMPTY_ARY
     end
 
     # the URI of the resource containing this node.
@@ -36,7 +36,7 @@ module JSI
     #
     # @return [JSI::Schema, nil]
     def jsi_anchor_subschema(anchor)
-      subschemas = jsi_anchor_subschemas_map[anchor]
+      subschemas = jsi_anchor_subschemas_map[anchor: anchor]
       if subschemas.size == 1
         subschemas.first
       else
@@ -48,7 +48,7 @@ module JSI
     #
     # @return [Array<JSI::Schema>]
     def jsi_anchor_subschemas(anchor)
-      jsi_anchor_subschemas_map[anchor]
+      jsi_anchor_subschemas_map[anchor: anchor]
     end
 
     private
@@ -104,12 +104,12 @@ module JSI
 
         @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors.to_ary.freeze
       else
-        @jsi_schema_resource_ancestors = [].freeze
+        @jsi_schema_resource_ancestors = Util::EMPTY_ARY
       end
     end
 
     def jsi_anchor_subschemas_map
-      jsi_memomap(__method__) do |anchor|
+      jsi_memomap(__method__) do |anchor: |
         jsi_each_child_node.select do |node|
           node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
         end.freeze

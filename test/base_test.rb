@@ -65,6 +65,12 @@ describe JSI::Base do
   end
   describe 'class name' do
     let(:schema_content) { {'$id' => 'https://jsi/BaseTest'} }
+    it 'generates a class name from module name' do
+      assert_equal('JSI::SchemaClasses::XPhonebook', Phonebook.new_jsi({}).class.name)
+    end
+    it 'generates a class name from module name_from_ancestor' do
+      assert_equal('JSI::SchemaClasses::XPhonebook__Contact_properties_phone_numbers', Phonebook::Contact.properties['phone_numbers'].new_jsi([]).class.name)
+    end
     it 'generates a class name from schema_uri' do
       assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest', subject.class.name)
     end
@@ -594,11 +600,11 @@ describe JSI::Base do
     end
     describe 'readers' do
       it 'reads attributes described as properties' do
-        assert_equal({'x' => 'y'}, subject.foo.as_json)
+        assert_equal({'x' => 'y'}, subject.foo.jsi_instance)
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_respond_to(subject.foo, :to_hash)
         refute_respond_to(subject.foo, :to_ary)
-        assert_equal([3.14159], subject.bar.as_json)
+        assert_equal([3.14159], subject.bar.jsi_instance)
         assert_is_a(schema.properties['bar'].jsi_schema_module, subject.bar)
         refute_respond_to(subject.bar, :to_hash)
         assert_respond_to(subject.bar, :to_ary)
@@ -735,7 +741,7 @@ describe JSI::Base do
 
         subject.foo = {'y' => 'z'}
 
-        assert_equal({'y' => 'z'}, subject.foo.as_json)
+        assert_equal({'y' => 'z'}, subject.foo.jsi_instance)
         assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
       end
@@ -752,7 +758,7 @@ describe JSI::Base do
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
         it 'errors' do
-          err = assert_raises(NoMethodError) { subject.foo = 0 }
+          err = assert_raises(JSI::Base::CannotSubscriptError) { subject.foo = 0 }
           assert_equal('cannot assign subscript (using token: "foo") to instance: nil', err.message)
         end
       end
@@ -809,6 +815,21 @@ describe JSI::Base do
       assert_equal({'a' => 'b'}, JSI::JSONSchemaOrgDraft07.new_schema({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
       assert_equal(['a', 'b'], JSI::JSONSchemaOrgDraft07.new_schema({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
       assert_equal(['a'], JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi(['a']).as_json(some_option: true))
+    end
+
+    describe 'overriding as_json' do
+      it 'overrides' do
+        # note that since JSIs are extended with PathedArrayNode/PathedHashNode in #initialize, methods of
+        # those modules are not overridden by schema modules (which are included on the instance's class).
+        # Enumerable is included on Base (rather than conditionally extending hash/array nodes) so
+        # that Enumerable methods can be overridden (in particular as_json - although not defined on
+        # Enumerable normally, ActiveSupport defines it)
+        schema = JSI::JSONSchemaOrgDraft06.new_schema({'$id' => 'http://jsi/base/def_as_json'})
+        schema.jsi_schema_module_exec { define_method(:as_json) { :foo } }
+        assert_equal(:foo, schema.new_jsi({}).as_json)
+        assert_equal(:foo, schema.new_jsi([]).as_json)
+        assert_equal(:foo, schema.new_jsi(0).as_json)
+      end
     end
   end
   describe 'equality between different classes of JSI::Base subclasses' do

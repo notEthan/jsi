@@ -147,8 +147,8 @@ module JSI
       # @param uri [nil, #to_str, Addressable::URI] the URI of the schema document.
       #   relative URIs within the document are resolved using this uri as their base.
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
-      # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
-      #   are inplace applicators matched from self to the schema being instantiated.
+      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_content`
+      #   and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
           uri: nil
       )
@@ -176,7 +176,7 @@ module JSI
       # @return [nil, #new_schema]
       def default_metaschema
         return @default_metaschema if instance_variable_defined?(:@default_metaschema)
-        return JSONSchemaOrgDraft07
+        return nil
       end
 
       # sets an application-wide default metaschema used by {JSI.new_schema}
@@ -209,8 +209,8 @@ module JSI
       # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_object)`
       #
       # if the given schema_object is a JSI::Base but not already a JSI::Schema, an error
-      # will be raised. schemas which describe schemas must have JSI::Schema in their
-      # Schema#jsi_schema_instance_modules.
+      # will be raised. schemas which describe schemas must include JSI::Schema in their
+      # {Schema#jsi_schema_module}.
       #
       # @param schema_object [#to_hash, Boolean, JSI::Schema] an object to be instantiated as a schema.
       #   if it's already a JSI::Schema, it is returned as-is.
@@ -218,7 +218,8 @@ module JSI
       # @param default_metaschema [#new_schema] the metaschema to use if the schema_object does not have
       #   a '$schema' property. this may be a metaschema or a metaschema's schema module
       #   (e.g. `JSI::JSONSchemaOrgDraft07`).
-      # @return [JSI::Schema] a JSI::Schema representing the given schema_object
+      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_object`
+      #   and whose schemas are the metaschema's inplace applicators.
       def new_schema(schema_object, default_metaschema: nil, **kw)
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
@@ -241,7 +242,10 @@ module JSI
         elsif schema_object.is_a?(JSI::Base)
           raise(NotASchemaError, "the given schema_object is a JSI::Base, but is not a JSI::Schema: #{schema_object.pretty_inspect.chomp}")
         elsif schema_object.respond_to?(:to_hash)
-          if schema_object.key?('$schema') && schema_object['$schema'].respond_to?(:to_str)
+          if schema_object.key?('$schema')
+            unless schema_object['$schema'].respond_to?(:to_str)
+              raise(ArgumentError, "given schema_object keyword `$schema` is not a string")
+            end
             metaschema = Schema::Ref.new(schema_object['$schema']).deref_schema
             unless metaschema.describes_schema?
               raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
@@ -256,12 +260,6 @@ module JSI
           raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
         end
       end
-
-      # @deprecated
-      alias_method :new, :new_schema
-
-      # @deprecated
-      alias_method :from_object, :new_schema
 
       # ensure the given object is a JSI Schema
       #
@@ -347,7 +345,7 @@ module JSI
         resource.is_a?(Schema) && resource.schema_absolute_uri
       end
 
-      anchored = respond_to?(:anchor) ? self.anchor : nil
+      anchored = respond_to?(:anchor) ? anchor : nil
       parent_schemas.each do |parent_schema|
         if anchored
           if parent_schema.jsi_anchor_subschema(anchor) == self
@@ -357,7 +355,7 @@ module JSI
           end
         end
 
-        relative_ptr = self.jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
+        relative_ptr = jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
         yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
       end
 
@@ -394,18 +392,13 @@ module JSI
       jsi_schema_module.module_exec(*a, **kw, &block)
     end
 
-    # @private @deprecated
-    def jsi_schema_class
-      JSI::SchemaClasses.class_for_schemas(SchemaSet[self])
-    end
-
     # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the
     # instance.
     #
     # @param instance [Object] the JSON Schema instance to be represented as a JSI
     # @param uri (see SchemaSet#new_jsi)
-    # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are matched
-    #   from this schema.
+    # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are
+    #   inplace applicator schemas matched from this schema.
     def new_jsi(instance,
         **kw
     )
@@ -415,27 +408,66 @@ module JSI
     # does this schema itself describe a schema?
     # @return [Boolean]
     def describes_schema?
-      jsi_schema_instance_modules.any? { |m| m <= JSI::Schema }
+      jsi_schema_module <= JSI::Schema ||
+        # deprecated
+        jsi_schema_instance_modules.any? { |m| m <= JSI::Schema }
     end
 
     # modules to apply to instances described by this schema. these modules are included
     # on this schema's {#jsi_schema_module}
+    # @deprecated reopen the jsi_schema_module to include such modules instead, or use describes_schema! if this schema describes a schema
     # @return [Set<Module>]
     def jsi_schema_instance_modules
       return @jsi_schema_instance_modules if instance_variable_defined?(:@jsi_schema_instance_modules)
-      return Set[].freeze
+      return Util::EMPTY_SET
     end
 
     # see {#jsi_schema_instance_modules}
     #
+    # @deprecated
     # @return [void]
     def jsi_schema_instance_modules=(jsi_schema_instance_modules)
       @jsi_schema_instance_modules = Util.ensure_module_set(jsi_schema_instance_modules)
     end
 
+    # indicates that this schema describes a schema.
+    # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
+    # with {DescribesSchemaModule}, and the JSI Schema Module will include the given modules.
+    #
+    # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of
+    #   the schema to extend schemas described by this schema.
+    #   this must include JSI::Schema (usually indirectly).
+    # @return [void]
+    def describes_schema!(metaschema_instance_modules)
+      metaschema_instance_modules = Util.ensure_module_set(metaschema_instance_modules)
+
+      unless metaschema_instance_modules.any? { |mod| mod <= Schema }
+        raise(ArgumentError, "metaschema_instance_modules for a schema must include #{Schema}")
+      end
+
+      if describes_schema?
+        # this schema, or one equal to it, has already had describes_schema! called on it.
+        # this is to be avoided, but is not particularly a problem.
+        # it is a bug if it was called different times with different metaschema_instance_modules, though.
+        unless jsi_schema_module.metaschema_instance_modules == metaschema_instance_modules
+          raise(ArgumentError, "this schema already describes a schema with different metaschema_instance_modules")
+        end
+      else
+        metaschema_instance_modules.each do |mod|
+          jsi_schema_module.include(mod)
+        end
+        jsi_schema_module.extend(DescribesSchemaModule)
+        jsi_schema_module.instance_variable_set(:@metaschema_instance_modules, metaschema_instance_modules)
+      end
+
+      extend(DescribesSchema)
+
+      nil
+    end
+
     # a resource containing this schema.
     #
-    # if any parent, or this schema itself, is a schema with an absolute uri (see #schema_absolute_uri),
+    # if any parent, or this schema itself, is a schema with an absolute uri (see {#schema_absolute_uri}),
     # the resource root is the closest schema with an absolute uri.
     #
     # if no parent schema has an absolute uri, the schema_resource_root is the root of the document
@@ -457,13 +489,13 @@ module JSI
     # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
     def subschema(subptr)
-      subschema_map[Ptr.ary_ptr(subptr)]
+      subschema_map[subptr: Ptr.ary_ptr(subptr)]
     end
 
     private
 
     def subschema_map
-      jsi_memomap(:subschema) do |subptr|
+      jsi_memomap(:subschema) do |subptr: |
         if is_a?(MetaschemaNode::BootstrapSchema)
           self.class.new(
             jsi_document,
@@ -471,7 +503,7 @@ module JSI
             jsi_schema_base_uri: jsi_resource_ancestor_uri,
           )
         else
-          Schema.ensure_schema(subptr.evaluate(self, as_jsi: true), msg: [
+          Schema.ensure_schema(jsi_child_node(subptr), msg: [
             "subschema is not a schema at pointer: #{subptr.pointer}"
           ])
         end
@@ -480,19 +512,19 @@ module JSI
 
     public
 
-    # a schema in the same schema resource as this one (see #schema_resource_root) at the given
+    # a schema in the same schema resource as this one (see {#schema_resource_root}) at the given
     # pointer relative to the root of the schema resource.
     #
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-      resource_root_subschema_map[Ptr.ary_ptr(ptr)]
+      resource_root_subschema_map[ptr: Ptr.ary_ptr(ptr)]
     end
 
     private
 
     def resource_root_subschema_map
-      jsi_memomap(:resource_root_subschema_map) do |ptr|
+      jsi_memomap(:resource_root_subschema_map) do |ptr: |
         schema = self
         if schema.is_a?(MetaschemaNode::BootstrapSchema)
           # BootstrapSchema does not track jsi_schema_resource_ancestors used by #schema_resource_root;
@@ -506,7 +538,7 @@ module JSI
           )
         else
           resource_root = schema.schema_resource_root
-          Schema.ensure_schema(ptr.evaluate(resource_root, as_jsi: true),
+          Schema.ensure_schema(resource_root.jsi_child_node(ptr),
             msg: [
               "subschema is not a schema at pointer: #{ptr.pointer}"
             ],
@@ -560,39 +592,9 @@ module JSI
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?
     end
 
-    # @private
-    def fully_validate_instance(other_instance, errors_as_objects: false)
-      raise(NotImplementedError, "Schema#fully_validate_instance removed: see new validation interface Schema#instance_validate")
-    end
-
-    # @private
-    def validate_instance(other_instance)
-      raise(NotImplementedError, "Schema#validate_instance renamed: see Schema#instance_valid?")
-    end
-
-    # @private
-    def validate_instance!(other_instance)
-      raise(NotImplementedError, "Schema#validate_instance! removed")
-    end
-
-    # @private
-    def fully_validate_schema(errors_as_objects: false)
-      raise(NotImplementedError, "Schema#fully_validate_schema removed: use validation interface Base#jsi_validate on the schema")
-    end
-
-    # @private
-    def validate_schema
-      raise(NotImplementedError, "Schema#validate_schema removed: use validation interface Base#jsi_valid? on the schema")
-    end
-
-    # @private
-    def validate_schema!
-      raise(NotImplementedError, "Schema#validate_schema! removed")
-    end
-
     # schema resources which are ancestors of any subschemas below this schema.
     # this may include this schema if this is a schema resource root.
-    # @private
+    # @api private
     # @return [Array<JSI::Schema>]
     def jsi_subschema_resource_ancestors
       if schema_resource_root?

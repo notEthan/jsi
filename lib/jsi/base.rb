@@ -22,16 +22,11 @@ module JSI
     # the class than to conditionally extend the instance.
     include Enumerable
 
-    # an exception raised when #[] is invoked on an instance which is not an array or hash
+    # an exception raised when {Base#[]} is invoked on an instance which is not an array or hash
     class CannotSubscriptError < StandardError
     end
 
     class << self
-      # @private @deprecated
-      def new_jsi(instance, **kw, &b)
-        new(instance, **kw, &b)
-      end
-
       # @private
       # is the constant JSI::SchemaClasses::<self.schema_classes_const_name> defined?
       # (if so, we will prefer to use something more human-readable than that ugly mess.)
@@ -84,8 +79,9 @@ module JSI
       def schema_classes_const_name
         if respond_to?(:jsi_class_schemas)
           schema_names = jsi_class_schemas.map do |schema|
-            if schema.jsi_schema_module.name
-              schema.jsi_schema_module.name
+            named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
+            if named_ancestor_schema
+              [named_ancestor_schema.jsi_schema_module.name, *tokens].join('_')
             elsif schema.schema_uri
               schema.schema_uri.to_s
             else
@@ -157,10 +153,10 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
-      if self.jsi_instance.respond_to?(:to_hash)
+      if jsi_instance.respond_to?(:to_hash)
         extend PathedHashNode
       end
-      if self.jsi_instance.respond_to?(:to_ary)
+      if jsi_instance.respond_to?(:to_ary)
         extend PathedArrayNode
       end
 
@@ -305,6 +301,15 @@ module JSI
       jsi_parent_nodes.first
     end
 
+    # the child node at the given pointer
+    #
+    # @param ptr [JSI::Ptr, #to_ary]
+    # @return [JSI::Base]
+    def jsi_child_node(ptr)
+      child = Ptr.ary_ptr(ptr).evaluate(self, as_jsi: true)
+      child
+    end
+
     # subscripts to return a child value identified by the given token.
     #
     # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
@@ -313,14 +318,14 @@ module JSI
     #
     #   - :auto (default): by default a JSI will be returned when either:
     #
-    #     - the result is a complex value (responds to #to_ary or #to_hash) and is described by some schemas
+    #     - the result is a complex value (responds to #to_ary or #to_hash)
     #     - the result is a schema (including true/false schemas)
     #
     #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
     #     simple type (anything unresponsive to #to_ary / #to_hash).
     #
-    #   - true: the result value will always be returned as a JSI. the #jsi_schemas of the result may be empty
-    #     if no schemas describe the instance.
+    #   - true: the result value will always be returned as a JSI. the {#jsi_schemas} of the result may be
+    #     empty if no schemas describe the instance.
     #   - false: the result value will always be the plain instance.
     #
     #   note that nil is returned (regardless of as_jsi) when there is no value to return because the token
@@ -393,7 +398,7 @@ module JSI
     # @param value [JSI::Base, Object] the value to be assigned
     def []=(token, value)
       unless respond_to?(:to_hash) || respond_to?(:to_ary)
-        raise(NoMethodError, "cannot assign subscript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
+        raise(CannotSubscriptError, "cannot assign subscript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
       end
       if value.is_a?(Base)
         self[token] = value.jsi_instance
@@ -405,7 +410,7 @@ module JSI
     # the set of JSI schema modules corresponding to the schemas that describe this JSI
     # @return [Set<Module>]
     def jsi_schema_modules
-      jsi_schemas.map(&:jsi_schema_module).to_set.freeze
+      Util.ensure_module_set(jsi_schemas.map(&:jsi_schema_module))
     end
 
     # yields the content of this JSI's instance. the block must result in
@@ -428,7 +433,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
         end
-        @jsi_ptr.evaluate(modified_jsi_root_node, as_jsi: true)
+        modified_jsi_root_node.jsi_child_node(@jsi_ptr)
       end
     end
 
@@ -443,21 +448,6 @@ module JSI
     # @return [Boolean]
     def jsi_valid?
       jsi_schemas.instance_valid?(self)
-    end
-
-    # @private
-    def fully_validate(errors_as_objects: false)
-      raise(NotImplementedError, "Base#fully_validate removed: see new validation interface Base#jsi_validate")
-    end
-
-    # @private
-    def validate
-      raise(NotImplementedError, "Base#validate renamed: see Base#jsi_valid?")
-    end
-
-    # @private
-    def validate!
-      raise(NotImplementedError, "Base#validate! removed")
     end
 
     def dup
@@ -484,6 +474,24 @@ module JSI
       q.breakable ''
       q.text '>'
     end
+
+    # an Array containing each item in this JSI, if this JSI's instance is enumerable. the same
+    # as `Enumerable#to_a`.
+    #
+    # @param kw keyword arguments are passed to {#[]} - see its keyword params
+    # @return [Array]
+    def to_a(**kw)
+      # TODO remove eventually (keyword argument compatibility)
+      # discard when all supported ruby versions delegate keywords to #each (3.0.1 breaks; 2.7.x warns)
+      # https://bugs.ruby-lang.org/issues/18289
+      ary = []
+      each(**kw) do |e|
+        ary << e
+      end
+      ary
+    end
+
+    alias_method :entries, :to_a
 
     # @private
     # @return [Array<String>]
@@ -549,15 +557,7 @@ module JSI
 
     def jsi_subinstance_schemas_memos
       jsi_memomap(:subinstance_schemas, key_by: -> (i) { i[:token] }) do |token: , instance: , subinstance: |
-        SchemaSet.build do |schemas|
-          jsi_schemas.each do |schema|
-            schema.each_child_applicator_schema(token, instance) do |child_app_schema|
-              child_app_schema.each_inplace_applicator_schema(subinstance) do |child_inpl_app_schema|
-                schemas << child_inpl_app_schema
-              end
-            end
-          end
-        end
+        jsi_schemas.child_applicator_schemas(token, instance).inplace_applicator_schemas(subinstance)
       end
     end
 
@@ -576,7 +576,7 @@ module JSI
       value_as_jsi = if [true, false].include?(as_jsi)
         as_jsi
       elsif as_jsi == :auto
-        complex_value = subinstance_schemas.any? && (value.respond_to?(:to_hash) || value.respond_to?(:to_ary))
+        complex_value = value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
         schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
         complex_value || schema_value
       else

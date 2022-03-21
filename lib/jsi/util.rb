@@ -5,6 +5,8 @@ module JSI
   module Util
     autoload :Private, 'jsi/util/private'
 
+    include Private
+
     # a hash copied from the given hashlike, in which any symbol keys are
     # converted to strings. behavior on collisions is undefined (but in the
     # future could take a block like
@@ -76,14 +78,6 @@ module JSI
       set
     end
 
-    public
-
     extend self
-
-    include Private
-
-    extend Private
   end
-  public
-  extend Util
 end

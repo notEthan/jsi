@@ -24,45 +24,68 @@ module JSI
     #
     # returns an Enumerator if no block is given.
     #
-    # @param a arguments are passed to `#[]`
+    # @param kw keyword arguments are passed to `#[]`
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
-    def each(*a, &block)
+    def each(**kw, &block)
       return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
-        jsi_node_content_hash_pubsend(:each_key) { |k| yield k, self[k, *a] }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield k, self[k, **kw] }
       else
-        jsi_node_content_hash_pubsend(:each_key) { |k| yield [k, self[k, *a]] }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield [k, self[k, **kw]] }
       end
       self
     end
 
     # a hash in which each key is a key of the jsi_node_content hash and each value is the
     # result of `self[key]`
-    # @param a arguments are passed to `#[]`
+    # @param kw keyword arguments are passed to `#[]`
     # @return [Hash]
-    def to_hash(*a)
-      {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k, *a] } }
+    def to_hash(**kw)
+      {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k, **kw] } }
     end
 
     include Hashlike
 
-    # invokes the method with the given name on the jsi_node_content (if defined) or its #to_hash
-    # @param method_name [String, Symbol]
-    # @param a arguments and block are passed to the invocation of method_name
-    # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_hash
-    def jsi_node_content_hash_pubsend(method_name, *a, &b)
-      if jsi_node_content.respond_to?(method_name)
-        jsi_node_content.public_send(method_name, *a, &b)
-      else
-        jsi_node_content.to_hash.public_send(method_name, *a, &b)
+    if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+      # invokes the method with the given name on the jsi_node_content (if defined) or its #to_hash
+      # @param method_name [String, Symbol]
+      # @param a positional arguments are passed to the invocation of method_name
+      # @param b block is passed to the invocation of method_name
+      # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_hash
+      def jsi_node_content_hash_pubsend(method_name, *a, &b)
+        if jsi_node_content.respond_to?(method_name)
+          jsi_node_content.public_send(method_name, *a, &b)
+        else
+          jsi_node_content.to_hash.public_send(method_name, *a, &b)
+        end
+      end
+    else
+      # invokes the method with the given name on the jsi_node_content (if defined) or its #to_hash
+      # @param method_name [String, Symbol]
+      # @param a positional arguments are passed to the invocation of method_name
+      # @param kw keyword arguments are passed to the invocation of method_name
+      # @param b block is passed to the invocation of method_name
+      # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_hash
+      def jsi_node_content_hash_pubsend(method_name, *a, **kw, &b)
+        if jsi_node_content.respond_to?(method_name)
+          jsi_node_content.public_send(method_name, *a, **kw, &b)
+        else
+          jsi_node_content.to_hash.public_send(method_name, *a, **kw, &b)
+        end
       end
     end
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
     SAFE_KEY_ONLY_METHODS.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        jsi_node_content_hash_pubsend(method_name, *a, &b)
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) do |*a, &b|
+          jsi_node_content_hash_pubsend(method_name, *a, &b)
+        end
+      else
+        define_method(method_name) do |*a, **kw, &b|
+          jsi_node_content_hash_pubsend(method_name, *a, **kw, &b)
+        end
       end
     end
   end
@@ -74,42 +97,65 @@ module JSI
     #
     # returns an Enumerator if no block is given.
     #
-    # @param a arguments are passed to `#[]`
+    # @param kw keyword arguments are passed to `#[]`
     # @yield [Object] each element of this array node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
-    def each(*a, &block)
+    def each(**kw, &block)
       return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
-      jsi_node_content_ary_pubsend(:each_index) { |i| yield(self[i, *a]) }
+      jsi_node_content_ary_pubsend(:each_index) { |i| yield(self[i, **kw]) }
       self
     end
 
     # an array, the same size as the jsi_node_content, in which the element at each index is the
     # result of `self[index]`
-    # @param a arguments are passed to `#[]`
+    # @param kw keyword arguments are passed to `#[]`
     # @return [Array]
-    def to_ary(*a)
-      to_a(*a)
+    def to_ary(**kw)
+      to_a(**kw)
     end
 
     include Arraylike
 
-    # invokes the method with the given name on the jsi_node_content (if defined) or its #to_ary
-    # @param method_name [String, Symbol]
-    # @param a arguments and block are passed to the invocation of method_name
-    # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_ary
-    def jsi_node_content_ary_pubsend(method_name, *a, &b)
-      if jsi_node_content.respond_to?(method_name)
-        jsi_node_content.public_send(method_name, *a, &b)
-      else
-        jsi_node_content.to_ary.public_send(method_name, *a, &b)
+    if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+      # invokes the method with the given name on the jsi_node_content (if defined) or its #to_ary
+      # @param method_name [String, Symbol]
+      # @param a positional arguments are passed to the invocation of method_name
+      # @param b block is passed to the invocation of method_name
+      # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_ary
+      def jsi_node_content_ary_pubsend(method_name, *a, &b)
+        if jsi_node_content.respond_to?(method_name)
+          jsi_node_content.public_send(method_name, *a, &b)
+        else
+          jsi_node_content.to_ary.public_send(method_name, *a, &b)
+        end
+      end
+    else
+      # invokes the method with the given name on the jsi_node_content (if defined) or its #to_ary
+      # @param method_name [String, Symbol]
+      # @param a positional arguments are passed to the invocation of method_name
+      # @param kw keyword arguments are passed to the invocation of method_name
+      # @param b block is passed to the invocation of method_name
+      # @return [Object] the result of calling method method_name on the jsi_node_content or its #to_ary
+      def jsi_node_content_ary_pubsend(method_name, *a, **kw, &b)
+        if jsi_node_content.respond_to?(method_name)
+          jsi_node_content.public_send(method_name, *a, **kw, &b)
+        else
+          jsi_node_content.to_ary.public_send(method_name, *a, **kw, &b)
+        end
       end
     end
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
     # we override these methods from Arraylike
     SAFE_INDEX_ONLY_METHODS.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        jsi_node_content_ary_pubsend(method_name, *a, &b)
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) do |*a, &b|
+          jsi_node_content_ary_pubsend(method_name, *a, &b)
+        end
+      else
+        define_method(method_name) do |*a, **kw, &b|
+          jsi_node_content_ary_pubsend(method_name, *a, **kw, &b)
+        end
       end
     end
   end

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 module JSI
-  # @private
   # internal class to bootstrap a metaschema. represents a schema without the complexity of JSI::Base. the
   # schema is represented but schemas describing the schema are not.
   #
@@ -12,6 +11,8 @@ module JSI
   # metaschema instance modules are attached to generated subclasses of BootstrapSchema by
   # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
+  #
+  # @api private
   class MetaschemaNode::BootstrapSchema
     include Util::Memoize
     include Util::FingerprintHash

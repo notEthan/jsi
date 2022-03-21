@@ -57,7 +57,7 @@ describe 'JSI::Base array' do
       let(:instance) { [[2]] }
       it 'returns the nondefault value' do
         assert_is_a(schema.items.jsi_schema_module, subject[0])
-        assert_equal([2], subject[0].as_json)
+        assert_equal([2], subject[0].jsi_instance)
       end
     end
   end
@@ -73,7 +73,7 @@ describe 'JSI::Base array' do
       it 'returns the default value' do
         assert_is_a(schema.items.jsi_schema_module, subject[1])
         assert_nil(subject[1, use_default: false])
-        assert_equal({'foo' => 2}, subject[1].as_json)
+        assert_equal({'foo' => 2}, subject[1].jsi_instance)
       end
     end
     describe 'nondefault value (basic type)' do
@@ -87,7 +87,7 @@ describe 'JSI::Base array' do
       let(:instance) { [true, [2]] }
       it 'returns the nondefault value' do
         assert_is_a(schema.items.jsi_schema_module, subject[1])
-        assert_equal([2], subject[1].as_json)
+        assert_equal([2], subject[1].jsi_instance)
       end
     end
   end
@@ -97,7 +97,7 @@ describe 'JSI::Base array' do
 
       subject[2] = {'y' => 'z'}
 
-      assert_equal({'y' => 'z'}, subject[2].as_json)
+      assert_equal({'y' => 'z'}, subject[2].jsi_instance)
       assert_is_a(schema.items[2].jsi_schema_module, orig_2)
       assert_is_a(schema.items[2].jsi_schema_module, subject[2])
     end
@@ -114,19 +114,24 @@ describe 'JSI::Base array' do
     describe 'when the instance is not arraylike' do
       let(:instance) { nil }
       it 'errors' do
-        err = assert_raises(NoMethodError) { subject[2] = 0 }
+        err = assert_raises(JSI::Base::CannotSubscriptError) { subject[2] = 0 }
         assert_equal("cannot assign subscript (using token: 2) to instance: nil", err.message)
       end
     end
     describe '#inspect' do
       it 'inspects' do
-        assert_equal("#[<JSI> \"foo\", \#{<JSI> \"lamp\" => [3]}, #[<JSI> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<JSI> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print' do
       it 'pretty prints' do
         pp = <<~PP
-          #[<JSI> "foo", \#{<JSI> "lamp" => [3]}, #[<JSI> "q", "r"], {"four"=>4}]
+          #[<JSI>
+            "foo",
+            \#{<JSI> "lamp" => #[<JSI> 3]},
+            #[<JSI> "q", "r"],
+            \#{<JSI> "four" => 4}
+          ]
           PP
         assert_equal(pp, subject.pretty_inspect)
       end
@@ -134,7 +139,7 @@ describe 'JSI::Base array' do
     describe '#inspect SortOfArray' do
       let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
       it 'inspects' do
-        assert_equal("#[<JSI SortOfArray> \"foo\", \#{<JSI> \"lamp\" => [3]}, #[<JSI> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<JSI SortOfArray> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print SortOfArray' do
@@ -143,9 +148,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<JSI SortOfArray>
             "foo",
-            \#{<JSI> "lamp" => [3]},
+            \#{<JSI> "lamp" => #[<JSI> 3]},
             #[<JSI> "q", "r"],
-            {"four"=>4}
+            \#{<JSI> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -154,7 +159,7 @@ describe 'JSI::Base array' do
     describe '#inspect named' do
       let(:subject) { NAMED_ARY_SCHEMA.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("#[<NamedArrayInstance> \"foo\", \#{<JSI> \"lamp\" => [3]}, #[<JSI> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<NamedArrayInstance> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print named' do
@@ -163,9 +168,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<NamedArrayInstance>
             "foo",
-            \#{<JSI> "lamp" => [3]},
+            \#{<JSI> "lamp" => #[<JSI> 3]},
             #[<JSI> "q", "r"],
-            {"four"=>4}
+            \#{<JSI> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -174,7 +179,7 @@ describe 'JSI::Base array' do
     describe '#inspect named SortOfArray' do
       let(:subject) { NAMED_ARY_SCHEMA.new_jsi(SortOfArray.new(instance)) }
       it 'inspects' do
-        assert_equal("#[<NamedArrayInstance SortOfArray> \"foo\", \#{<JSI> \"lamp\" => [3]}, #[<JSI> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<NamedArrayInstance SortOfArray> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print named SortOfArray' do
@@ -183,9 +188,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<NamedArrayInstance SortOfArray>
             "foo",
-            \#{<JSI> "lamp" => [3]},
+            \#{<JSI> "lamp" => #[<JSI> 3]},
             #[<JSI> "q", "r"],
-            {"four"=>4}
+            \#{<JSI> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -194,7 +199,7 @@ describe 'JSI::Base array' do
     describe '#inspect named with id' do
       let(:subject) { NAMED_ID_ARY_SCHEMA.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("#[<NamedIdArrayInstance> \"foo\", \#{<JSI (http://jsi/base/named_array_schema#/items/1)> \"lamp\" => [3]}, #[<JSI (http://jsi/base/named_array_schema#/items/2)> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<NamedIdArrayInstance> \"foo\", \#{<JSI (http://jsi/base/named_array_schema#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base/named_array_schema#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print named with id' do
@@ -203,9 +208,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<NamedIdArrayInstance>
             "foo",
-            \#{<JSI (http://jsi/base/named_array_schema#/items/1)> "lamp" => [3]},
+            \#{<JSI (http://jsi/base/named_array_schema#/items/1)> "lamp" => #[<JSI> 3]},
             \#[<JSI (http://jsi/base/named_array_schema#/items/2)> "q", "r"],
-            {"four"=>4}
+            \#{<JSI> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -214,7 +219,7 @@ describe 'JSI::Base array' do
     describe '#inspect named with id SortOfArray' do
       let(:subject) { NAMED_ID_ARY_SCHEMA.new_jsi(SortOfArray.new(instance)) }
       it 'inspects' do
-        assert_equal("#[<NamedIdArrayInstance SortOfArray> \"foo\", \#{<JSI (http://jsi/base/named_array_schema#/items/1)> \"lamp\" => [3]}, #[<JSI (http://jsi/base/named_array_schema#/items/2)> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<NamedIdArrayInstance SortOfArray> \"foo\", \#{<JSI (http://jsi/base/named_array_schema#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base/named_array_schema#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print named with id SortOfArray' do
@@ -223,9 +228,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<NamedIdArrayInstance SortOfArray>
             "foo",
-            \#{<JSI (http://jsi/base/named_array_schema#/items/1)> "lamp" => [3]},
+            \#{<JSI (http://jsi/base/named_array_schema#/items/1)> "lamp" => #[<JSI> 3]},
             \#[<JSI (http://jsi/base/named_array_schema#/items/2)> "q", "r"],
-            {"four"=>4}
+            \#{<JSI> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -235,7 +240,7 @@ describe 'JSI::Base array' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
       let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("#[<JSI (http://jsi/base_array/withid)> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => [3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<JSI (http://jsi/base_array/withid)> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
@@ -245,9 +250,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid)>
             "foo",
-            \#{<JSI (http://jsi/base_array/withid#/items/1)> "lamp" => [3]},
+            \#{<JSI (http://jsi/base_array/withid#/items/1)> "lamp" => #[<JSI> 3]},
             #[<JSI (http://jsi/base_array/withid#/items/2)> "q", "r"],
-            {"four"=>4}
+            \#{<JSI> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -257,7 +262,7 @@ describe 'JSI::Base array' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
       let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
       it 'inspects' do
-        assert_equal("#[<JSI (http://jsi/base_array/withid) SortOfArray> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => [3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], {\"four\"=>4}]", subject.inspect)
+        assert_equal("#[<JSI (http://jsi/base_array/withid) SortOfArray> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfArray' do
@@ -267,9 +272,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid) SortOfArray>
             "foo",
-            \#{<JSI (http://jsi/base_array/withid#/items/1)> "lamp" => [3]},
+            \#{<JSI (http://jsi/base_array/withid#/items/1)> "lamp" => #[<JSI> 3]},
             #[<JSI (http://jsi/base_array/withid#/items/2)> "q", "r"],
-            {"four"=>4}
+            \#{<JSI> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -278,7 +283,7 @@ describe 'JSI::Base array' do
   end
   describe 'each' do
     it 'yields each element' do
-      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, Hash]
+      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::PathedHashNode]
       subject.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'yields each element as_jsi' do
@@ -288,7 +293,7 @@ describe 'JSI::Base array' do
   end
   describe 'to_ary' do
     it 'includes each element' do
-      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, Hash]
+      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::PathedHashNode]
       subject.to_ary.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'includes each element as_jsi' do
@@ -296,6 +301,19 @@ describe 'JSI::Base array' do
       subject.to_ary(as_jsi: true).each { |e| assert_is_a(expect_modules.shift, e) }
     end
   end
+
+  describe 'to_a' do
+    it 'is an array' do
+      expect_ary = [subject[0], subject[1], subject[2], subject[3]]
+      assert_equal(expect_ary, subject.to_a)
+    end
+
+    it 'is an array of JSIs' do
+      expect_ary = [subject[0, as_jsi: true], subject[1], subject[2], subject[3, as_jsi: true]]
+      assert_equal(expect_ary, subject.to_a(as_jsi: true))
+    end
+  end
+
   # these methods just delegate to Array so not going to test excessively
   describe 'index only methods' do
     it('#each_index') { assert_equal([0, 1, 2, 3], subject.each_index.to_a) }
@@ -331,6 +349,9 @@ describe 'JSI::Base array' do
     it('#join')     { assert_equal('a b', schema.new_jsi(['a', 'b']).join(' ')) }
     it('#last')      { assert_equal(subject[3], subject.last) }
     it('#pack')       { assert_equal(' ', schema.new_jsi([32]).pack('c')) }
+    if ([32].pack('c', buffer: '') rescue false) # compat: no #pack keywords on ruby < 2.4, truffleruby
+      it('#pack kw')    { assert_equal(' ', schema.new_jsi([32]).pack('c', buffer: '')) }
+    end
     it('#permutation') { assert_equal([['foo'], [subject[1]], [subject[2]], [subject[3]]], subject.permutation(1).to_a) }
     it('#product')    { assert_equal([], subject.product([])) }
     it('#rassoc')              { assert_equal(subject[2], subject.rassoc('r')) }
@@ -341,6 +362,7 @@ describe 'JSI::Base array' do
     it('#rindex')            { assert_equal(0, subject.rindex('foo')) }
     it('#rotate')           { assert_equal([subject[1], subject[2], subject[3], 'foo'], subject.rotate) }
     it('#sample')          { assert_equal('a', schema.new_jsi(['a']).sample) }
+    it('#sample kw')       { assert_equal('a', schema.new_jsi(['a']).sample(random: Random.new(1))) }
     it('#shelljoin')      { assert_equal('a', schema.new_jsi(['a']).shelljoin) } if [].respond_to?(:shelljoin)
     it('#shuffle')       { assert_equal(4, subject.shuffle.size) }
     it('#slice')        { assert_equal(['foo'], subject.slice(0, 1)) }

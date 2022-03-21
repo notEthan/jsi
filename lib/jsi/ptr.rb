@@ -99,9 +99,6 @@ module JSI
 
       attr_reader :tokens
 
-      # @private @deprecated
-      alias_method :reference_tokens, :tokens
-
       # takes a root json document and evaluates this pointer through the document, returning the value
       # pointed to by this pointer.
       #
@@ -109,9 +106,9 @@ module JSI
       # @param a arguments are passed to each invocation of `#[]`
       # @return [Object] the content of the document pointed to by this pointer
       # @raise [JSI::Ptr::ResolutionError] the document does not contain the path this pointer references
-      def evaluate(document, *a)
+      def evaluate(document, *a, **kw)
         res = tokens.inject(document) do |value, token|
-          _, child = node_subscript_token_child(value, token, *a)
+          _, child = node_subscript_token_child(value, token, *a, **kw)
           child
         end
         res
@@ -160,7 +157,7 @@ module JSI
       # of `other_ptr`, a child pointer. `contains?` is inclusive; a pointer does contain itself.
       # @return [Boolean]
       def contains?(other_ptr)
-        self.tokens == other_ptr.tokens[0...self.tokens.size]
+        tokens == other_ptr.tokens[0...tokens.size]
       end
 
       # part of this pointer relative to the given ancestor_ptr
@@ -184,7 +181,7 @@ module JSI
         else
           raise(TypeError, "ptr must be a JSI::Ptr or Array of tokens; got: #{ptr.inspect}")
         end
-        Ptr.new(self.tokens + ptr_tokens)
+        Ptr.new(tokens + ptr_tokens)
       end
 
       # a pointer consisting of the first `n` of our tokens
@@ -260,7 +257,7 @@ module JSI
 
       private
 
-      def node_subscript_token_child(value, token, *a)
+      def node_subscript_token_child(value, token, *a, **kw)
         if value.respond_to?(:to_ary)
           if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
             token = token.to_i
@@ -276,13 +273,25 @@ module JSI
             raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid index of #{value.inspect}")
           end
 
-          child = (value.respond_to?(:[]) ? value : value.to_ary)[token, *a]
+          ary = (value.respond_to?(:[]) ? value : value.to_ary)
+          if kw.empty?
+            # TODO remove eventually (keyword argument compatibility)
+            child = ary[token, *a]
+          else
+            child = ary[token, *a, **kw]
+          end
         elsif value.respond_to?(:to_hash)
           unless (value.respond_to?(:key?) ? value : value.to_hash).key?(token)
             raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid key of #{value.inspect}")
           end
 
-          child = (value.respond_to?(:[]) ? value : value.to_hash)[token, *a]
+          hsh = (value.respond_to?(:[]) ? value : value.to_hash)
+          if kw.empty?
+            # TODO remove eventually (keyword argument compatibility)
+            child = hsh[token, *a]
+          else
+            child = hsh[token, *a, **kw]
+          end
         else
           raise(ResolutionError, "Invalid resolution: #{token.inspect} cannot be resolved in #{value.inspect}")
         end

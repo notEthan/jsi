@@ -56,7 +56,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
-        assert_equal([2], subject.foo.as_json)
+        assert_equal([2], subject.foo.jsi_instance)
       end
     end
   end
@@ -74,7 +74,7 @@ describe 'JSI::Base hash' do
       it 'returns the default value' do
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
         assert_nil(subject.foo(use_default: false))
-        assert_equal({'foo' => 2}, subject.foo.as_json)
+        assert_equal({'foo' => 2}, subject.foo.jsi_instance)
       end
     end
     describe 'nondefault value (basic type)' do
@@ -88,7 +88,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
-        assert_equal([2], subject.foo.as_json)
+        assert_equal([2], subject.foo.jsi_instance)
       end
     end
   end
@@ -115,7 +115,7 @@ describe 'JSI::Base hash' do
 
       subject['foo'] = {'y' => 'z'}
 
-      assert_equal({'y' => 'z'}, subject['foo'].as_json)
+      assert_equal({'y' => 'z'}, subject['foo'].jsi_instance)
       assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
       assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
     end
@@ -125,8 +125,8 @@ describe 'JSI::Base hash' do
       subject['foo'] = subject['bar']
 
       # the content of the subscripts' instances is the same but the subscripts' classes are different
-      assert_equal([9], subject['foo'].as_json)
-      assert_equal([9], subject['bar'].as_json)
+      assert_equal([9], subject['foo'].jsi_instance)
+      assert_equal([9], subject['bar'].jsi_instance)
       assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
       assert_is_a(schema.properties['bar'].jsi_schema_module, subject['bar'])
     end
@@ -157,19 +157,23 @@ describe 'JSI::Base hash' do
     describe 'when the instance is not hashlike' do
       let(:instance) { nil }
       it 'errors' do
-        err = assert_raises(NoMethodError) { subject['foo'] = 0 }
+        err = assert_raises(JSI::Base::CannotSubscriptError) { subject['foo'] = 0 }
         assert_equal('cannot assign subscript (using token: "foo") to instance: nil', err.message)
       end
     end
     describe '#inspect' do
       it 'inspects' do
-        assert_equal("\#{<JSI> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print' do
       it 'pretty prints' do
         pp = <<~PP
-          \#{<JSI> "foo" => \#{<JSI> "x" => "y"}, "bar" => #[<JSI> 9], "baz" => [true]}
+          \#{<JSI>
+            "foo" => \#{<JSI> "x" => "y"},
+            "bar" => #[<JSI> 9],
+            "baz" => #[<JSI> true]
+          }
           PP
         assert_equal(pp, subject.pretty_inspect)
       end
@@ -177,7 +181,7 @@ describe 'JSI::Base hash' do
     describe '#inspect SortOfHash' do
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<JSI SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print SortOfHash' do
@@ -187,7 +191,7 @@ describe 'JSI::Base hash' do
           \#{<JSI SortOfHash>
             "foo" => \#{<JSI> "x" => "y"},
             "bar" => #[<JSI> 9],
-            "baz" => [true]
+            "baz" => #[<JSI> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -196,7 +200,7 @@ describe 'JSI::Base hash' do
     describe '#inspect named' do
       let(:subject) { NAMED_HASH_SCHEMA.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("\#{<NamedHashInstance> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedHashInstance> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print named' do
@@ -206,7 +210,7 @@ describe 'JSI::Base hash' do
           \#{<NamedHashInstance>
             "foo" => \#{<JSI> "x" => "y"},
             "bar" => #[<JSI> 9],
-            "baz" => [true]
+            "baz" => #[<JSI> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -215,7 +219,7 @@ describe 'JSI::Base hash' do
     describe '#inspect named SortOfHash' do
       let(:subject) { NAMED_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<NamedHashInstance SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedHashInstance SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print named SortOfHash' do
@@ -225,7 +229,7 @@ describe 'JSI::Base hash' do
           \#{<NamedHashInstance SortOfHash>
             "foo" => \#{<JSI> "x" => "y"},
             "bar" => #[<JSI> 9],
-            "baz" => [true]
+            "baz" => #[<JSI> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -234,7 +238,7 @@ describe 'JSI::Base hash' do
     describe '#inspect named with id' do
       let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance> \"foo\" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedIdHashInstance> \"foo\" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print named with id' do
@@ -246,7 +250,7 @@ describe 'JSI::Base hash' do
               "x" => "y"
             },
             "bar" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9],
-            "baz" => [true]
+            "baz" => #[<JSI> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -255,7 +259,7 @@ describe 'JSI::Base hash' do
     describe '#inspect named SortOfHash with id' do
       let(:subject) { NAMED_ID_HASH_SCHEMA.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<NamedIdHashInstance SortOfHash> \"foo\" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<NamedIdHashInstance SortOfHash> \"foo\" => \#{<JSI (http://jsi/base/named_hash_schema#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print named with id SortOfHash' do
@@ -267,7 +271,7 @@ describe 'JSI::Base hash' do
               "x" => "y"
             },
             "bar" => #[<JSI (http://jsi/base/named_hash_schema#/properties/bar)> 9],
-            "baz" => [true]
+            "baz" => #[<JSI> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -277,7 +281,7 @@ describe 'JSI::Base hash' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
-        assert_equal("\#{<JSI (http://jsi/base_hash/withid)> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI (http://jsi/base_hash/withid)> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
@@ -288,7 +292,7 @@ describe 'JSI::Base hash' do
           \#{<JSI (http://jsi/base_hash/withid)>
             "foo" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> "x" => "y"},
             "bar" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9],
-            "baz" => [true]
+            "baz" => #[<JSI> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -298,7 +302,7 @@ describe 'JSI::Base hash' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfHash' do
@@ -309,7 +313,7 @@ describe 'JSI::Base hash' do
           \#{<JSI (http://jsi/base_hash/withid) SortOfHash>
             "foo" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> "x" => "y"},
             "bar" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9],
-            "baz" => [true]
+            "baz" => #[<JSI> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -319,7 +323,7 @@ describe 'JSI::Base hash' do
       let(:instance_class) { Class.new(SortOfHash) { define_method(:jsi_object_group_text) { ['☺'] } } }
       let(:subject) { schema.new_jsi(instance_class.new(instance)) }
       it 'inspects' do
-        assert_equal("\#{<JSI ☺> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => [true]}", subject.inspect)
+        assert_equal("\#{<JSI ☺> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print jsi_object_group_text' do
@@ -327,7 +331,11 @@ describe 'JSI::Base hash' do
       let(:subject) { schema.new_jsi(instance_class.new(instance)) }
       it 'pretty prints' do
         pp = <<~PP
-          \#{<JSI ☺> "foo" => \#{<JSI> "x" => "y"}, "bar" => #[<JSI> 9], "baz" => [true]}
+          \#{<JSI ☺>
+            "foo" => \#{<JSI> "x" => "y"},
+            "bar" => #[<JSI> 9],
+            "baz" => #[<JSI> true]
+          }
           PP
         assert_equal(pp, subject.pretty_inspect)
       end
@@ -335,24 +343,37 @@ describe 'JSI::Base hash' do
   end
   describe 'each' do
     it 'yields each element' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, Array]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::PathedArrayNode]
       subject.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'yields each element as_jsi' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::PathedArrayNode]
       subject.each(as_jsi: true) { |_, v| assert_is_a(expect_modules.shift, v) }
     end
   end
   describe 'to_hash' do
     it 'includes each element' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, Array]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::PathedArrayNode]
       subject.to_hash.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'includes each element as_jsi' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::PathedArrayNode]
       subject.to_hash(as_jsi: true).each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
   end
+
+  describe 'to_a' do
+    it 'is an array' do
+      expect_ary = [['foo', subject.foo], ['bar', subject.bar], ['baz', subject['baz']]]
+      assert_equal(expect_ary, subject.to_a)
+    end
+
+    it 'is an array of keys + JSIs' do
+      expect_ary = [['foo', subject.foo], ['bar', subject.bar], ['baz', subject['baz', as_jsi: true]]]
+      assert_equal(expect_ary, subject.to_a(as_jsi: true))
+    end
+  end
+
   # these methods just delegate to Hash so not going to test excessively
   describe 'key only methods' do
     it('#each_key') { assert_equal(['foo', 'bar', 'baz'], subject.each_key.to_a) }
@@ -373,22 +394,22 @@ describe 'JSI::Base hash' do
     it('#any?')   { assert_equal(false, subject.any? { |k, v| v == 3 }) }
     it('#assoc')   { assert_equal(['foo', subject['foo']], subject.assoc('foo')) }
     it('#dig')      { assert_equal(9, subject.dig('bar', 0)) } if {}.respond_to?(:dig)
-    it('#each_pair') { assert_equal([['foo', subject['foo']], ['bar', subject['bar']], ['baz', [true]]], subject.each_pair.to_a) }
-    it('#each_value') { assert_equal([subject['foo'], subject['bar'], [true]], subject.each_value.to_a) }
-    it('#fetch')       { assert_equal([true], subject.fetch('baz')) }
-    it('#fetch_values') { assert_equal([[true]], subject.fetch_values('baz')) } if {}.respond_to?(:fetch_values)
-    it('#has_value?')  { assert_equal(true, subject.has_value?([true])) }
-    it('#invert')     { assert_equal({subject['foo'] => 'foo', subject['bar'] => 'bar', [true] => 'baz'}, subject.invert) }
-    it('#key')       { assert_equal('baz', subject.key([true])) }
-    it('#rassoc')   { assert_equal(['baz', [true]], subject.rassoc([true])) }
-    it('#to_h')    { assert_equal({'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => [true]}, subject.to_h) }
-    it('#to_proc') { assert_equal([true], subject.to_proc.call('baz')) } if {}.respond_to?(:to_proc)
+    it('#each_pair') { assert_equal([['foo', subject['foo']], ['bar', subject['bar']], ['baz', subject['baz']]], subject.each_pair.to_a) }
+    it('#each_value') { assert_equal([subject['foo'], subject['bar'], subject['baz']], subject.each_value.to_a) }
+    it('#fetch')       { assert_equal(subject['baz'], subject.fetch('baz')) }
+    it('#fetch_values') { assert_equal([subject['baz']], subject.fetch_values('baz')) } if {}.respond_to?(:fetch_values)
+    it('#has_value?')  { assert_equal(true, subject.has_value?(subject['baz'])) }
+    it('#invert')     { assert_equal({subject['foo'] => 'foo', subject['bar'] => 'bar', subject['baz'] => 'baz'}, subject.invert) }
+    it('#key')       { assert_equal('baz', subject.key(subject['baz'])) }
+    it('#rassoc')   { assert_equal(['baz', subject['baz']], subject.rassoc(subject['baz'])) }
+    it('#to_h')    { assert_equal({'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => subject['baz']}, subject.to_h) }
+    it('#to_proc') { assert_equal(subject['baz'], subject.to_proc.call('baz')) } if {}.respond_to?(:to_proc)
     if {}.respond_to?(:transform_values)
       it('#transform_values') { assert_equal({'foo' => nil, 'bar' => nil, 'baz' => nil}, subject.transform_values { |_| nil }) }
     end
     it('#value?')  { assert_equal(false, subject.value?('0')) }
-    it('#values')   { assert_equal([subject['foo'], subject['bar'], [true]], subject.values) }
-    it('#values_at') { assert_equal([[true]], subject.values_at('baz')) }
+    it('#values')   { assert_equal([subject['foo'], subject['bar'], subject['baz']], subject.values) }
+    it('#values_at') { assert_equal([subject['baz']], subject.values_at('baz')) }
   end
   describe 'with an instance that has to_hash but not other hash instance methods' do
     let(:instance) { SortOfHash.new({'foo' => SortOfHash.new({'a' => 'b'})}) }

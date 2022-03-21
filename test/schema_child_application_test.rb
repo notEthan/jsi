@@ -91,14 +91,14 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { [{}, [], [], {}] }
         it 'applies' do
-          refute_is_a(JSI::Base, subject[0])
+          assert_empty(subject[0].jsi_schemas)
           assert_equal(Set[
             schema.contains,
           ], subject[1].jsi_schemas)
           assert_equal(Set[
             schema.contains,
           ], subject[2].jsi_schemas)
-          refute_is_a(JSI::Base, subject[3])
+          assert_empty(subject[3].jsi_schemas)
           refute_is_a(schema.contains.jsi_schema_module, subject[0])
           assert_is_a(schema.contains.jsi_schema_module, subject[1])
           assert_is_a(schema.contains.jsi_schema_module, subject[2])
@@ -115,8 +115,8 @@ describe 'JSI Schema child application' do
         end
         let(:instance) { [{}, {}] }
         it 'does not apply' do
-          refute_is_a(JSI::Base, subject[0])
-          refute_is_a(JSI::Base, subject[1])
+          assert_empty(subject[0].jsi_schemas)
+          assert_empty(subject[1].jsi_schemas)
           refute_is_a(schema.contains.jsi_schema_module, subject[0])
           refute_is_a(schema.contains.jsi_schema_module, subject[1])
         end

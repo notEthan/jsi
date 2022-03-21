@@ -6,6 +6,12 @@ describe JSI::Schema do
       schema = JSI.new_schema({'type' => 'object'}, default_metaschema: JSI::JSONSchemaOrgDraft07)
       assert_equal({'type' => 'object'}, schema.jsi_instance)
     end
+
+    it 'cannot instantiate from a non-string $schema' do
+      err = assert_raises(ArgumentError) { JSI.new_schema({'$schema' => Object.new}) }
+      assert_equal("given schema_object keyword `$schema` is not a string", err.message)
+    end
+
     it 'cannot instantiate from some unknown object' do
       err = assert_raises(TypeError) { JSI.new_schema(Object.new, default_metaschema: JSI::JSONSchemaOrgDraft07) }
       assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
@@ -24,7 +30,7 @@ describe JSI::Schema do
     it '#[]' do
       schema_items = schema['items']
       assert_is_a(metaschema_jsi_module, schema_items)
-      assert_equal({'description' => 'items!'}, schema_items.as_json)
+      assert_equal({'description' => 'items!'}, schema_items.jsi_instance)
     end
   end
   describe '#schema_uri' do
@@ -545,13 +551,6 @@ describe JSI::Schema do
       schema = JSI::JSONSchemaOrgDraft07.new_schema({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module_exec'})
       schema.jsi_schema_module_exec(foo: 'foo') { |foo: | define_method(:foo) { foo } }
       assert_equal('foo', schema.new_jsi({}).foo)
-    end
-  end
-
-  describe '#jsi_schema_class' do
-    it 'returns the class for the schema' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/schema_schema_class'})
-      assert_equal(JSI::SchemaClasses.class_for_schemas([schema]), schema.jsi_schema_class)
     end
   end
 

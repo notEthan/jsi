@@ -81,22 +81,35 @@ module JSI
     SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
     safe_to_hash_methods = SAFE_METHODS - safe_modified_copy_methods - safe_kv_block_modified_copy_methods
     safe_to_hash_methods.each do |method_name|
-      define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) { |*a, &b| to_hash.public_send(method_name, *a, &b) }
+      else
+        define_method(method_name) { |*a, **kw, &b| to_hash.public_send(method_name, *a, **kw, &b) }
+      end
     end
     safe_modified_copy_methods.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        jsi_modified_copy do |object_to_modify|
-          responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
-          responsive_object.public_send(method_name, *a, &b)
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) do |*a, &b|
+          jsi_modified_copy do |object_to_modify|
+            responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
+            responsive_object.public_send(method_name, *a, &b)
+          end
+        end
+      else
+        define_method(method_name) do |*a, **kw, &b|
+          jsi_modified_copy do |object_to_modify|
+            responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
+            responsive_object.public_send(method_name, *a, **kw, &b)
+          end
         end
       end
     end
     safe_kv_block_modified_copy_methods.each do |method_name|
-      define_method(method_name) do |*a, &b|
+      define_method(method_name) do |**kw, &b|
         jsi_modified_copy do |object_to_modify|
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
           responsive_object.public_send(method_name) do |k, _v|
-            b.call(k, self[k, *a])
+            b.call(k, self[k, **kw])
           end
         end
       end
@@ -112,7 +125,7 @@ module JSI
       unless other.respond_to?(:to_hash)
         raise(TypeError, "cannot update with argument that does not respond to #to_hash: #{other.pretty_inspect.chomp}")
       end
-      self_respondingto_key = self.respond_to?(:key?) ? self : to_hash
+      self_respondingto_key = respond_to?(:key?) ? self : to_hash
       other.to_hash.each_pair do |key, value|
         if block && self_respondingto_key.key?(key)
           value = yield(key, self[key], value)
@@ -138,8 +151,8 @@ module JSI
     # self's #jsi_object_group_text
     # @return [String]
     def inspect
-      object_group_str = (respond_to?(:jsi_object_group_text) ? self.jsi_object_group_text : [self.class]).join(' ')
-      "\#{<#{object_group_str}>#{self.map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
+      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
+      "\#{<#{object_group_str}>#{map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
     end
 
     alias_method :to_s, :inspect
@@ -147,7 +160,7 @@ module JSI
     # pretty-prints a representation of this hashlike to the given printer
     # @return [void]
     def pretty_print(q)
-      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#{<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {
@@ -189,23 +202,36 @@ module JSI
     SAFE_METHODS = SAFE_INDEX_ONLY_METHODS | SAFE_INDEX_ELEMENT_METHODS
     safe_to_ary_methods = SAFE_METHODS - safe_modified_copy_methods - safe_el_block_methods
     safe_to_ary_methods.each do |method_name|
-      define_method(method_name) { |*a, &b| to_ary.public_send(method_name, *a, &b) }
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) { |*a, &b| to_ary.public_send(method_name, *a, &b) }
+      else
+        define_method(method_name) { |*a, **kw, &b| to_ary.public_send(method_name, *a, **kw, &b) }
+      end
     end
     safe_modified_copy_methods.each do |method_name|
-      define_method(method_name) do |*a, &b|
-        jsi_modified_copy do |object_to_modify|
-          responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
-          responsive_object.public_send(method_name, *a, &b)
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) do |*a, &b|
+          jsi_modified_copy do |object_to_modify|
+            responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
+            responsive_object.public_send(method_name, *a, &b)
+          end
+        end
+      else
+        define_method(method_name) do |*a, **kw, &b|
+          jsi_modified_copy do |object_to_modify|
+            responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
+            responsive_object.public_send(method_name, *a, **kw, &b)
+          end
         end
       end
     end
     safe_el_block_methods.each do |method_name|
-      define_method(method_name) do |*a, &b|
+      define_method(method_name) do |**kw, &b|
         jsi_modified_copy do |object_to_modify|
           i = 0
           responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
           responsive_object.public_send(method_name) do |_e|
-            b.call(self[i, *a]).tap { i += 1 }
+            b.call(self[i, **kw]).tap { i += 1 }
           end
         end
       end
@@ -229,8 +255,8 @@ module JSI
     # self's #jsi_object_group_text
     # @return [String]
     def inspect
-      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
-      "\#[<#{object_group_str}>#{self.map { |e| ' ' + e.inspect }.join(',')}]"
+      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
+      "\#[<#{object_group_str}>#{map { |e| ' ' + e.inspect }.join(',')}]"
     end
 
     alias_method :to_s, :inspect
@@ -238,7 +264,7 @@ module JSI
     # pretty-prints a representation of this arraylike to the given printer
     # @return [void]
     def pretty_print(q)
-      object_group_str = (respond_to?(:jsi_object_group_text) ? jsi_object_group_text : [self.class]).join(' ')
+      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#[<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {

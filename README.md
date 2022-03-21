@@ -1,6 +1,6 @@
 # JSI: JSON Schema Instantiation
 
-[![Build Status](https://travis-ci.org/notEthan/jsi.svg?branch=master)](https://travis-ci.org/notEthan/jsi)
+![Test CI Status](https://github.com/notEthan/jsi/actions/workflows/test.yml/badge.svg?branch=stable)
 [![Coverage Status](https://coveralls.io/repos/github/notEthan/jsi/badge.svg)](https://coveralls.io/github/notEthan/jsi)
 
 JSI offers an Object-Oriented representation for JSON data using JSON Schemas. Given your JSON Schemas, JSI constructs Ruby modules and classes which are used to instantiate your JSON data. These modules let you use JSON with all the niceties of OOP such as property accessors and application-defined instance methods.
@@ -45,6 +45,8 @@ We name the module that JSI will use when instantiating a contact. Named modules
 ```ruby
 Contact = contact_schema.jsi_schema_module
 ```
+
+Note: it is more concise to instantiate the schema module with the shortcut {JSI.new_schema_module}, i.e. `Contact = JSI.new_schema_module(...)`. This example includes the intermediate step to help show all that is happening.
 
 To instantiate the schema, we need some JSON data (expressed here as YAML)
 
@@ -173,17 +175,20 @@ module Contact
   end
 end
 
+bill.phone_numbers
+# => ["555"]
+
 bill.name
 # => "bill esq."
 bill.name = 'rob esq.'
 # => "rob esq."
 bill['name']
 # => "rob"
-bill.phone_numbers
-# => ["555"]
 ```
 
-Note the use of `super` - you can call to accessors defined by JSI and make your accessors act as wrappers. You can alternatively use `[]` and `[]=` with the same effect.
+`#phone_numbers` is a new method returning each number in the `phone` array - pretty straightforward.
+
+For `#name` and `#name=`, we're overriding existing accessor methods. note the use of `super` - this invokes the accessor methods defined by JSI which these override. You could alternatively use `self['name']` and `self['name']=` in these methods, with the same effect as `super`.
 
 Working with subschemas is just about as easy as with root schemas.
 
@@ -269,7 +274,7 @@ Let's say you're sticking to JSON types in the database - you have to do so if y
 
 But if your database contains JSON, then your deserialized objects in ruby are likewise Hash / Array / basic types. You have to use subscripts instead of accessors, and you don't have any way to add methods to your data types.
 
-JSI gives you the best of both with JSICoder. This coder dumps objects which are simple JSON types, and loads instances of a specified JSI schema. Here's an example, supposing a `users` table with a JSON column `contact_info`:
+JSI gives you the best of both with {JSI::JSICoder}. This coder dumps objects which are simple JSON types, and loads instances of a specified JSON Schema. Here's an example, supposing a `users` table with a JSON column `contact_info` to be instantiated using the `Contact` schema module defined in the Example section above:
 
 ```ruby
 class User < ActiveRecord::Base
@@ -277,7 +282,7 @@ class User < ActiveRecord::Base
 end
 ```
 
-Now `user.contact_info` will be instantiated as a Contact JSI instance, from the JSON type in the database, with Contact's accessors, validations, and user-defined instance methods.
+Now `user.contact_info` will be instantiated as a `Contact` JSI instance, from the JSON type in the database, with Contact's accessors, validations, and user-defined instance methods.
 
 See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize the dumped JSON-compatible objects further as text.
 

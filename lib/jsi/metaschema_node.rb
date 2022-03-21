@@ -26,9 +26,10 @@ module JSI
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
     # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of the
-    #   schema, to be applied to every schema which is an instance of the metaschema. this must include
-    #   JSI::Schema directly or indirectly. these are the {Schema#jsi_schema_instance_modules} of the
-    #   metaschema.
+    #   schema. these are included on the {Schema#jsi_schema_module} of the metaschema.
+    #   they extend any schema described by the metaschema, including those in the document containing
+    #   the metaschema, and the metaschema itself.
+    #   see {Schema#describes_schema!} param `metaschema_instance_modules`.
     # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the metaschema in the jsi_document
     # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
     def initialize(
@@ -37,7 +38,8 @@ module JSI
         metaschema_instance_modules: ,
         metaschema_root_ptr: Ptr[],
         root_schema_ptr: Ptr[],
-        jsi_schema_base_uri: nil
+        jsi_schema_base_uri: nil,
+        jsi_root_node: nil
     )
       jsi_initialize_memos
 
@@ -46,6 +48,8 @@ module JSI
       @metaschema_instance_modules = Util.ensure_module_set(metaschema_instance_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
+      raise(Bug, 'jsi_root_node') if jsi_ptr.root? ^ !jsi_root_node
+      @jsi_root_node = jsi_ptr.root? ? self : jsi_root_node
 
       if jsi_ptr.root? && jsi_schema_base_uri
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
@@ -69,18 +73,10 @@ module JSI
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
       )
       our_bootstrap_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_schemas, tok|
-        child_instance_for_schemas = instance_for_schemas[tok]
-        bootstrap_schemas_for_instance = SchemaSet.build do |schemas|
-          bootstrap_schemas.each do |bootstrap_schema|
-            bootstrap_schema.each_child_applicator_schema(tok, instance_for_schemas) do |child_app_schema|
-              child_app_schema.each_inplace_applicator_schema(child_instance_for_schemas) do |child_inpl_app_schema|
-                schemas << child_inpl_app_schema
-              end
-            end
-          end
-        end
-        instance_for_schemas = child_instance_for_schemas
-        bootstrap_schemas_for_instance
+        child_indicated_schemas = bootstrap_schemas.child_applicator_schemas(tok, instance_for_schemas)
+        child_schemas = child_indicated_schemas.inplace_applicator_schemas(instance_for_schemas[tok])
+        instance_for_schemas = instance_for_schemas[tok]
+        child_schemas
       end
 
       our_bootstrap_schemas.each do |bootstrap_schema|
@@ -93,19 +89,26 @@ module JSI
         if bootstrap_schema.jsi_ptr == jsi_ptr
           # this is the metaschema (it is described by itself)
           extend Metaschema
-          self.jsi_schema_instance_modules = metaschema_instance_modules
         end
       end
 
       @jsi_schemas = SchemaSet.new(our_bootstrap_schemas) do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == jsi_ptr
           self
+        elsif bootstrap_schema.jsi_ptr.root?
+          @jsi_root_node
         else
           new_node(
             jsi_ptr: bootstrap_schema.jsi_ptr,
             jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
+            jsi_root_node: @jsi_root_node,
           )
         end
+      end
+
+      # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
+      if is_a?(Metaschema)
+        describes_schema!(metaschema_instance_modules)
       end
 
       @jsi_schemas.each do |schema|
@@ -116,12 +119,12 @@ module JSI
       begin # draft 4 boolean schema workaround
         # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
         # properties/additionalProperties and properties/additionalItems.
-        # since these describe schemas, their jsi_schema_instance_modules are the metaschema_instance_modules.
+        # these still describe schemas, despite not being described by the metaschema.
         addtlPropsanyOf = metaschema_root_ptr["properties"]["additionalProperties"]["anyOf"]
         addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
 
         if !jsi_ptr.root? && [addtlPropsanyOf, addtlItemsanyOf].include?(jsi_ptr.parent)
-          self.jsi_schema_instance_modules = metaschema_instance_modules
+          describes_schema!(metaschema_instance_modules)
         end
       end
     end
@@ -142,23 +145,10 @@ module JSI
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
 
-    # document root MetaschemaNode
-    # @return [MetaschemaNode]
-    def jsi_root_node
-      if jsi_ptr.root?
-        self
-      else
-        new_node(
-          jsi_ptr: Ptr[],
-          jsi_schema_base_uri: nil,
-        )
-      end
-    end
-
     # parent MetaschemaNode
     # @return [MetaschemaNode]
     def jsi_parent_node
-      jsi_ptr.parent.evaluate(jsi_root_node)
+      jsi_root_node.jsi_child_node(jsi_ptr.parent)
     end
 
     # subscripts to return a child value identified by the given token.
@@ -179,7 +169,7 @@ module JSI
 
       begin
         if token_in_range
-          value_node = jsi_subinstance_memos[token]
+          value_node = jsi_subinstance_memos[token: token]
 
           jsi_subinstance_as_jsi(value, value_node.jsi_schemas, as_jsi) do
             value_node
@@ -196,7 +186,15 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [MetaschemaNode] modified copy of self
     def jsi_modified_copy(&block)
-      MetaschemaNode.new(jsi_ptr.modified_document_copy(jsi_document, &block), **our_initialize_params)
+      if jsi_ptr.root?
+        modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
+        MetaschemaNode.new(modified_document, **our_initialize_params)
+      else
+        modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
+          jsi_ptr.modified_document_copy(root, &block)
+        end
+        jsi_ptr.evaluate(modified_jsi_root_node, as_jsi: true)
+      end
     end
 
     # @private
@@ -221,6 +219,7 @@ module JSI
 
     private
 
+    # note: does not include jsi_root_node
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
@@ -231,15 +230,17 @@ module JSI
       }
     end
 
+    # note: not for root node
     def new_node(params)
       MetaschemaNode.new(jsi_document, **our_initialize_params.merge(params))
     end
 
     def jsi_subinstance_memos
-      jsi_memomap(:subinstance) do |token|
+      jsi_memomap(:subinstance) do |token: |
         new_node(
           jsi_ptr: jsi_ptr[token],
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
+          jsi_root_node: jsi_root_node,
         )
       end
     end
