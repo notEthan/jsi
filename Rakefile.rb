@@ -58,7 +58,7 @@ task 'test' => [
   'test:extdep'
 ]
 
-task :default => :test
+task 'default' => 'test:unit'
 
 require 'gig'
 
