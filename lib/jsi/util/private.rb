@@ -41,10 +41,21 @@ module JSI
     #
     # TODO remove eventually (keyword argument compatibility)
     LAST_ARGUMENT_AS_KEYWORD_PARAMETERS = begin
+      if Object.const_defined?(:Warning)
+        warn = ::Warning.instance_method(:warn)
+        ::Warning.send(:remove_method, :warn)
+        ::Warning.send(:define_method, :warn) { |*_a, **_kw| }
+      end
+
       -> (k: ) { k }[{k: nil}]
       true
     rescue ArgumentError
       false
+    ensure
+      if Object.const_defined?(:Warning)
+        ::Warning.send(:remove_method, :warn)
+        ::Warning.send(:define_method, :warn, warn)
+      end
     end
 
     module FingerprintHash
