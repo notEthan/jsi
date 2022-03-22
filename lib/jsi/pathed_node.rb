@@ -8,11 +8,6 @@ module JSI
   # - `#jsi_document` [Object] the document
   # - `#jsi_ptr` [JSI::Ptr] a pointer to the node in the document
   module PathedNode
-    # the content of this node
-    def jsi_node_content
-      content = jsi_ptr.evaluate(jsi_document)
-      content
-    end
   end
 
   # module extending a {JSI::PathedNode} object when its jsi_node_content is Hash-like (responds to #to_hash)
