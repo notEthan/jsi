@@ -215,7 +215,7 @@ module JSI
     end
 
     # subscripting a JSI schema module or a NotASchemaModule will subscript the node, and
-    # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a PathedNode,
+    # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a JSI::Base,
     # return a NotASchemaModule; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
@@ -225,7 +225,7 @@ module JSI
       sub = @possibly_schema_node[token]
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module
-      elsif sub.is_a?(JSI::PathedNode)
+      elsif sub.is_a?(JSI::Base)
         NotASchemaModule.new(sub)
       else
         sub
@@ -258,10 +258,10 @@ module JSI
   # is another node, a NotASchemaModule for that node is returned. otherwise - when the
   # value is a basic type - that value itself is returned.
   class NotASchemaModule
-    # @param node [JSI::PathedNode]
+    # @param node [JSI::Base]
     def initialize(node)
-      unless node.is_a?(JSI::PathedNode)
-        raise(TypeError, "not JSI::PathedNode: #{node.pretty_inspect.chomp}")
+      unless node.is_a?(JSI::Base)
+        raise(TypeError, "not JSI::Base: #{node.pretty_inspect.chomp}")
       end
       if node.is_a?(JSI::Schema)
         raise(TypeError, "cannot instantiate NotASchemaModule for a JSI::Schema node: #{node.pretty_inspect.chomp}")

@@ -296,7 +296,7 @@ module JSI
     end
 
     # the underlying JSON data used to instantiate this JSI::Schema.
-    # this is an alias for PathedNode#jsi_node_content, named for clarity in the context of working with
+    # this is an alias for {Base#jsi_node_content}, named for clarity in the context of working with
     # a schema.
     def schema_content
       jsi_node_content
@@ -572,7 +572,7 @@ module JSI
     # @param instance [Object] the instance to validate against this schema
     # @return [JSI::Validation::Result]
     def instance_validate(instance)
-      if instance.is_a?(JSI::PathedNode)
+      if instance.is_a?(Base)
         instance_ptr = instance.jsi_ptr
         instance_document = instance.jsi_document
       else
@@ -586,7 +586,7 @@ module JSI
     # @param instance [Object] the instance to validate against this schema
     # @return [Boolean]
     def instance_valid?(instance)
-      if instance.is_a?(JSI::PathedNode)
+      if instance.is_a?(Base)
         instance = instance.jsi_node_content
       end
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?

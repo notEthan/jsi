@@ -1,25 +1,16 @@
 # frozen_string_literal: true
 
 module JSI
-  # this module represents a node in a document.
-  #
-  # including class MUST define
-  #
-  # - `#jsi_document` [Object] the document
-  # - `#jsi_ptr` [JSI::Ptr] a pointer to the node in the document
-  module PathedNode
-  end
-
-  # module extending a {JSI::PathedNode} object when its jsi_node_content is Hash-like (responds to #to_hash)
+  # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
+  # is a Hash (or responds to `#to_hash`)
   module PathedHashNode
     # yields each hash key and value of this node.
     #
-    # each yielded key is the same as a key of the node content hash,
-    # and each yielded value is the result of self[key] (see #[]).
+    # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
     #
     # returns an Enumerator if no block is given.
     #
-    # @param kw keyword arguments are passed to `#[]`
+    # @param kw keyword arguments are passed to {Base#[]}
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(**kw, &block)
@@ -32,9 +23,8 @@ module JSI
       self
     end
 
-    # a hash in which each key is a key of the jsi_node_content hash and each value is the
-    # result of `self[key]`
-    # @param kw keyword arguments are passed to `#[]`
+    # a hash in which each key is a key of the instance hash and each value is the result of {Base#[]}
+    # @param kw keyword arguments are passed to {Base#[]}
     # @return [Hash]
     def to_hash(**kw)
       {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k, **kw] } }
@@ -85,14 +75,16 @@ module JSI
     end
   end
 
+  # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
+  # is an Array (or responds to `#to_ary`)
   module PathedArrayNode
     # yields each array element of this node.
     #
-    # each yielded element is the result of self[index] for each index of our array (see #[]).
+    # each yielded element is the result of {Base#[]} for each index of the instance array.
     #
     # returns an Enumerator if no block is given.
     #
-    # @param kw keyword arguments are passed to `#[]`
+    # @param kw keyword arguments are passed to {Base#[]}
     # @yield [Object] each element of this array node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(**kw, &block)
@@ -101,9 +93,9 @@ module JSI
       self
     end
 
-    # an array, the same size as the jsi_node_content, in which the element at each index is the
-    # result of `self[index]`
-    # @param kw keyword arguments are passed to `#[]`
+    # an array, the same size as the instance array, in which the element at each index is the
+    # result of {Base#[]}.
+    # @param kw keyword arguments are passed to {Base#[]}
     # @return [Array]
     def to_ary(**kw)
       to_a(**kw)

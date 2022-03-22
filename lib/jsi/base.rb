@@ -14,7 +14,6 @@ module JSI
   #
   # the JSI::Base class itself is not intended to be instantiated.
   class Base
-    include PathedNode
     include Schema::SchemaAncestorNode
     include Util::Memoize
 
