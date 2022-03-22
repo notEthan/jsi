@@ -627,7 +627,7 @@ describe JSI::Base do
               'initialize' => {},     # Base
               'inspect' => {},        # Base
               'pretty_inspect' => {}, # Kernel
-              'as_json' => {},        # Base::OverrideFromExtensions, extended on initialization
+              'as_json' => {},        # Base
               'each' => {},           # Base::HashNode / Base::ArrayNode
               'instance_exec' => {},  # BasicObject
               'jsi_instance' => {},   # Base
