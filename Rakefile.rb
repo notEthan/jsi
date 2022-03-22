@@ -7,7 +7,7 @@ namespace 'test' do
   class JSITestTask < Rake::TestTask
     def initialize(name: , title: , description: nil, pattern: nil, test_files: nil, env: {})
       @title = title
-      @env = env
+      @env = env.merge('JSI_TEST_TASK' => "test:#{name}")
       super(name) do |t|
         t.description = description
         t.pattern = pattern

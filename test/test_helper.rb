@@ -18,6 +18,10 @@ if ENV['CI'] || ENV['COV']
     else
       coverage_dir '{coverage}'
     end
+
+    if ENV['JSI_TEST_TASK']
+      command_name ENV['JSI_TEST_TASK']
+    end
   end
 end
 
