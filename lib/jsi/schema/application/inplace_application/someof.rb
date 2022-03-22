@@ -24,17 +24,19 @@ module JSI
         end
       end
       if keyword?('oneOf') && schema_content['oneOf'].respond_to?(:to_ary)
-        oneOf = schema_content['oneOf'].each_index.map { |i| subschema(['oneOf', i]) }
-        validOf = oneOf.select { |schema| schema.instance_valid?(instance) }
-        if validOf.size == 1
-          applicators = validOf
+        oneOf_idxs = schema_content['oneOf'].each_index
+        subschema_idx_valid = Hash.new { |h, i| h[i] = subschema(['oneOf', i]).instance_valid?(instance) }
+        # count up to 2 `oneOf` subschemas which `instance` validates against
+        nvalid = oneOf_idxs.inject(0) { |n, i| n > 1 ? n : subschema_idx_valid[i] ? n + 1 : n }
+        if nvalid == 1
+          applicator_idxs = oneOf_idxs.select { |i| subschema_idx_valid[i] }
         else
           # invalid application: if none or multiple of the oneOf were valid, we apply them all
-          applicators = oneOf
+          applicator_idxs = oneOf_idxs
         end
 
-        applicators.each do |applicator|
-          applicator.each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+        applicator_idxs.each do |i|
+          subschema(['oneOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
         end
       end
     end
