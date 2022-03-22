@@ -3,7 +3,7 @@
 module JSI
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
   # is a Hash (or responds to `#to_hash`)
-  module PathedHashNode
+  module Base::HashNode
     # yields each hash key and value of this node.
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
@@ -77,7 +77,7 @@ module JSI
 
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
   # is an Array (or responds to `#to_ary`)
-  module PathedArrayNode
+  module Base::ArrayNode
     # yields each array element of this node.
     #
     # each yielded element is the result of {Base#[]} for each index of the instance array.

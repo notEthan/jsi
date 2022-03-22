@@ -14,6 +14,9 @@ module JSI
   #
   # the JSI::Base class itself is not intended to be instantiated.
   class Base
+    autoload :ArrayNode, 'jsi/base/node'
+    autoload :HashNode, 'jsi/base/node'
+
     include Schema::SchemaAncestorNode
     include Util::Memoize
 
@@ -153,10 +156,10 @@ module JSI
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
       if jsi_instance.respond_to?(:to_hash)
-        extend PathedHashNode
+        extend HashNode
       end
       if jsi_instance.respond_to?(:to_ary)
-        extend PathedArrayNode
+        extend ArrayNode
       end
 
       if jsi_instance.is_a?(JSI::Base)
@@ -190,7 +193,7 @@ module JSI
     # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :jsi_node_content
 
-    # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base #each
+    # each is overridden by Base::HashNode or Base::ArrayNode when appropriate. the base #each
     # is not actually implemented, along with all the methods of Enumerable.
     def each(*_)
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
@@ -521,7 +524,7 @@ module JSI
         end
       end
 
-      if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(jsi_node_content.class)
+      if (is_a?(ArrayNode) || is_a?(HashNode)) && ![Array, Hash].include?(jsi_node_content.class)
         if jsi_node_content.respond_to?(:jsi_object_group_text)
           content_txt = jsi_node_content.jsi_object_group_text
         else

@@ -343,21 +343,21 @@ describe 'JSI::Base hash' do
   end
   describe 'each' do
     it 'yields each element' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::PathedArrayNode]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
       subject.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'yields each element as_jsi' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::PathedArrayNode]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
       subject.each(as_jsi: true) { |_, v| assert_is_a(expect_modules.shift, v) }
     end
   end
   describe 'to_hash' do
     it 'includes each element' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::PathedArrayNode]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
       subject.to_hash.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'includes each element as_jsi' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::PathedArrayNode]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
       subject.to_hash(as_jsi: true).each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
   end

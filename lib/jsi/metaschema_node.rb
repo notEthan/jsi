@@ -59,10 +59,10 @@ module JSI
       jsi_node_content = self.jsi_node_content
 
       if jsi_node_content.respond_to?(:to_hash)
-        extend PathedHashNode
+        extend HashNode
       end
       if jsi_node_content.respond_to?(:to_ary)
-        extend PathedArrayNode
+        extend ArrayNode
       end
 
       instance_for_schemas = jsi_document

@@ -30,8 +30,6 @@ module JSI
   SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   autoload :Ptr, 'jsi/ptr'
-  autoload :PathedArrayNode, 'jsi/pathed_node'
-  autoload :PathedHashNode, 'jsi/pathed_node'
   autoload :Typelike, 'jsi/typelike_modules'
   autoload :Hashlike, 'jsi/typelike_modules'
   autoload :Arraylike, 'jsi/typelike_modules'

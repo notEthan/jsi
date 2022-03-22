@@ -634,7 +634,7 @@ describe JSI::Base do
               'inspect' => {},        # Base
               'pretty_inspect' => {}, # Kernel
               'as_json' => {},        # Base::OverrideFromExtensions, extended on initialization
-              'each' => {},           # PathedHashNode / PathedArrayNode
+              'each' => {},           # Base::HashNode / Base::ArrayNode
               'instance_exec' => {},  # BasicObject
               'jsi_instance' => {},   # Base
               'jsi_schemas' => {},    # module_for_schema singleton definition
@@ -819,7 +819,7 @@ describe JSI::Base do
 
     describe 'overriding as_json' do
       it 'overrides' do
-        # note that since JSIs are extended with PathedArrayNode/PathedHashNode in #initialize, methods of
+        # note that since JSIs are extended with Base::ArrayNode/Base::HashNode in #initialize, methods of
         # those modules are not overridden by schema modules (which are included on the instance's class).
         # Enumerable is included on Base (rather than conditionally extending hash/array nodes) so
         # that Enumerable methods can be overridden (in particular as_json - although not defined on

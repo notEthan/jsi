@@ -283,7 +283,7 @@ describe 'JSI::Base array' do
   end
   describe 'each' do
     it 'yields each element' do
-      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::PathedHashNode]
+      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base::HashNode]
       subject.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'yields each element as_jsi' do
@@ -293,7 +293,7 @@ describe 'JSI::Base array' do
   end
   describe 'to_ary' do
     it 'includes each element' do
-      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::PathedHashNode]
+      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base::HashNode]
       subject.to_ary.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'includes each element as_jsi' do
