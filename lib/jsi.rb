@@ -29,7 +29,6 @@ module JSI
   SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   autoload :Ptr, 'jsi/ptr'
-  autoload :Typelike, 'jsi/util/typelike'
   autoload :Schema, 'jsi/schema'
   autoload :SchemaSet, 'jsi/schema_set'
   autoload :Base, 'jsi/base'

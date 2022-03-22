@@ -1,11 +1,6 @@
 # frozen_string_literal: true
 
 module JSI
-  # @deprecated after v0.6
-  module Typelike
-    extend Util
-  end
-
   # a module of methods for objects which behave like Hash but are not Hash.
   #
   # this module is intended to be internal to JSI. no guarantees or API promises
