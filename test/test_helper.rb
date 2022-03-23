@@ -125,6 +125,28 @@ class JSISpec < Minitest::Spec
       assert_is_a(schema.jsi_schema_module, instance)
     end
   end
+
+  # @param schema [JSI::Schema]
+  # @param instance [JSI::Base]
+  def assert_schema(schema, instance)
+    JSI::Schema.ensure_schema(schema)
+
+    assert_is_a(JSI::Base, instance)
+
+    assert_includes(instance.jsi_schemas, schema)
+    assert_is_a(schema.jsi_schema_module, instance)
+  end
+
+  # @param schema [JSI::Schema]
+  # @param instance [JSI::Base]
+  def refute_schema(schema, instance)
+    JSI::Schema.ensure_schema(schema)
+
+    assert_is_a(JSI::Base, instance)
+
+    refute_includes(instance.jsi_schemas, schema)
+    refute_is_a(schema.jsi_schema_module, instance)
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec
