@@ -601,11 +601,11 @@ describe JSI::Base do
     describe 'readers' do
       it 'reads attributes described as properties' do
         assert_equal({'x' => 'y'}, subject.foo.jsi_instance)
-        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
+        assert_schemas([schema.properties['foo']], subject.foo)
         assert_respond_to(subject.foo, :to_hash)
         refute_respond_to(subject.foo, :to_ary)
         assert_equal([3.14159], subject.bar.jsi_instance)
-        assert_is_a(schema.properties['bar'].jsi_schema_module, subject.bar)
+        assert_schemas([schema.properties['bar']], subject.bar)
         refute_respond_to(subject.bar, :to_hash)
         assert_respond_to(subject.bar, :to_ary)
         assert_equal(true, subject.baz)
@@ -615,7 +615,7 @@ describe JSI::Base do
       end
       it 'passes as_jsi option' do
         assert_equal({'x' => 'y'}, subject.foo(as_jsi: false))
-        assert_is_a(schema.properties['baz'].jsi_schema_module, subject.baz(as_jsi: true))
+        assert_schemas([schema.properties['baz']], subject.baz(as_jsi: true))
       end
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
@@ -742,8 +742,8 @@ describe JSI::Base do
         subject.foo = {'y' => 'z'}
 
         assert_equal({'y' => 'z'}, subject.foo.jsi_instance)
-        assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
-        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
+        assert_schemas([schema.properties['foo']], orig_foo)
+        assert_schemas([schema.properties['foo']], subject.foo)
       end
       it 'modifies the instance, visible to other references to the same instance' do
         orig_instance = subject.jsi_instance

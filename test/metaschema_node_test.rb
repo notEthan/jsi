@@ -17,10 +17,10 @@ describe JSI::MetaschemaNode do
   let(:metaschema) { root_node.jsi_child_node(metaschema_root_ptr) }
 
   def assert_metaschema_behaves
-    assert_is_a(metaschema.jsi_schema_module, metaschema)
-    assert_is_a(metaschema.properties['properties'].jsi_schema_module, metaschema.properties)
-    assert_is_a(metaschema.jsi_schema_module, metaschema.properties['properties'])
-    assert_is_a(metaschema.jsi_schema_module, metaschema.properties['properties'].additionalProperties)
+    assert_schemas([metaschema], metaschema)
+    assert_schemas([metaschema.properties['properties']], metaschema.properties)
+    assert_schemas([metaschema], metaschema.properties['properties'])
+    assert_schemas([metaschema], metaschema.properties['properties'].additionalProperties)
 
     schema = metaschema.new_schema({
       'properties' => {
@@ -28,18 +28,18 @@ describe JSI::MetaschemaNode do
       },
       'additionalProperties' => {},
     })
-    assert_is_a(metaschema.jsi_schema_module, schema)
+    assert_schemas([metaschema], schema)
     assert_is_a(JSI::Schema, schema)
-    assert_is_a(metaschema.properties['properties'].jsi_schema_module, schema.properties)
-    assert_is_a(metaschema.jsi_schema_module, schema.properties['foo'])
+    assert_schemas([metaschema.properties['properties']], schema.properties)
+    assert_schemas([metaschema], schema.properties['foo'])
     assert_is_a(JSI::Schema, schema.properties['foo'])
-    assert_is_a(metaschema.jsi_schema_module, schema.additionalProperties)
+    assert_schemas([metaschema], schema.additionalProperties)
     assert_is_a(JSI::Schema, schema.additionalProperties)
 
     instance = schema.new_jsi({'foo' => [], 'bar' => []})
-    assert_is_a(schema.jsi_schema_module, instance)
-    assert_is_a(schema.properties['foo'].jsi_schema_module, instance.foo)
-    assert_is_a(schema.additionalProperties.jsi_schema_module, instance['bar'])
+    assert_schemas([schema], instance)
+    assert_schemas([schema.properties['foo']], instance.foo)
+    assert_schemas([schema.additionalProperties], instance['bar'])
 
     # check that subscripting unknown keys behaves
     assert_equal(nil, metaschema['no'])
@@ -122,11 +122,11 @@ describe JSI::MetaschemaNode do
     let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['schemas', 'Document'] }
     it 'acts like a metaschema' do
-      assert_is_a(root_node.schemas['Document'].jsi_schema_module, root_node)
-      assert_is_a(root_node.schemas['Document'].properties['schemas'].jsi_schema_module, root_node.schemas)
-      assert_is_a(metaschema.jsi_schema_module, root_node.schemas['Document'])
-      assert_is_a(metaschema.properties['properties'].jsi_schema_module, root_node.schemas['Document'].properties)
-      assert_is_a(metaschema.jsi_schema_module, root_node.schemas['Document'].properties['schemas'])
+      assert_schemas([root_node.schemas['Document']], root_node)
+      assert_schemas([root_node.schemas['Document'].properties['schemas']], root_node.schemas)
+      assert_schemas([metaschema], root_node.schemas['Document'])
+      assert_schemas([metaschema.properties['properties']], root_node.schemas['Document'].properties)
+      assert_schemas([metaschema], root_node.schemas['Document'].properties['schemas'])
 
       assert_metaschema_behaves
     end
@@ -152,8 +152,8 @@ describe JSI::MetaschemaNode do
     let(:metaschema_root_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
     it 'acts like a metaschema' do
-      assert_is_a(metaschema.jsi_schema_module, root_node)
-      assert_is_a(metaschema.properties['$defs'].jsi_schema_module, root_node['$defs'])
+      assert_schemas([metaschema], root_node)
+      assert_schemas([metaschema.properties['$defs']], root_node['$defs'])
 
       assert_metaschema_behaves
     end
@@ -180,8 +180,8 @@ describe JSI::MetaschemaNode do
     let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     it 'acts like a metaschema' do
-      assert_is_a(metaschema.jsi_schema_module, root_node)
-      assert_is_a(metaschema.properties['schemas'].jsi_schema_module, root_node.schemas)
+      assert_schemas([metaschema], root_node)
+      assert_schemas([metaschema.properties['schemas']], root_node.schemas)
 
       assert_metaschema_behaves
     end

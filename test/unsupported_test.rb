@@ -105,7 +105,7 @@ describe 'unsupported behavior' do
       end
 
       it 'applies properties' do
-        assert_is_a(schema.properties[ARBITRARY_OBJECT].jsi_schema_module, subject[ARBITRARY_OBJECT])
+        assert_schemas([schema.properties[ARBITRARY_OBJECT]], subject[ARBITRARY_OBJECT])
         assert(!subject.jsi_valid?)
         assert(!subject[ARBITRARY_OBJECT].jsi_valid?)
       end
@@ -130,7 +130,7 @@ describe 'unsupported behavior' do
           }
         end
         it 'applies properties' do
-          assert_is_a(schema.properties[[1]].jsi_schema_module, subject[[1]])
+          assert_schemas([schema.properties[[1]]], subject[[1]])
           assert_schemas([], subject[[]])
 
           assert(subject.jsi_valid?)
@@ -145,7 +145,7 @@ describe 'unsupported behavior' do
           }
         end
         it 'applies properties' do
-          assert_is_a(schema.properties[[1]].jsi_schema_module, subject[[1]])
+          assert_schemas([schema.properties[[1]]], subject[[1]])
           assert_schemas([], subject[[]])
 
           assert_equal([
@@ -199,8 +199,7 @@ describe 'unsupported behavior' do
       end
 
       it 'applies properties and itmes' do
-        assert_is_a(schema.properties[0].jsi_schema_module, subject[0])
-        assert_is_a(schema.items.jsi_schema_module, subject[0])
+        assert_schemas([schema.properties[0], schema.items], subject[0])
         assert_is_a(Hash, subject.to_hash)
         assert_is_a(Array, subject.to_ary)
       end
@@ -228,12 +227,9 @@ describe 'unsupported behavior' do
       end
 
       it 'applies' do
-        assert_is_a(schema.properties[0].jsi_schema_module, subject[0])
-        assert_is_a(schema.items[0].jsi_schema_module, subject[0])
-        assert_is_a(schema.patternProperties['1'].jsi_schema_module, subject[1])
-        assert_is_a(schema.additionalItems.jsi_schema_module, subject[1])
-        assert_is_a(schema.additionalProperties.jsi_schema_module, subject[2])
-        assert_is_a(schema.additionalItems.jsi_schema_module, subject[2])
+        assert_schemas([schema.properties[0],         schema.items[0]],        subject[0])
+        assert_schemas([schema.patternProperties['1'], schema.additionalItems], subject[1])
+        assert_schemas([schema.additionalProperties,  schema.additionalItems], subject[2])
         assert(subject.jsi_valid?)
         assert_is_a(Hash, subject.to_hash)
         assert_is_a(Array, subject.to_ary)
