@@ -253,8 +253,8 @@ describe 'JSI::Base hash' do
       subject.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'yields each element as_jsi' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
-      subject.each(as_jsi: true) { |_, v| assert_is_a(expect_modules.shift, v) }
+      expect_schemas = [[schema.properties['foo']], [schema.properties['bar']], []]
+      subject.each(as_jsi: true) { |_, v| assert_schemas(expect_schemas.shift, v) }
     end
 
     it 'gives the right number of arguments to proc and lambda' do
@@ -278,8 +278,8 @@ describe 'JSI::Base hash' do
       subject.to_hash.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'includes each element as_jsi' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
-      subject.to_hash(as_jsi: true).each { |_, v| assert_is_a(expect_modules.shift, v) }
+      expect_schemas = [[schema.properties['foo']], [schema.properties['bar']], []]
+      subject.to_hash(as_jsi: true).each { |_, v| assert_schemas(expect_schemas.shift, v) }
     end
   end
 

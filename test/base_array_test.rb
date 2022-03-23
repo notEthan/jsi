@@ -191,8 +191,8 @@ describe 'JSI::Base array' do
       subject.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'yields each element as_jsi' do
-      expect_modules = [schema.items[0].jsi_schema_module, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base]
-      subject.each(as_jsi: true) { |e| assert_is_a(expect_modules.shift, e) }
+      expect_schemas = [[schema.items[0]], [schema.items[1]], [schema.items[2]], []]
+      subject.each(as_jsi: true) { |e| assert_schemas(expect_schemas.shift, e) }
     end
   end
   describe 'to_ary' do
@@ -201,8 +201,8 @@ describe 'JSI::Base array' do
       subject.to_ary.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'includes each element as_jsi' do
-      expect_modules = [schema.items[0].jsi_schema_module, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base]
-      subject.to_ary(as_jsi: true).each { |e| assert_is_a(expect_modules.shift, e) }
+      expect_schemas = [[schema.items[0]], [schema.items[1]], [schema.items[2]], []]
+      subject.to_ary(as_jsi: true).each { |e| assert_schemas(expect_schemas.shift, e) }
     end
   end
 
