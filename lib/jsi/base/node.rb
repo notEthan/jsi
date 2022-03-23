@@ -1,10 +1,14 @@
 # frozen_string_literal: true
 
 module JSI
+  module Base::Enumerable
+    include ::Enumerable
+  end
+
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
   # is a Hash (or responds to `#to_hash`)
   module Base::HashNode
-    include Enumerable
+    include Base::Enumerable
 
     # yields each hash key and value of this node.
     #
@@ -80,7 +84,7 @@ module JSI
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
   # is an Array (or responds to `#to_ary`)
   module Base::ArrayNode
-    include Enumerable
+    include Base::Enumerable
 
     # yields each array element of this node.
     #
