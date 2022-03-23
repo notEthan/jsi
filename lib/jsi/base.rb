@@ -471,24 +471,6 @@ module JSI
       q.text '>'
     end
 
-    # an Array containing each item in this JSI, if this JSI's instance is enumerable. the same
-    # as `Enumerable#to_a`.
-    #
-    # @param kw keyword arguments are passed to {#[]} - see its keyword params
-    # @return [Array]
-    def to_a(**kw)
-      # TODO remove eventually (keyword argument compatibility)
-      # discard when all supported ruby versions delegate keywords to #each (3.0.1 breaks; 2.7.x warns)
-      # https://bugs.ruby-lang.org/issues/18289
-      ary = []
-      each(**kw) do |e|
-        ary << e
-      end
-      ary
-    end
-
-    alias_method :entries, :to_a
-
     # @private
     # @return [Array<String>]
     def jsi_object_group_text

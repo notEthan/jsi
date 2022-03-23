@@ -4,6 +4,23 @@ module JSI
   module Base::Enumerable
     include ::Enumerable
 
+    # an Array containing each item in this JSI.
+    #
+    # @param kw keyword arguments are passed to {Base#[]} - see its keyword params
+    # @return [Array]
+    def to_a(**kw)
+      # TODO remove eventually (keyword argument compatibility)
+      # discard when all supported ruby versions Enumerable#to_a delegate keywords to #each (3.0.1 breaks; 2.7.x warns)
+      # https://bugs.ruby-lang.org/issues/18289
+      ary = []
+      each(**kw) do |e|
+        ary << e
+      end
+      ary
+    end
+
+    alias_method :entries, :to_a
+
     # a jsonifiable representation of the node content
     # @return [Object]
     def as_json(*opt)
