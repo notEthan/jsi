@@ -25,7 +25,6 @@ describe 'JSI Schema inplace application' do
             schema.definitions['A'],
           ], subject)
           refute_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
         end
       end
       describe '$ref nested' do
@@ -47,7 +46,6 @@ describe 'JSI Schema inplace application' do
           ], subject)
           refute_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.definitions['A'].jsi_schema_module, subject)
-          assert_is_a(schema.definitions['B'].jsi_schema_module, subject)
         end
       end
       describe '$ref sibling applicators' do
@@ -67,7 +65,6 @@ describe 'JSI Schema inplace application' do
             schema.definitions['A'],
           ], subject)
           refute_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
           refute_is_a(schema.allOf[0].jsi_schema_module, subject)
         end
       end
@@ -89,8 +86,6 @@ describe 'JSI Schema inplace application' do
             schema.definitions['A'].allOf[0],
           ], subject)
           refute_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.definitions['A'].jsi_schema_module, subject)
-          assert_is_a(schema.definitions['A'].allOf[0].jsi_schema_module, subject)
         end
       end
     end
@@ -118,9 +113,6 @@ describe 'JSI Schema inplace application' do
             schema.allOf[0],
             schema.allOf[1],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.allOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.allOf[1].jsi_schema_module, subject)
         end
       end
       describe 'applicators through allOf' do
@@ -143,11 +135,6 @@ describe 'JSI Schema inplace application' do
             schema.allOf[1],
             schema.allOf[1].oneOf[0],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.allOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.allOf[0].allOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.allOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.allOf[1].oneOf[0].jsi_schema_module, subject)
         end
       end
       describe 'allOf failing validation' do
@@ -171,11 +158,6 @@ describe 'JSI Schema inplace application' do
             schema.allOf[0].allOf[1],
             schema.allOf[1],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.allOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.allOf[0].allOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.allOf[0].allOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.allOf[1].jsi_schema_module, subject)
           refute_is_a(schema.allOf[1].oneOf[0].jsi_schema_module, subject)
         end
       end
@@ -196,10 +178,7 @@ describe 'JSI Schema inplace application' do
             schema.anyOf[0],
             schema.anyOf[2],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.anyOf[2].jsi_schema_module, subject)
         end
       end
       describe 'applicators through anyOf' do
@@ -224,11 +203,6 @@ describe 'JSI Schema inplace application' do
             schema.anyOf[1],
             schema.anyOf[1].oneOf[0],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.anyOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.anyOf[0].anyOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.anyOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.anyOf[1].oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[2].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[2].allOf[0].jsi_schema_module, subject)
         end
@@ -250,7 +224,6 @@ describe 'JSI Schema inplace application' do
           assert_schemas([
             schema,
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[0].anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.anyOf[0].anyOf[1].jsi_schema_module, subject)
@@ -274,10 +247,8 @@ describe 'JSI Schema inplace application' do
             schema,
             schema.oneOf[2],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.oneOf[2].jsi_schema_module, subject)
         end
       end
       describe 'applicators through oneOf' do
@@ -301,12 +272,9 @@ describe 'JSI Schema inplace application' do
             schema.oneOf[1],
             schema.oneOf[1].anyOf[0],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.oneOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.oneOf[1].anyOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[2].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[2].allOf[0].jsi_schema_module, subject)
         end
@@ -328,7 +296,6 @@ describe 'JSI Schema inplace application' do
           assert_schemas([
             schema,
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[0].jsi_schema_module, subject)
           refute_is_a(schema.oneOf[0].oneOf[1].jsi_schema_module, subject)
@@ -360,8 +327,6 @@ describe 'JSI Schema inplace application' do
             schema,
             schema.dependencies['foo'],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
         end
       end
@@ -390,11 +355,6 @@ describe 'JSI Schema inplace application' do
             schema.dependencies['foo'].allOf[1],
             schema.dependencies['foo'].allOf[1].dependencies['foo']
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].allOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].allOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].allOf[1].dependencies['foo'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['foo'].allOf[1].dependencies['bar'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['bar'].oneOf[0].jsi_schema_module, subject)
@@ -425,11 +385,6 @@ describe 'JSI Schema inplace application' do
             schema.dependencies['foo'].allOf[1],
             schema.dependencies['foo'].allOf[1].dependencies['foo']
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].allOf[0].jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].allOf[1].jsi_schema_module, subject)
-          assert_is_a(schema.dependencies['foo'].allOf[1].dependencies['foo'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['foo'].allOf[1].dependencies['bar'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['bar'].jsi_schema_module, subject)
           refute_is_a(schema.dependencies['bar'].oneOf[0].jsi_schema_module, subject)
@@ -457,9 +412,7 @@ describe 'JSI Schema inplace application' do
             schema,
             schema['then'],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
-          assert_is_a(schema['then'].jsi_schema_module, subject)
           refute_is_a(schema['else'].jsi_schema_module, subject)
         end
       end
@@ -478,10 +431,8 @@ describe 'JSI Schema inplace application' do
             schema,
             schema['else'],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
           refute_is_a(schema['then'].jsi_schema_module, subject)
-          assert_is_a(schema['else'].jsi_schema_module, subject)
         end
       end
       describe 'applicators through if/then' do
@@ -510,13 +461,8 @@ describe 'JSI Schema inplace application' do
             schema['then'].allOf[0].oneOf[0],
             schema['then'].allOf[1],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
           refute_is_a(schema['if'].oneOf[0].jsi_schema_module, subject)
-          assert_is_a(schema['then'].jsi_schema_module, subject)
-          assert_is_a(schema['then'].allOf[0].jsi_schema_module, subject)
-          assert_is_a(schema['then'].allOf[0].oneOf[0].jsi_schema_module, subject)
-          assert_is_a(schema['then'].allOf[1].jsi_schema_module, subject)
           refute_is_a(schema['else'].jsi_schema_module, subject)
           refute_is_a(schema['else'].anyOf[0].jsi_schema_module, subject)
         end
@@ -539,12 +485,9 @@ describe 'JSI Schema inplace application' do
             schema['else'],
             schema['else']['else'],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
           refute_is_a(schema['then'].jsi_schema_module, subject)
-          assert_is_a(schema['else'].jsi_schema_module, subject)
           refute_is_a(schema['else']['if'].jsi_schema_module, subject)
-          assert_is_a(schema['else']['else'].jsi_schema_module, subject)
         end
       end
       describe 'if/then, failing validation' do
@@ -562,9 +505,7 @@ describe 'JSI Schema inplace application' do
             schema,
             schema['then'],
           ], subject)
-          assert_is_a(schema.jsi_schema_module, subject)
           refute_is_a(schema['if'].jsi_schema_module, subject)
-          assert_is_a(schema['then'].jsi_schema_module, subject)
           refute_is_a(schema['else'].jsi_schema_module, subject)
         end
       end

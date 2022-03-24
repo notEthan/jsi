@@ -22,7 +22,6 @@ describe 'JSI Schema child application' do
           assert_schemas([
             schema.items,
           ], subject[0])
-          assert_is_a(schema.items.jsi_schema_module, subject[0])
         end
       end
       describe 'items array' do
@@ -37,7 +36,6 @@ describe 'JSI Schema child application' do
           assert_schemas([
             schema.items[0],
           ], subject[0])
-          assert_is_a(schema.items[0].jsi_schema_module, subject[0])
           refute_is_a(schema.items[0].jsi_schema_module, subject[1])
         end
       end
@@ -57,8 +55,6 @@ describe 'JSI Schema child application' do
           assert_schemas([
             schema.additionalItems,
           ], subject[1])
-          assert_is_a(schema.items[0].jsi_schema_module, subject[0])
-          assert_is_a(schema.additionalItems.jsi_schema_module, subject[1])
         end
       end
       describe 'additionalItems without items' do
@@ -100,8 +96,6 @@ describe 'JSI Schema child application' do
           ], subject[2])
           assert_empty(subject[3].jsi_schemas)
           refute_is_a(schema.contains.jsi_schema_module, subject[0])
-          assert_is_a(schema.contains.jsi_schema_module, subject[1])
-          assert_is_a(schema.contains.jsi_schema_module, subject[2])
           refute_is_a(schema.contains.jsi_schema_module, subject[3])
         end
       end
@@ -143,7 +137,6 @@ describe 'JSI Schema child application' do
           assert_schemas([
             schema.properties['foo'],
           ], subject['foo'])
-          assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
         end
       end
       describe 'additionalProperties' do
@@ -163,8 +156,6 @@ describe 'JSI Schema child application' do
           assert_schemas([
             schema.additionalProperties,
           ], subject['bar'])
-          assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
-          assert_is_a(schema.additionalProperties.jsi_schema_module, subject['bar'])
         end
       end
       describe 'additionalProperties without properties' do
@@ -179,7 +170,6 @@ describe 'JSI Schema child application' do
           assert_schemas([
             schema.additionalProperties,
           ], subject['foo'])
-          assert_is_a(schema.additionalProperties.jsi_schema_module, subject['foo'])
         end
       end
       describe 'additionalProperties without properties' do
@@ -194,7 +184,6 @@ describe 'JSI Schema child application' do
           assert_schemas([
             schema.additionalProperties,
           ], subject['foo'])
-          assert_is_a(schema.additionalProperties.jsi_schema_module, subject['foo'])
         end
       end
       describe 'properties, additionalProperties, patternProperties' do
@@ -237,25 +226,20 @@ describe 'JSI Schema child application' do
             schema.additionalProperties,
           ], subject['qux'])
 
-          assert_is_a(schema.properties['foo'].jsi_schema_module, subject['foo'])
           refute_is_a(schema.properties['baz'].jsi_schema_module, subject['foo'])
           refute_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['foo'])
           refute_is_a(schema.additionalProperties.jsi_schema_module, subject['foo'])
 
           refute_is_a(schema.properties['foo'].jsi_schema_module, subject['bar'])
           refute_is_a(schema.properties['baz'].jsi_schema_module, subject['bar'])
-          assert_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['bar'])
           refute_is_a(schema.additionalProperties.jsi_schema_module, subject['bar'])
 
           refute_is_a(schema.properties['foo'].jsi_schema_module, subject['baz'])
-          assert_is_a(schema.properties['baz'].jsi_schema_module, subject['baz'])
-          assert_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['baz'])
           refute_is_a(schema.additionalProperties.jsi_schema_module, subject['baz'])
 
           refute_is_a(schema.properties['foo'].jsi_schema_module, subject['qux'])
           refute_is_a(schema.properties['baz'].jsi_schema_module, subject['qux'])
           refute_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['qux'])
-          assert_is_a(schema.additionalProperties.jsi_schema_module, subject['qux'])
         end
       end
     end
