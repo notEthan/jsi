@@ -46,8 +46,49 @@ require 'minitest/reporters'
 
 module Minitest
   module WithEndSummary
+    attr_reader :quiet
+
+    def puts(*)
+      super unless quiet
+    end
+
+    def print(*)
+      super unless quiet
+    end
+
+    # @param sigfig [Integer] minimum number of digits to include (not including leading 0s if duration < 1s)
+    def format_duration(duration, sigfig: 3)
+      return('[negative duration]') if duration < 0 # duration should be positive, but nonmonotonic clock is possible
+
+      lg = duration == 0 ? 0 : Math.log10(duration).floor
+      if lg - sigfig + 1 < 0
+        seconds = "%.#{sigfig - lg - 1}f" % (duration % 60)
+      else
+        seconds = "%is" % (duration % 60)
+      end
+
+      if duration > 60 * 60
+        "%ih %im %ss" % [duration / 60 / 60, duration / 60 % 60, seconds]
+      elsif duration > 60
+        "%im %ss" % [duration / 60, seconds]
+      else
+        "%ss" % seconds
+      end
+    end
+
     def report
+      @quiet = true
       super
+      @quiet = false
+
+      puts
+      puts("Finished in #{format_duration(total_time)}")
+      print('%d tests, %d assertions, ' % [count, assertions])
+      color = failures.zero? && errors.zero? ? :green : :red
+      print(send(color, '%d failures, %d errors, ' % [failures, errors]))
+      print(yellow('%d skips' % skips))
+      puts
+
       skip_messages = results.select(&:skipped?).group_by { |r| r.failure.message }
       skip_messages.sort_by { |m, rs| [-rs.size, m] }.each do |msg, rs|
         puts "#{yellow("skipped #{rs.size}")}: #{msg}"
