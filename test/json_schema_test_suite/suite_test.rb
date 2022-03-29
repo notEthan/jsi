@@ -30,14 +30,12 @@ describe 'JSON Schema Test Suite' do
     drafts.each do |draft|
       name = draft[:name]
       metaschema = draft[:metaschema]
-      JSI::Util.ycomb do |rec|
-        proc do |subpath|
-          path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests').join(*subpath)
-          if path.directory?
-            with_directory = false
-            path.children(with_directory).each { |c| rec.call(subpath + [c.to_s]) }
-          elsif path.file? && path.to_s =~ /\.json\z/
-            describe(subpath.join('/')) do
+
+          base = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests')
+          subpaths = Dir.chdir(base) { Dir.glob(File.join(name, '**/*.json')) }
+          subpaths.each do |subpath|
+            path = base.join(subpath)
+            describe(subpath) do
               begin
                 tests_desc_object = ::JSON.parse(path.open('r:UTF-8').read)
               rescue JSON::ParserError => e
@@ -106,8 +104,6 @@ describe 'JSON Schema Test Suite' do
               end
             end
           end
-        end
-      end.call([name])
     end
   end
 end
