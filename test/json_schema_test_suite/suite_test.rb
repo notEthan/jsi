@@ -21,7 +21,6 @@ JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('
   end
 
 describe 'JSON Schema Test Suite' do
-  describe 'validity' do
     drafts = [
       {name: 'draft4', metaschema: JSI::JSONSchemaOrgDraft04.schema},
       {name: 'draft6', metaschema: JSI::JSONSchemaOrgDraft06.schema},
@@ -58,9 +57,8 @@ describe 'JSON Schema Test Suite' do
                     metaschema.new_schema(tests_desc.jsi_instance['schema'])
                   end
                   tests_desc.tests.each do |test|
-                    describe(test.description) do
-                      let(:jsi) { schema.new_jsi(test.jsi_instance['data']) }
-                      it(test.valid ? 'is valid' : 'is invalid') do
+                      it(test.description) do
+                        jsi = schema.new_jsi(test.jsi_instance['data'])
                         result = jsi.jsi_validate
                         assert_equal(result.valid?, jsi.jsi_valid?)
                         if test.valid != result.valid?
@@ -98,12 +96,10 @@ describe 'JSON Schema Test Suite' do
                           # :nocov:
                         end
                       end
-                    end
                   end
                 end
               end
             end
           end
     end
-  end
 end
