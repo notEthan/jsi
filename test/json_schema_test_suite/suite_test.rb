@@ -2,18 +2,12 @@ require_relative '../test_helper'
 
 JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').open('r:UTF-8').read))
 
-JSI::Util.ycomb do |rec|
-  proc do |subpath|
-    path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes').join(*subpath)
-
-    if path.directory?
-      with_directory = false
-      path.children(with_directory).each { |c| rec.call(subpath + [c.to_s]) }
-    elsif path.file? && path.to_s =~ /\.json\z/
-      remote_content = ::JSON.parse(path.open('r:UTF-8').read)
-      uri = File.join('http://localhost:1234/', *subpath)
+  Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
+    Dir.glob('**/*.json').each do |subpath|
+      remote_content = ::JSON.parse(File.open(subpath, 'r:UTF-8').read)
+      uri = File.join('http://localhost:1234/', subpath)
       JSI.schema_registry.autoload_uri(uri) do
-        if subpath == ['subSchemas.json']
+        if subpath == 'subSchemas.json'
           subSchemas_schema = JSI.new_schema({
             '$schema' => 'http://json-schema.org/draft-07/schema',
             'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
@@ -25,7 +19,6 @@ JSI::Util.ycomb do |rec|
       end
     end
   end
-end.call([])
 
 describe 'JSON Schema Test Suite' do
   describe 'validity' do
