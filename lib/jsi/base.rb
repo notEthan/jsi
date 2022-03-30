@@ -18,6 +18,8 @@ module JSI
     autoload :ArrayNode, 'jsi/base/node'
     autoload :HashNode, 'jsi/base/node'
     autoload :StringNode, 'jsi/base/node'
+    autoload(:Mutable, 'jsi/base/mutability')
+    autoload(:Immutable, 'jsi/base/mutability')
 
     include Schema::SchemaAncestorNode
 
