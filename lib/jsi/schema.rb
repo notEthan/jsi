@@ -155,6 +155,9 @@ module JSI
       # By default, the `schema_content` will have any Symbol keys of Hashes replaced with Strings
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
       #
+      # Schemas instantiated with `new_schema` are immutable, their content transformed using
+      # the `to_immutable` param.
+      #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [#to_str, Addressable::URI] The retrieval URI of the schema document.
       #   If specified, the root schema will be identified by this URI, in addition
@@ -198,6 +201,7 @@ module JSI
           schema_registry: schema_registry,
           stringify_symbol_keys: stringify_symbol_keys,
           to_immutable: to_immutable,
+          mutable: false,
         )
 
         schema_jsi.jsi_schema_module_exec(&block) if block
@@ -280,6 +284,9 @@ module JSI
       # {Schema::MetaSchema#new_schema meta-schema} or its
       # {SchemaModule::MetaSchemaModule#new_schema schema module}, e.g.
       # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`
+      #
+      # Schemas instantiated with `new_schema` are immutable, their content transformed using
+      # the `to_immutable` param.
       #
       # @param schema_content (see Schema::MetaSchema#new_schema)
       # @param default_metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
