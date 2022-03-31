@@ -114,6 +114,7 @@ module JSI
 
       jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
         includes: SchemaClasses.includes_for(instance),
+        mutable: true,
       )
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,

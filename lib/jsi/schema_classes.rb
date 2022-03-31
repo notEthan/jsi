@@ -108,21 +108,25 @@ module JSI
       # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
       # @param includes [Enumerable<Module>] modules which will be included on the class
       # @return [Class subclassing JSI::Base]
-      def class_for_schemas(schemas, includes: )
+      def class_for_schemas(schemas, includes: , mutable: )
         @class_for_schemas_map[
           schemas: SchemaSet.ensure_schema_set(schemas),
           includes: Util.ensure_module_set(includes),
+          mutable: mutable,
         ]
       end
 
-      private def class_for_schemas_compute(schemas: , includes: )
+      private def class_for_schemas_compute(schemas: , includes: , mutable: )
           Class.new(Base) do
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
 
             define_singleton_method(:jsi_class_includes) { includes }
 
-            conflicting_modules = Set[JSI::Base] + includes + schemas.map(&:jsi_schema_module)
+            mutability_module = mutable ? Base::Mutable : Base::Immutable
+            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schemas.map(&:jsi_schema_module)
+
+            include(mutability_module)
 
             reader_modules = schemas.map do |schema|
               JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
@@ -132,10 +136,12 @@ module JSI
             define_method(:jsi_property_readers) { readers }
             define_singleton_method(:jsi_property_readers) { readers }
 
-            writer_modules = schemas.map do |schema|
-              JSI::SchemaClasses.schema_property_writer_module(schema, conflicting_modules: conflicting_modules)
+            if mutable
+              writer_modules = schemas.map do |schema|
+                JSI::SchemaClasses.schema_property_writer_module(schema, conflicting_modules: conflicting_modules)
+              end
+              writer_modules.each { |m| include(m) }
             end
-            writer_modules.each { |m| include m }
 
             includes.each { |m| include(m) }
             schemas.each { |schema| include(schema.jsi_schema_module) }

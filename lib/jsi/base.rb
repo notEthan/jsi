@@ -698,6 +698,7 @@ module JSI
     def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )
         jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas,
           includes: includes,
+          mutable: jsi_mutable?,
         )
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
