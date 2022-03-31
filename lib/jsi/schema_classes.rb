@@ -93,7 +93,7 @@ module JSI
       def bootstrap_schema_class(modules)
         modules = Util.ensure_module_set(modules)
         jsi_memoize(__method__, modules: modules) do |modules: |
-          Class.new(MetaschemaNode::BootstrapSchema).instance_exec(modules) do |modules|
+          Class.new(MetaschemaNode::BootstrapSchema) do
             define_singleton_method(:schema_implementation_modules) { modules }
             define_method(:schema_implementation_modules) { modules }
             modules.each { |mod| include(mod) }
@@ -109,8 +109,8 @@ module JSI
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
         jsi_memoize(:module_for_schema, schema: schema) do |schema: |
-          Module.new.tap do |m|
-            m.module_eval do
+          Module.new do
+            begin
               define_singleton_method(:schema) { schema }
 
               extend SchemaModule
@@ -153,8 +153,8 @@ module JSI
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         Schema.ensure_schema(schema)
         jsi_memoize(:accessor_module_for_schema, schema: schema, conflicting_modules: conflicting_modules, setters: setters) do |schema: , conflicting_modules: , setters: |
-          Module.new.tap do |m|
-            m.module_eval do
+          Module.new do
+            begin
               define_singleton_method(:inspect) { '(JSI Schema Accessor Module)' }
 
               conflicting_instance_methods = conflicting_modules.map do |mod|
