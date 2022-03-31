@@ -87,7 +87,7 @@ module JSI
         includes = Util.ensure_module_set(includes)
 
         jsi_memoize(:class_for_schemas, schemas: schemas, includes: includes) do |schemas: , includes: |
-          Class.new(Base).instance_exec(schemas: schemas, includes: includes) do |schemas: , includes: |
+          Class.new(Base) do
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
             includes.each { |m| include(m) }
