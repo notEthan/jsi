@@ -157,7 +157,7 @@ module JSI
             m.module_eval do
               define_singleton_method(:inspect) { '(JSI Schema Accessor Module)' }
 
-              conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
+              conflicting_instance_methods = conflicting_modules.map do |mod|
                 mod.instance_methods + mod.private_instance_methods
               end.inject(Set.new, &:|)
 
