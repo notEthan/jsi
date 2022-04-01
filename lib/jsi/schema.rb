@@ -307,7 +307,7 @@ module JSI
     def schema_absolute_uri
       if respond_to?(:id_without_fragment) && id_without_fragment
         if jsi_schema_base_uri
-          Addressable::URI.parse(jsi_schema_base_uri).join(id_without_fragment)
+          jsi_schema_base_uri.join(id_without_fragment)
         elsif id_without_fragment.absolute?
           id_without_fragment
         else
