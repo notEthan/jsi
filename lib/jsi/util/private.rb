@@ -48,6 +48,20 @@ module JSI
       return true
     end
 
+    # string or URI → frozen URI
+    # @return [Addressable::URI]
+    def uri(uri)
+      if uri.is_a?(Addressable::URI)
+        if uri.frozen?
+          uri
+        else
+          uri.dup.freeze
+        end
+      else
+        Addressable::URI.parse(uri).freeze
+      end
+    end
+
     # this is the Y-combinator, which allows anonymous recursive functions. for a simple example,
     # to define a recursive function to return the length of an array:
     #
