@@ -76,7 +76,7 @@ module JSI
     # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
-      uri = Addressable::URI.parse(uri)
+      uri = Util.uri(uri)
       ensure_uri_absolute(uri)
       @autoload_uris[uri] = block
       nil
@@ -86,7 +86,7 @@ module JSI
     # @return [JSI::Base]
     # @raise [JSI::SchemaRegistry::ResourceNotFound]
     def find(uri)
-      uri = Addressable::URI.parse(uri)
+      uri = Util.uri(uri)
       ensure_uri_absolute(uri)
       if @autoload_uris.key?(uri) && !@resources.key?(uri)
         autoloaded = @autoload_uris[uri].call

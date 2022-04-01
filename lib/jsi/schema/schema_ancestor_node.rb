@@ -61,7 +61,7 @@ module JSI
         unless jsi_schema_base_uri.respond_to?(:to_str)
           raise(TypeError, "jsi_schema_base_uri must be string or Addressable::URI; got: #{jsi_schema_base_uri.inspect}")
         end
-        @jsi_schema_base_uri = Addressable::URI.parse(jsi_schema_base_uri).freeze
+        @jsi_schema_base_uri = Util.uri(jsi_schema_base_uri)
         unless @jsi_schema_base_uri.absolute? && !@jsi_schema_base_uri.fragment
           raise(ArgumentError, "jsi_schema_base_uri must be an absolute URI with no fragment; got: #{jsi_schema_base_uri.inspect}")
         end

@@ -62,7 +62,7 @@ module JSI
       # @return [Addressable::URI, nil]
       def id_without_fragment
         if id
-          id_uri = Addressable::URI.parse(id)
+          id_uri = Util.uri(id)
           if id_uri.merge(fragment: nil).empty?
             # fragment-only id is just an anchor
             # e.g. #foo
@@ -94,7 +94,7 @@ module JSI
       # @return [String]
       def anchor
         if id
-          id_uri = Addressable::URI.parse(id)
+          id_uri = Util.uri(id)
           if id_uri.fragment == ''
             nil
           else
