@@ -129,7 +129,7 @@ module JSI
       # a URI consisting of a fragment containing this pointer's fragment string representation
       # @return [Addressable::URI]
       def uri
-        Addressable::URI.new(fragment: fragment)
+        Addressable::URI.new(fragment: fragment).freeze
       end
 
       # whether this pointer is empty, i.e. it has no tokens

@@ -74,7 +74,7 @@ module JSI
           elsif id_uri.fragment == ''
             # empty fragment
             # e.g. http://json-schema.org/draft-07/schema#
-            id_uri.merge(fragment: nil)
+            id_uri.merge(fragment: nil).freeze
           elsif jsi_schema_base_uri && jsi_schema_base_uri.join(id_uri).merge(fragment: nil) == jsi_schema_base_uri
             # the id, resolved against the base uri, consists of the base uri plus an anchor fragment.
             # so there's no non-fragment id.
@@ -83,7 +83,7 @@ module JSI
             nil
           else
             # e.g. http://localhost:1234/bar#foo
-            id_uri.merge(fragment: nil)
+            id_uri.merge(fragment: nil).freeze
           end
         else
           nil
@@ -322,7 +322,7 @@ module JSI
     def schema_absolute_uri
       if respond_to?(:id_without_fragment) && id_without_fragment
         if jsi_schema_base_uri
-          jsi_schema_base_uri.join(id_without_fragment)
+          jsi_schema_base_uri.join(id_without_fragment).freeze
         elsif id_without_fragment.absolute?
           id_without_fragment
         else
@@ -364,14 +364,14 @@ module JSI
       parent_schemas.each do |parent_schema|
         if anchored
           if parent_schema.jsi_anchor_subschema(anchor) == self
-            yield parent_schema.schema_absolute_uri.merge(fragment: anchor)
+            yield parent_schema.schema_absolute_uri.merge(fragment: anchor).freeze
           else
             anchored = false
           end
         end
 
         relative_ptr = jsi_ptr.relative_to(parent_schema.jsi_ptr)
-        yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
+        yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment).freeze
       end
 
       nil

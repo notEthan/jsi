@@ -36,7 +36,7 @@ module JSI
         end
       }
 
-      ref_uri_nofrag = ref_uri.merge(fragment: nil)
+      ref_uri_nofrag = ref_uri.merge(fragment: nil).freeze
 
       if ref_uri_nofrag.empty?
         unless ref_schema
@@ -57,7 +57,7 @@ module JSI
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
         elsif ref_schema && ref_schema.jsi_resource_ancestor_uri
-          ref_abs_uri = ref_schema.jsi_resource_ancestor_uri.join(ref_uri_nofrag)
+          ref_abs_uri = ref_schema.jsi_resource_ancestor_uri.join(ref_uri_nofrag).freeze
         else
           ref_abs_uri = nil
         end
