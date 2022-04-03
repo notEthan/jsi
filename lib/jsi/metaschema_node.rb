@@ -23,6 +23,8 @@ module JSI
   class MetaschemaNode < Base
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
 
+    include(Base::Immutable)
+
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality
