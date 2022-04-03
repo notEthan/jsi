@@ -172,12 +172,15 @@ module JSI
 
     # the content of this node in our {#jsi_document} at our {#jsi_ptr}. the same as {#jsi_instance}.
     def jsi_node_content
-      content = jsi_ptr.evaluate(jsi_document)
-      content
+      # stub method for doc, overridden by Mutable/Immutable
     end
 
-    # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
-    alias_method :jsi_instance, :jsi_node_content
+    # The JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI.
+    # The same as {#jsi_node_content} - 'node content' is usually preferable terminology, to avoid
+    # ambiguity in the heavily overloaded term 'instance'.
+    def jsi_instance
+      jsi_node_content
+    end
 
     # the schemas indicated as describing this instance, prior to inplace application.
     #

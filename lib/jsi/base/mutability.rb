@@ -2,6 +2,10 @@
 
 module JSI
   module Base::Mutable
+    def jsi_node_content
+      jsi_ptr.evaluate(jsi_document)
+    end
+
     def jsi_mutable?
       true
     end
@@ -13,6 +17,8 @@ module JSI
   end
 
   module Base::Immutable
+    attr_reader(:jsi_node_content)
+
     def jsi_mutable?
       false
     end
@@ -20,6 +26,7 @@ module JSI
     private
 
     def jsi_mutability_initialize
+      @jsi_node_content = @jsi_ptr.evaluate(@jsi_document)
     end
   end
 end
