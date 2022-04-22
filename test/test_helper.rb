@@ -101,11 +101,21 @@ module Minitest
       end
     end
   end
+
+  class JSISpecReporter < Minitest::Reporters::SpecReporter
+    def record_print_status(test)
+      test_name = test.name.gsub(/^test_: /, 'test:')
+      print pad_test(test_name)
+      print_colored_status(test)
+      print(" (#{format_duration(test.time, sigfig: 2)})") unless test.time.nil?
+      puts
+    end
+  end
 end
 
 mkreporters = {
   'spec' => -> {
-    Minitest::Reporters::SpecReporter.new
+    Minitest::JSISpecReporter.new
   },
   'default' => -> {
     Minitest::Reporters::DefaultReporter.new(
