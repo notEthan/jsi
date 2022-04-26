@@ -5,8 +5,9 @@ namespace 'test' do
   require "ansi/code"
 
   class JSITestTask < Rake::TestTask
-    def initialize(name: , title: , description: nil, pattern: nil, test_files: nil)
+    def initialize(name: , title: , description: nil, pattern: nil, test_files: nil, env: {})
       @title = title
+      @env = env
       super(name) do |t|
         t.description = description
         t.pattern = pattern
@@ -16,13 +17,18 @@ namespace 'test' do
       end
     end
 
-    # I want a title printed. #ruby isn't the right entry point for this, but there isn't a better one
-    def ruby(*)
+    # hack in some things
+    # - print task title
+    # - support @env hash
+    # method #ruby isn't the right entry point for these, but there isn't a better one
+    # overrides #ruby defined on FileUtils in rake/file_utils.rb
+    # that #ruby handles more params but Rake::TestTask only calls it with one ruby command args string + block
+    def ruby(cmd_args, &block)
       puts
       puts "#{ANSI::Code.magenta('𐡷')} #{ANSI::Code.cyan(@title.upcase)} #{ANSI::Code.magenta('𐡸')}"
       puts
 
-      super
+      sh(@env, "#{RUBY} #{cmd_args}", &block)
     end
   end
 
@@ -33,21 +39,17 @@ namespace 'test' do
     pattern: "test/*_test.rb",
   )
 
-  task('extdep:env')  { ENV['JSI_TEST_EXTDEP'] = 'y' }
-  task('extdep:unenv') { ENV.delete('JSI_TEST_EXTDEP') }
-
   # tests which rely on libraries jsi does not itself depend on are run separately.
   # if code is added to JSI which inadvertantly relies on these, and the tests require that dependency,
   # then tests might pass when applications without that dependency would fail.
   # the JSI_TEST_EXTDEP variable causes the :extdep bundler group in the Gemfile to be set up.
   JSITestTask.new(
-    name: 'extdep:run',
+    name: 'extdep',
     title: 'external dependencies',
     description: 'run tests which rely on libraries JSI does not itself depend on',
     pattern: "test/extdep/*_test.rb",
+    env: {'JSI_TEST_EXTDEP' => 'y'},
   )
-
-  task('extdep' => ['extdep:env', 'extdep:run', 'extdep:unenv'])
 end
 
 desc 'run all tests'
