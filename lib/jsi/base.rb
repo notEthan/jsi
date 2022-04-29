@@ -383,7 +383,7 @@ module JSI
             defaults = Set.new
             subinstance_schemas.each do |subinstance_schema|
               if subinstance_schema.keyword?('default')
-                defaults << subinstance_schema['default']
+                defaults << subinstance_schema.jsi_node_content['default']
               end
             end
           end
