@@ -685,7 +685,10 @@ module JSI
     end
 
     def jsi_child_node_map
-      jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , child_indicated_schemas: , child_applied_schemas: , includes: |
+      jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }, &method(:jsi_child_node_compute))
+    end
+
+    def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )
         jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas, includes: includes)
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
@@ -694,7 +697,6 @@ module JSI
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
         )
-      end
     end
 
     def jsi_child_indicated_schemas_compute(token: , content: )
