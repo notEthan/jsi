@@ -241,10 +241,13 @@ module JSI
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?
             raise(ArgumentError, [
-              "when instantiating a schema with no `$schema` property, you must specify the metaschema.",
-              "you may pass the `default_metaschema` param to this method.",
-              "JSI::Schema.default_metaschema may be set to an application-wide default metaschema.",
-              "you may alternatively use new_schema on the appropriate metaschema or its schema module.",
+              "When instantiating a schema with no `$schema` property, you must specify its metaschema by one of these methods:",
+              "- pass the `default_metaschema` param to this method",
+              "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaOrgDraft07)",
+              "- invoke `new_schema` on the appropriate metaschema or its schema module",
+              "  e.g.: JSI::JSONSchemaOrgDraft07.new_schema(...)",
+              "- set JSI::Schema.default_metaschema to an application-wide default metaschema initially",
+              "  e.g.: JSI::Schema.default_metaschema = JSI::JSONSchemaOrgDraft07",
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
