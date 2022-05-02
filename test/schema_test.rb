@@ -18,11 +18,6 @@ describe JSI::Schema do
       assert_equal(%q($schema URI indicates a schema which does not describe schemas: "tag:guqh"), e.message)
     end
 
-    it 'cannot instantiate from some unknown object' do
-      err = assert_raises(TypeError) { JSI.new_schema(Object.new, default_metaschema: JSI::JSONSchemaOrgDraft07) }
-      assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
-    end
-
     it 'cannot instantiate from a JSI Schema' do
       err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
       assert_equal("Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}", err.message)

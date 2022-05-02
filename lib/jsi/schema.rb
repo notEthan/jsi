@@ -312,10 +312,8 @@ module JSI
           else
             default_metaschema_new_schema.call
           end
-        elsif [true, false].include?(schema_content)
-          default_metaschema_new_schema.call
         else
-          raise(TypeError, "cannot instantiate Schema from: #{schema_content.pretty_inspect.chomp}")
+          default_metaschema_new_schema.call
         end
       end
 
