@@ -123,16 +123,38 @@ module JSI
       dtf = proc { |o| deep_to_frozen(o, not_implemented: not_implemented) }
       if object.instance_of?(Hash)
         out = {}
+        identical = object.frozen?
         object.each do |k, v|
-          out[dtf[k]] = dtf[v]
+          fk = dtf[k]
+          fv = dtf[v]
+          identical &&= fk.__id__ == k.__id__
+          identical &&= fv.__id__ == v.__id__
+          out[fk] = fv
         end
-        out.freeze
+        if identical
+          object
+        else
+          out.freeze
+        end
       elsif object.instance_of?(Array)
-        object.map do |e|
-          dtf[e]
-        end.freeze
+        identical = object.frozen?
+        out = []
+        object.each do |e|
+          fe = dtf[e]
+          identical &&= fe.__id__ == e.__id__
+          out << fe
+        end
+        if identical
+          object
+        else
+          out.freeze
+        end
       elsif object.instance_of?(String)
-        object.dup.freeze
+        if object.frozen?
+          object
+        else
+          object.dup.freeze
+        end
       elsif CLASSES_ALWAYS_FROZEN.any? { |c| object.is_a?(c) } # note: `is_a?`, not `instance_of?`, here because instance_of?(Integer) is false until Fixnum/Bignum is gone. this is fine here; there is no concern of subclasses of CLASSES_ALWAYS_FROZEN duping/freezing differently (as with e.g. ActiveSupport::HashWithIndifferentAccess)
         object
       else
