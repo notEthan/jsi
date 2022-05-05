@@ -138,6 +138,7 @@ module JSI
       end
 
       jsi_memomaps_initialize
+      jsi_mutability_initialize
 
       if jsi_instance.is_a?(JSI::Base)
         raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
