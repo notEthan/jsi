@@ -320,6 +320,17 @@ module JSI
       descendent
     end
 
+    # yields each token (array index or hash key) identifying a child node.
+    # yields nothing if this node is not complex or has no children.
+    #
+    # @yield [String, Integer] each child token
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def jsi_each_child_token
+      # note: overridden by Base::HashNode, Base::ArrayNode
+      return to_enum(__method__) { 0 } unless block_given?
+      nil
+    end
+
     # subscripts to return a child value identified by the given token.
     #
     # @param token [String, Integer, Object] an array index or hash key (JSON object property name)

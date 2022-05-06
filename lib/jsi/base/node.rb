@@ -36,6 +36,13 @@ module JSI
   module Base::HashNode
     include Base::Enumerable
 
+    # (see Base#jsi_each_child_token)
+    def jsi_each_child_token(&block)
+      return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
+      jsi_node_content_hash_pubsend(:each_key, &block)
+      nil
+    end
+
     # yields each hash key and value of this node.
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
@@ -111,6 +118,13 @@ module JSI
   # is an Array (or responds to `#to_ary`)
   module Base::ArrayNode
     include Base::Enumerable
+
+    # (see Base#jsi_each_child_token)
+    def jsi_each_child_token(&block)
+      return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
+      jsi_node_content_ary_pubsend(:each_index, &block)
+      nil
+    end
 
     # yields each array element of this node.
     #
