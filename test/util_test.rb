@@ -52,6 +52,51 @@ describe JSI::Util do
       assert_equal(expected, actual)
     end
   end
+
+  describe 'deep_to_frozen' do
+    it 'returns a frozen copy of a nested structure' do
+      o = {'a' => ['b'], ['c', 0] => {}}
+      of = JSI::Util.deep_to_frozen(o)
+      refute_frozen(o)
+      refute_frozen(o['a'])
+      refute_frozen(o.keys.last)
+      refute_frozen(o[['c']])
+      assert_frozen(of)
+      assert_frozen(of['a'])
+      assert_frozen(of['a'][0])
+      assert_frozen(of.keys.last)
+      assert_frozen(of.keys.last[0])
+      assert_frozen(of.keys.last[1])
+      assert_frozen(of[['c']])
+    end
+
+    it 'returns an already-frozen structure' do
+      o = {'a'.freeze => ['b'.freeze].freeze, ['c'.freeze].freeze => {}.freeze}.freeze
+      of = JSI::Util.deep_to_frozen(o)
+      assert_equal(o.__id__, of.__id__)
+    end
+
+    it 'uses already-frozen parts of a structure' do
+      o = {'a' => ['b'.freeze].freeze, ['c', 0] => {}}
+      of = JSI::Util.deep_to_frozen(o)
+      refute_frozen(o)
+      assert_equal(o['a'].__id__, of['a'].__id__)
+      refute_frozen(o.keys.last)
+      refute_frozen(o[['c']])
+      assert_frozen(of)
+      assert_frozen(of.keys.last)
+      assert_frozen(of.keys.last[0])
+      assert_frozen(of[['c']])
+    end
+
+    it 'errors' do
+      e = assert_raises(NotImplementedError) { JSI::Util.deep_to_frozen(Object.new) }
+      assert_match(/\Adeep_to_frozen not implemented for class: Object\nobject: #<Object:0x\w+>\z/, e.message)
+
+      assert_equal(0, JSI::Util.deep_to_frozen(Object.new, not_implemented: proc { 0 }))
+    end
+  end
+
   describe 'ensure_module_set' do
     it 'raises' do
       err = assert_raises(TypeError) { JSI::Util.ensure_module_set([0]) }
