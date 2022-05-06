@@ -181,6 +181,14 @@ class JSISpec < Minitest::Spec
     assert !obj.is_a?(mod), msg
   end
 
+  def assert_frozen(object)
+    assert_predicate(object, :frozen?)
+  end
+
+  def refute_frozen(object)
+    refute_predicate(object, :frozen?)
+  end
+
   # @param schemas [Enumerable<JSI::Schema>]
   # @param instance [JSI::Base]
   def assert_schemas(schemas, instance)
