@@ -414,8 +414,8 @@ module JSI
     end
 
     # yields the content of this JSI's instance. the block must result in
-    # a modified copy of the yielded instance (not destructively modifying it)
-    # which will be used to instantiate a new JSI with the modified content.
+    # a modified copy of the yielded instance (not modified in place, which would alter this JSI
+    # as well) which will be used to instantiate and return a new JSI with the modified content.
     #
     # the result may have different schemas which describe it than this JSI's schemas,
     # if conditional applicator schemas apply differently to the modified instance.
