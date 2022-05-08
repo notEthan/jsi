@@ -55,6 +55,46 @@ describe JSI::Base do
       assert_schema(schema.definitions['a'], subject.ab)
       assert_schema(schema.definitions['b'], subject.ab)
     end
+
+    it 'keeps the same child JSI when applied child schemas are the same' do
+      ab = subject.ab
+      subject.ab['x'] = 'y'
+      assert_equal(ab.__id__, subject.ab.__id__)
+      subject.ab = {'type' => 'a', 'x' => 'z'}
+      assert_equal(ab.__id__, subject.ab.__id__)
+
+      subject.ab.type = 'b'
+      refute_equal(ab.__id__, subject.ab.__id__)
+      ab = subject.ab
+      subject.ab['x'] = 'y'
+      assert_equal(ab.__id__, subject.ab.__id__)
+      subject.ab = {'type' => 'b', 'x' => 'z'}
+      assert_equal(ab.__id__, subject.ab.__id__)
+
+      subject.ab = {'type' => 'c'}
+      refute_equal(ab.__id__, subject.ab.__id__)
+      ab = subject.ab
+      subject.ab['x'] = 'y'
+      assert_equal(ab.__id__, subject.ab.__id__)
+      subject.ab = {'type' => 'c', 'x' => 'z'}
+      assert_equal(ab.__id__, subject.ab.__id__)
+    end
+
+    it 'recomputes child JSI when applied child schemas are the same but included modules change' do
+      subject.ab = {'type' => 'c'}
+      ab = subject.ab
+      subject.ab = ['ary']
+      refute_equal(ab.__id__, subject.ab.__id__)
+      ab = subject.ab
+      subject.ab = []
+      assert_equal(ab.__id__, subject.ab.__id__)
+      ab = subject.ab
+      subject.ab = 0
+      refute_equal(ab.__id__, subject.ab(as_jsi: true).__id__)
+      ab = subject.ab(as_jsi: true)
+      subject.ab = false
+      assert_equal(ab.__id__, subject.ab(as_jsi: true).__id__)
+    end
   end
 
   describe 'instance mutation affecting adjacent items' do
