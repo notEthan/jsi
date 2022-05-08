@@ -387,8 +387,8 @@ module JSI
     def jsi_child(token, as_jsi: )
       child_content = jsi_node_content_child(token)
 
-      child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
-      child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(child_content)
+      child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
+      child_applied_schemas = @child_applied_schemas_map[token: token, child_indicated_schemas: child_indicated_schemas, child_content: child_content]
 
       jsi_child_as_jsi(child_content, child_applied_schemas, as_jsi) do
         jsi_child_node_map[
@@ -415,8 +415,8 @@ module JSI
     def jsi_default_child(token, as_jsi: )
       child_content = jsi_node_content_child(token)
 
-      child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
-      child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(child_content)
+      child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
+      child_applied_schemas = @child_applied_schemas_map[token: token, child_indicated_schemas: child_indicated_schemas, child_content: child_content]
 
       defaults = Set.new
       child_applied_schemas.each do |child_schema|
@@ -675,6 +675,8 @@ module JSI
     private
 
     def jsi_memomaps_initialize
+      @child_indicated_schemas_map = method(:jsi_child_indicated_schemas_compute)
+      @child_applied_schemas_map = method(:jsi_child_applied_schemas_compute)
     end
 
     def jsi_indicated_schemas=(jsi_indicated_schemas)
@@ -693,6 +695,14 @@ module JSI
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
         )
       end
+    end
+
+    def jsi_child_indicated_schemas_compute(token: , content: )
+      jsi_schemas.child_applicator_schemas(token, content)
+    end
+
+    def jsi_child_applied_schemas_compute(token: , child_indicated_schemas: , child_content: )
+      child_indicated_schemas.inplace_applicator_schemas(child_content)
     end
 
     def jsi_child_as_jsi(child_content, child_schemas, as_jsi)
