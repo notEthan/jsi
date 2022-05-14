@@ -190,15 +190,11 @@ module JSI
       return to_enum(__method__) unless block
 
       yield self
-      if respond_to?(:to_hash)
-        each_key do |k|
-          self[k, as_jsi: true].jsi_each_descendent_node(&block)
-        end
-      elsif respond_to?(:to_ary)
-        each_index do |i|
-          self[i, as_jsi: true].jsi_each_descendent_node(&block)
-        end
+
+      jsi_each_child_token do |token|
+        self[token, as_jsi: true].jsi_each_descendent_node(&block)
       end
+
       nil
     end
 
