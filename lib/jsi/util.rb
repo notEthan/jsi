@@ -131,6 +131,13 @@ module JSI
           identical &&= fv.__id__ == v.__id__
           out[fk] = fv
         end
+        if !object.default.nil?
+          out.default = dtf[object.default]
+          identical &&= out.default.__id__ == object.default.__id__
+        end
+        if object.default_proc
+          raise(ArgumentError, "cannot make immutable copy of a Hash with default_proc")
+        end
         if identical
           object
         else
