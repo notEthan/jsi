@@ -6,7 +6,9 @@ describe JSI::JSICoder do
   end
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:options) { {} }
-  let(:coder) { JSI::JSICoder.new(schema, **options) }
+  let(:jsi_opt) { {} }
+  let(:coder) { JSI::JSICoder.new(schema, jsi_opt: jsi_opt, **options) }
+
   describe 'json' do
     describe 'load' do
       it 'loads nil' do
@@ -18,6 +20,12 @@ describe JSI::JSICoder do
       it 'loads something else' do
         assert_equal(schema.new_jsi([[]]), coder.load([[]]))
       end
+
+      describe 'jsi_opt' do
+        let(:jsi_opt) { {stringify_symbol_keys: true} }
+        it('loads') { assert_equal(schema.new_jsi({'foo' => 'bar'}), coder.load({:foo => "bar"})) }
+      end
+
       describe 'array' do
         let(:options) { {array: true} }
         it 'loads an array of hashes' do
