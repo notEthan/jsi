@@ -14,7 +14,8 @@ describe 'JSI::Base hash' do
     }
   end
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
-  let(:subject) { schema.new_jsi(instance) }
+  let(:subject_opt) { {} }
+  let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
   describe '#[] with a schema default that is a basic type' do
     let(:schema_content) do

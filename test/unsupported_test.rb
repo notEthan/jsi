@@ -9,7 +9,8 @@ describe 'unsupported behavior' do
   let(:schema_opt) { {} }
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07, **schema_opt) }
   let(:instance) { {} }
-  let(:subject) { schema.new_jsi(instance) }
+  let(:subject_opt) { {} }
+  let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
   describe 'JSI::Schema' do
     # reinstantiating objects at unrecognized paths as schemas is implemented but I don't want to officially

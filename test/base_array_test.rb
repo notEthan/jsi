@@ -58,7 +58,8 @@ describe 'JSI::Base array' do
     }
   end
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
-  let(:subject) { schema.new_jsi(instance) }
+  let(:subject_opt) { {} }
+  let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
   describe '#[]' do
     describe 'negative index in range' do
