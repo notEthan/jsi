@@ -14,7 +14,7 @@ module JSI
 
     EMPTY_SET = Set[].freeze
 
-    CLASSES_ALWAYS_FROZEN = Set[TrueClass, FalseClass, NilClass, Integer, Float, BigDecimal].freeze
+    CLASSES_ALWAYS_FROZEN = Set[TrueClass, FalseClass, NilClass, Integer, Float, BigDecimal, Rational, Symbol].freeze
 
     # is a hash as the last argument passed to keyword params? (false in ruby 3; true before - generates
     # a warning in 2.7 but no way to make 2.7 behave like 3 so the warning is useless)
