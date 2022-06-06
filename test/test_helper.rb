@@ -185,6 +185,11 @@ class JSISpec < Minitest::Spec
     assert !obj.is_a?(mod), msg
   end
 
+  def assert_raises_msg(errclass, msg, &block)
+    e = assert_raises(errclass, &block)
+    assert_equal(msg, e.message)
+  end
+
   def assert_frozen(object)
     assert_predicate(object, :frozen?)
   end
