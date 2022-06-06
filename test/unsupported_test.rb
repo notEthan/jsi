@@ -106,6 +106,7 @@ describe 'unsupported behavior' do
           ARBITRARY_OBJECT => {},
         }
       end
+      let(:subject_opt) { {to_immutable: nil} }
 
       it 'applies properties' do
         assert_schemas([schema.properties[ARBITRARY_OBJECT]], subject[ARBITRARY_OBJECT])
@@ -296,6 +297,8 @@ describe 'unsupported behavior' do
       end
     end
 
+    let(:subject_opt) { {to_immutable: nil} }
+
     describe 'properties and items' do
       let(:schema_content) do
         {
@@ -364,7 +367,7 @@ describe 'unsupported behavior' do
         child = {'a' => ['turtle']}
         child['on'] = child
         root = {'a' => ['world'], 'on' => child}
-        jsi = schema.new_jsi(root)
+        jsi = schema.new_jsi(root, to_immutable: nil)
         assert_schemas([schema.properties['a']], jsi.a)
         assert_schemas([schema], jsi.on)
         # little deeper

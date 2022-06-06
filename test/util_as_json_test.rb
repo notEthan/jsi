@@ -102,13 +102,13 @@ describe JSI::Util do
 
       # #as_json opt
       assert_equal({'a' => 0}, JSI::Util.as_json(OptJson.new, a: 0))
-      assert_equal({'a' => 0}, JSI::SchemaSet[].new_jsi(OptJson.new).as_json(a: 0))
+      assert_equal({'a' => 0}, JSI::SchemaSet[].new_jsi(OptJson.new, to_immutable: nil).as_json(a: 0))
       assert_equal(nil, JSI::Util.as_json(OptJson.new))
-      assert_equal(nil, JSI::SchemaSet[].new_jsi(OptJson.new).as_json)
+      assert_equal(nil, JSI::SchemaSet[].new_jsi(OptJson.new, to_immutable: nil).as_json)
       assert_equal(%q({"a":0}), JSI::Util.to_json(OptJson.new, a: 0))
-      assert_equal(%q({"a":0}), JSI::SchemaSet[].new_jsi(OptJson.new).to_json(a: 0))
+      assert_equal(%q({"a":0}), JSI::SchemaSet[].new_jsi(OptJson.new, to_immutable: nil).to_json(a: 0))
       assert_equal("null", JSI::Util.to_json(OptJson.new))
-      assert_equal("null", JSI::SchemaSet[].new_jsi(OptJson.new).to_json)
+      assert_equal("null", JSI::SchemaSet[].new_jsi(OptJson.new, to_immutable: nil).to_json)
 
       # not jsonifiable
       object = Object.new

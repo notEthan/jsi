@@ -75,6 +75,7 @@ describe JSI::Base do
     end
     describe 'arbitrary instance' do
       let(:instance) { Object.new }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'initializes' do
         assert_equal(instance, subject.jsi_instance)
         assert(!subject.respond_to?(:to_ary))
@@ -92,6 +93,7 @@ describe JSI::Base do
     end
     describe 'SortOfHash' do
       let(:instance) { SortOfHash.new({'foo' => 'bar'}) }
+      let(:subject_opt) { {to_immutable: nil} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
         assert_equal(SortOfHash.new({'foo' => 'bar'}), subject.jsi_instance)
@@ -110,6 +112,7 @@ describe JSI::Base do
     end
     describe 'SortOfArray' do
       let(:instance) { SortOfArray.new(['foo']) }
+      let(:subject_opt) { {to_immutable: nil} }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
         assert_equal(SortOfArray.new(['foo']), subject.jsi_instance)
@@ -120,6 +123,7 @@ describe JSI::Base do
     describe 'another JSI::Base invalid' do
       let(:schema_content) { {'type' => 'object'} }
       let(:instance) { schema.new_jsi({'foo' => 'bar'}) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
         assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI> "foo" => "bar"}), err.message)
@@ -127,6 +131,7 @@ describe JSI::Base do
     end
     describe 'Schema invalid' do
       let(:instance) { JSI::JSONSchemaDraft06.new_schema({}) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
         assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI (JSI::JSONSchemaDraft06) Schema>}), err.message)
@@ -337,6 +342,7 @@ describe JSI::Base do
   describe '#jsi_modified_copy' do
     describe 'with an instance that does not have #jsi_modified_copy' do
       let(:instance) { Object.new }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'yields the instance to modify' do
         new_instance = Object.new
         modified = subject.jsi_modified_copy do |o|
@@ -685,6 +691,8 @@ describe JSI::Base do
             1 => 1,
           }
         end
+        let(:subject_opt) { {to_immutable: nil} }
+
         it 'does not define readers' do
           assert_raises(NoMethodError) { subject.x }
           assert_equal(nil, subject['test']) # #[] would SystemStackError since reader calls #[]
@@ -750,6 +758,7 @@ describe JSI::Base do
   describe '#inspect, #to_s' do
     # if the instance is hash-like, #inspect gets overridden
     let(:instance) { Object.new }
+    let(:subject_opt) { {to_immutable: nil} }
     it 'inspects' do
       assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.inspect)
       assert_equal(subject.inspect, subject.to_s)
@@ -758,6 +767,7 @@ describe JSI::Base do
   describe '#pretty_print' do
     # if the instance is hash-like, #pretty_print gets overridden
     let(:instance) { Object.new }
+    let(:subject_opt) { {to_immutable: nil} }
     it 'pretty_prints' do
       assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
     end
@@ -832,8 +842,8 @@ describe JSI::Base do
     end
 
     it('HashNode keys') do
-      assert_equal({'a' => 'b'}, schema.new_jsi({SortOfString.new('a') => 'b'}).as_json)
-      assert_raises(TypeError) { schema.new_jsi({SortOfString.new(0) => 'b'}).as_json }
+      assert_equal({'a' => 'b'}, schema.new_jsi({SortOfString.new('a') => 'b'}, to_immutable: nil).as_json)
+      assert_raises(TypeError) { schema.new_jsi({SortOfString.new(0) => 'b'}, to_immutable: nil).as_json }
     end
   end
 

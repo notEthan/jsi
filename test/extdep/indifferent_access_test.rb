@@ -15,7 +15,7 @@ other_instantiations = [
 ]
 other_instantiations.each do |inst|
   describe "JSI::Base whose instance is #{inst[:name]}: subscripting with strings and symbols" do
-    let(:subject) { schema.new_jsi(instance) }
+    let(:subject) { schema.new_jsi(instance, to_immutable: nil) }
     let(:schema) { JSI::SimpleWrap }
     let(:instance) do
       instance = inst[:class].new({

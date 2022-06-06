@@ -5,7 +5,7 @@ require("active_support/core_ext/object/json")
 
 describe('Base#as_json') do
   it("ActiveSupport's Object#as_json does not override Base") do
-    hash_node = JSI::JSONSchemaDraft07.new_schema({"$id" => "tag:ms9g"}).new_jsi(SortOfHash.new({a: :b}))
+    hash_node = JSI::JSONSchemaDraft07.new_schema({"$id" => "tag:ms9g"}).new_jsi(SortOfHash.new({a: :b}), to_immutable: nil)
     # since Base::HashNode includes Enumerable, and ActiveSupport infects Enumerable with a #as_json
     # method that returns an Array, this would be [["a", "b"]] without HashNode re-overriding #as_json.
     assert_equal({"a" => "b"}, hash_node.as_json)
