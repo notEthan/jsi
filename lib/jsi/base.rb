@@ -195,40 +195,40 @@ module JSI
     #
     # returns an Enumerator if no block is given.
     #
-    # @yield [JSI::Base] each node in the document, starting with self
+    # @yield [JSI::Base] each descendent node, starting with self
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def jsi_each_child_node(&block)
+    def jsi_each_descendent_node(&block)
       return to_enum(__method__) unless block
 
       yield self
       if respond_to?(:to_hash)
         each_key do |k|
-          self[k, as_jsi: true].jsi_each_child_node(&block)
+          self[k, as_jsi: true].jsi_each_descendent_node(&block)
         end
       elsif respond_to?(:to_ary)
         each_index do |i|
-          self[i, as_jsi: true].jsi_each_child_node(&block)
+          self[i, as_jsi: true].jsi_each_descendent_node(&block)
         end
       end
       nil
     end
 
-    # recursively selects child nodes of this JSI, returning a modified copy of self containing only
-    # child nodes for which the given block had a true-ish result.
+    # recursively selects descendent nodes of this JSI, returning a modified copy of self containing only
+    # descendent nodes for which the given block had a true-ish result.
     #
     # this method yields a node before recursively descending to its child nodes, so leaf nodes are yielded
-    # last, after their parents. if a node is not selected, its children are never recursed.
+    # last, after their parents. if a node is not selected, its descendents are never recursed.
     #
-    # @yield [JSI::Base] each child node below self
+    # @yield [JSI::Base] each descendent node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
-    def jsi_select_children_node_first(&block)
+    def jsi_select_descendents_node_first(&block)
       jsi_modified_copy do |instance|
         if respond_to?(:to_hash)
           res = instance.class.new
           each_key do |k|
             v = self[k, as_jsi: true]
             if yield(v)
-              res[k] = v.jsi_select_children_node_first(&block).jsi_node_content
+              res[k] = v.jsi_select_descendents_node_first(&block).jsi_node_content
             end
           end
           res
@@ -237,7 +237,7 @@ module JSI
           each_index do |i|
             e = self[i, as_jsi: true]
             if yield(e)
-              res << e.jsi_select_children_node_first(&block).jsi_node_content
+              res << e.jsi_select_descendents_node_first(&block).jsi_node_content
             end
           end
           res
@@ -247,20 +247,20 @@ module JSI
       end
     end
 
-    # recursively selects child nodes of this JSI, returning a modified copy of self containing only
-    # child nodes for which the given block had a true-ish result.
+    # recursively selects descendent nodes of this JSI, returning a modified copy of self containing only
+    # descendent nodes for which the given block had a true-ish result.
     #
     # this method recursively descends child nodes before yielding each node, so leaf nodes are yielded
     # before their parents.
     #
-    # @yield [JSI::Base] each child node below self
+    # @yield [JSI::Base] each descendent node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
-    def jsi_select_children_leaf_first(&block)
+    def jsi_select_descendents_leaf_first(&block)
       jsi_modified_copy do |instance|
         if respond_to?(:to_hash)
           res = instance.class.new
           each_key do |k|
-            v = self[k, as_jsi: true].jsi_select_children_leaf_first(&block)
+            v = self[k, as_jsi: true].jsi_select_descendents_leaf_first(&block)
             if yield(v)
               res[k] = v.jsi_node_content
             end
@@ -269,7 +269,7 @@ module JSI
         elsif respond_to?(:to_ary)
           res = instance.class.new
           each_index do |i|
-            e = self[i, as_jsi: true].jsi_select_children_leaf_first(&block)
+            e = self[i, as_jsi: true].jsi_select_descendents_leaf_first(&block)
             if yield(e)
               res << e.jsi_node_content
             end
@@ -301,13 +301,13 @@ module JSI
       jsi_parent_nodes.first
     end
 
-    # the child node at the given pointer
+    # the descendent node at the given pointer
     #
     # @param ptr [JSI::Ptr, #to_ary]
     # @return [JSI::Base]
-    def jsi_child_node(ptr)
-      child = Ptr.ary_ptr(ptr).evaluate(self, as_jsi: true)
-      child
+    def jsi_descendent_node(ptr)
+      descendent = Ptr.ary_ptr(ptr).evaluate(self, as_jsi: true)
+      descendent
     end
 
     # subscripts to return a child value identified by the given token.
@@ -433,7 +433,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
           @jsi_ptr.modified_document_copy(root, &block)
         end
-        modified_jsi_root_node.jsi_child_node(@jsi_ptr)
+        modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
       end
     end
 

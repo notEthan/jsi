@@ -154,7 +154,7 @@ module JSI
       end
 
       # whether this pointer contains the other_ptr - that is, whether this pointer is an ancestor
-      # of `other_ptr`, a child pointer. `contains?` is inclusive; a pointer does contain itself.
+      # of `other_ptr`, a descendent pointer. `contains?` is inclusive; a pointer does contain itself.
       # @return [Boolean]
       def contains?(other_ptr)
         tokens == other_ptr.tokens[0...tokens.size]

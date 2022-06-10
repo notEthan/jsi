@@ -24,8 +24,8 @@ module JSI
 
     # registers the given resource and/or schema resources it contains in the registry.
     #
-    # each child of the resource (including the resource itself) is registered if it is a schema that
-    # has an absolute URI (generally defined by the '$id' keyword).
+    # each descendent node of the resource (including the resource itself) is registered if it is a schema
+    # that has an absolute URI (generally defined by the '$id' keyword).
     #
     # the given resource itself will be registered, whether or not it is a schema, if it is the root
     # of its document and was instantiated with the option `uri` specified.
@@ -48,7 +48,7 @@ module JSI
         register_single(resource.jsi_schema_base_uri, resource)
       end
 
-      resource.jsi_each_child_node do |node|
+      resource.jsi_each_descendent_node do |node|
         if node.is_a?(JSI::Schema) && node.schema_absolute_uri
           register_single(node.schema_absolute_uri, node)
         end

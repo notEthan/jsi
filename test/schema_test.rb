@@ -119,7 +119,7 @@ describe JSI::Schema do
             # no #collide
           ],
           "#/definitions/child" => [
-            # #X collides with anchor in different child resource
+            # #X collides with anchor in different descendent resource
             "http://jsi/schema_uris/q0wo#/definitions/child",
           ],
           "#/definitions/child/definitions/rel" => [

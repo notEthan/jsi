@@ -148,7 +148,7 @@ module JSI
     # parent MetaschemaNode
     # @return [MetaschemaNode]
     def jsi_parent_node
-      jsi_root_node.jsi_child_node(jsi_ptr.parent)
+      jsi_root_node.jsi_descendent_node(jsi_ptr.parent)
     end
 
     # subscripts to return a child value identified by the given token.

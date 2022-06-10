@@ -251,7 +251,7 @@ describe JSI::Base do
       assert_raises(NoMethodError) { subject.map { nil } }
     end
   end
-  describe '#jsi_each_child_node' do
+  describe '#jsi_each_descendent_node' do
     let(:schema_content) do
       {
         'properties' => {
@@ -264,7 +264,7 @@ describe JSI::Base do
     describe 'iterating a complex structure' do
       let(:instance) { {'foo' => ['x', []], 'bar' => [9]} }
       it "yields JSIs with the right schemas" do
-        child_nodes = subject.jsi_each_child_node.to_a
+        descendent_nodes = subject.jsi_each_descendent_node.to_a
         assert_equal({
           JSI::Ptr[] => Set[schema],
           JSI::Ptr["foo"] => Set[schema.properties['foo']],
@@ -272,20 +272,20 @@ describe JSI::Base do
           JSI::Ptr["foo", 1] => Set[schema.properties['foo'].items],
           JSI::Ptr["bar"] => Set[schema.additionalProperties],
           JSI::Ptr["bar", 0] => Set[],
-        }, child_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
+        }, descendent_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
       end
     end
     describe 'iterating a simple structure' do
       let(:instance) { 0 }
       it "yields a JSI with the right schemas" do
-        child_nodes = subject.jsi_each_child_node.to_a
+        descendent_nodes = subject.jsi_each_descendent_node.to_a
         assert_equal({
           JSI::Ptr[] => Set[schema],
-        }, child_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
+        }, descendent_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
       end
     end
   end
-  describe 'selecting child nodes' do
+  describe 'selecting descendent nodes' do
     let(:schema_content) do
       YAML.safe_load(<<~YAML
         patternProperties:
@@ -298,7 +298,7 @@ describe JSI::Base do
         YAML
       )
     end
-    describe '#jsi_select_children_node_first: selecting in a complex structure those elements described by a schema or subschema' do
+    describe '#jsi_select_descendents_node_first: selecting in a complex structure those elements described by a schema or subschema' do
       # note that 'described by a schema' does not imply the instance or subinstance validates against
       # its schema(s). string subinstances ('y') are described but fail validation against `pattern`.
       let(:instance) do
@@ -320,19 +320,19 @@ describe JSI::Base do
             {'yyy' => ['y', {'yyy' => 'y'}]},
           ]
         })
-        act = subject.jsi_select_children_node_first do |node|
+        act = subject.jsi_select_descendents_node_first do |node|
           node.jsi_schemas.any?
         end
         assert_equal(exp, act)
       end
     end
-    describe 'jsi_select_children_leaf_first: selecting in a complex structure by validity' do
-      # here we select valid leaf nodes and thereby end up with a result consisting of valid child nodes
+    describe 'jsi_select_descendents_leaf_first: selecting in a complex structure by validity' do
+      # here we select valid leaf nodes and thereby end up with a result consisting of valid descendent nodes
       let(:instance) do
         YAML.safe_load(<<~YAML
-          y: # valid because no schema applies to this or its children
+          y: # valid because no schema applies to this or its descendents
             y: [y]
-          yyy: # will be valid when its invalid children are rejected
+          yyy: # will be valid when its invalid descendents are rejected
             - n # fails pattern
             - y:   [y] # valid; no schemas apply
               yyy: [[yyy, n], {nnn: n}, yyy]
@@ -351,7 +351,7 @@ describe JSI::Base do
             'yyy',
           ]
         })
-        act = subject.jsi_select_children_leaf_first(&:jsi_valid?)
+        act = subject.jsi_select_descendents_leaf_first(&:jsi_valid?)
         assert_equal(exp, act)
       end
     end

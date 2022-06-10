@@ -14,7 +14,7 @@ describe JSI::MetaschemaNode do
       root_schema_ptr: root_schema_ptr,
     )
   end
-  let(:metaschema) { root_node.jsi_child_node(metaschema_root_ptr) }
+  let(:metaschema) { root_node.jsi_descendent_node(metaschema_root_ptr) }
 
   def assert_metaschema_behaves
     assert_is_a(metaschema.jsi_schema_module, metaschema)

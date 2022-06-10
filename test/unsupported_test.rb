@@ -266,7 +266,7 @@ describe 'unsupported behavior' do
 
         # lul
         #assert_raises(SystemStackError) do
-        #  jsi.jsi_each_child_node { }
+        #  jsi.jsi_each_descendent_node { }
         #end
       end
     end

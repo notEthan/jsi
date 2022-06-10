@@ -110,7 +110,7 @@ module JSI
 
     def jsi_anchor_subschemas_map
       jsi_memomap(__method__) do |anchor: |
-        jsi_each_child_node.select do |node|
+        jsi_each_descendent_node.select do |node|
           node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
         end.freeze
       end

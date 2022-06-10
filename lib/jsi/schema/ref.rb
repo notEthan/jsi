@@ -84,7 +84,7 @@ module JSI
         else
           # Note: Schema#resource_root_subschema will reinstantiate nonschemas as schemas.
           # not implemented for remote refs when the schema_resource_root is not a schema.
-          resolve_fragment_ptr = -> (ptr) { schema_resource_root.jsi_child_node(ptr) }
+          resolve_fragment_ptr = -> (ptr) { schema_resource_root.jsi_descendent_node(ptr) }
         end
       end
 

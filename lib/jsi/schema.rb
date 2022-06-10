@@ -503,7 +503,7 @@ module JSI
             jsi_schema_base_uri: jsi_resource_ancestor_uri,
           )
         else
-          Schema.ensure_schema(jsi_child_node(subptr), msg: [
+          Schema.ensure_schema(jsi_descendent_node(subptr), msg: [
             "subschema is not a schema at pointer: #{subptr.pointer}"
           ])
         end
@@ -538,7 +538,7 @@ module JSI
           )
         else
           resource_root = schema.schema_resource_root
-          Schema.ensure_schema(resource_root.jsi_child_node(ptr),
+          Schema.ensure_schema(resource_root.jsi_descendent_node(ptr),
             msg: [
               "subschema is not a schema at pointer: #{ptr.pointer}"
             ],
