@@ -1,6 +1,6 @@
 --main README.md
 --markup=markdown
---markup-provider=commonmarker
+--markup-provider=redcarpet
 --no-private
 --hide-void-return
 {lib}/**/*.rb
