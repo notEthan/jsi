@@ -25,3 +25,8 @@ group(:extdep) do
   gem 'spreedly_openapi', github: 'notEthan/spreedly_openapi', tag: 'v0.2.0'
   gem 'activesupport'
 end
+
+group(:doc) do
+  gem 'yard'
+  gem 'redcarpet'
+end

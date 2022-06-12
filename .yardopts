@@ -1,4 +1,5 @@
 --main README.md
 --markup=markdown
+--markup-provider=redcarpet
 --no-private
 {lib}/**/*.rb
