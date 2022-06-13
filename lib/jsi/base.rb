@@ -247,6 +247,9 @@ module JSI
       end
     end
 
+    # @deprecated after v0.6
+    alias_method :jsi_select_children_node_first, :jsi_select_descendents_node_first
+
     # recursively selects descendent nodes of this JSI, returning a modified copy of self containing only
     # descendent nodes for which the given block had a true-ish result.
     #
@@ -280,6 +283,9 @@ module JSI
         end
       end
     end
+
+    # @deprecated after v0.6
+    alias_method :jsi_select_children_leaf_first, :jsi_select_descendents_leaf_first
 
     # an array of JSI instances above this one in the document.
     #
