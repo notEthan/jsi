@@ -256,6 +256,21 @@ describe 'JSI::Base hash' do
       expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
       subject.each(as_jsi: true) { |_, v| assert_is_a(expect_modules.shift, v) }
     end
+
+    it 'gives the right number of arguments to proc and lambda' do
+      res = []
+      blocks = [
+        proc   { |k, v| res << [k, v] },
+        proc   { |a|    res << a },
+        lambda { |k, v| res << [k, v] },
+        lambda { |a|    res << a },
+        -> (k, v) {     res << [k, v] }, # -> is the same as lambda, so this is redundant, but w/e
+        -> (a) {        res << a },
+      ]
+      # none of these raise ArgumentError: wrong number of arguments
+      blocks.each { |blk| subject.each(&blk) }
+      assert_equal(%w(foo bar baz).map { |k| [k, subject[k]] } * blocks.size, res)
+    end
   end
   describe 'to_hash' do
     it 'includes each element' do
