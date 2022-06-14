@@ -205,28 +205,31 @@ describe JSI::Base do
     end
   end
 
-  describe '#jsi_parent_nodes, #jsi_parent_node' do
+  describe '#jsi_parent_nodes, #jsi_parent_node, #jsi_ancestor_nodes' do
     let(:schema_content) { {'properties' => {'foo' => {'properties' => {'bar' => {'properties' => {'baz' => {}}}}}}} }
     let(:instance) { {'foo' => {'bar' => {'baz' => {}}}} }
-    describe 'no jsi_parent_nodes' do
+    describe 'at the root' do
       it 'has none' do
         assert_equal([], subject.jsi_parent_nodes)
         assert_equal(nil, subject.jsi_parent_node)
+        assert_equal([subject], subject.jsi_ancestor_nodes)
       end
     end
-    describe 'one jsi_parent_node' do
+    describe 'one parent' do
       it 'has one' do
         assert_equal([subject], subject.foo.jsi_parent_nodes)
         assert_equal(subject, subject.foo.jsi_parent_node)
+        assert_equal([subject.foo, subject], subject.foo.jsi_ancestor_nodes)
       end
     end
-    describe 'more jsi_parent_nodes' do
+    describe 'more parents' do
       it 'has more' do
         assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.jsi_parent_nodes)
         assert_equal(subject.foo.bar, subject.foo.bar.baz.jsi_parent_node)
+        assert_equal([subject.foo.bar.baz, subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.jsi_ancestor_nodes)
       end
     end
-    describe 'jsi_parent_nodes not described by schemas' do
+    describe 'jsi_ancestor_nodes not described by schemas' do
       let(:instance) { {'foo' => {'a' => {'b' => ['c']}}} }
       it 'has more' do
         a = subject.foo['a', as_jsi: true]
@@ -235,6 +238,7 @@ describe JSI::Base do
         assert_equal([b, a, subject.foo, subject], c.jsi_parent_nodes)
         assert_equal(b, c.jsi_parent_node)
         assert_equal(a, b.jsi_parent_node)
+        assert_equal([c, b, a, subject.foo, subject], c.jsi_ancestor_nodes)
       end
     end
   end

@@ -313,6 +313,21 @@ module JSI
       jsi_parent_nodes.first
     end
 
+    # ancestor JSI instances from this node up to the root. this node itself is always its own first ancestor.
+    #
+    # @return [Array<JSI::Base>]
+    def jsi_ancestor_nodes
+      ancestors = []
+      ancestor = jsi_root_node
+      ancestors << ancestor
+
+      jsi_ptr.tokens.each do |token|
+        ancestor = ancestor[token, as_jsi: true]
+        ancestors << ancestor
+      end
+      ancestors.reverse!.freeze
+    end
+
     # the descendent node at the given pointer
     #
     # @param ptr [JSI::Ptr, #to_ary]
