@@ -47,7 +47,7 @@ module JSI
       not_schemas = reject { |s| s.is_a?(Schema) }
       if !not_schemas.empty?
         raise(Schema::NotASchemaError, [
-          "JSI::SchemaSet initialized with non-schema objects:",
+          "#{SchemaSet} initialized with non-schema objects:",
           *not_schemas.map { |ns| ns.pretty_inspect.chomp },
         ].join("\n"))
       end
