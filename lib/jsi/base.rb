@@ -310,7 +310,7 @@ module JSI
     #
     # @return [JSI::Base, nil]
     def jsi_parent_node
-      jsi_parent_nodes.first
+      jsi_ptr.root? ? nil : jsi_root_node.jsi_descendent_node(jsi_ptr.parent)
     end
 
     # the descendent node at the given pointer

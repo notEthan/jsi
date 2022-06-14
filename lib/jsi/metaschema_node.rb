@@ -145,12 +145,6 @@ module JSI
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
 
-    # parent MetaschemaNode
-    # @return [MetaschemaNode]
-    def jsi_parent_node
-      jsi_root_node.jsi_descendent_node(jsi_ptr.parent)
-    end
-
     # subscripts to return a child value identified by the given token.
     #
     # @param token (see JSI::Base#[])
