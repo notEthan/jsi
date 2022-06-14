@@ -196,20 +196,20 @@ module JSI
     # @api private
     # @return [String, nil]
     def name_from_ancestor
-      named_parent_schema, tokens = named_ancestor_schema_tokens
-      return nil unless named_parent_schema
+      named_ancestor_schema, tokens = named_ancestor_schema_tokens
+      return nil unless named_ancestor_schema
 
-      name = named_parent_schema.jsi_schema_module.name
-      parent = named_parent_schema
+      name = named_ancestor_schema.jsi_schema_module.name
+      ancestor = named_ancestor_schema
       tokens.each do |token|
-        if parent.jsi_schemas.any? { |s| s.jsi_schema_module.jsi_property_accessors.include?(token) }
+        if ancestor.jsi_schemas.any? { |s| s.jsi_schema_module.jsi_property_accessors.include?(token) }
           name += ".#{token}"
         elsif [String, Numeric, TrueClass, FalseClass, NilClass].any? { |m| token.is_a?(m) }
           name += "[#{token.inspect}]"
         else
           return nil
         end
-        parent = parent[token]
+        ancestor = ancestor[token]
       end
       name
     end
@@ -236,7 +236,7 @@ module JSI
 
     # @return [Array<JSI::Schema, Array>, nil]
     def named_ancestor_schema_tokens
-      schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
+      schema_ancestors = possibly_schema_node.jsi_ancestor_nodes
       named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
       return nil unless named_ancestor_schema
       tokens = possibly_schema_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens

@@ -35,7 +35,7 @@ describe 'JSI::SchemaModule' do
         SchemaModuleTestModule.properties["foo"].items.inspect
       )
     end
-    it 'shows a pointer fragment uri with no named parent module' do
+    it 'shows a pointer fragment uri with no named ancestor schema module' do
       mod = JSI::JSONSchemaOrgDraft07.new_schema_module({
         'title' => 'lhzm', 'properties' => {'foo' => {'items' => {'type' => 'string'}}}
       })
