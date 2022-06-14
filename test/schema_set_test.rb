@@ -14,6 +14,16 @@ describe 'JSI::SchemaSet' do
         err = assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaSet.new([3]) }
         assert_equal("JSI::SchemaSet initialized with non-schema objects:\n3", err.message)
       end
+
+      it 'errors given just the schema' do
+        err = assert_raises(ArgumentError) { JSI::SchemaSet.new(schema_a) }
+        assert_equal([
+          "JSI::SchemaSet initialized with a JSI::Schema",
+          "you probably meant to pass that to JSI::SchemaSet[]",
+          "or to wrap that schema in a Set or Array for JSI::SchemaSet.new",
+          "given: \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> \"title\" => \"A\"}",
+        ].join("\n"), err.message)
+      end
     end
     describe '.build' do
       it 'initializes' do

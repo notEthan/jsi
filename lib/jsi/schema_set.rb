@@ -42,6 +42,15 @@ module JSI
     # @yieldreturn [JSI::Schema]
     # @raise [JSI::Schema::NotASchemaError]
     def initialize(enum, &block)
+      if enum.is_a?(Schema)
+        raise(ArgumentError, [
+          "#{SchemaSet} initialized with a #{Schema}",
+          "you probably meant to pass that to #{SchemaSet}[]",
+          "or to wrap that schema in a Set or Array for #{SchemaSet}.new",
+          "given: #{enum.pretty_inspect.chomp}",
+        ].join("\n"))
+      end
+
       super
 
       not_schemas = reject { |s| s.is_a?(Schema) }
