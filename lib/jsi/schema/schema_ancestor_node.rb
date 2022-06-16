@@ -25,11 +25,7 @@ module JSI
     # or nil if not contained by a resource with a URI.
     # @return [Addressable::URI, nil]
     def jsi_resource_ancestor_uri
-      if is_a?(Schema) && schema_absolute_uri
-        schema_absolute_uri
-      else
-        jsi_schema_base_uri
-      end
+      (is_a?(Schema) && schema_absolute_uri) || jsi_schema_base_uri
     end
 
     # a schema at or below this node with the given anchor.
