@@ -260,12 +260,8 @@ module JSI
   class NotASchemaModule
     # @param node [JSI::Base]
     def initialize(node)
-      unless node.is_a?(JSI::Base)
-        raise(TypeError, "not JSI::Base: #{node.pretty_inspect.chomp}")
-      end
-      if node.is_a?(JSI::Schema)
-        raise(TypeError, "cannot instantiate NotASchemaModule for a JSI::Schema node: #{node.pretty_inspect.chomp}")
-      end
+      raise(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
+      raise(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
       @possibly_schema_node = node
       node.jsi_schemas.each do |schema|
         extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly], setters: false))
