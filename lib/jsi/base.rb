@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Base is the base class of every JSI instance of a JSON schema.
+  # A JSI::Base instance represents a node in a JSON document (its {#jsi_document}) at a particular
+  # location (its {#jsi_ptr}), described by any number of JSON Schemas (its {#jsi_schemas}).
   #
-  # instances are described by a set of one or more JSON schemas. JSI dynamically creates a subclass of
-  # JSI::Base for each set of JSON schemas which describe an instance that is to be instantiated.
+  # JSI::Base is an abstract base class. The subclasses used to instantiate JSIs are dynamically created as
+  # needed for a given instance.
   #
-  # a JSI instance of such a subclass represents a JSON schema instance described by that set of schemas.
+  # These subclasses are generally intended to be ignored by applications using this library - the purpose
+  # they serve is to include modules relevant to the instance. The modules these classes include are:
   #
-  # this subclass includes the JSI Schema Module of each schema it represents.
-  #
-  # the method {Base#jsi_schemas} is defined to indicate the schemas the class represents.
-  #
-  # the JSI::Base class itself is not intended to be instantiated.
+  # - the {Schema#jsi_schema_module} of each schema which describes the instance
+  # - {Base::HashNode} or {Base::ArrayNode}, if the instance is a hash/object or array
+  # - Modules defining accessor methods for property names described by the schemas
   class Base
     autoload :ArrayNode, 'jsi/base/node'
     autoload :HashNode, 'jsi/base/node'
