@@ -11,7 +11,8 @@ module JSI
   # they serve is to include modules relevant to the instance. The modules these classes include are:
   #
   # - the {Schema#jsi_schema_module} of each schema which describes the instance
-  # - {Base::HashNode} or {Base::ArrayNode}, if the instance is a hash/object or array
+  # - {Base::HashNode}, {Base::ArrayNode}, or {Base::StringNode} if the instance is
+  #   a hash/object, array, or string
   # - Modules defining accessor methods for property names described by the schemas
   class Base
     autoload :ArrayNode, 'jsi/base/node'
