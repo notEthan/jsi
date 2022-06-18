@@ -31,7 +31,7 @@ module JSI
       #
       #     JSI::Ptr[]
       #
-      # instantes a root pointer.
+      # instantiates a root pointer.
       #
       #     JSI::Ptr['a', 'b']
       #     JSI::Ptr['a']['b']
