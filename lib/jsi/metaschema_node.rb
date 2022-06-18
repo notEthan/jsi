@@ -75,6 +75,7 @@ module JSI
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the metaschema, i.e. this is a schema
+          extend Schema
           schema_implementation_modules.each do |schema_implementation_module|
             extend schema_implementation_module
           end

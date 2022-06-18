@@ -3,7 +3,6 @@ require_relative 'test_helper'
 describe JSI::MetaschemaNode do
   let(:schema_implementation_modules) do
     [
-      JSI::Schema,
       JSI::Schema::Application::Draft06,
     ]
   end

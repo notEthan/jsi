@@ -2,7 +2,6 @@
 
 module JSI
   simple_wrap_implementation = Module.new do
-    include Schema
     include Schema::Application::ChildApplication
     include Schema::Application::InplaceApplication
     include Schema::Validation::Core

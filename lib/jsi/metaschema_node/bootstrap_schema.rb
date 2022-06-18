@@ -17,6 +17,7 @@ module JSI
     include Util::Memoize
     include Util::FingerprintHash
     include Schema::SchemaAncestorNode
+    include Schema
 
     class << self
       def inspect

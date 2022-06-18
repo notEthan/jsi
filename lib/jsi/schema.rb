@@ -425,18 +425,14 @@ module JSI
 
     # indicates that this schema describes a schema.
     # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
-    # with {SchemaModule::DescribesSchemaModule}, and the JSI Schema Module will include the given modules.
+    # with {SchemaModule::DescribesSchemaModule}, and the JSI Schema Module will include
+    # JSI::Schema and the given modules.
     #
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality of
     #   the schema to extend schemas described by this schema.
-    #   this must include JSI::Schema (usually indirectly).
     # @return [void]
     def describes_schema!(schema_implementation_modules, objectspace: false)
       schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
-
-      unless schema_implementation_modules.any? { |mod| mod <= Schema }
-        raise(ArgumentError, "schema_implementation_modules for a schema must include #{Schema}")
-      end
 
       if describes_schema?
         # this schema, or one equal to it, has already had describes_schema! called on it.
@@ -446,11 +442,13 @@ module JSI
           raise(ArgumentError, "this schema already describes a schema with different schema_implementation_modules")
         end
       else
+        jsi_schema_module.include(Schema)
         schema_implementation_modules.each do |mod|
           jsi_schema_module.include(mod)
         end
         if objectspace
           ObjectSpace.each_object(jsi_schema_module) do |schema|
+            schema.extend(Schema)
             schema_implementation_modules.each do |mod|
               schema.extend(mod)
             end
