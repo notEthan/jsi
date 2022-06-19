@@ -1,7 +1,16 @@
 require_relative 'test_helper'
 
+BASIC_DIALECT = JSI::Schema::Dialect.new(
+  vocabularies: [
+    JSI::Schema::Vocabulary.new(elements: [
+    ]),
+  ],
+)
+
 module BasicMetaSchemaImplementation
   include JSI::Schema::Application::Draft06
+
+  define_method(:dialect) { BASIC_DIALECT }
 end
 
 BasicMetaSchema = JSI.new_metaschema_module(
