@@ -15,6 +15,10 @@ module JSI
       # @private
       # context to build a Validation::Result
       class Builder
+        def result_builder
+          self
+        end
+
         def instance
           instance_ptr.evaluate(instance_document)
         end
