@@ -64,7 +64,7 @@ module JSI
       end
     end
 
-    # yields each hash key and value of this node.
+    # yields each Hash key (JSON object property name) and value of this node.
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
     #
