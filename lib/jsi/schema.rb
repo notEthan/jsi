@@ -208,7 +208,8 @@ module JSI
       # specifying a `default_metaschema` is to call `new_schema` on the
       # {Schema::MetaSchema#new_schema meta-schema} or its
       # {SchemaModule::MetaSchemaModule#new_schema schema module}, e.g.
-      # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`
+      # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`. This will ignore any `$schema` keyword
+      # that may be present.
       #
       # Schemas instantiated with `new_schema` are immutable, their content transformed using
       # the `to_immutable` param.
