@@ -219,12 +219,30 @@ module JSI
       # The metaschema which describes the schema must be indicated:
       #
       # - if the schema object has a `$schema` property, that URI is resolved using the {JSI.schema_registry},
-      #   and that metaschema is used.
+      #   and that metaschema is used. For example:
+      #
+      #   ```ruby
+      #   JSI.new_schema({
+      #     "$schema" => "http://json-schema.org/draft-07/schema#",
+      #     "properties" => ...,
+      #   })
+      #   ```
+      #
       # - if no `$schema` property is present, the `default_metaschema` param is used, if the caller
-      #   specifies it.
+      #   specifies it. For example:
+      #
+      #   ```ruby
+      #   JSI.new_schema({"properties" => ...}, default_metaschema: JSI::JSONSchemaOrgDraft07)
+      #   ```
+      #
       # - if no `default_metaschema` param is specified, the application-wide default
       #   {JSI::Schema.default_metaschema JSI::Schema.default_metaschema} is used,
-      #   if the application has set it.
+      #   if the application has set it. For example:
+      #
+      #   ```ruby
+      #   JSI::Schema.default_metaschema = JSI::JSONSchemaOrgDraft07
+      #   JSI.new_schema({"properties" => ...})
+      #   ```
       #
       # an ArgumentError is raised if none of these indicate a metaschema to use.
       #
