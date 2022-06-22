@@ -90,7 +90,9 @@ module JSI
     # @param kw keyword arguments are passed to {Base#[]}
     # @return [Hash]
     def to_hash(**kw)
-      {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k, **kw] } }
+      hash = {}
+      jsi_node_content_hash_pubsend(:each_key) { |k| hash[k] = self[k, **kw] }
+      hash
     end
 
     include Util::Hashlike
