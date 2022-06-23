@@ -242,11 +242,12 @@ module JSI
         elsif schema_object.is_a?(JSI::Base)
           raise(NotASchemaError, "the given schema_object is a JSI::Base, but is not a JSI::Schema: #{schema_object.pretty_inspect.chomp}")
         elsif schema_object.respond_to?(:to_hash)
-          if schema_object.key?('$schema')
-            unless schema_object['$schema'].respond_to?(:to_str)
+          id = schema_object['$schema'] || schema_object[:'$schema']
+          if id
+            unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_object keyword `$schema` is not a string")
             end
-            metaschema = Schema::Ref.new(schema_object['$schema']).deref_schema
+            metaschema = Schema::Ref.new(id).deref_schema
             unless metaschema.describes_schema?
               raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
