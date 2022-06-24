@@ -356,6 +356,29 @@ module JSI
       jsi_simple_node_child_error(token)
     end
 
+    # A child JSI node, or the child of our {#jsi_instance}, identified by the given token.
+    # The token must identify an existing child; behavior if the child does not exist is undefined.
+    #
+    # @param token (see Base#[])
+    # @param as_jsi (see Base#[])
+    # @return [JSI::Base, Object]
+    def jsi_child(token, as_jsi: :auto)
+      value = jsi_node_content_child(token)
+
+      child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
+      child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(value)
+
+      jsi_subinstance_as_jsi(value, child_applied_schemas, as_jsi) do
+        jsi_subinstance_memos[
+          token: token,
+          child_indicated_schemas: child_indicated_schemas,
+          child_applied_schemas: child_applied_schemas,
+          includes: SchemaClasses.includes_for(value),
+        ]
+      end
+    end
+    private :jsi_child # internals for #[] but idk, could be public
+
     # A default value for a child of this node identified by the given token, if schemas describing
     # that child define a default value.
     #
@@ -428,26 +451,14 @@ module JSI
     #   unspecified behavior.)
     # @return [JSI::Base, Object] the child value identified by the subscript token
     def [](token, as_jsi: :auto, use_default: true)
-      value = jsi_node_content_child(token)
-
       begin
-        child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
-        child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(value)
-
         if jsi_child_token_in_range?(token)
-          jsi_subinstance_as_jsi(value, child_applied_schemas, as_jsi) do
-            jsi_subinstance_memos[
-              token: token,
-              child_indicated_schemas: child_indicated_schemas,
-              child_applied_schemas: child_applied_schemas,
-              includes: SchemaClasses.includes_for(value),
-            ]
-          end
+          jsi_child(token, as_jsi: as_jsi)
         else
           if use_default
             jsi_default_child(token, as_jsi: :auto)
           else
-            value
+            jsi_node_content_child(token)
           end
         end
       end

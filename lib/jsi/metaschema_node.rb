@@ -143,6 +143,16 @@ module JSI
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
 
+    # see {Base#jsi_child}
+    def jsi_child(token, as_jsi: :auto)
+      value_node = jsi_subinstance_memos[token: token]
+
+      jsi_subinstance_as_jsi(jsi_node_content_child(token), value_node.jsi_schemas, as_jsi) do
+        value_node
+      end
+    end
+    private :jsi_child
+
     # subscripts to return a child value identified by the given token.
     #
     # @param token (see JSI::Base#[])
@@ -151,11 +161,7 @@ module JSI
     def [](token, as_jsi: :auto)
       begin
         if jsi_child_token_in_range?(token)
-          value_node = jsi_subinstance_memos[token: token]
-
-          jsi_subinstance_as_jsi(jsi_node_content_child(token), value_node.jsi_schemas, as_jsi) do
-            value_node
-          end
+          jsi_child(token, as_jsi: as_jsi)
         else
           # I think I will not support Hash#default/#default_proc in this case.
           nil
