@@ -96,18 +96,12 @@ describe JSI::Base do
       assert_equal(JSI::SchemaClasses.class_for_schemas([schema_again], includes: []), class_for_schema)
       assert_operator(class_for_schema, :<, JSI::Base)
     end
-    it 'raises given a nonschema' do
-      assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaClasses.class_for_schemas([schema_content], includes: []) }
-    end
   end
   describe 'JSI::SchemaClasses.module_for_schema' do
     it 'returns a module from a schema' do
       module_for_schema = JSI::SchemaClasses.module_for_schema(schema)
       # same module every time
       assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
-    end
-    it 'raises given a nonschema' do
-      assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaClasses.module_for_schema(schema_content) }
     end
   end
   describe 'initialization' do
