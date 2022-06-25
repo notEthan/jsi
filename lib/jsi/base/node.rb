@@ -83,6 +83,19 @@ module JSI
       jsi_node_content_hash_pubsend(:[], token)
     end
 
+    # See {Base#[]}
+    def [](token, as_jsi: :auto, use_default: true)
+      if jsi_node_content_hash_pubsend(:key?, token)
+        jsi_child(token, as_jsi: as_jsi)
+      else
+        if use_default
+          jsi_default_child(token, as_jsi: as_jsi)
+        else
+          nil
+        end
+      end
+    end
+
     # yields each hash key and value of this node.
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
@@ -184,6 +197,35 @@ module JSI
         jsi_node_content_ary_pubsend(:[], token)
       else
         nil
+      end
+    end
+
+    # See {Base#[]}
+    def [](token, as_jsi: :auto, use_default: true)
+      size = jsi_node_content_ary_pubsend(:size)
+      if token.is_a?(Integer)
+        if token < 0
+          if token < -size
+            nil
+          else
+            jsi_child(token + size, as_jsi: as_jsi)
+          end
+        else
+          if token < size
+            jsi_child(token, as_jsi: as_jsi)
+          else
+            if use_default
+              jsi_default_child(token, as_jsi: as_jsi)
+            else
+              nil
+            end
+          end
+        end
+      else
+        raise(TypeError, [
+          "expected `token` param to be an Integer",
+          "token: #{token.inspect}",
+        ].join("\n"))
       end
     end
 

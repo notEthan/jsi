@@ -451,17 +451,8 @@ module JSI
     #   unspecified behavior.)
     # @return [JSI::Base, Object] the child value identified by the subscript token
     def [](token, as_jsi: :auto, use_default: true)
-      begin
-        if jsi_child_token_in_range?(token)
-          jsi_child(token, as_jsi: as_jsi)
-        else
-          if use_default
-            jsi_default_child(token, as_jsi: :auto)
-          else
-            jsi_node_content_child(token)
-          end
-        end
-      end
+      # note: overridden by Base::HashNode, Base::ArrayNode
+      jsi_simple_node_child_error(token)
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.

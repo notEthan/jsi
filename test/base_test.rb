@@ -690,7 +690,7 @@ describe JSI::Base do
         it 'does not define readers' do
           assert_raises(NoMethodError) { subject.x }
           assert_equal(nil, subject['test']) # #[] would SystemStackError since reader calls #[]
-          assert_equal(JSI::Base, subject.method(:[]).owner)
+          assert_equal(JSI::Base::HashNode, subject.method(:[]).owner)
           assert_raises(NoMethodError) { -subject }
           assert_raises(NoMethodError) { ~subject }
           assert_raises(NoMethodError) { subject % 0 }
