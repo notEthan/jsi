@@ -16,6 +16,34 @@ describe 'JSI::Base array' do
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:subject) { schema.new_jsi(instance) }
 
+  describe '#[]' do
+    describe 'negative index in range' do
+      it 'returns the item before the end' do
+        assert_equal(subject[0], subject[-4])
+        assert_equal(subject[3], subject[-1])
+      end
+    end
+
+    describe 'negative index out of range' do
+      it 'returns nil' do
+        assert_nil(subject[-5])
+      end
+    end
+
+    describe 'Range' do
+      it 'is not supported (yet?), raises' do
+        assert_raises(TypeError) { subject[0..3] }
+      end
+    end
+
+    describe 'arbitrary object' do
+      it 'raises' do
+        err = assert_raises(TypeError) { subject[{"valid" => 0}] }
+        assert_equal(["expected `token` param to be an Integer", %q(token: {"valid"=>0})].join("\n"), err.message)
+      end
+    end
+  end
+
   describe '#[] with a default that is a basic type' do
     let(:schema_content) do
       {
@@ -42,6 +70,18 @@ describe 'JSI::Base array' do
       it 'returns the nondefault value' do
         assert_schemas([schema.items], subject[0])
         assert_equal([2], subject[0].jsi_instance)
+      end
+    end
+
+    describe 'negative index out of range' do
+      it 'returns nil, does not try to insert basic default' do
+        assert_nil(subject[-5])
+      end
+    end
+
+    describe 'arbitrary object' do
+      it 'raises, does not try to insert basic default' do
+        assert_raises(TypeError) { subject[Object.new] }
       end
     end
   end
@@ -72,6 +112,18 @@ describe 'JSI::Base array' do
       it 'returns the nondefault value' do
         assert_schemas([schema.items], subject[1])
         assert_equal([2], subject[1].jsi_instance)
+      end
+    end
+
+    describe 'negative index out of range' do
+      it 'returns nil, does not try to insert complex default' do
+        assert_nil(subject[-5])
+      end
+    end
+
+    describe 'arbitrary object' do
+      it 'raises, does not try to insert complex default' do
+        assert_raises(TypeError) { subject[Object.new] }
       end
     end
   end
