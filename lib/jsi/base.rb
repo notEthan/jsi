@@ -14,7 +14,9 @@ module JSI
   #
   # the JSI::Base class itself is not intended to be instantiated.
   class Base
-    include PathedNode
+    autoload :ArrayNode, 'jsi/base/node'
+    autoload :HashNode, 'jsi/base/node'
+
     include Schema::SchemaAncestorNode
     include Util::Memoize
 
@@ -134,9 +136,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: []
     )
-      unless respond_to?(:jsi_schemas)
-        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.")
-      end
+      raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
       jsi_initialize_memos
 
@@ -154,10 +154,10 @@ module JSI
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
       if jsi_instance.respond_to?(:to_hash)
-        extend PathedHashNode
+        extend HashNode
       end
       if jsi_instance.respond_to?(:to_ary)
-        extend PathedArrayNode
+        extend ArrayNode
       end
 
       if jsi_instance.is_a?(JSI::Base)
@@ -182,10 +182,16 @@ module JSI
     # @return [JSI::Base]
     attr_reader :jsi_root_node
 
+    # the content of this node in our {#jsi_document} at our {#jsi_ptr}. the same as {#jsi_instance}.
+    def jsi_node_content
+      content = jsi_ptr.evaluate(jsi_document)
+      content
+    end
+
     # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
     alias_method :jsi_instance, :jsi_node_content
 
-    # each is overridden by PathedHashNode or PathedArrayNode when appropriate. the base #each
+    # each is overridden by Base::HashNode or Base::ArrayNode when appropriate. the base #each
     # is not actually implemented, along with all the methods of Enumerable.
     def each(*_)
       raise NoMethodError, "Enumerable methods and #each not implemented for instance that is not like a hash or array: #{jsi_instance.pretty_inspect.chomp}"
@@ -376,7 +382,7 @@ module JSI
           if use_default
             defaults = Set.new
             subinstance_schemas.each do |subinstance_schema|
-              if subinstance_schema.respond_to?(:to_hash) && subinstance_schema.key?('default')
+              if subinstance_schema.keyword?('default')
                 defaults << subinstance_schema['default']
               end
             end
@@ -420,8 +426,8 @@ module JSI
     end
 
     # yields the content of this JSI's instance. the block must result in
-    # a modified copy of the yielded instance (not destructively modifying it)
-    # which will be used to instantiate a new JSI with the modified content.
+    # a modified copy of the yielded instance (not modified in place, which would alter this JSI
+    # as well) which will be used to instantiate and return a new JSI with the modified content.
     #
     # the result may have different schemas which describe it than this JSI's schemas,
     # if conditional applicator schemas apply differently to the modified instance.
@@ -502,27 +508,14 @@ module JSI
     # @private
     # @return [Array<String>]
     def jsi_object_group_text
-      class_name = self.class.name unless self.class.in_schema_classes
-      class_txt = begin
-        if class_name
-          # ignore ID
-          schema_module_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name }.compact
-          if schema_module_names.empty?
-            class_name
-          else
-            "#{class_name} (#{schema_module_names.join(', ')})"
-          end
-        else
-          schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_uri }.compact
-          if schema_names.empty?
-            "JSI"
-          else
-            "JSI (#{schema_names.join(', ')})"
-          end
-        end
+      schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_uri }.compact
+      if schema_names.empty?
+        class_txt = "JSI"
+      else
+        class_txt = "JSI (#{schema_names.join(', ')})"
       end
 
-      if (is_a?(PathedArrayNode) || is_a?(PathedHashNode)) && ![Array, Hash].include?(jsi_node_content.class)
+      if (is_a?(ArrayNode) || is_a?(HashNode)) && ![Array, Hash].include?(jsi_node_content.class)
         if jsi_node_content.respond_to?(:jsi_object_group_text)
           content_txt = jsi_node_content.jsi_object_group_text
         else
@@ -569,7 +562,8 @@ module JSI
 
     def jsi_subinstance_memos
       jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , subinstance_schemas: |
-        JSI::SchemaClasses.class_for_schemas(subinstance_schemas).new(@jsi_document,
+        jsi_class = JSI::SchemaClasses.class_for_schemas(subinstance_schemas)
+        jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_root_node: @jsi_root_node,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
@@ -583,7 +577,7 @@ module JSI
         as_jsi
       elsif as_jsi == :auto
         complex_value = value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
-        schema_value = subinstance_schemas.any? { |subinstance_schema| subinstance_schema.describes_schema? }
+        schema_value = subinstance_schemas.any?(&:describes_schema?)
         complex_value || schema_value
       else
         raise(ArgumentError, "as_jsi must be one of: :auto, true, false")

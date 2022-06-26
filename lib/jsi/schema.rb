@@ -34,7 +34,7 @@ module JSI
       # the contents of a $id keyword whose value is a string, or nil
       # @return [#to_str, nil]
       def id
-        if schema_content.respond_to?(:to_hash) && schema_content['$id'].respond_to?(:to_str)
+        if keyword?('$id') && schema_content['$id'].respond_to?(:to_str)
           schema_content['$id']
         else
           nil
@@ -47,7 +47,7 @@ module JSI
       # the contents of an `id` keyword whose value is a string, or nil
       # @return [#to_str, nil]
       def id
-        if schema_content.respond_to?(:to_hash) && schema_content['id'].respond_to?(:to_str)
+        if keyword?('id') && schema_content['id'].respond_to?(:to_str)
           schema_content['id']
         else
           nil
@@ -296,10 +296,17 @@ module JSI
     end
 
     # the underlying JSON data used to instantiate this JSI::Schema.
-    # this is an alias for PathedNode#jsi_node_content, named for clarity in the context of working with
+    # this is an alias for {Base#jsi_node_content}, named for clarity in the context of working with
     # a schema.
     def schema_content
       jsi_node_content
+    end
+
+    # does this schema contain the given keyword?
+    # @return [Boolean]
+    def keyword?(keyword)
+      schema_content = jsi_node_content
+      schema_content.respond_to?(:to_hash) && schema_content.key?(keyword)
     end
 
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
@@ -307,7 +314,7 @@ module JSI
     def schema_absolute_uri
       if respond_to?(:id_without_fragment) && id_without_fragment
         if jsi_schema_base_uri
-          Addressable::URI.parse(jsi_schema_base_uri).join(id_without_fragment)
+          jsi_schema_base_uri.join(id_without_fragment)
         elsif id_without_fragment.absolute?
           id_without_fragment
         else
@@ -355,7 +362,7 @@ module JSI
           end
         end
 
-        relative_ptr = jsi_ptr.ptr_relative_to(parent_schema.jsi_ptr)
+        relative_ptr = jsi_ptr.relative_to(parent_schema.jsi_ptr)
         yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
       end
 
@@ -399,9 +406,7 @@ module JSI
     # @param uri (see SchemaSet#new_jsi)
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are
     #   inplace applicator schemas matched from this schema.
-    def new_jsi(instance,
-        **kw
-    )
+    def new_jsi(instance, **kw)
       SchemaSet[self].new_jsi(instance, **kw)
     end
 
@@ -434,30 +439,30 @@ module JSI
     # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
     # with {DescribesSchemaModule}, and the JSI Schema Module will include the given modules.
     #
-    # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of
+    # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality of
     #   the schema to extend schemas described by this schema.
     #   this must include JSI::Schema (usually indirectly).
     # @return [void]
-    def describes_schema!(metaschema_instance_modules)
-      metaschema_instance_modules = Util.ensure_module_set(metaschema_instance_modules)
+    def describes_schema!(schema_implementation_modules)
+      schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
 
-      unless metaschema_instance_modules.any? { |mod| mod <= Schema }
-        raise(ArgumentError, "metaschema_instance_modules for a schema must include #{Schema}")
+      unless schema_implementation_modules.any? { |mod| mod <= Schema }
+        raise(ArgumentError, "schema_implementation_modules for a schema must include #{Schema}")
       end
 
       if describes_schema?
         # this schema, or one equal to it, has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
-        # it is a bug if it was called different times with different metaschema_instance_modules, though.
-        unless jsi_schema_module.metaschema_instance_modules == metaschema_instance_modules
-          raise(ArgumentError, "this schema already describes a schema with different metaschema_instance_modules")
+        # it is a bug if it was called different times with different schema_implementation_modules, though.
+        unless jsi_schema_module.schema_implementation_modules == schema_implementation_modules
+          raise(ArgumentError, "this schema already describes a schema with different schema_implementation_modules")
         end
       else
-        metaschema_instance_modules.each do |mod|
+        schema_implementation_modules.each do |mod|
           jsi_schema_module.include(mod)
         end
         jsi_schema_module.extend(DescribesSchemaModule)
-        jsi_schema_module.instance_variable_set(:@metaschema_instance_modules, metaschema_instance_modules)
+        jsi_schema_module.instance_variable_set(:@schema_implementation_modules, schema_implementation_modules)
       end
 
       extend(DescribesSchema)
@@ -572,7 +577,7 @@ module JSI
     # @param instance [Object] the instance to validate against this schema
     # @return [JSI::Validation::Result]
     def instance_validate(instance)
-      if instance.is_a?(JSI::PathedNode)
+      if instance.is_a?(Base)
         instance_ptr = instance.jsi_ptr
         instance_document = instance.jsi_document
       else
@@ -586,7 +591,7 @@ module JSI
     # @param instance [Object] the instance to validate against this schema
     # @return [Boolean]
     def instance_valid?(instance)
-      if instance.is_a?(JSI::PathedNode)
+      if instance.is_a?(Base)
         instance = instance.jsi_node_content
       end
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?

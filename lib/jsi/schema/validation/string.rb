@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::StringLength
     # @private
     def internal_validate_maxLength(result_builder)
-      if schema_content.key?('maxLength')
+      if keyword?('maxLength')
         value = schema_content['maxLength']
         # The value of this keyword MUST be a non-negative integer.
         if internal_integer?(value) && value >= 0
@@ -25,7 +25,7 @@ module JSI
 
     # @private
     def internal_validate_minLength(result_builder)
-      if schema_content.key?('minLength')
+      if keyword?('minLength')
         value = schema_content['minLength']
         # The value of this keyword MUST be a non-negative integer.
         if internal_integer?(value) && value >= 0

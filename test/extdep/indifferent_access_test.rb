@@ -1,4 +1,4 @@
-require_relative 'test_helper'
+require_relative '../test_helper'
 
 require "active_support/core_ext/hash/indifferent_access"
 

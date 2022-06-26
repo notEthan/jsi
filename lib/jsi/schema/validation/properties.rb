@@ -6,7 +6,7 @@ module JSI
     def internal_validate_properties(result_builder)
       evaluated_property_names = Set[]
 
-      if schema_content.key?('properties')
+      if keyword?('properties')
         value = schema_content['properties']
         # The value of "properties" MUST be an object. Each value of this object MUST be a valid JSON Schema.
         if value.respond_to?(:to_hash)
@@ -36,7 +36,7 @@ module JSI
         end
       end
 
-      if schema_content.key?('patternProperties')
+      if keyword?('patternProperties')
         value = schema_content['patternProperties']
         # The value of "patternProperties" MUST be an object. Each property name of this object SHOULD be a
         # valid regular expression, according to the ECMA 262 regular expression dialect. Each property value
@@ -75,7 +75,7 @@ module JSI
         end
       end
 
-      if schema_content.key?('additionalProperties')
+      if keyword?('additionalProperties')
         value = schema_content['additionalProperties']
         # The value of "additionalProperties" MUST be a valid JSON Schema.
         if result_builder.instance.respond_to?(:to_hash)

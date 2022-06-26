@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Dependencies
     # @private
     def internal_validate_dependencies(result_builder)
-      if schema_content.key?('dependencies')
+      if keyword?('dependencies')
         value = schema_content['dependencies']
         # This keyword's value MUST be an object. Each property specifies a dependency.  Each dependency
         # value MUST be an array or a valid JSON Schema.

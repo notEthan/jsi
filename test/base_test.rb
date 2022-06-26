@@ -118,12 +118,6 @@ describe JSI::Base do
     end
   end
   describe 'initialization' do
-    describe 'on Base' do
-      it 'errors' do
-        err = assert_raises(TypeError) { JSI::Base.new({}) }
-        assert_equal('cannot instantiate JSI::Base which has no method #jsi_schemas. it is recommended to instantiate JSIs from a schema using JSI::Schema#new_jsi.', err.message)
-      end
-    end
     describe 'nil' do
       let(:instance) { nil }
       it 'initializes with nil instance' do
@@ -206,8 +200,8 @@ describe JSI::Base do
     end
     let(:instance) { {'phone' => [{}]} }
     it 'has jsi_schemas' do
-      assert_equal(Set[schema], subject.jsi_schemas)
-      assert_equal(Set[schema.properties['phone']], subject.phone.jsi_schemas)
+      assert_schemas([schema], subject)
+      assert_schemas([schema.properties['phone']], subject.phone)
     end
   end
 
@@ -428,8 +422,8 @@ describe JSI::Base do
         end
         assert_equal([[]], modified.jsi_instance)
         assert_equal([{}], subject.jsi_instance)
-        assert_equal(Set[schema.items, schema.items.oneOf[1]], modified.first.jsi_schemas)
-        assert_equal(Set[schema.items, schema.items.oneOf[0]], subject.first.jsi_schemas)
+        assert_schemas([schema.items, schema.items.oneOf[1]], modified.first)
+        assert_schemas([schema.items, schema.items.oneOf[0]], subject.first)
         assert(!modified.first.respond_to?(:to_hash))
         assert(modified.first.respond_to?(:to_ary))
         assert(subject.first.respond_to?(:to_hash))
@@ -601,11 +595,11 @@ describe JSI::Base do
     describe 'readers' do
       it 'reads attributes described as properties' do
         assert_equal({'x' => 'y'}, subject.foo.jsi_instance)
-        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
+        assert_schemas([schema.properties['foo']], subject.foo)
         assert_respond_to(subject.foo, :to_hash)
         refute_respond_to(subject.foo, :to_ary)
         assert_equal([3.14159], subject.bar.jsi_instance)
-        assert_is_a(schema.properties['bar'].jsi_schema_module, subject.bar)
+        assert_schemas([schema.properties['bar']], subject.bar)
         refute_respond_to(subject.bar, :to_hash)
         assert_respond_to(subject.bar, :to_ary)
         assert_equal(true, subject.baz)
@@ -615,7 +609,7 @@ describe JSI::Base do
       end
       it 'passes as_jsi option' do
         assert_equal({'x' => 'y'}, subject.foo(as_jsi: false))
-        assert_is_a(schema.properties['baz'].jsi_schema_module, subject.baz(as_jsi: true))
+        assert_schemas([schema.properties['baz']], subject.baz(as_jsi: true))
       end
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
@@ -634,7 +628,7 @@ describe JSI::Base do
               'inspect' => {},        # Base
               'pretty_inspect' => {}, # Kernel
               'as_json' => {},        # Base::OverrideFromExtensions, extended on initialization
-              'each' => {},           # PathedHashNode / PathedArrayNode
+              'each' => {},           # Base::HashNode / Base::ArrayNode
               'instance_exec' => {},  # BasicObject
               'jsi_instance' => {},   # Base
               'jsi_schemas' => {},    # module_for_schema singleton definition
@@ -666,7 +660,7 @@ describe JSI::Base do
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
-          assert_equal(Set[schema], subject.jsi_schemas)
+          assert_schemas([schema], subject)
         end
       end
       describe 'properties with names to ignore' do
@@ -742,8 +736,8 @@ describe JSI::Base do
         subject.foo = {'y' => 'z'}
 
         assert_equal({'y' => 'z'}, subject.foo.jsi_instance)
-        assert_is_a(schema.properties['foo'].jsi_schema_module, orig_foo)
-        assert_is_a(schema.properties['foo'].jsi_schema_module, subject.foo)
+        assert_schemas([schema.properties['foo']], orig_foo)
+        assert_schemas([schema.properties['foo']], subject.foo)
       end
       it 'modifies the instance, visible to other references to the same instance' do
         orig_instance = subject.jsi_instance
@@ -819,7 +813,7 @@ describe JSI::Base do
 
     describe 'overriding as_json' do
       it 'overrides' do
-        # note that since JSIs are extended with PathedArrayNode/PathedHashNode in #initialize, methods of
+        # note that since JSIs are extended with Base::ArrayNode/Base::HashNode in #initialize, methods of
         # those modules are not overridden by schema modules (which are included on the instance's class).
         # Enumerable is included on Base (rather than conditionally extending hash/array nodes) so
         # that Enumerable methods can be overridden (in particular as_json - although not defined on
@@ -830,17 +824,6 @@ describe JSI::Base do
         assert_equal(:foo, schema.new_jsi([]).as_json)
         assert_equal(:foo, schema.new_jsi(0).as_json)
       end
-    end
-  end
-  describe 'equality between different classes of JSI::Base subclasses' do
-    let(:subject_subclass) { Class.new(schema.new_jsi({}).class).new(instance) }
-
-    it 'considers a Base subclass (class_for_schema) and subsubclass to be equal with the same instance' do
-      assert_equal(subject.hash, subject_subclass.hash)
-      assert(subject == subject_subclass)
-      assert(subject_subclass == subject)
-      assert(subject.eql?(subject_subclass))
-      assert(subject_subclass.eql?(subject))
     end
   end
   describe 'equality' do

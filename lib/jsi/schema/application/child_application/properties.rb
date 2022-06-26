@@ -5,11 +5,11 @@ module JSI
     # @private
     def internal_applicate_properties(property_name, &block)
       apply_additional = true
-      if schema_content.key?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
+      if keyword?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
         apply_additional = false
         yield subschema(['properties', property_name])
       end
-      if schema_content['patternProperties'].respond_to?(:to_hash)
+      if keyword?('patternProperties') && schema_content['patternProperties'].respond_to?(:to_hash)
         schema_content['patternProperties'].each_key do |pattern|
           if pattern.respond_to?(:to_str) && property_name.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
             apply_additional = false
@@ -17,7 +17,7 @@ module JSI
           end
         end
       end
-      if apply_additional && schema_content.key?('additionalProperties')
+      if apply_additional && keyword?('additionalProperties')
         yield subschema(['additionalProperties'])
       end
     end

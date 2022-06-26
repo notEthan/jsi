@@ -1,21 +1,5 @@
 require_relative 'test_helper'
 
-base = {
-  '$schema' => 'http://json-schema.org/draft-07/schema#',
-  'description' => 'named array schema',
-  'type' => 'array',
-  'items' => [
-    {'type' => 'string'},
-    {'type' => 'object'},
-    {'type' => 'array', 'items' => {}},
-  ],
-}
-NAMED_ARY_SCHEMA = JSI.new_schema(base)
-NAMED_ID_ARY_SCHEMA = JSI.new_schema({'$id' => 'http://jsi/base/named_array_schema'}.merge(base))
-# TODO drop support for this
-NamedArrayInstance = NAMED_ARY_SCHEMA.new_jsi([]).class
-NamedIdArrayInstance = NAMED_ID_ARY_SCHEMA.new_jsi([]).class
-
 describe 'JSI::Base array' do
   let(:instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
   let(:schema_content) do
@@ -56,7 +40,7 @@ describe 'JSI::Base array' do
     describe 'nondefault value (nonbasic type)' do
       let(:instance) { [[2]] }
       it 'returns the nondefault value' do
-        assert_is_a(schema.items.jsi_schema_module, subject[0])
+        assert_schemas([schema.items], subject[0])
         assert_equal([2], subject[0].jsi_instance)
       end
     end
@@ -71,7 +55,7 @@ describe 'JSI::Base array' do
     describe 'default value' do
       let(:instance) { [{'bar' => 3}] }
       it 'returns the default value' do
-        assert_is_a(schema.items.jsi_schema_module, subject[1])
+        assert_schemas([schema.items], subject[1])
         assert_nil(subject[1, use_default: false])
         assert_equal({'foo' => 2}, subject[1].jsi_instance)
       end
@@ -86,7 +70,7 @@ describe 'JSI::Base array' do
     describe 'nondefault value (nonbasic type)' do
       let(:instance) { [true, [2]] }
       it 'returns the nondefault value' do
-        assert_is_a(schema.items.jsi_schema_module, subject[1])
+        assert_schemas([schema.items], subject[1])
         assert_equal([2], subject[1].jsi_instance)
       end
     end
@@ -98,8 +82,8 @@ describe 'JSI::Base array' do
       subject[2] = {'y' => 'z'}
 
       assert_equal({'y' => 'z'}, subject[2].jsi_instance)
-      assert_is_a(schema.items[2].jsi_schema_module, orig_2)
-      assert_is_a(schema.items[2].jsi_schema_module, subject[2])
+      assert_schemas([schema.items[2]], orig_2)
+      assert_schemas([schema.items[2]], subject[2])
     end
     it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.jsi_instance
@@ -156,86 +140,6 @@ describe 'JSI::Base array' do
         assert_equal(pp, subject.pretty_inspect)
       end
     end
-    describe '#inspect named' do
-      let(:subject) { NAMED_ARY_SCHEMA.new_jsi(instance) }
-      it 'inspects' do
-        assert_equal("#[<NamedArrayInstance> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
-      end
-    end
-    describe '#pretty_print named' do
-      let(:subject) { NAMED_ARY_SCHEMA.new_jsi(instance) }
-      it 'pretty prints' do
-        pp = <<~PP
-          #[<NamedArrayInstance>
-            "foo",
-            \#{<JSI> "lamp" => #[<JSI> 3]},
-            #[<JSI> "q", "r"],
-            \#{<JSI> "four" => 4}
-          ]
-          PP
-        assert_equal(pp, subject.pretty_inspect)
-      end
-    end
-    describe '#inspect named SortOfArray' do
-      let(:subject) { NAMED_ARY_SCHEMA.new_jsi(SortOfArray.new(instance)) }
-      it 'inspects' do
-        assert_equal("#[<NamedArrayInstance SortOfArray> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
-      end
-    end
-    describe '#pretty_print named SortOfArray' do
-      let(:subject) { NAMED_ARY_SCHEMA.new_jsi(SortOfArray.new(instance)) }
-      it 'pretty prints' do
-        pp = <<~PP
-          #[<NamedArrayInstance SortOfArray>
-            "foo",
-            \#{<JSI> "lamp" => #[<JSI> 3]},
-            #[<JSI> "q", "r"],
-            \#{<JSI> "four" => 4}
-          ]
-          PP
-        assert_equal(pp, subject.pretty_inspect)
-      end
-    end
-    describe '#inspect named with id' do
-      let(:subject) { NAMED_ID_ARY_SCHEMA.new_jsi(instance) }
-      it 'inspects' do
-        assert_equal("#[<NamedIdArrayInstance> \"foo\", \#{<JSI (http://jsi/base/named_array_schema#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base/named_array_schema#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
-      end
-    end
-    describe '#pretty_print named with id' do
-      let(:subject) { NAMED_ID_ARY_SCHEMA.new_jsi(instance) }
-      it 'pretty prints' do
-        pp = <<~PP
-          #[<NamedIdArrayInstance>
-            "foo",
-            \#{<JSI (http://jsi/base/named_array_schema#/items/1)> "lamp" => #[<JSI> 3]},
-            \#[<JSI (http://jsi/base/named_array_schema#/items/2)> "q", "r"],
-            \#{<JSI> "four" => 4}
-          ]
-          PP
-        assert_equal(pp, subject.pretty_inspect)
-      end
-    end
-    describe '#inspect named with id SortOfArray' do
-      let(:subject) { NAMED_ID_ARY_SCHEMA.new_jsi(SortOfArray.new(instance)) }
-      it 'inspects' do
-        assert_equal("#[<NamedIdArrayInstance SortOfArray> \"foo\", \#{<JSI (http://jsi/base/named_array_schema#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base/named_array_schema#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
-      end
-    end
-    describe '#pretty_print named with id SortOfArray' do
-      let(:subject) { NAMED_ID_ARY_SCHEMA.new_jsi(SortOfArray.new(instance)) }
-      it 'pretty prints' do
-        pp = <<~PP
-          #[<NamedIdArrayInstance SortOfArray>
-            "foo",
-            \#{<JSI (http://jsi/base/named_array_schema#/items/1)> "lamp" => #[<JSI> 3]},
-            \#[<JSI (http://jsi/base/named_array_schema#/items/2)> "q", "r"],
-            \#{<JSI> "four" => 4}
-          ]
-          PP
-        assert_equal(pp, subject.pretty_inspect)
-      end
-    end
     describe '#inspect with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
       let(:subject) { schema.new_jsi(instance) }
@@ -283,7 +187,7 @@ describe 'JSI::Base array' do
   end
   describe 'each' do
     it 'yields each element' do
-      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::PathedHashNode]
+      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base::HashNode]
       subject.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'yields each element as_jsi' do
@@ -293,7 +197,7 @@ describe 'JSI::Base array' do
   end
   describe 'to_ary' do
     it 'includes each element' do
-      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::PathedHashNode]
+      expect_modules = [String, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base::HashNode]
       subject.to_ary.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'includes each element as_jsi' do

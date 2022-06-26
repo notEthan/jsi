@@ -4,7 +4,7 @@ module JSI
   module Schema::Application::InplaceApplication::Dependencies
     # @private
     def internal_applicate_dependencies(instance, visited_refs, &block)
-      if schema_content.key?('dependencies')
+      if keyword?('dependencies')
         value = schema_content['dependencies']
         # This keyword's value MUST be an object. Each property specifies a dependency.  Each dependency
         # value MUST be an array or a valid JSON Schema.

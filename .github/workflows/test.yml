@@ -8,8 +8,13 @@ jobs:
       fail-fast: false
       matrix:
         ruby-version:
+        - jruby
+        - truffleruby
+        - truffleruby+graalvm
         - '2.3'
         - '2.7'
+        - '3.0'
+        - head
         runs-on:
         - ubuntu-latest
 

@@ -15,22 +15,18 @@ module JSI
       class << self
         # creates a AttrStruct subclass with the given attribute keys.
         # @param attribute_keys [Enumerable<String, Symbol>]
-        def [](*attribute_keys)
-          unless self == AttrStruct
-            # :nocov:
-            raise(NotImplementedError, "AttrStruct multiple inheritance not supported")
-            # :nocov:
-          end
-
+        def subclass(*attribute_keys)
           bad = attribute_keys.reject { |key| key.respond_to?(:to_str) || key.is_a?(Symbol) }
           unless bad.empty?
             raise ArgumentError, "attribute keys must be String or Symbol; got keys: #{bad.map(&:inspect).join(', ')}"
           end
-          attribute_keys = attribute_keys.map { |key| key.is_a?(Symbol) ? key.to_s : key }
+          attribute_keys = attribute_keys.map { |key| convert_key(key) }
 
-          Class.new(AttrStruct).tap do |klass|
-            klass.define_singleton_method(:attribute_keys) { attribute_keys }
-            klass.send(:define_method, :attribute_keys) { attribute_keys }
+          all_attribute_keys = (self.attribute_keys + attribute_keys).freeze
+
+          Class.new(self).tap do |klass|
+            klass.define_singleton_method(:attribute_keys) { all_attribute_keys }
+
             attribute_keys.each do |attribute_key|
               # reader
               klass.send(:define_method, attribute_key) do
@@ -44,27 +40,45 @@ module JSI
             end
           end
         end
+
+        alias_method :[], :subclass
+
+        # the attribute keys defined for this class
+        # @return [Set<String>]
+        def attribute_keys
+          # empty for AttrStruct itself; redefined on each subclass
+          Util::Private::EMPTY_SET
+        end
+
+        # returns a frozen string, given a string or symbol.
+        # returns anything else as-is for the caller to handle.
+        # @api private
+        def convert_key(key)
+          # TODO use Symbol#name when available on supported rubies
+          key.is_a?(Symbol) ? key.to_s.freeze : key.frozen? ? key : key.is_a?(String) ? key.dup.freeze : key
+        end
       end
 
       def initialize(attributes = {})
         unless attributes.respond_to?(:to_hash)
           raise(TypeError, "expected attributes to be a Hash; got: #{attributes.inspect}")
         end
-        attributes = attributes.map { |k, v| {k.is_a?(Symbol) ? k.to_s : k => v} }.inject({}, &:update)
-        bad = attributes.keys.reject { |k| attribute_keys.include?(k) }
+        @attributes = {}
+        attributes.each do |k, v|
+          @attributes[self.class.convert_key(k)] = v
+        end
+        bad = @attributes.keys.reject { |k| attribute_keys.include?(k) }
         unless bad.empty?
           raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
         end
-        @attributes = attributes
       end
 
       def [](key)
-        key = key.to_s if key.is_a?(Symbol)
-        @attributes[key]
+        @attributes[key.is_a?(Symbol) ? key.to_s : key]
       end
 
       def []=(key, value)
-        key = key.to_s if key.is_a?(Symbol)
+        key = self.class.convert_key(key)
         unless attribute_keys.include?(key)
           raise UndefinedAttributeKey, "undefined attribute key: #{key.inspect}"
         end
@@ -95,6 +109,11 @@ module JSI
         }
         q.breakable ''
         q.text '>'
+      end
+
+      # (see AttrStruct.attribute_keys)
+      def attribute_keys
+        self.class.attribute_keys
       end
 
       include FingerprintHash

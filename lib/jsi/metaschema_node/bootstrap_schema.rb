@@ -8,7 +8,7 @@ module JSI
   # Schema#subschema and Schema#resource_root_subschema are the intended mechanisms to instantiate subschemas
   # and resolve references. #[] and #jsi_root_node are not implemented.
   #
-  # metaschema instance modules are attached to generated subclasses of BootstrapSchema by
+  # schema implementation modules are attached to generated subclasses of BootstrapSchema by
   # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
   #
@@ -23,7 +23,7 @@ module JSI
         if self == MetaschemaNode::BootstrapSchema
           name
         else
-          "#{name || MetaschemaNode::BootstrapSchema.name} (#{metaschema_instance_modules.map(&:inspect).join(', ')})"
+          "#{name || MetaschemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
         end
       end
 
@@ -37,8 +37,8 @@ module JSI
         jsi_ptr: Ptr[],
         jsi_schema_base_uri: nil
     )
-      unless respond_to?(:metaschema_instance_modules)
-        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #metaschema_instance_modules")
+      unless respond_to?(:schema_implementation_modules)
+        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema_implementation_modules")
       end
 
       jsi_initialize_memos
@@ -83,7 +83,7 @@ module JSI
     def jsi_object_group_text
       [
         self.class.name || MetaschemaNode::BootstrapSchema.name,
-        "(#{metaschema_instance_modules.map(&:inspect).join(', ')})",
+        "(#{schema_implementation_modules.map(&:inspect).join(', ')})",
         jsi_ptr.uri,
       ]
     end
@@ -94,7 +94,7 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
-        metaschema_instance_modules: metaschema_instance_modules,
+        schema_implementation_modules: schema_implementation_modules,
       }
     end
   end

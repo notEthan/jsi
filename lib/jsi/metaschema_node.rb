@@ -25,17 +25,17 @@ module JSI
 
     # @param jsi_document the document containing the metaschema
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
-    # @param metaschema_instance_modules [Enumerable<Module>] modules which implement the functionality of the
-    #   schema. these are included on the {Schema#jsi_schema_module} of the metaschema.
+    # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality
+    #   of the schema. these are included on the {Schema#jsi_schema_module} of the metaschema.
     #   they extend any schema described by the metaschema, including those in the document containing
     #   the metaschema, and the metaschema itself.
-    #   see {Schema#describes_schema!} param `metaschema_instance_modules`.
+    #   see {Schema#describes_schema!} param `schema_implementation_modules`.
     # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the metaschema in the jsi_document
     # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        metaschema_instance_modules: ,
+        schema_implementation_modules: ,
         metaschema_root_ptr: Ptr[],
         root_schema_ptr: Ptr[],
         jsi_schema_base_uri: nil,
@@ -45,7 +45,7 @@ module JSI
 
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
-      @metaschema_instance_modules = Util.ensure_module_set(metaschema_instance_modules)
+      @schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
       raise(Bug, 'jsi_root_node') if jsi_ptr.root? ^ !jsi_root_node
@@ -59,14 +59,14 @@ module JSI
       jsi_node_content = self.jsi_node_content
 
       if jsi_node_content.respond_to?(:to_hash)
-        extend PathedHashNode
+        extend HashNode
       end
       if jsi_node_content.respond_to?(:to_ary)
-        extend PathedArrayNode
+        extend ArrayNode
       end
 
       instance_for_schemas = jsi_document
-      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(metaschema_instance_modules)
+      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules)
       root_bootstrap_schema = bootstrap_schema_class.new(
         jsi_document,
         jsi_ptr: root_schema_ptr,
@@ -82,8 +82,8 @@ module JSI
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the metaschema, i.e. this is a schema
-          metaschema_instance_modules.each do |metaschema_instance_module|
-            extend metaschema_instance_module
+          schema_implementation_modules.each do |schema_implementation_module|
+            extend schema_implementation_module
           end
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
@@ -108,7 +108,7 @@ module JSI
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if is_a?(Metaschema)
-        describes_schema!(metaschema_instance_modules)
+        describes_schema!(schema_implementation_modules)
       end
 
       @jsi_schemas.each do |schema|
@@ -124,14 +124,14 @@ module JSI
         addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
 
         if !jsi_ptr.root? && [addtlPropsanyOf, addtlItemsanyOf].include?(jsi_ptr.parent)
-          describes_schema!(metaschema_instance_modules)
+          describes_schema!(schema_implementation_modules)
         end
       end
     end
 
     # Set of modules to apply to schemas which are instances of (described by) the metaschema
     # @return [Set<Module>]
-    attr_reader :metaschema_instance_modules
+    attr_reader :schema_implementation_modules
 
     # ptr to the root of the metaschema in the jsi_document
     # @return [JSI::Ptr]
@@ -223,7 +223,7 @@ module JSI
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
-        metaschema_instance_modules: metaschema_instance_modules,
+        schema_implementation_modules: schema_implementation_modules,
         metaschema_root_ptr: metaschema_root_ptr,
         root_schema_ptr: root_schema_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,

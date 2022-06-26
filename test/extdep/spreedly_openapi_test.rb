@@ -1,4 +1,4 @@
-require_relative 'test_helper'
+require_relative '../test_helper'
 
 require 'spreedly_openapi'
 describe 'spreedly openapi' do

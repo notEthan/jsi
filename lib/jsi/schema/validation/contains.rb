@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Contains
     # @private
     def internal_validate_contains(result_builder)
-      if schema_content.key?('contains')
+      if keyword?('contains')
         # An array instance is valid against "contains" if at least one of its elements is valid against
         # the given schema.
         if result_builder.instance.respond_to?(:to_ary)

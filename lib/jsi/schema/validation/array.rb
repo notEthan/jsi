@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::ArrayLength
     # @private
     def internal_validate_maxItems(result_builder)
-      if schema_content.key?('maxItems')
+      if keyword?('maxItems')
         value = schema_content['maxItems']
         # The value of this keyword MUST be a non-negative integer.
         if internal_integer?(value) && value >= 0
@@ -24,7 +24,7 @@ module JSI
 
     # @private
     def internal_validate_minItems(result_builder)
-      if schema_content.key?('minItems')
+      if keyword?('minItems')
         value = schema_content['minItems']
         # The value of this keyword MUST be a non-negative integer.
         if internal_integer?(value) && value >= 0
@@ -45,7 +45,7 @@ module JSI
   module Schema::Validation::UniqueItems
     # @private
     def internal_validate_uniqueItems(result_builder)
-      if schema_content.key?('uniqueItems')
+      if keyword?('uniqueItems')
         value = schema_content['uniqueItems']
         # The value of this keyword MUST be a boolean.
         if value == false

@@ -57,7 +57,7 @@ module JSI
     end
 
     # @return [Set<Module>]
-    attr_reader :metaschema_instance_modules
+    attr_reader :schema_implementation_modules
   end
 
   # this module is a namespace for building schema classes and schema modules.
@@ -88,14 +88,14 @@ module JSI
 
       # a subclass of MetaschemaNode::BootstrapSchema with the given modules included
       # @api private
-      # @param modules [Set<Module>] metaschema instance modules
+      # @param modules [Set<Module>] schema implementation modules
       # @return [Class]
       def bootstrap_schema_class(modules)
         modules = Util.ensure_module_set(modules)
         jsi_memoize(__method__, modules: modules) do |modules: |
           Class.new(MetaschemaNode::BootstrapSchema).instance_exec(modules) do |modules|
-            define_singleton_method(:metaschema_instance_modules) { modules }
-            define_method(:metaschema_instance_modules) { modules }
+            define_singleton_method(:schema_implementation_modules) { modules }
+            define_method(:schema_implementation_modules) { modules }
             modules.each { |mod| include(mod) }
 
             self
@@ -120,7 +120,7 @@ module JSI
               end
 
               accessor_module = JSI::SchemaClasses.accessor_module_for_schema(schema,
-                conflicting_modules: Set[JSI::Base, JSI::PathedArrayNode, JSI::PathedHashNode] +
+                conflicting_modules: Set[JSI::Base, JSI::Base::ArrayNode, JSI::Base::HashNode] +
                   schema.jsi_schema_instance_modules,
               )
               include accessor_module
@@ -157,7 +157,7 @@ module JSI
             m.module_eval do
               define_singleton_method(:inspect) { '(JSI Schema Accessor Module)' }
 
-              conflicting_instance_methods = (conflicting_modules + [m]).map do |mod|
+              conflicting_instance_methods = conflicting_modules.map do |mod|
                 mod.instance_methods + mod.private_instance_methods
               end.inject(Set.new, &:|)
 
@@ -215,7 +215,7 @@ module JSI
     end
 
     # subscripting a JSI schema module or a NotASchemaModule will subscript the node, and
-    # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a PathedNode,
+    # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a JSI::Base,
     # return a NotASchemaModule; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
@@ -225,7 +225,7 @@ module JSI
       sub = @possibly_schema_node[token]
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module
-      elsif sub.is_a?(JSI::PathedNode)
+      elsif sub.is_a?(JSI::Base)
         NotASchemaModule.new(sub)
       else
         sub
@@ -239,7 +239,7 @@ module JSI
       schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
       named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
       return nil unless named_ancestor_schema
-      tokens = possibly_schema_node.jsi_ptr.ptr_relative_to(named_ancestor_schema.jsi_ptr).tokens
+      tokens = possibly_schema_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
       [named_ancestor_schema, tokens]
     end
   end
@@ -258,10 +258,10 @@ module JSI
   # is another node, a NotASchemaModule for that node is returned. otherwise - when the
   # value is a basic type - that value itself is returned.
   class NotASchemaModule
-    # @param node [JSI::PathedNode]
+    # @param node [JSI::Base]
     def initialize(node)
-      unless node.is_a?(JSI::PathedNode)
-        raise(TypeError, "not JSI::PathedNode: #{node.pretty_inspect.chomp}")
+      unless node.is_a?(JSI::Base)
+        raise(TypeError, "not JSI::Base: #{node.pretty_inspect.chomp}")
       end
       if node.is_a?(JSI::Schema)
         raise(TypeError, "cannot instantiate NotASchemaModule for a JSI::Schema node: #{node.pretty_inspect.chomp}")

@@ -36,27 +36,24 @@ describe JSI::Base do
     end
 
     it 'changes applied child schemas' do
-      a_module = schema.definitions['a'].jsi_schema_module
-      b_module = schema.definitions['b'].jsi_schema_module
-
       assert(subject.jsi_valid?)
-      assert_is_a(a_module, subject.ab)
-      refute_is_a(b_module, subject.ab)
+      assert_schema(schema.definitions['a'], subject.ab)
+      refute_schema(schema.definitions['b'], subject.ab)
 
       subject.ab = {'type' => 'b'}
       assert(subject.jsi_valid?)
-      refute_is_a(a_module, subject.ab)
-      assert_is_a(b_module, subject.ab)
+      refute_schema(schema.definitions['a'], subject.ab)
+      assert_schema(schema.definitions['b'], subject.ab)
 
       subject.ab.type = 'a'
       assert(subject.jsi_valid?)
-      assert_is_a(a_module, subject.ab)
-      refute_is_a(b_module, subject.ab)
+      assert_schema(schema.definitions['a'], subject.ab)
+      refute_schema(schema.definitions['b'], subject.ab)
 
       subject.ab = {'type' => 'c'}
       refute(subject.jsi_valid?)
-      refute_is_a(a_module, subject.ab)
-      refute_is_a(b_module, subject.ab)
+      refute_schema(schema.definitions['a'], subject.ab)
+      refute_schema(schema.definitions['b'], subject.ab)
     end
   end
 
@@ -99,35 +96,30 @@ describe JSI::Base do
     end
 
     it 'changes applied child schemas' do
-      a_module = schema.definitions['a'].jsi_schema_module
-      b_module = schema.definitions['b'].jsi_schema_module
-      as_module = schema.definitions['as'].jsi_schema_module
-      bs_module = schema.definitions['bs'].jsi_schema_module
-
       orig_abs = subject.abs
 
       assert(subject.jsi_valid?)
-      assert_is_a(as_module, subject.abs)
-      refute_is_a(bs_module, subject.abs)
-      assert_is_a(a_module, subject.abs[1])
-      refute_is_a(b_module, subject.abs[1])
+      assert_schema(schema.definitions['as'], subject.abs)
+      refute_schema(schema.definitions['bs'], subject.abs)
+      assert_schema(schema.definitions['a'], subject.abs[1])
+      refute_schema(schema.definitions['b'], subject.abs[1])
 
       # changing the first element to "b" changes the array to an instance of schema`bs`
       # and each element beyond the first (additionalItems) to `b`s
       subject.abs[0] = 'b'
       assert(subject.jsi_valid?)
-      refute_is_a(as_module, subject.abs)
-      assert_is_a(bs_module, subject.abs)
-      refute_is_a(a_module, subject.abs[1])
-      assert_is_a(b_module, subject.abs[1])
+      refute_schema(schema.definitions['as'], subject.abs)
+      assert_schema(schema.definitions['bs'], subject.abs)
+      refute_schema(schema.definitions['a'], subject.abs[1])
+      assert_schema(schema.definitions['b'], subject.abs[1])
 
       # the orig_abs does not change (it's already instantiated as a `as`).
       # its additionalItems remain `a`s.
       refute(orig_abs.jsi_valid?)
-      assert_is_a(as_module, orig_abs)
-      refute_is_a(bs_module, orig_abs)
-      assert_is_a(a_module, orig_abs[1])
-      refute_is_a(b_module, orig_abs[1])
+      assert_schema(schema.definitions['as'], orig_abs)
+      refute_schema(schema.definitions['bs'], orig_abs)
+      assert_schema(schema.definitions['a'], orig_abs[1])
+      refute_schema(schema.definitions['b'], orig_abs[1])
       # but the underlying data are changed.
       assert_equal('b', orig_abs[0])
     end

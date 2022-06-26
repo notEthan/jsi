@@ -105,7 +105,7 @@ describe 'unsupported behavior' do
       end
 
       it 'applies properties' do
-        assert_is_a(schema.properties[ARBITRARY_OBJECT].jsi_schema_module, subject[ARBITRARY_OBJECT])
+        assert_schemas([schema.properties[ARBITRARY_OBJECT]], subject[ARBITRARY_OBJECT])
         assert(!subject.jsi_valid?)
         assert(!subject[ARBITRARY_OBJECT].jsi_valid?)
       end
@@ -130,8 +130,8 @@ describe 'unsupported behavior' do
           }
         end
         it 'applies properties' do
-          assert_is_a(schema.properties[[1]].jsi_schema_module, subject[[1]])
-          assert_empty(subject[[]].jsi_schemas)
+          assert_schemas([schema.properties[[1]]], subject[[1]])
+          assert_schemas([], subject[[]])
 
           assert(subject.jsi_valid?)
         end
@@ -145,8 +145,8 @@ describe 'unsupported behavior' do
           }
         end
         it 'applies properties' do
-          assert_is_a(schema.properties[[1]].jsi_schema_module, subject[[1]])
-          assert_empty(subject[[]].jsi_schemas)
+          assert_schemas([schema.properties[[1]]], subject[[1]])
+          assert_schemas([], subject[[]])
 
           assert_equal([
             "instance type does not match `type` value",
@@ -199,8 +199,7 @@ describe 'unsupported behavior' do
       end
 
       it 'applies properties and itmes' do
-        assert_is_a(schema.properties[0].jsi_schema_module, subject[0])
-        assert_is_a(schema.items.jsi_schema_module, subject[0])
+        assert_schemas([schema.properties[0], schema.items], subject[0])
         assert_is_a(Hash, subject.to_hash)
         assert_is_a(Array, subject.to_ary)
       end
@@ -228,12 +227,9 @@ describe 'unsupported behavior' do
       end
 
       it 'applies' do
-        assert_is_a(schema.properties[0].jsi_schema_module, subject[0])
-        assert_is_a(schema.items[0].jsi_schema_module, subject[0])
-        assert_is_a(schema.patternProperties['1'].jsi_schema_module, subject[1])
-        assert_is_a(schema.additionalItems.jsi_schema_module, subject[1])
-        assert_is_a(schema.additionalProperties.jsi_schema_module, subject[2])
-        assert_is_a(schema.additionalItems.jsi_schema_module, subject[2])
+        assert_schemas([schema.properties[0],         schema.items[0]],        subject[0])
+        assert_schemas([schema.patternProperties['1'], schema.additionalItems], subject[1])
+        assert_schemas([schema.additionalProperties,  schema.additionalItems], subject[2])
         assert(subject.jsi_valid?)
         assert_is_a(Hash, subject.to_hash)
         assert_is_a(Array, subject.to_ary)
@@ -257,12 +253,12 @@ describe 'unsupported behavior' do
         child['on'] = child
         root = {'a' => ['world'], 'on' => child}
         jsi = schema.new_jsi(root)
-        assert_equal(Set[schema.properties['a']], jsi.a.jsi_schemas)
-        assert_equal(Set[schema], jsi.on.jsi_schemas)
+        assert_schemas([schema.properties['a']], jsi.a)
+        assert_schemas([schema], jsi.on)
         # little deeper
         deep_parent_ptr = JSI::Ptr['on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on', 'on']
-        assert_equal(Set[schema.properties['a']], deep_parent_ptr.evaluate(jsi).a.jsi_schemas)
-        assert_equal(Set[schema], deep_parent_ptr.evaluate(jsi).jsi_schemas)
+        assert_schemas([schema.properties['a']], deep_parent_ptr.evaluate(jsi).a)
+        assert_schemas([schema], deep_parent_ptr.evaluate(jsi))
 
         # lul
         #assert_raises(SystemStackError) do

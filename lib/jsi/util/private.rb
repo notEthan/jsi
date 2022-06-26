@@ -11,6 +11,28 @@ module JSI
 
     EMPTY_SET = Set[].freeze
 
+    # is a hash as the last argument passed to keyword params? (false in ruby 3; true before - generates
+    # a warning in 2.7 but no way to make 2.7 behave like 3 so the warning is useless)
+    #
+    # TODO remove eventually (keyword argument compatibility)
+    LAST_ARGUMENT_AS_KEYWORD_PARAMETERS = begin
+      if Object.const_defined?(:Warning)
+        warn = ::Warning.instance_method(:warn)
+        ::Warning.send(:remove_method, :warn)
+        ::Warning.send(:define_method, :warn) { |*, **| }
+      end
+
+      -> (k: ) { k }[{k: nil}]
+      true
+    rescue ArgumentError
+      false
+    ensure
+      if Object.const_defined?(:Warning)
+        ::Warning.send(:remove_method, :warn)
+        ::Warning.send(:define_method, :warn, warn)
+      end
+    end
+
     # is the given name ok to use as a ruby method name?
     def ok_ruby_method_name?(name)
       # must be a string
@@ -38,28 +60,6 @@ module JSI
     # https://felleisen.org/matthias/BTLS-index.html
     def ycomb
       proc { |f| f.call(f) }.call(proc { |f| yield proc { |*x| f.call(f).call(*x) } })
-    end
-
-    # is a hash as the last argument passed to keyword params? (false in ruby 3; true before - generates
-    # a warning in 2.7 but no way to make 2.7 behave like 3 so the warning is useless)
-    #
-    # TODO remove eventually (keyword argument compatibility)
-    LAST_ARGUMENT_AS_KEYWORD_PARAMETERS = begin
-      if Object.const_defined?(:Warning)
-        warn = ::Warning.instance_method(:warn)
-        ::Warning.send(:remove_method, :warn)
-        ::Warning.send(:define_method, :warn) { |*_a, **_kw| }
-      end
-
-      -> (k: ) { k }[{k: nil}]
-      true
-    rescue ArgumentError
-      false
-    ensure
-      if Object.const_defined?(:Warning)
-        ::Warning.send(:remove_method, :warn)
-        ::Warning.send(:define_method, :warn, warn)
-      end
     end
 
     module FingerprintHash

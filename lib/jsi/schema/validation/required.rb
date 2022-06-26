@@ -4,7 +4,7 @@ module JSI
   module Schema::Validation::Required
     # @private
     def internal_validate_required(result_builder)
-      if schema_content.key?('required')
+      if keyword?('required')
         value = schema_content['required']
         # The value of this keyword MUST be an array. Elements of this array, if any, MUST be strings, and MUST be unique.
         if value.respond_to?(:to_ary)

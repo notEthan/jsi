@@ -18,23 +18,24 @@ if ENV['CI'] || ENV['COV']
     else
       coverage_dir '{coverage}'
     end
+
+    if ENV['JSI_TEST_TASK']
+      command_name ENV['JSI_TEST_TASK']
+    end
   end
 end
 
-require 'bundler/setup'
+require 'bundler'
+bundler_groups = ENV['JSI_TEST_EXTDEP'] ? [:extdep, :default] : [:default]
+Bundler.setup(*bundler_groups)
 
 if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
   require 'byebug'
 end
 
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'jsi'
+require_relative 'jsi_helper'
 
 require 'yaml'
-
-module JSI
-  TEST_RESOURCES_PATH = RESOURCES_PATH.join('test')
-end
 
 # NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
@@ -44,23 +45,100 @@ require 'minitest/around/spec'
 require 'minitest/reporters'
 
 module Minitest
-  class SpecReporterWithEndSummary < Minitest::Reporters::SpecReporter
+  module WithEndSummary
+    attr_reader :quiet
+
+    def puts(*)
+      super unless quiet
+    end
+
+    def print(*)
+      super unless quiet
+    end
+
+    # @param sigfig [Integer] minimum number of digits to include (not including leading 0s if duration < 1s)
+    def format_duration(duration, sigfig: 3)
+      return('[negative duration]') if duration < 0 # duration should be positive, but nonmonotonic clock is possible
+
+      lg = duration == 0 ? 0 : Math.log10(duration).floor
+      if lg - sigfig + 1 < 0
+        seconds = "%.#{sigfig - lg - 1}f" % (duration % 60)
+      else
+        seconds = "%is" % (duration % 60)
+      end
+
+      if duration > 60 * 60
+        "%ih %im %ss" % [duration / 60 / 60, duration / 60 % 60, seconds]
+      elsif duration > 60
+        "%im %ss" % [duration / 60, seconds]
+      else
+        "%ss" % seconds
+      end
+    end
+
     def report
+      @quiet = true
       super
+      @quiet = false
+
+      puts
+      puts("Finished in #{format_duration(total_time)}")
+      print('%d tests, %d assertions, ' % [count, assertions])
+      color = failures.zero? && errors.zero? ? :green : :red
+      print(send(color, '%d failures, %d errors, ' % [failures, errors]))
+      print(yellow('%d skips' % skips))
+      puts
+
       skip_messages = results.select(&:skipped?).group_by { |r| r.failure.message }
       skip_messages.sort_by { |m, rs| [-rs.size, m] }.each do |msg, rs|
-        puts "#{yellow { "skipped #{rs.size}" }}: #{msg}"
+        puts "#{yellow("skipped #{rs.size}")}: #{msg}"
       end
       results.reject(&:skipped?).sort_by(&:source_location).each do |result|
-        print(red { result.failure.is_a?(UnexpectedError) ? "error" : "failure" })
+        print(red(result.failure.is_a?(UnexpectedError) ? "error" : "failure"))
         print(": #{result.klass} #{result.name}")
         puts
         puts("  #{result.source_location.join(' :')}")
       end
     end
   end
+
+  class JSISpecReporter < Minitest::Reporters::SpecReporter
+    def record_print_status(test)
+      test_name = test.name.gsub(/^test_: /, 'test:')
+      print pad_test(test_name)
+      print_colored_status(test)
+      print(" (#{format_duration(test.time, sigfig: 2)})") unless test.time.nil?
+      puts
+    end
+  end
 end
-Minitest::Reporters.use! MiniTest::SpecReporterWithEndSummary.new
+
+mkreporters = {
+  'spec' => -> {
+    Minitest::JSISpecReporter.new
+  },
+  'default' => -> {
+    Minitest::Reporters::DefaultReporter.new(
+      detailed_skip: false
+    )
+  },
+  'progress' => -> {
+    Minitest::Reporters::ProgressReporter.new(
+      detailed_skip: false,
+      format: '%e (%c/%C • %p%%) [%B]'
+    )
+  },
+}
+
+mkreporter = if ENV['JSI_TESTREPORT']
+  mkreporters[ENV['JSI_TESTREPORT']] || raise("JSI_TESTREPORT must be one of: #{mkreporters.keys}")
+elsif ENV['CI']
+  mkreporters['spec']
+else
+  mkreporters['progress']
+end
+
+Minitest::Reporters.use!(mkreporter.call.extend(Minitest::WithEndSummary))
 Minitest::Test.make_my_diffs_pretty!
 
 class JSISpec < Minitest::Spec
@@ -112,6 +190,41 @@ class JSISpec < Minitest::Spec
 
     assert !obj.is_a?(mod), msg
   end
+
+  # @param schemas [Enumerable<JSI::Schema>]
+  # @param instance [JSI::Base]
+  def assert_schemas(schemas, instance)
+    schemas = JSI::SchemaSet.new(schemas)
+
+    assert_is_a(JSI::Base, instance)
+
+    assert_equal(instance.jsi_schemas, schemas)
+    schemas.each do |schema|
+      assert_is_a(schema.jsi_schema_module, instance)
+    end
+  end
+
+  # @param schema [JSI::Schema]
+  # @param instance [JSI::Base]
+  def assert_schema(schema, instance)
+    JSI::Schema.ensure_schema(schema)
+
+    assert_is_a(JSI::Base, instance)
+
+    assert_includes(instance.jsi_schemas, schema)
+    assert_is_a(schema.jsi_schema_module, instance)
+  end
+
+  # @param schema [JSI::Schema]
+  # @param instance [JSI::Base]
+  def refute_schema(schema, instance)
+    JSI::Schema.ensure_schema(schema)
+
+    assert_is_a(JSI::Base, instance)
+
+    refute_includes(instance.jsi_schemas, schema)
+    refute_is_a(schema.jsi_schema_module, instance)
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec
@@ -121,33 +234,5 @@ Minitest.after_run do
   if ENV['JSI_EXITDEBUG']
     byebug
     nil
-  end
-end
-
-# tests support of things that duck-type #to_hash
-class SortOfHash
-  def initialize(hash)
-    @hash = hash
-  end
-  def to_hash
-    @hash
-  end
-  include JSI::Util::FingerprintHash
-  def jsi_fingerprint
-    {class: self.class, hash: @hash}
-  end
-end
-
-# tests support of things that duck-type #to_ary
-class SortOfArray
-  def initialize(ary)
-    @ary = ary
-  end
-  def to_ary
-    @ary
-  end
-  include JSI::Util::FingerprintHash
-  def jsi_fingerprint
-    {class: self.class, ary: @ary}
   end
 end
