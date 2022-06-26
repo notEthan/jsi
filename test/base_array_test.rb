@@ -162,6 +162,24 @@ describe 'JSI::Base array' do
       end
     end
 
+    describe 'Range' do
+      it 'assigns a range within the current token range' do
+        subject[0...2] = ['a']
+        assert_equal(schema.new_jsi(["a", ["q", "r"], {"four" => 4}]), subject)
+      end
+
+      it 'assigns a range expanding the current token range' do
+        # note that 5 is off the end, and 3..5 is smaller than the actual array. this is fine.
+        subject[3..5] = ['a', 'b', 'c', 'd']
+        assert_equal(schema.new_jsi(["foo", {"lamp" => [3]}, ["q", "r"], "a", "b", "c", "d"]), subject)
+      end
+
+      it 'assigns a range off the end' do
+        subject[6...99] = ['a']
+        assert_equal(schema.new_jsi(["foo", {"lamp" => [3]}, ["q", "r"], {"four" => 4}, nil, nil, "a"]), subject)
+      end
+    end
+
     describe 'when the instance is not arraylike' do
       let(:instance) { nil }
       it 'errors' do
