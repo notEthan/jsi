@@ -147,6 +147,21 @@ describe 'JSI::Base array' do
       assert_equal({'y' => 'z'}, subject.jsi_instance[2])
       assert_equal(orig_instance.class, subject.jsi_instance.class)
     end
+
+    describe 'negative index' do
+      it 'assigns the index from the end' do
+        subject[-2] = 'foo'
+        assert_equal(schema.new_jsi(["foo", {"lamp" => [3]}, "foo", {"four" => 4}]), subject)
+        subject[-2] = ['foo']
+        assert_equal(schema.new_jsi(["foo", {"lamp" => [3]}, ["foo"], {"four" => 4}]), subject)
+      end
+
+      it 'raises given index pointing before the start' do
+        assert_raises(IndexError) { subject[-5] = 'foo' }
+        assert_raises(IndexError) { subject[-5] = ['foo'] }
+      end
+    end
+
     describe 'when the instance is not arraylike' do
       let(:instance) { nil }
       it 'errors' do
