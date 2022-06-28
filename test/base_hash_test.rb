@@ -302,6 +302,24 @@ describe 'JSI::Base hash' do
         assert(subject.jsi_each_propertyName.all?(&:jsi_valid?))
       end
     end
+
+    describe "when a schema's `propertyNames` is not a schema" do
+      let(:schema) do
+        JSI::MetaschemaNode.new({}, schema_implementation_modules: [Module.new {
+          include JSI::Schema
+          include JSI::Schema::Application::ChildApplication
+          include JSI::Schema::Application::InplaceApplication
+          define_method(:internal_child_applicate_keywords) { |*| }
+          define_method(:internal_inplace_applicate_keywords) { |*, &block| block.call self }
+        }]).new_schema({'propertyNames' => {}})
+      end
+
+      it 'applies no propertyNames schemas' do
+        assert_schemas([], schema['propertyNames']) # not what we're testing, just checking propertyNames isn't a schema
+        assert_equal(%w(foo bar baz).map { |k| JSI::SchemaSet[].new_jsi(k) }, subject.jsi_each_propertyName.to_a)
+        assert(subject.jsi_each_propertyName.all?(&:jsi_valid?))
+      end
+    end
   end
 
   describe 'each' do
