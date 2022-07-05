@@ -8,8 +8,6 @@ require "pathname"
 require "bigdecimal"
 require "addressable/uri"
 
-require "jsi/util"
-
 module JSI
   # generally put in code paths that are not expected to be valid control flow paths.
   # rather a NotImplementedCorrectlyError. but that's too long.
@@ -28,6 +26,7 @@ module JSI
   # @private
   SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
+  autoload :Util, 'jsi/util'
   autoload :Ptr, 'jsi/ptr'
   autoload :Typelike, 'jsi/util/typelike'
   autoload :Schema, 'jsi/schema'
