@@ -66,6 +66,10 @@ module JSI
     autoload(:MAXIMUM_BOOLEAN_EXCLUSIVE, 'jsi/schema/elements/numeric_draft04')
     autoload(:MINIMUM_BOOLEAN_EXCLUSIVE, 'jsi/schema/elements/numeric_draft04')
 
+    # content
+    autoload(:CONTENT_ENCODING, 'jsi/schema/elements/content_encoding')
+    autoload(:CONTENT_MEDIA_TYPE, 'jsi/schema/elements/content_media_type')
+
     # metadata
     autoload(:DEFAULT, 'jsi/schema/elements/default')
   end

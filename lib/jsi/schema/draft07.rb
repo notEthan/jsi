@@ -128,6 +128,14 @@ module JSI
           # draft-handrews-json-schema-validation-01 7.  Semantic Validation With "format"
           # TODO
 
+          # draft-handrews-json-schema-validation-01 8.  String-Encoding Non-JSON Data
+
+          # draft-handrews-json-schema-validation-01 8.3.  contentEncoding
+          Schema::Elements::CONTENT_ENCODING[],
+
+          # draft-handrews-json-schema-validation-01 8.4.  contentMediaType
+          Schema::Elements::CONTENT_MEDIA_TYPE[],
+
           # draft-handrews-json-schema-validation-01 9.  Schema Re-Use With "definitions"
           Schema::Elements::DEFINITIONS[keyword: 'definitions'],
 
