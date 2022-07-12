@@ -23,6 +23,9 @@ module JSI
           # draft-handrews-json-schema-01 8.3.  Schema References With "$ref"
           Schema::Elements::REF[exclusive: true],
 
+          # draft-handrews-json-schema-01 9.  Comments With "$comment"
+          Schema::Elements::COMMENT[],
+
           # draft-handrews-json-schema-validation-01 6.  Validation Keywords
 
           # draft-handrews-json-schema-validation-01 6.1.  Validation Keywords for Any Instance Type

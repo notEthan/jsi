@@ -18,6 +18,9 @@ module JSI
     # definitions
     autoload(:DEFINITIONS, 'jsi/schema/elements/definitions')
 
+    # $comment
+    autoload(:COMMENT, 'jsi/schema/elements/comment')
+
     # $ref in-place application
     autoload(:REF, 'jsi/schema/elements/ref')
 
