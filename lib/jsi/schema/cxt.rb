@@ -21,6 +21,11 @@ module JSI
       def keyword?(keyword)
         schema.keyword?(keyword)
       end
+
+      # @return [Boolean]
+      def internal_integer?(value)
+        schema.internal_integer?(value)
+      end
     end
 
     class Cxt
