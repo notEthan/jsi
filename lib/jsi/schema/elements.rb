@@ -9,6 +9,9 @@ module JSI
     # the schema itself
     autoload(:SELF, 'jsi/schema/elements/self')
 
+    # definitions
+    autoload(:DEFINITIONS, 'jsi/schema/elements/definitions')
+
     # $ref in-place application
     autoload(:REF, 'jsi/schema/elements/ref')
 

@@ -122,6 +122,9 @@ module JSI
           # draft-handrews-json-schema-validation-01 7.  Semantic Validation With "format"
           # TODO
 
+          # draft-handrews-json-schema-validation-01 9.  Schema Re-Use With "definitions"
+          Schema::Elements::DEFINITIONS[keyword: 'definitions'],
+
           # draft-handrews-json-schema-validation-01 10.  Schema Annotations
 
           # draft-handrews-json-schema-validation-01 10.1.  "title" and "description"

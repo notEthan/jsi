@@ -89,6 +89,9 @@ module JSI
 
           # draft-fge-json-schema-validation-00 5.5.6.  not
           Schema::Elements::NOT[],
+
+          # draft-fge-json-schema-validation-00 5.5.7.  definitions
+          Schema::Elements::DEFINITIONS[keyword: 'definitions'],
         ],
       )
 

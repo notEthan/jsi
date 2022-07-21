@@ -97,6 +97,11 @@ module JSI
 
           # draft-wright-json-schema-validation-01 6.29.  not
           Schema::Elements::NOT[],
+
+          # draft-wright-json-schema-validation-01 7.  Metadata keywords
+
+          # draft-wright-json-schema-validation-01 7.1.  definitions
+          Schema::Elements::DEFINITIONS[keyword: 'definitions'],
         ],
       )
 
