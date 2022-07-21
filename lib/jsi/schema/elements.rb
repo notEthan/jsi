@@ -74,6 +74,7 @@ module JSI
     autoload(:CONTENT_MEDIA_TYPE, 'jsi/schema/elements/content_media_type')
 
     # metadata
+    autoload(:INFO_STRING, 'jsi/schema/elements/info_string')
     autoload(:DEFAULT, 'jsi/schema/elements/default')
   end
 end
