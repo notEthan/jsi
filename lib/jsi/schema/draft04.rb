@@ -12,6 +12,9 @@ module JSI
           # the schema itself
           Schema::Elements::SELF[],
 
+          # draft-zyp-json-schema-04 6.  The "$schema" keyword
+          Schema::Elements::XSCHEMA[],
+
           # draft-pbryan-zyp-json-ref-03
           Schema::Elements::REF[exclusive: true],
 

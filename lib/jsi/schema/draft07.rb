@@ -12,6 +12,9 @@ module JSI
           # the schema itself
           Schema::Elements::SELF[],
 
+          # draft-handrews-json-schema-01 7.  The "$schema" Keyword
+          Schema::Elements::XSCHEMA[],
+
           # draft-handrews-json-schema-01 8.  Base URI and Dereferencing
 
           # draft-handrews-json-schema-01 8.2.  The "$id" Keyword

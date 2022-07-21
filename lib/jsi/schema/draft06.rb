@@ -12,6 +12,9 @@ module JSI
           # the schema itself
           Schema::Elements::SELF[],
 
+          # draft-wright-json-schema-01 7.  The "$schema" keyword
+          Schema::Elements::XSCHEMA[],
+
           # draft-wright-json-schema-01 8.  Schema references with $ref
           Schema::Elements::REF[exclusive: true],
 
