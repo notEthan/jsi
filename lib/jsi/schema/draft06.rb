@@ -118,6 +118,9 @@ module JSI
           # draft-wright-json-schema-validation-01 7.3.  "default"
           Schema::Elements::DEFAULT[],
 
+          # draft-wright-json-schema-validation-01 7.4.  "examples"
+          Schema::Elements::EXAMPLES[],
+
           # draft-wright-json-schema-validation-01 8.  Semantic validation with "format"
           Schema::Elements::FORMAT[],
         ],

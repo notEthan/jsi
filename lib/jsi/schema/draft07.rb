@@ -155,7 +155,7 @@ module JSI
           # TODO
 
           # draft-handrews-json-schema-validation-01 10.4.  "examples"
-          # TODO
+          Schema::Elements::EXAMPLES[],
         ],
       )
 
