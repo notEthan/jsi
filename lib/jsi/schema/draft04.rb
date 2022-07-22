@@ -101,6 +101,12 @@ module JSI
           # draft-fge-json-schema-validation-00 5.5.7.  definitions
           Schema::Elements::DEFINITIONS[keyword: 'definitions'],
 
+          # draft-fge-json-schema-validation-00 6. Metadata keywords
+
+          # draft-fge-json-schema-validation-00 6.1.  "title" and "description"
+          Schema::Elements::INFO_STRING[keyword: 'title'],
+          Schema::Elements::INFO_STRING[keyword: 'description'],
+
           # draft-fge-json-schema-validation-00 6.2.  "default"
           Schema::Elements::DEFAULT[],
         ],

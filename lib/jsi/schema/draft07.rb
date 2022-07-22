@@ -145,7 +145,8 @@ module JSI
           # draft-handrews-json-schema-validation-01 10.  Schema Annotations
 
           # draft-handrews-json-schema-validation-01 10.1.  "title" and "description"
-          # TODO
+          Schema::Elements::INFO_STRING[keyword: 'title'],
+          Schema::Elements::INFO_STRING[keyword: 'description'],
 
           # draft-handrews-json-schema-validation-01 10.2.  "default"
           Schema::Elements::DEFAULT[],
