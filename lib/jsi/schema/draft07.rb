@@ -152,7 +152,8 @@ module JSI
           Schema::Elements::DEFAULT[],
 
           # draft-handrews-json-schema-validation-01 10.3.  "readOnly" and "writeOnly"
-          # TODO
+          Schema::Elements::INFO_BOOL[keyword: 'readOnly'],
+          Schema::Elements::INFO_BOOL[keyword: 'writeOnly'],
 
           # draft-handrews-json-schema-validation-01 10.4.  "examples"
           Schema::Elements::EXAMPLES[],

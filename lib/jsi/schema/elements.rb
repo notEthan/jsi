@@ -78,6 +78,7 @@ module JSI
 
     # metadata
     autoload(:INFO_STRING, 'jsi/schema/elements/info_string')
+    autoload(:INFO_BOOL, 'jsi/schema/elements/info_bool')
     autoload(:DEFAULT, 'jsi/schema/elements/default')
     autoload(:EXAMPLES, 'jsi/schema/elements/examples')
   end
