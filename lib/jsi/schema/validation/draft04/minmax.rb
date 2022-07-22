@@ -10,6 +10,7 @@ module JSI
         unless [true, false].include?(value)
           result_builder.schema_error('`exclusiveMaximum` is not true or false', 'exclusiveMaximum')
         end
+        #> If "exclusiveMaximum" is present, "maximum" MUST also be present.
         if !keyword?('maximum')
           result_builder.schema_error('`exclusiveMaximum` has no effect without adjacent `maximum` keyword', 'exclusiveMaximum')
         end
@@ -53,6 +54,7 @@ module JSI
         unless [true, false].include?(value)
           result_builder.schema_error('`exclusiveMinimum` is not true or false', 'exclusiveMinimum')
         end
+        #> If "exclusiveMinimum" is present, "minimum" MUST also be present.
         if !keyword?('minimum')
           result_builder.schema_error('`exclusiveMinimum` has no effect without adjacent `minimum` keyword', 'exclusiveMinimum')
         end
