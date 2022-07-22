@@ -109,6 +109,9 @@ module JSI
 
           # draft-fge-json-schema-validation-00 6.2.  "default"
           Schema::Elements::DEFAULT[],
+
+          # draft-fge-json-schema-validation-00 7.  Semantic validation with "format"
+          Schema::Elements::FORMAT[],
         ],
       )
 

@@ -129,7 +129,7 @@ module JSI
           Schema::Elements::NOT[],
 
           # draft-handrews-json-schema-validation-01 7.  Semantic Validation With "format"
-          # TODO
+          Schema::Elements::FORMAT[],
 
           # draft-handrews-json-schema-validation-01 8.  String-Encoding Non-JSON Data
 
