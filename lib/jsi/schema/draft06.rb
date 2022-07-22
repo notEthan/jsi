@@ -107,6 +107,9 @@ module JSI
 
           # draft-wright-json-schema-validation-01 7.1.  definitions
           Schema::Elements::DEFINITIONS[keyword: 'definitions'],
+
+          # draft-wright-json-schema-validation-01 7.3.  "default"
+          Schema::Elements::DEFAULT[],
         ],
       )
 

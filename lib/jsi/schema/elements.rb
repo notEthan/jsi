@@ -62,5 +62,8 @@ module JSI
     autoload(:EXCLUSIVE_MINIMUM, 'jsi/schema/elements/numeric')
     autoload(:MAXIMUM_BOOLEAN_EXCLUSIVE, 'jsi/schema/elements/numeric_draft04')
     autoload(:MINIMUM_BOOLEAN_EXCLUSIVE, 'jsi/schema/elements/numeric_draft04')
+
+    # metadata
+    autoload(:DEFAULT, 'jsi/schema/elements/default')
   end
 end

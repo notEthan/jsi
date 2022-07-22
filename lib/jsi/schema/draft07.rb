@@ -134,7 +134,7 @@ module JSI
           # TODO
 
           # draft-handrews-json-schema-validation-01 10.2.  "default"
-          # TODO
+          Schema::Elements::DEFAULT[],
 
           # draft-handrews-json-schema-validation-01 10.3.  "readOnly" and "writeOnly"
           # TODO

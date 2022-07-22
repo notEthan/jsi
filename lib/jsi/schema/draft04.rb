@@ -97,6 +97,9 @@ module JSI
 
           # draft-fge-json-schema-validation-00 5.5.7.  definitions
           Schema::Elements::DEFINITIONS[keyword: 'definitions'],
+
+          # draft-fge-json-schema-validation-00 6.2.  "default"
+          Schema::Elements::DEFAULT[],
         ],
       )
 
