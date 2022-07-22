@@ -164,6 +164,13 @@ JSI supports these JSON Schema specification versions:
 | Draft 6 | `http://json-schema.org/draft-06/schema#` | {JSI::JSONSchemaDraft06} |
 | Draft 7 | `http://json-schema.org/draft-07/schema#` | {JSI::JSONSchemaDraft07} |
 
+Caveats:
+
+- Regular expressions are interpreted by Ruby's Regexp class, whereas JSON Schema recommends interpreting these as ECMA 262 regular expressions. Certain expressions behave differently, particularly `^` and `$`.
+- The `format` keyword does not perform validation. This may be implemented in the future.
+- Draft 7: Keywords `contentMediaType` and `contentEncoding` do not perform validation.
+- Draft 4: `$ref` is only used as a reference from schemas - it will not be followed when used on objects that are not schemas. This is consistent with specifications since Draft 4, but in Draft 4 the [JSON Reference](https://datatracker.ietf.org/doc/html/draft-pbryan-zyp-json-ref-03) specification would allow `$ref` to be used anywhere. JSI does not do this.
+
 ## JSI and Object Oriented Programming
 
 Instantiating your schema is a starting point. But, since the major point of object-oriented programming is applying methods to your objects, of course you want to be able to define your own methods. To do this we reopen the JSI module we defined. Referring back to the Example section above, we reopen the `Contact` module:
@@ -260,12 +267,6 @@ Schemas can automatically be lazily loaded by registering a block which instanti
 ## Validation
 
 JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications. To validate instances, see methods {JSI::Base#jsi_validate}, {JSI::Base#jsi_valid?}, {JSI::Schema#instance_validate}, {JSI::Schema#instance_valid?}.
-
-The following optional features are not completely supported:
-
-- The `format` keyword does not perform any validation.
-- Regular expressions are interpreted by Ruby's Regexp class, whereas JSON Schema recommends interpreting these as ECMA 262 regular expressions. Certain expressions behave differently, particularly `^` and `$`.
-- Keywords `contentMediaType` and `contentEncoding` do not perform validation.
 
 ## Meta-Schemas
 
