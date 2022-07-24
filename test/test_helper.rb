@@ -198,7 +198,7 @@ class JSISpec < Minitest::Spec
 
     assert_is_a(JSI::Base, instance)
 
-    assert_equal(instance.jsi_schemas, schemas)
+    assert_equal(schemas, instance.jsi_schemas)
     schemas.each do |schema|
       assert_is_a(schema.jsi_schema_module, instance)
     end
