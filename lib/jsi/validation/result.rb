@@ -80,7 +80,7 @@ module JSI
     end
 
     # a full result of validating an instance against its schemas, with each validation error
-    class FullResult < Result
+    class Result::Full < Result
       # @private
       class Builder < Result::Builder
         def validate(
@@ -113,7 +113,7 @@ module JSI
       end
     end
 
-    class FullResult
+    class Result::Full
       def initialize
         @validation_errors = Set.new
         @schema_issues = Set.new
@@ -143,9 +143,7 @@ module JSI
       end
 
       def merge(result)
-        unless result.is_a?(FullResult)
-          raise(TypeError, "not a #{FullResult.name}: #{result.pretty_inspect.chomp}")
-        end
+        raise(TypeError, "not a #{Result::Full}: #{result.pretty_inspect.chomp}") unless result.is_a?(Result::Full)
         validation_errors.merge(result.validation_errors)
         schema_issues.merge(result.schema_issues)
         self
@@ -162,8 +160,8 @@ module JSI
       end
     end
 
-    # a result indicating only whether an instance is valid against its schemas
-    class ValidityResult < Result
+    # A result indicating validation success of an instance against a schema
+    class Result::Valid < Result
       # @private
       class Builder < Result::Builder
         def validate(
@@ -183,13 +181,12 @@ module JSI
       end
     end
 
-    class ValidityResult
-      def initialize(valid)
-        @valid = valid
+    class Result::Valid
+      def initialize
       end
 
       def valid?
-        @valid
+        true
       end
 
       # see {Util::Private::FingerprintHash}
@@ -197,8 +194,20 @@ module JSI
       def jsi_fingerprint
         {
           class: self.class,
-          valid: valid?,
         }.freeze
+      end
+    end
+
+    # A result indicating validation failure of an instance against a schema
+    class Result::Invalid < Result
+      def valid?
+        false
+      end
+
+      # see {Util::Private::FingerprintHash}
+      # @api private
+      def jsi_fingerprint
+        self.class
       end
     end
   end

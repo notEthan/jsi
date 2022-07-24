@@ -758,9 +758,9 @@ module JSI
         validate_only: false
     )
       if validate_only
-        result = JSI::Validation::VALID
+        result = JSI::Validation::Result::Valid.new
       else
-        result = JSI::Validation::FullResult.new
+        result = JSI::Validation::Result::Full.new
       end
       result_builder = result.class::Builder.new(
         result: result,

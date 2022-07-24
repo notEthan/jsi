@@ -169,7 +169,7 @@ module JSI
     # @param instance [Object] the instance to validate against our schemas
     # @return [JSI::Validation::Result]
     def instance_validate(instance)
-      inject(Validation::FullResult.new) do |result, schema|
+      inject(Validation::Result::Full.new) do |result, schema|
         result.merge(schema.instance_validate(instance))
       end.freeze
     end
