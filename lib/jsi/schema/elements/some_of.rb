@@ -7,7 +7,7 @@ module JSI
         element.add_action(:inplace_applicate) do
       if keyword?('allOf') && schema_content['allOf'].respond_to?(:to_ary)
         schema_content['allOf'].each_index do |i|
-          subschema(['allOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+          inplace_subschema_applicate(['allOf', i])
         end
       end
         end # element.add_action(:inplace_applicate)

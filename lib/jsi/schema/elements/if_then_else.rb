@@ -8,11 +8,11 @@ module JSI
       if keyword?('if')
         if subschema(['if']).instance_valid?(instance)
           if keyword?('then')
-            subschema(['then']).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+            inplace_subschema_applicate(['then'])
           end
         else
           if keyword?('else')
-            subschema(['else']).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+            inplace_subschema_applicate(['else'])
           end
         end
       end

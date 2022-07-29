@@ -18,7 +18,7 @@ module JSI
               # property in the instance, the entire instance must validate against
               # the dependency value.
               if instance.respond_to?(:to_hash) && instance.key?(property_name)
-                subschema(['dependencies', property_name]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+                inplace_subschema_applicate(['dependencies', property_name])
               end
             end
           end
