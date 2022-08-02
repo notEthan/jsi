@@ -89,6 +89,7 @@ module JSI
   autoload :JSONSchemaDraft04, 'schemas/json-schema.org/draft-04/schema'
   autoload :JSONSchemaDraft06, 'schemas/json-schema.org/draft-06/schema'
   autoload :JSONSchemaDraft07, 'schemas/json-schema.org/draft-07/schema'
+  autoload(:JSONSchemaDraft202012, 'schemas/json-schema.org/draft/2020-12/schema')
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
