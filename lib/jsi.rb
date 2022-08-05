@@ -152,6 +152,7 @@ module JSI
     schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaDraft04.schema }
     schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaDraft06.schema }
     schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaDraft07.schema }
+    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/schema") { JSI::JSONSchemaDraft202012.schema }
   end.freeze
 
   self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup
