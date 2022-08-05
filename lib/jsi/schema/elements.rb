@@ -14,6 +14,9 @@ module JSI
     # $schema
     autoload(:XSCHEMA, 'jsi/schema/elements/xschema')
 
+    # $vocabulary
+    autoload(:XVOCABULARY, 'jsi/schema/elements/xvocabulary')
+
     # id
     autoload(:ID, 'jsi/schema/elements/id')
 
