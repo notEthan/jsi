@@ -17,6 +17,9 @@ module JSI
     # id
     autoload(:ID, 'jsi/schema/elements/id')
 
+    # anchor
+    autoload(:ANCHOR, 'jsi/schema/elements/anchor')
+
     # definitions
     autoload(:DEFINITIONS, 'jsi/schema/elements/definitions')
 
