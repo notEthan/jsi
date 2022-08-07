@@ -26,8 +26,9 @@ module JSI
     # $comment
     autoload(:COMMENT, 'jsi/schema/elements/comment')
 
-    # $ref in-place application
+    # ref in-place application
     autoload(:REF, 'jsi/schema/elements/ref')
+    autoload(:DYNAMIC_REF, 'jsi/schema/elements/dynamic_ref')
 
     # in-place subschema application
     autoload(:IF_THEN_ELSE, 'jsi/schema/elements/if_then_else')
