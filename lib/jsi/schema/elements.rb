@@ -89,6 +89,7 @@ module JSI
     # content
     autoload(:CONTENT_ENCODING, 'jsi/schema/elements/content_encoding')
     autoload(:CONTENT_MEDIA_TYPE, 'jsi/schema/elements/content_media_type')
+    autoload(:CONTENT_SCHEMA, 'jsi/schema/elements/content_schema')
 
     # metadata
     autoload(:INFO_STRING, 'jsi/schema/elements/info_string')
