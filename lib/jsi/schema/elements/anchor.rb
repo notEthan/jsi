@@ -2,9 +2,11 @@
 
 module JSI
   module Schema::Elements
-    ANCHOR = element_map do
-      Schema::Element.new(keyword: '$anchor') do |element|
-        element.add_action(:anchor) { cxt_yield(schema_content['$anchor']) if keyword_value_str?('$anchor') }
+    ANCHOR = element_map do |keyword: , actions: |
+      Schema::Element.new(keyword: keyword) do |element|
+        actions.each do |action|
+          element.add_action(action) { cxt_yield(schema_content[keyword]) if keyword_value_str?(keyword) }
+        end
       end
     end
   end
