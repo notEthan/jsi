@@ -433,9 +433,7 @@ module JSI
 
       defaults = Set.new
       child_applied_schemas.each do |child_schema|
-        if child_schema.keyword?('default')
-          defaults << child_schema.jsi_node_content['default']
-        end
+        defaults.merge(child_schema.dialect_invoke_each(:default))
       end
 
       if defaults.size == 1
