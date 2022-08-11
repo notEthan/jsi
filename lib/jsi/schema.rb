@@ -75,21 +75,6 @@ module JSI
           nil
         end
       end
-
-      # an anchor defined by a non-empty fragment in the id uri
-      # @return [String]
-      def anchor
-        if id
-          id_uri = Util.uri(id)
-          if id_uri.fragment == ''
-            nil
-          else
-            id_uri.fragment
-          end
-        else
-          nil
-        end
-      end
     end
 
     # @private
