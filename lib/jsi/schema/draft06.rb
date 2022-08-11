@@ -10,7 +10,7 @@ module JSI
       VOCABULARY = Vocabulary.new(
         elements: [
           # draft-wright-json-schema-01 8.  Schema references with $ref
-          Schema::Elements::REF[],
+          Schema::Elements::REF[exclusive: true],
 
           # the schema itself
           Schema::Elements::SELF[],
