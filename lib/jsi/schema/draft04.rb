@@ -17,7 +17,7 @@ module JSI
           # draft-zyp-json-schema-04 7.  URI resolution scopes and dereferencing
 
           # draft-zyp-json-schema-04 7.2.  URI resolution scope alteration with the "id" keyword
-          Schema::Elements::ID[keyword: 'id'],
+          Schema::Elements::ID[keyword: 'id', fragment_is_anchor: true],
 
           # draft-fge-json-schema-validation-00 5.  Validation keywords sorted by instance types
 
