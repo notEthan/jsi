@@ -522,7 +522,7 @@ describe JSI::Base do
           ], subject.baz.jsi_validate.validation_errors)
           assert_equal(Set[
             JSI::Validation::Error.new({
-              message: "instance is valid against the schema specified as `not` value",
+              message: "instance is valid against `not` schema",
               keyword: "not",
               schema: schema["additionalProperties"],
               instance_ptr: JSI::Ptr["more"], instance_document: instance,
@@ -559,7 +559,7 @@ describe JSI::Base do
               instance_ptr: JSI::Ptr[], instance_document: instance,
               child_errors: Set[
                 JSI::Validation::Error.new({
-                  message: "instance is valid against the schema specified as `not` value",
+                  message: "instance is valid against `not` schema",
                   keyword: "not",
                   schema: schema["additionalProperties"],
                   instance_ptr: JSI::Ptr["more"], instance_document: instance,
