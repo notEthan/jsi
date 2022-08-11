@@ -22,5 +22,12 @@ module JSI
         schema.keyword?(keyword)
       end
     end
+
+    Cxt::Block = Cxt.subclass('block')
+
+    # @!attribute block
+    #   @return [#call]
+    class Cxt::Block
+    end
   end
 end
