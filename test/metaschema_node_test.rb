@@ -3,7 +3,7 @@ require_relative 'test_helper'
 BASIC_DIALECT = JSI::Schema::Dialect.new(
   vocabularies: [
     JSI::Schema::Vocabulary.new(elements: [
-      JSI::Schema::Elements::REF[],
+      JSI::Schema::Elements::REF[exclusive: true],
       JSI::Schema::Elements::SELF[],
       JSI::Schema::Elements::PROPERTIES[],
     ]),
