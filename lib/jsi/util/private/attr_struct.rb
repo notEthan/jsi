@@ -90,6 +90,8 @@ module JSI
         "\#<#{self.class.name}#{@attributes.empty? ? '' : ' '}#{@attributes.map { |k, v| "#{k}: #{v.inspect}" }.join(', ')}>"
       end
 
+      alias_method :to_s, :inspect
+
       # pretty-prints a representation of self to the given printer
       # @return [void]
       def pretty_print(q)

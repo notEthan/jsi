@@ -24,6 +24,8 @@ module JSI
       end
     end
 
+    alias_method :to_s, :inspect
+
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
     #
     # @param (see JSI::Schema#new_jsi)
@@ -278,5 +280,7 @@ module JSI
         "(JSI wrapper for Schema Module: #{@possibly_schema_node.jsi_ptr.uri})"
       end
     end
+
+    alias_method :to_s, :inspect
   end
 end

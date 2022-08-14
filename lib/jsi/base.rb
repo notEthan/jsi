@@ -472,6 +472,8 @@ module JSI
       "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
+    alias_method :to_s, :inspect
+
     # pretty-prints a representation of this JSI to the given printer
     # @return [void]
     def pretty_print(q)

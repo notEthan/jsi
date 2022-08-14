@@ -159,6 +159,8 @@ module JSI
       "#{self.class}[#{map(&:inspect).join(", ")}]"
     end
 
+    alias_method :to_s, :inspect
+
     def pretty_print(q)
       q.text self.class.to_s
       q.text '['
