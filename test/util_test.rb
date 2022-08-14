@@ -85,6 +85,7 @@ describe JSI::Util do
     it 'is pretty' do
       foo = Foo.new(bar: {'foo' => 'foooooooooooooooooooooo', 'bar' => [3.14159], 'baz' => true, 'qux' => []})
       assert_equal(%q(#<Foo bar: {"foo"=>"foooooooooooooooooooooo", "bar"=>[3.14159], "baz"=>true, "qux"=>[]}>), foo.inspect)
+      assert_equal(foo.inspect, foo.to_s)
       pp = <<~PP
         #<Foo
           bar: {"foo"=>"foooooooooooooooooooooo",

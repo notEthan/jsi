@@ -102,9 +102,10 @@ describe 'JSI::Base array' do
         assert_equal("cannot assign subscript (using token: 2) to instance: nil", err.message)
       end
     end
-    describe '#inspect' do
+    describe '#inspect, #to_s' do
       it 'inspects' do
         assert_equal("#[<JSI> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
+        assert_equal(subject.inspect, subject.to_s)
       end
     end
     describe '#pretty_print' do

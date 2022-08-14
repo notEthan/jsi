@@ -42,12 +42,14 @@ describe JSI::Base do
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
-  describe 'class .inspect' do
+  describe 'class .inspect, .to_s' do
     it 'is the same as Class#inspect on the base' do
       assert_equal('JSI::Base', JSI::Base.inspect)
+      assert_equal(JSI::Base.inspect, JSI::Base.to_s)
     end
     it 'is (JSI Schema Class) for generated subclass without id' do
       assert_equal("(JSI Schema Class: #)", subject.class.inspect)
+      assert_equal(subject.class.inspect, subject.class.to_s)
     end
     describe 'with schema id' do
       let(:schema_content) { {'$id' => 'https://jsi/foo'} }
@@ -758,11 +760,12 @@ describe JSI::Base do
       end
     end
   end
-  describe '#inspect' do
+  describe '#inspect, #to_s' do
     # if the instance is hash-like, #inspect gets overridden
     let(:instance) { Object.new }
     it 'inspects' do
       assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.inspect)
+      assert_equal(subject.inspect, subject.to_s)
     end
   end
   describe '#pretty_print' do

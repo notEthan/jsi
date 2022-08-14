@@ -67,6 +67,7 @@ describe JSI::MetaschemaNode do
     it 'is pretty' do
       inspect = %q(#{<JSI::MetaschemaNode (#) Metaschema> "properties" => #{<JSI::MetaschemaNode (#/properties/properties)> "properties" => #{<JSI::MetaschemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaschemaNode (#) Schema>}}})
       assert_equal(inspect, metaschema.inspect)
+      assert_equal(inspect, metaschema.to_s)
       pp = <<~PP
         \#{<JSI::MetaschemaNode (#) Metaschema>
           "properties" => \#{<JSI::MetaschemaNode (#/properties/properties)>

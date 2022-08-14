@@ -147,9 +147,10 @@ describe 'JSI::Base hash' do
         assert_equal('cannot assign subscript (using token: "foo") to instance: nil', err.message)
       end
     end
-    describe '#inspect' do
+    describe '#inspect, #to_s' do
       it 'inspects' do
         assert_equal("\#{<JSI> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
+        assert_equal(subject.inspect, subject.to_s)
       end
     end
     describe '#pretty_print' do
