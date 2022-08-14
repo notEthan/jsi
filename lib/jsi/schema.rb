@@ -797,6 +797,27 @@ module JSI
       end.freeze
     end
 
+    # @param action_name [Symbol]
+    # @param cxt_class [Class]
+    # @yield
+    def dialect_invoke_each(
+        action_name,
+        cxt_class = Cxt::Block,
+        **cxt_param,
+        &block
+    )
+      return(to_enum(__method__, action_name, cxt_class, **cxt_param)) unless block_given?
+
+      cxt = cxt_class.new(
+        schema: self,
+        block: block,
+        **cxt_param,
+      )
+      dialect.invoke(action_name, cxt)
+
+      nil
+    end
+
     # schema resources which are ancestors of any subschemas below this schema.
     # this may include this schema if this is a schema resource root.
     # @api private
