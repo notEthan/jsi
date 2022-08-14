@@ -11,12 +11,8 @@ module JSI
     def jsi_each_propertyName
       return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block_given?
 
-      property_schemas = SchemaSet.build do |schemas|
-        jsi_schemas.each do |s|
-          if s.keyword?('propertyNames') && s['propertyNames'].is_a?(Schema)
-            schemas << s['propertyNames']
-          end
-        end
+      property_schemas = jsi_schemas.each_yield_set do |s, y|
+        s.dialect_invoke_each(:propertyNames, &y)
       end
       jsi_node_content_hash_pubsend(:each_key) do |key|
         yield property_schemas.new_jsi(key)

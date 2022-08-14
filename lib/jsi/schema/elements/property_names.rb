@@ -11,6 +11,10 @@ module JSI
           end
         end # element.add_action(:subschema)
 
+        element.add_action(:propertyNames) do
+          cxt_yield(subschema(['propertyNames'])) if keyword?('propertyNames')
+        end
+
         element.add_action(:validate) do
       if keyword?('propertyNames')
         # The value of "propertyNames" MUST be a valid JSON Schema.
