@@ -83,16 +83,7 @@ describe JSI::Base do
       assert_equal(Set[schema], schema.new_jsi({}).class.jsi_class_schemas)
     end
   end
-  describe 'module for schema .inspect' do
-    it '.inspect' do
-      assert_equal("(JSI Schema Module: #)", JSI::SchemaClasses.module_for_schema(schema).inspect)
-    end
-  end
-  describe 'module for schema .schema' do
-    it '.schema' do
-      assert_equal(schema, JSI::SchemaClasses.module_for_schema(schema).schema)
-    end
-  end
+
   describe '.class_for_schemas' do
     it 'returns a class from a schema' do
       class_for_schema = JSI::SchemaClasses.class_for_schemas([schema])

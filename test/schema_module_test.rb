@@ -50,6 +50,12 @@ describe 'JSI::SchemaModule' do
     end
   end
 
+  describe '.schema' do
+    it 'is its schema' do
+      assert_equal(schema, schema_module.schema)
+    end
+  end
+
   describe 'DescribesSchemaModule' do
     it 'extends a module which describes a schema' do
       assert(JSI::JSONSchemaOrgDraft07.is_a?(JSI::DescribesSchemaModule))
