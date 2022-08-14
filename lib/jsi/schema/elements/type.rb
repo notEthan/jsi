@@ -2,6 +2,9 @@
 
 module JSI
   module Schema::Elements
+    #> String values MUST be one of the six primitive types
+    #> ("null", "boolean", "object", "array", "number", or "string"),
+    #> or "integer"
     instance_types = {
       'null' => proc { instance == nil },
       'boolean' => proc { instance == true || instance == false },
