@@ -3,7 +3,7 @@ source "https://rubygems.org"
 gemspec
 
 gem 'irb'
-platform(:mri) { gem 'byebug' }
+platform(:mri) { gem 'debug' }
 gem 'rake'
 gem 'gig'
 gem 'minitest'

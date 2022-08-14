@@ -29,8 +29,8 @@ require 'bundler'
 bundler_groups = ENV['JSI_TEST_EXTDEP'] ? [:extdep, :default] : [:default]
 Bundler.setup(*bundler_groups)
 
-if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
-  require 'byebug'
+if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'debug' }
+  require 'debug'
 end
 
 require_relative 'jsi_helper'
