@@ -31,6 +31,8 @@ Bundler.setup(*bundler_groups)
 
 if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'debug' }
   require 'debug'
+  Object.alias_method(:dbg, :debugger)
+  Object.alias_method(:byebug, :debugger) # TODO remove
 end
 
 require_relative 'jsi_helper'
