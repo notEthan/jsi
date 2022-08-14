@@ -19,17 +19,16 @@ module JSI
         end # element.add_action(:child_applicate)
 
         element.add_action(:validate) do
-          if keyword?('items')
-            value = schema_content['items']
-            # The value of "items" MUST be either a valid JSON Schema or an array of valid JSON Schemas.
-            if value.respond_to?(:to_ary)
-              # If "items" is an array of schemas, validation succeeds if each element of the instance validates
-              # against the schema at the same position, if any.
-              if instance.respond_to?(:to_ary)
+          if instance.respond_to?(:to_ary)
+            if keyword?('items')
+              #> The value of "items" MUST be either a valid JSON Schema or an array of valid JSON Schemas.
+              if schema_content['items'].respond_to?(:to_ary)
+                #> If "items" is an array of schemas, validation succeeds if each element of the instance
+                #> validates against the schema at the same position, if any.
                 items_results = {}
                 additionalItems_results = {}
                 instance.each_index do |i|
-                  if i < value.size
+                  if i < schema_content['items'].size
                     items_results[i] = child_subschema_validate(i, ['items', i])
                   elsif keyword?('additionalItems')
                     additionalItems_results[i] = child_subschema_validate(i, ['additionalItems'])
@@ -47,11 +46,9 @@ module JSI
                   keyword: 'additionalItems',
                   results: additionalItems_results.each_value,
                 )
-              end
-            else
-              # If "items" is a schema, validation succeeds if all elements in the array successfully validate
-              # against that schema.
-              if instance.respond_to?(:to_ary)
+              else
+                #> If "items" is a schema, validation succeeds if all elements in the array successfully
+                #> validate against that schema.
                 results = instance.each_index.map do |i|
                   child_subschema_validate(i, ['items'])
                 end
