@@ -15,8 +15,7 @@ module JSI
               # dialect.
               # TODO
               regexp = Regexp.new(value)
-              # A string instance is considered valid if the regular expression matches the instance
-              # succssfully. Recall: regular expressions are not implicitly anchored.
+              #> A string instance is considered valid if the regular expression matches the instance successfully.
               validate(
                 regexp.match(instance),
                 'instance string does not match `pattern` regular expression value',
