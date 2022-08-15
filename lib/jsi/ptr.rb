@@ -16,6 +16,9 @@ module JSI
       class ResolutionError < Error
       end
 
+      POS_INT_RE = /\A[1-9]\d*\z/
+      private_constant :POS_INT_RE
+
       # instantiates a pointer or returns the given pointer
       # @param ary_ptr [#to_ary, JSI::Ptr] an array of tokens, or a pointer
       # @return [JSI::Ptr]
@@ -272,7 +275,7 @@ module JSI
 
       def node_subscript_token_child(value, token, *a, **kw)
         if value.respond_to?(:to_ary)
-          if token.is_a?(String) && (token == '0' || token =~ /\A[1-9]\d*\z/)
+          if token.is_a?(String) && (token == '0' || token =~ POS_INT_RE)
             token = token.to_i
           elsif token == '-'
             # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
