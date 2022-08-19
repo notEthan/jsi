@@ -75,6 +75,15 @@ describe 'JSON Schema Test Suite' do
                   let(:schema) { desc_schema }
                   let(:optional) { subpath.split('/').include?('optional') }
 
+                  if desc_schema.is_a?(JSI::Base)
+                    it("collects subschemas consistently with the metaschema") do
+                      metaschema_described_subschemas = Set.new(schema.jsi_each_descendent_node.select(&:jsi_is_schema?))
+                      element_described_subschemas = Set.new(schema.jsi_each_descendent_schema)
+
+                      assert_equal(metaschema_described_subschemas, element_described_subschemas)
+                    end
+                  end
+
                   tests_desc.tests.each do |test|
                       it(test.description) do
                         jsi = schema.new_jsi(test.jsi_instance['data'], schema_registry: schema_registry)
