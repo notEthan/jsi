@@ -6,6 +6,9 @@ module JSI
       schema
     )]
 
+    # @!attribute schema
+    #   The schema invoking an action in this context
+    #   @return [JSI::Schema]
     class Cxt
       def subschema(subptr)
         schema.subschema(subptr)
