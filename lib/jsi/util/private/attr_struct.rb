@@ -16,11 +16,17 @@ module JSI
         # creates a AttrStruct subclass with the given attribute keys.
         # @param attribute_keys [Enumerable<String, Symbol>]
         def subclass(*attribute_keys)
-          bad = attribute_keys.reject { |key| key.respond_to?(:to_str) || key.is_a?(Symbol) }
-          unless bad.empty?
-            raise ArgumentError, "attribute keys must be String or Symbol; got keys: #{bad.map(&:inspect).join(', ')}"
+          bad_type = attribute_keys.reject { |key| key.respond_to?(:to_str) || key.is_a?(Symbol) }
+          unless bad_type.empty?
+            raise(ArgumentError, "attribute keys must be String or Symbol; got keys: #{bad_type.map(&:inspect).join(', ')}")
           end
+
           attribute_keys = attribute_keys.map { |key| convert_key(key) }
+
+          bad_name = attribute_keys.reject { |key| Util::Private.ok_ruby_method_name?(key) }
+          unless bad_name.empty?
+            raise(ArgumentError, "attribute keys must be valid ruby method names; got keys: #{bad_name.map(&:inspect).join(', ')}")
+          end
 
           all_attribute_keys = (self.attribute_keys + attribute_keys).freeze
 
