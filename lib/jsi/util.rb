@@ -7,6 +7,8 @@ module JSI
 
     include Private
 
+    extend self
+
     autoload :Arraylike, 'jsi/util/typelike'
     autoload :Hashlike, 'jsi/util/typelike'
 
@@ -138,7 +140,5 @@ module JSI
 
       set
     end
-
-    extend self
   end
 end

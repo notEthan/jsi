@@ -7,6 +7,8 @@ module JSI
   module Util::Private
     autoload :AttrStruct, 'jsi/util/private/attr_struct'
 
+    extend self
+
     EMPTY_ARY = [].freeze
 
     EMPTY_SET = Set[].freeze
@@ -196,9 +198,5 @@ module JSI
         # :nocov:
       end
     end
-
-    public
-
-    extend self
   end
 end
