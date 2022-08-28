@@ -729,7 +729,7 @@ module JSI
     private def described_object_property_names_compute(**_) # TODO remove **_ eventually (keyword argument compatibility)
         Set.new.tap do |property_names|
           if schema_content.respond_to?(:to_hash) && schema_content['properties'].respond_to?(:to_hash)
-            property_names.merge(schema_content['properties'].keys)
+            property_names.merge(schema_content['properties'].each_key)
           end
           if schema_content.respond_to?(:to_hash) && schema_content['required'].respond_to?(:to_ary)
             property_names.merge(schema_content['required'].to_ary)

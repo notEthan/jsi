@@ -37,7 +37,7 @@ module JSI
               # schema.
               if instance.respond_to?(:to_hash)
                 results = {}
-                instance.keys.each do |property_name|
+                instance.each_key do |property_name|
                   if value.key?(property_name)
                     evaluated_property_names << property_name
                     results[property_name] = child_subschema_validate(
@@ -47,10 +47,10 @@ module JSI
                   end
                 end
                 validate(
-                  results.values.all?(&:valid?),
+                  results.each_value.all?(&:valid?),
                   'instance object properties are not all valid against corresponding `properties` schema values',
                   keyword: 'properties',
-                  results: results.values,
+                  results: results.each_value,
                 )
               end
             else
@@ -69,8 +69,8 @@ module JSI
               # against each schema that corresponds to a matching regular expression.
               if instance.respond_to?(:to_hash)
                 results = {}
-                instance.keys.each do |property_name|
-                  value.keys.each do |value_property_pattern|
+                instance.each_key do |property_name|
+                  value.each_key do |value_property_pattern|
                     begin
                       # TODO ECMA 262
                       if value_property_pattern.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name.to_s)
@@ -86,10 +86,10 @@ module JSI
                   end
                 end
                 validate(
-                  results.values.all?(&:valid?),
+                  results.each_value.all?(&:valid?),
                   'instance object properties are not all valid against corresponding `patternProperties` schema values',
                   keyword: 'patternProperties',
-                  results: results.values,
+                  results: results.each_value,
                 )
               end
             else
@@ -102,7 +102,7 @@ module JSI
             # The value of "additionalProperties" MUST be a valid JSON Schema.
             if instance.respond_to?(:to_hash)
               results = {}
-              instance.keys.each do |property_name|
+              instance.each_key do |property_name|
                 if !evaluated_property_names.include?(property_name)
                   results[property_name] = child_subschema_validate(
                     property_name,
@@ -111,10 +111,10 @@ module JSI
                 end
               end
               validate(
-                results.values.all?(&:valid?),
+                results.each_value.all?(&:valid?),
                 'instance object additional properties are not all valid against `additionalProperties` schema value',
                 keyword: 'additionalProperties',
-                results: results.values,
+                results: results.each_value,
               )
             end
           end

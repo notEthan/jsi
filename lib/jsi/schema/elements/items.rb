@@ -35,10 +35,10 @@ module JSI
                   end
                 end
                 validate(
-                  results.values.all?(&:valid?),
+                  results.each_value.all?(&:valid?),
                   'instance array items are not all valid against corresponding `items` or `additionalItems` schema values',
                   keyword: 'items',
-                  results: results.values,
+                  results: results.each_value,
                 )
               end
             else

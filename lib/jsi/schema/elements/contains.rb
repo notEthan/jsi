@@ -35,10 +35,10 @@ module JSI
                 results[i] = child_subschema_validate(i, ['contains'])
               end
               validate(
-                results.values.any?(&:valid?),
+                results.each_value.any?(&:valid?),
                 'instance array does not contain any items valid against `contains` schema value',
                 keyword: 'contains',
-                results: results.values,
+                results: results.each_value,
               )
             end
           end
