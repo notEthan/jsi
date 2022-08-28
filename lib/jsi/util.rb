@@ -26,7 +26,7 @@ module JSI
       if object.respond_to?(:jsi_modified_copy)
         object.jsi_modified_copy(&block)
       else
-        return yield(object)
+        yield(object)
       end
     end
 
