@@ -15,9 +15,9 @@ module JSI
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 
     # methods which do not need to access the value.
-    SAFE_KEY_ONLY_METHODS = %w(each_key empty? has_key? include? key? keys length member? size)
-    SAFE_KEY_VALUE_METHODS = %w(< <= > >= any? assoc compact dig each_pair each_value fetch fetch_values has_value? invert key merge rassoc reject select to_h to_proc transform_values value? values values_at)
-    DESTRUCTIVE_METHODS = %w(clear delete delete_if keep_if reject! replace select! shift)
+    SAFE_KEY_ONLY_METHODS = %w(each_key empty? has_key? include? key? keys length member? size).map(&:freeze).freeze
+    SAFE_KEY_VALUE_METHODS = %w(< <= > >= any? assoc compact dig each_pair each_value fetch fetch_values has_value? invert key merge rassoc reject select to_h to_proc transform_values value? values values_at).map(&:freeze).freeze
+    DESTRUCTIVE_METHODS = %w(clear delete delete_if keep_if reject! replace select! shift).map(&:freeze).freeze
     # these return a modified copy
     safe_modified_copy_methods = %w(compact)
     # select and reject will return a modified copy but need the yielded block variable value from #[]
@@ -135,10 +135,10 @@ module JSI
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 
     # methods which do not need to access the element.
-    SAFE_INDEX_ONLY_METHODS = %w(each_index empty? length size)
+    SAFE_INDEX_ONLY_METHODS = %w(each_index empty? length size).map(&:freeze).freeze
     # there are some ambiguous ones that are omitted, like #sort, #map / #collect.
-    SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev at bsearch bsearch_index combination compact count cycle dig drop drop_while fetch find_index first include? index join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip)
-    DESTRUCTIVE_METHODS = %w(<< clear collect! compact! concat delete delete_at delete_if fill flatten! insert keep_if map! pop push reject! replace reverse! rotate! select! shift shuffle! slice! sort! sort_by! uniq! unshift)
+    SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev at bsearch bsearch_index combination compact count cycle dig drop drop_while fetch find_index first include? index join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip).map(&:freeze).freeze
+    DESTRUCTIVE_METHODS = %w(<< clear collect! compact! concat delete delete_at delete_if fill flatten! insert keep_if map! pop push reject! replace reverse! rotate! select! shift shuffle! slice! sort! sort_by! uniq! unshift).map(&:freeze).freeze
 
     # methods (well, method) that returns a modified copy and doesn't need any handling of block variable(s)
     safe_modified_copy_methods = %w(compact)
