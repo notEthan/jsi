@@ -53,7 +53,6 @@ module JSI
         resolve_fragment_ptr = ref_schema.method(:resource_root_subschema)
       else
         # find the schema_resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.
-        schema_resource_root = nil
 
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
