@@ -9,6 +9,9 @@ module JSI
 
       VOCABULARY = Vocabulary.new(
         elements: [
+          # the schema itself
+          Schema::Elements::SELF[],
+
           # draft-handrews-json-schema-01 8.  Base URI and Dereferencing
 
           # draft-handrews-json-schema-01 8.2.  The "$id" Keyword
@@ -16,9 +19,6 @@ module JSI
 
           # draft-handrews-json-schema-01 8.3.  Schema References With "$ref"
           Schema::Elements::REF[exclusive: true],
-
-          # the schema itself
-          Schema::Elements::SELF[],
 
           # draft-handrews-json-schema-validation-01 6.  Validation Keywords
 

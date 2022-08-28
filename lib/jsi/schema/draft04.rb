@@ -9,11 +9,11 @@ module JSI
 
       VOCABULARY = Vocabulary.new(
         elements: [
-          # draft-pbryan-zyp-json-ref-03
-          Schema::Elements::REF[exclusive: true],
-
           # the schema itself
           Schema::Elements::SELF[],
+
+          # draft-pbryan-zyp-json-ref-03
+          Schema::Elements::REF[exclusive: true],
 
           # draft-zyp-json-schema-04 7.  URI resolution scopes and dereferencing
 

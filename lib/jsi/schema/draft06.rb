@@ -9,11 +9,11 @@ module JSI
 
       VOCABULARY = Vocabulary.new(
         elements: [
-          # draft-wright-json-schema-01 8.  Schema references with $ref
-          Schema::Elements::REF[exclusive: true],
-
           # the schema itself
           Schema::Elements::SELF[],
+
+          # draft-wright-json-schema-01 8.  Schema references with $ref
+          Schema::Elements::REF[exclusive: true],
 
           # draft-wright-json-schema-01 9.  Base URI and dereferencing
 
