@@ -575,12 +575,12 @@ module JSI
     end
 
     def jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi)
-      value_as_jsi = if [true, false].include?(as_jsi)
-        as_jsi
+      if [true, false].include?(as_jsi)
+        value_as_jsi = as_jsi
       elsif as_jsi == :auto
         complex_value = value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
         schema_value = subinstance_schemas.any?(&:describes_schema?)
-        complex_value || schema_value
+        value_as_jsi = complex_value || schema_value
       else
         raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
       end
