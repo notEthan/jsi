@@ -44,7 +44,8 @@ module JSI
     #   instance(s), or nil if data is nil
     def load(data)
       return nil if data.nil?
-      object = if @array
+
+      if @array
         unless data.respond_to?(:to_ary)
           raise TypeError, "expected array-like column data; got: #{data.class}: #{data.inspect}"
         end
@@ -52,7 +53,6 @@ module JSI
       else
         load_object(data)
       end
-      object
     end
 
     # dumps the object for the database
@@ -61,19 +61,17 @@ module JSI
     # @return [Object, Array, nil] the schema instance(s) of the JSI(s), or nil if object is nil
     def dump(object)
       return nil if object.nil?
-      jsonifiable = begin
-        if @array
-          unless object.respond_to?(:to_ary)
-            raise(TypeError, "expected array-like attribute; got: #{object.class}: #{object.inspect}")
-          end
-          object.to_ary.map do |el|
-            dump_object(el)
-          end
-        else
-          dump_object(object)
+
+      if @array
+        unless object.respond_to?(:to_ary)
+          raise(TypeError, "expected array-like attribute; got: #{object.class}: #{object.inspect}")
         end
+        object.to_ary.map do |el|
+          dump_object(el)
+        end
+      else
+        dump_object(object)
       end
-      jsonifiable
     end
 
     private
