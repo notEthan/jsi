@@ -8,6 +8,15 @@ module JSI
         if exclusive
           # $ref must come before all other elements to abort evaluation
           element.required_before_elements { |_| true }
+
+          actions_to_abort = [
+            :id,
+            :id_without_fragment,
+            :anchor,
+          ]
+          actions_to_abort.each do |action|
+            element.add_action(action) { self.abort = true if keyword?('$ref') }
+          end
         end
 
         element.add_action(:inplace_applicate) do
