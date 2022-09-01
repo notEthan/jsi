@@ -59,6 +59,7 @@ module JSI
         @elements_performing[action_name].each do |element|
           element.actions[action_name].each do |action|
             cxt.instance_exec(&action)
+            return(cxt) if cxt.abort
           end
         end
 

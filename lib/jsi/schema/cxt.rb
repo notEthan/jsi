@@ -4,6 +4,7 @@ module JSI
   module Schema
     Cxt = Util::AttrStruct[*%w(
       schema
+      abort
     )]
 
     # @!attribute schema
