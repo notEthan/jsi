@@ -442,14 +442,21 @@ module JSI
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
     # @return [Addressable::URI, nil]
     def schema_absolute_uri
+      schema_absolute_uris.first
+    end
+
+    # @return [Enumerable<Addressable::URI>]
+    def schema_absolute_uris
+      @schema_absolute_uris_map[]
+    end
+
+    # @yield [Addressable::URI]
+    private def schema_absolute_uris_compute
       if respond_to?(:id_without_fragment) && id_without_fragment
         if jsi_schema_base_uri
-          jsi_schema_base_uri.join(id_without_fragment).freeze
+          yield(jsi_schema_base_uri.join(id_without_fragment).freeze)
         elsif id_without_fragment.absolute?
-          id_without_fragment
-        else
-          # TODO warn / schema_error
-          nil
+          yield(id_without_fragment)
         end
       end
     end
@@ -469,22 +476,22 @@ module JSI
     end
 
     # @yield [Addressable::URI]
-    private def schema_uris_compute
-      yield schema_absolute_uri if schema_absolute_uri
-
-      ancestor_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
-        resource.schema_absolute_uri
-      end
+    private def schema_uris_compute(&block)
+      schema_absolute_uris.each(&block)
 
       anchors = Set.new(self.anchors)
-      ancestor_schemas.each do |ancestor_schema|
+      jsi_subschema_resource_ancestors.reverse_each do |ancestor_schema|
         anchors.keep_if { |anchor| ancestor_schema.jsi_anchor_subschema(anchor) == self }
         anchors.each do |anchor|
-            yield(ancestor_schema.schema_absolute_uri.merge(fragment: anchor).freeze)
+          ancestor_schema.schema_absolute_uris.each do |uri|
+            yield(uri.merge(fragment: anchor).freeze)
+          end
         end
 
         relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
-        yield(ancestor_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment).freeze)
+        ancestor_schema.schema_absolute_uris.each do |uri|
+          yield(uri.merge(fragment: relative_ptr.fragment).freeze)
+        end
       end
 
       nil
@@ -605,7 +612,7 @@ module JSI
     # is this schema the root of a schema resource?
     # @return [Boolean]
     def schema_resource_root?
-      jsi_ptr.root? || !!schema_absolute_uri
+      jsi_ptr.root? || schema_absolute_uris.any?
     end
 
     # a subschema of this Schema
@@ -832,6 +839,7 @@ module JSI
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end
+      @schema_absolute_uris_map = jsi_memomap { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
     end

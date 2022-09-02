@@ -44,8 +44,8 @@ module JSI
       end
 
       resource.jsi_each_descendent_schema do |node|
-        if node.schema_absolute_uri
-          internal_store(node.schema_absolute_uri, node)
+        node.schema_absolute_uris.each do |uri|
+          internal_store(uri, node)
         end
       end
 
