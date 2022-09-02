@@ -491,14 +491,11 @@ module JSI
         resource.schema_absolute_uri
       end
 
-      anchored = respond_to?(:anchor) ? anchor : nil
+      anchors = Set.new(self.anchors)
       ancestor_schemas.each do |ancestor_schema|
-        if anchored
-          if ancestor_schema.jsi_anchor_subschema(anchor) == self
+        anchors.keep_if { |anchor| ancestor_schema.jsi_anchor_subschema(anchor) == self }
+        anchors.each do |anchor|
             yield(ancestor_schema.schema_absolute_uri.merge(fragment: anchor).freeze)
-          else
-            anchored = false
-          end
         end
 
         relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
