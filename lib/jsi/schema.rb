@@ -41,10 +41,6 @@ module JSI
     # an exception raised when we are unable to resolve a schema reference
     ReferenceError = ResolutionError
 
-    # extends any schema which defines an anchor as a URI fragment in the schema id
-    module IdWithAnchor
-    end
-
     # @private
     module IntegerAllows0Fraction
       # is `value` an integer?

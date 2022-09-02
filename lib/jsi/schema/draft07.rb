@@ -3,7 +3,6 @@
 module JSI
   module Schema
     module Draft07
-      include IdWithAnchor
       include IntegerAllows0Fraction
 
       VOCABULARY = Vocabulary.new(
