@@ -5,24 +5,37 @@ $test_report_time["suite_test loading"]
 JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').open('r:UTF-8', &:read)))
 $test_report_time["JSONSchemaTestSchema set up"]
 
+JSTS_REGISTRIES = Hash.new do |h, metaschema|
+  schema_registry = JSI.schema_registry.dup
+
   Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
     Dir.glob('**/*.json').each do |subpath|
       remote_content = ::JSON.parse(File.open(subpath, 'r:UTF-8', &:read))
       uri = File.join('http://localhost:1234/', subpath)
-      JSI.schema_registry.autoload_uri(uri) do
+      schema_registry.autoload_uri(uri) do
         if subpath == 'subSchemas.json'
           subSchemas_schema = JSI.new_schema({
             '$schema' => 'http://json-schema.org/draft-07/schema',
             'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
           })
-          subSchemas_schema.new_jsi(remote_content, uri: uri)
+          subSchemas_schema.new_jsi(remote_content,
+            uri: uri,
+            schema_registry: schema_registry,
+          )
         else
-          JSI.new_schema(remote_content, uri: uri, default_metaschema: JSI::JSONSchemaDraft07)
+          JSI.new_schema(remote_content,
+            uri: uri,
+            default_metaschema: metaschema,
+            schema_registry: schema_registry,
+          )
         end
       end
     end
   end
   $test_report_time["remotes set up"]
+
+  h[metaschema] = schema_registry
+end
 
 describe 'JSON Schema Test Suite' do
     drafts = [
@@ -33,6 +46,7 @@ describe 'JSON Schema Test Suite' do
     drafts.each do |draft|
       name = draft[:name]
       metaschema = draft[:metaschema]
+      schema_registry = JSTS_REGISTRIES[metaschema]
 
           base = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests')
           subpaths = Dir.chdir(base) { Dir.glob(File.join(name, '**/*.json')) }
@@ -52,8 +66,7 @@ describe 'JSON Schema Test Suite' do
               end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
                 describe(tests_desc.description) do
-                  let(:schema_registry) { JSI.schema_registry.dup }
-
+                  let(:schema_registry) { schema_registry }
                   let(:schema) do
                     metaschema.new_schema(tests_desc.jsi_instance['schema'], schema_registry: schema_registry)
                   end
