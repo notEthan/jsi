@@ -86,7 +86,13 @@ describe 'JSON Schema Test Suite' do
 
                   tests_desc.tests.each do |test|
                       it(test.description) do
-                        jsi = schema.new_jsi(test.jsi_instance['data'], schema_registry: schema_registry)
+                        begin
+                          jsi = schema.new_jsi(test.jsi_instance['data'], schema_registry: schema_registry)
+                        rescue JSI::SchemaRegistry::ResourceNotFound => e
+                          raise unless e.uri.to_s == 'https://json-schema.org/draft/2019-09/schema'
+                          skip("unsupported URI: #{e.uri}")
+                        end
+
                         result = jsi.jsi_validate
                         assert_equal(result.valid?, jsi.jsi_valid?)
 
