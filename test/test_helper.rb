@@ -64,7 +64,7 @@ module Minitest
       if lg - sigfig + 1 < 0
         seconds = "%.#{sigfig - lg - 1}f" % (duration % 60)
       else
-        seconds = "%is" % (duration % 60)
+        seconds = "%i" % (duration % 60)
       end
 
       if duration > 60 * 60
