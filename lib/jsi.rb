@@ -74,6 +74,11 @@ module JSI
     return @schema_registry if instance_variable_defined?(:@schema_registry)
     @schema_registry = SchemaRegistry.new
   end
+
+  # @param schema_registry [JSI::SchemaRegistry]
+  def self.schema_registry=(schema_registry)
+    @schema_registry = schema_registry
+  end
 end
 
 JSI.schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
