@@ -14,6 +14,7 @@ module JSI
 
     # an exception raised when a URI we are looking for has not been registered
     class ResourceNotFound < StandardError
+      attr_accessor :uri
     end
 
     def initialize
@@ -109,7 +110,7 @@ module JSI
         else
           msg = ["URI #{uri} is not registered. registered URIs:", *(@resources.keys | @autoload_uris.keys)]
         end
-        raise(ResourceNotFound, msg.join("\n"))
+        raise(ResourceNotFound.new(msg.join("\n")).tap { |e| e.uri = uri })
       end
       @resources[uri]
     end
