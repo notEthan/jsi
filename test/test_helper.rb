@@ -104,7 +104,7 @@ module Minitest
 
   class JSISpecReporter < Minitest::Reporters::SpecReporter
     def record_print_status(test)
-      test_name = test.name.gsub(/^test_: /, 'test:')
+      test_name = test.name.gsub(/^test_(: |\d+_)/, '')
       print pad_test(test_name)
       print_colored_status(test)
       print(" (#{format_duration(test.time, sigfig: 2)})") unless test.time.nil?
