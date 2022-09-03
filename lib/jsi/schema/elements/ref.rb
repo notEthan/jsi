@@ -11,7 +11,7 @@ module JSI
         unless visited_refs.include?(ref)
           ref.deref_schema.each_inplace_applicator_schema(instance, visited_refs: visited_refs + [ref], &block)
           if exclusive
-            throw(:jsi_application_done)
+            self.abort = true
           end
         end
       end
@@ -40,7 +40,7 @@ module JSI
                   results: [ref_result],
                 )
                 if exclusive
-                  throw(:jsi_validation_result, result)
+                  self.abort = true
                 end
               end
             else
