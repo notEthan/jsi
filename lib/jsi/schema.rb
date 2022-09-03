@@ -700,7 +700,6 @@ module JSI
         visited_refs: Util::EMPTY_ARY,
         &block
     )
-      catch(:jsi_application_done) do
       dialect_invoke_each(:inplace_applicate,
         Cxt::InplaceApplication,
         instance: instance,
@@ -716,7 +715,6 @@ module JSI
             &block
           )
         end
-      end
       end
     end
 
