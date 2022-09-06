@@ -28,8 +28,8 @@ module JSI
     # @param resource [JSI::Base] a JSI containing resources to register
     # @return [void]
     def register(resource)
-      unless resource.is_a?(JSI::Base)
-        raise(ArgumentError, "resource must be a JSI::Base. got: #{resource.pretty_inspect.chomp}")
+      unless resource.is_a?(Base) || resource.is_a?(Schema)
+        raise(ArgumentError, "resource must be a #{Base}. got: #{resource.pretty_inspect.chomp}")
       end
       unless resource.is_a?(JSI::Schema) || resource.jsi_ptr.root?
         # unsure, should this be allowed? the given JSI is not a "resource" as we define it, but
