@@ -82,6 +82,7 @@ describe 'JSON Schema Test Suite' do
       {name: 'draft4', metaschema: JSI::JSONSchemaDraft04.schema},
       {name: 'draft6', metaschema: JSI::JSONSchemaDraft06.schema},
       {name: 'draft7', metaschema: JSI::JSONSchemaDraft07.schema},
+      {name: 'draft2020-12', metaschema: JSI::JSONSchemaDraft202012.schema},
     ]
     drafts.each do |draft|
       name = draft[:name]
