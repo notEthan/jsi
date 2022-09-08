@@ -80,7 +80,12 @@ module JSI
     def resource_root_subschema(ptr)
       ptr = Ptr.ary_ptr(ptr)
       if schema_resource_root
-        return(schema_resource_root) if ptr.root?
+        abs_ptr = schema_resource_root.jsi_ptr + ptr
+        schema_resource_root.jsi_each_descendent_schema do |subschema|
+          return(subschema) if subschema.jsi_ptr == abs_ptr
+        end
+        # ptr indicates a location where no element indicates a subschema.
+        # TODO rm support (along with reinstantiate_as) and raise(NotASchemaError) here.
         return(schema_resource_root.subschema(ptr))
       end
       # no schema_resource_root means the root is not a schema and no parent schema has an absolute uri.
