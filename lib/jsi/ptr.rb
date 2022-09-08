@@ -129,6 +129,20 @@ module JSI
         res
       end
 
+      # Resolves each token of this pointer in `document`, in particular resolving strings indicating
+      # array indices to integers.
+      # @param document [Object]
+      # @return [Ptr]
+      def resolve_against(document)
+        node = document
+        resolved_tokens = Array.new(tokens.size)
+        tokens.each_with_index do |token, i|
+          resolved_token, node = node_subscript_token_child(node, token)
+          resolved_tokens[i] = resolved_token
+        end
+        Ptr.new(resolved_tokens.freeze)
+      end
+
       # the pointer string representation of this pointer
       # @return [String]
       def pointer
