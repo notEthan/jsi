@@ -80,7 +80,7 @@ module JSI
     def resource_root_subschema(ptr)
       ptr = Ptr.ary_ptr(ptr)
       if schema_resource_root
-        abs_ptr = schema_resource_root.jsi_ptr + ptr
+        abs_ptr = schema_resource_root.jsi_ptr + ptr.resolve_against(schema_resource_root.jsi_node_content)
         schema_resource_root.jsi_each_descendent_schema do |subschema|
           return(subschema) if subschema.jsi_ptr == abs_ptr
         end
