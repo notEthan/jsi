@@ -659,6 +659,13 @@ module JSI
       dialect_invoke_each(:subschema) { |ptr| subschema(ptr).jsi_each_descendent_schema(&block) }
     end
 
+    # @yield [Ptr]
+    def each_immediate_subschema_ptr
+      return(to_enum(__method__)) unless block_given?
+
+      dialect_invoke_each(:subschema) { |ptr| yield(Ptr.ary_ptr(ptr)) }
+    end
+
     # yields each inplace applicator schema which applies to the given instance.
     #
     # @param instance [Object] the instance to check any applicators against
