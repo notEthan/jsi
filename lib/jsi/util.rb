@@ -186,8 +186,10 @@ module JSI
     def ensure_module_set(modules)
       if modules.is_a?(Set) && modules.frozen?
         set = modules
-      else
+      elsif modules.is_a?(Enumerable)
         set = Set.new(modules).freeze
+      else
+        raise(TypeError, "not given an Enumerable of Modules")
       end
       not_modules = set.reject { |s| s.is_a?(Module) }
       if !not_modules.empty?
