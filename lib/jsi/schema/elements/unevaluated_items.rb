@@ -5,6 +5,13 @@ module JSI
     # https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-unevaluateditems
     UNEVALUATED_ITEMS = element_map do
       Schema::Element.new(keyword: 'unevaluatedItems') do |element|
+        element.add_action(:subschema) do
+          #> The value of "unevaluatedItems" MUST be a valid JSON Schema.
+          if keyword?('unevaluatedItems')
+            cxt_yield(['unevaluatedItems'])
+          end
+        end
+
         element.add_action(:validate) do
           next if !keyword?('unevaluatedItems')
           next if !instance.respond_to?(:to_ary)
