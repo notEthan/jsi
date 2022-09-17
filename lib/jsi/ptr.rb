@@ -42,14 +42,7 @@ module JSI
       # @param tokens any number of tokens
       # @return [JSI::Ptr]
       def self.[](*tokens)
-        if tokens.empty?
-          unless instance_variable_defined?(:@root_ptr)
-            @root_ptr = new(tokens)
-          end
-          @root_ptr
-        else
-          new(tokens)
-        end
+        tokens.empty? ? EMPTY : new(tokens)
       end
 
       # parse a URI-escaped fragment and instantiate as a JSI::Ptr
@@ -95,7 +88,7 @@ module JSI
           tokens.shift
           new(tokens)
         elsif tokens.empty?
-          new(tokens)
+          EMPTY
         else
           raise(PointerSyntaxError, "Invalid pointer syntax in #{pointer_string.inspect}: pointer must begin with /")
         end
