@@ -111,6 +111,8 @@ module JSI
         @tokens = tokens.to_ary.map(&:freeze).freeze
       end
 
+      EMPTY = new(Util::EMPTY_ARY)
+
       attr_reader :tokens
 
       # takes a root json document and evaluates this pointer through the document, returning the value
