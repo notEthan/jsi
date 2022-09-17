@@ -601,7 +601,7 @@ module JSI
     # @return [Array<JSI::Schema>]
     def jsi_subschema_resource_ancestors
       if schema_resource_root?
-        jsi_schema_resource_ancestors + [self]
+        jsi_schema_resource_ancestors.dup.push(self).freeze
       else
         jsi_schema_resource_ancestors
       end

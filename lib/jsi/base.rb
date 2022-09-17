@@ -134,7 +134,7 @@ module JSI
         jsi_ptr: Ptr[],
         jsi_root_node: nil,
         jsi_schema_base_uri: nil,
-        jsi_schema_resource_ancestors: []
+        jsi_schema_resource_ancestors: Util::EMPTY_ARY
     )
       raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
