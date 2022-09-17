@@ -349,7 +349,7 @@ module JSI
       yield schema_absolute_uri if schema_absolute_uri
 
       parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
-        resource.is_a?(Schema) && resource.schema_absolute_uri
+        resource.schema_absolute_uri
       end
 
       anchored = respond_to?(:anchor) ? anchor : nil
