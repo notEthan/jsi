@@ -841,6 +841,10 @@ module JSI
       end
     end
 
+    # @private
+    def jsi_next_schema_dynamic_anchor_map
+    end
+
     # Does application require collection of evaluated children?
     # (i.e. does the schema contain `unevaluatedItems` / `unevaluatedProperties`?)
     # @private
