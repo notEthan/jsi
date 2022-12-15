@@ -99,6 +99,12 @@ describe JSI::Schema::Ref do
         err = assert_raises(JSI::SchemaRegistry::ResourceNotFound) { JSI::Schema::Ref.new(uri).deref_schema  }
         assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
       end
+
+      it('errors from the registry (no schema_registry)') do
+        schema_without_registry = JSI::JSONSchemaDraft07.new_schema(schema_content, schema_registry: nil)
+        err = assert_raises(JSI::Schema::ReferenceError) { JSI::Schema::Ref.new(uri, ref_schema: schema_without_registry).deref_schema }
+        assert_match(%r(\Acould not resolve remote ref with no schema_registry specified), err.message)
+      end
     end
 
     describe 'relative uri' do
