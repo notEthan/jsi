@@ -23,11 +23,11 @@ module JSI
 
     # a jsonifiable representation of the node content
     # @return [Object]
-    def as_json(*opt)
+    def as_json(options = {})
       # include Enumerable (above) means, if ActiveSupport is loaded, its undesirable #as_json is included
       # https://github.com/rails/rails/blob/v7.0.0/activesupport/lib/active_support/core_ext/object/json.rb#L139-L143
       # although Base#as_json does clobber activesupport's, I want as_json defined correctly on the module too.
-      Util.as_json(jsi_node_content, *opt)
+      Util.as_json(jsi_node_content, **options)
     end
   end
 

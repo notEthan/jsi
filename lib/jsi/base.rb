@@ -644,8 +644,8 @@ module JSI
 
     # a jsonifiable representation of the instance
     # @return [Object]
-    def as_json(*opt)
-      Util.as_json(jsi_instance, *opt)
+    def as_json(options = {})
+      Util.as_json(jsi_instance, **options)
     end
 
     # see {Util::Private::FingerprintHash}

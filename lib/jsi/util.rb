@@ -45,27 +45,27 @@ module JSI
     #   expression of param object
     # @raise [TypeError] when the object (or an object nested with a hash or
     #   array of object) cannot be expressed as json
-    def as_json(object, *opt)
+    def as_json(object, options = {})
       type_err = proc { raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}") }
       if object.is_a?(JSI::Base)
-        as_json(object.jsi_node_content, *opt)
+        as_json(object.jsi_node_content, **options)
       elsif object.respond_to?(:to_hash)
         (object.respond_to?(:map) ? object : object.to_hash).map do |k, v|
           unless k.is_a?(Symbol) || k.respond_to?(:to_str)
             raise(TypeError, "json object (hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
           end
-          {k.to_s => as_json(v, *opt)}
+          {k.to_s => as_json(v, **options)}
         end.inject({}, &:update)
       elsif object.respond_to?(:to_ary)
-        (object.respond_to?(:map) ? object : object.to_ary).map { |e| as_json(e, *opt) }
+        (object.respond_to?(:map) ? object : object.to_ary).map { |e| as_json(e, **options) }
       elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| object.is_a?(c) }
         object
       elsif object.is_a?(Symbol)
         object.to_s
       elsif object.is_a?(Set)
-        as_json(object.to_a, *opt)
+        as_json(object.to_a, **options)
       elsif object.respond_to?(:as_json)
-        as_json(object.as_json(*opt), *opt)
+        as_json(object.as_json(**options), **options)
       else
         type_err.call
       end
