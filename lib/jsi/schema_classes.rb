@@ -88,8 +88,8 @@ module JSI
           Class.new(Base).instance_exec(schemas: schemas, includes: includes) do |schemas: , includes: |
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
-            schemas.each { |schema| include(schema.jsi_schema_module) }
             includes.each { |m| include(m) }
+            schemas.each { |schema| include(schema.jsi_schema_module) }
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
 
