@@ -813,11 +813,6 @@ describe JSI::Base do
 
     describe 'overriding as_json' do
       it 'overrides' do
-        # note that since JSIs are extended with Base::ArrayNode/Base::HashNode in #initialize, methods of
-        # those modules are not overridden by schema modules (which are included on the instance's class).
-        # Enumerable is included on Base (rather than conditionally extending hash/array nodes) so
-        # that Enumerable methods can be overridden (in particular as_json - although not defined on
-        # Enumerable normally, ActiveSupport defines it)
         schema = JSI::JSONSchemaOrgDraft06.new_schema({'$id' => 'http://jsi/base/def_as_json'})
         schema.jsi_schema_module_exec { define_method(:as_json) { :foo } }
         assert_equal(:foo, schema.new_jsi({}).as_json)
