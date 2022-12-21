@@ -826,6 +826,17 @@ describe JSI::Base do
       end
     end
   end
+
+  describe 'overriding HashNode methods' do
+    it 'can override' do
+      schema = JSI::JSONSchemaOrgDraft06.new_schema({'$id' => 'http://jsi/base/def_to_hash'})
+      schema.jsi_schema_module_exec { define_method(:to_hash) { :foo } }
+      assert_equal(:foo, schema.new_jsi({}).to_hash)
+      assert_equal(:foo, schema.new_jsi([]).to_hash)
+      assert_equal(:foo, schema.new_jsi(0).to_hash)
+    end
+  end
+
   describe 'equality' do
     describe 'with different jsi_schema_base_uri' do
       let(:schema) { JSI::JSONSchemaOrgDraft06 }
