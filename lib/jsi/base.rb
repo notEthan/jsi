@@ -382,8 +382,10 @@ module JSI
 
       if defaults.size == 1
         # use the default value
-        # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
-        dup.tap { |o| o[token] = defaults.first }[token, as_jsi: as_jsi]
+        jsi_subinstance_as_jsi(defaults.first, child_applied_schemas, as_jsi) do
+          # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
+          dup.tap { |o| o[token] = defaults.first }[token, as_jsi: true]
+        end
       else
         value
       end
