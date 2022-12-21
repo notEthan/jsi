@@ -356,6 +356,40 @@ module JSI
       jsi_simple_node_child_error(token)
     end
 
+    # A default value for a child of this node identified by the given token, if schemas describing
+    # that child define a default value.
+    #
+    # If no schema describes a default value for the child (or in the unusual case that multiple
+    # schemas define different defaults), the result is `nil`.
+    #
+    # See also the `use_default` param of {Base#[]}.
+    #
+    # @param token (see Base#[])
+    # @param as_jsi (see Base#[])
+    # @return [JSI::Base, nil]
+    def jsi_default_child(token, as_jsi: :auto)
+      value = jsi_node_content_child(token)
+
+      child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
+      child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(value)
+
+      defaults = Set.new
+      child_applied_schemas.each do |subinstance_schema|
+        if subinstance_schema.keyword?('default')
+          defaults << subinstance_schema.jsi_node_content['default']
+        end
+      end
+
+      if defaults.size == 1
+        # use the default value
+        # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
+        dup.tap { |o| o[token] = defaults.first }[token, as_jsi: as_jsi]
+      else
+        value
+      end
+    end
+    private :jsi_default_child # internals for #[] but idk, could be public
+
     # subscripts to return a child value identified by the given token.
     #
     # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
@@ -409,18 +443,7 @@ module JSI
           end
         else
           if use_default
-            defaults = Set.new
-            child_applied_schemas.each do |subinstance_schema|
-              if subinstance_schema.keyword?('default')
-                defaults << subinstance_schema.jsi_node_content['default']
-              end
-            end
-          end
-
-          if use_default && defaults.size == 1
-            # use the default value
-            # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
-            dup.tap { |o| o[token] = defaults.first }[token, as_jsi: as_jsi]
+            jsi_default_child(token, as_jsi: :auto)
           else
             value
           end
