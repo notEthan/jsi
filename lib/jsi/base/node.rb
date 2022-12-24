@@ -221,9 +221,39 @@ module JSI
             end
           end
         end
+      elsif token.is_a?(Range)
+        type_err = proc do
+          raise(TypeError, [
+            "given range does not contain Integers",
+            "range: #{token.inspect}",
+          ].join("\n"))
+        end
+
+        start_idx = token.begin
+        if start_idx.is_a?(Integer)
+          start_idx += size if start_idx < 0
+          return nil if start_idx < 0 || start_idx > size
+        elsif start_idx.nil?
+          start_idx = 0
+        else
+          type_err.call
+        end
+
+        end_idx = token.end
+        if end_idx.is_a?(Integer)
+          end_idx += size if end_idx < 0
+          end_idx += 1 unless token.exclude_end?
+          end_idx = size if end_idx > size
+        elsif end_idx.nil?
+          end_idx = size
+        else
+          type_err.call
+        end
+
+        (start_idx...end_idx).map { |i| jsi_child(i, as_jsi: as_jsi) }.freeze
       else
         raise(TypeError, [
-          "expected `token` param to be an Integer",
+          "expected `token` param to be an Integer or Range",
           "token: #{token.inspect}",
         ].join("\n"))
       end
