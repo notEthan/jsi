@@ -232,6 +232,7 @@ module JSI
         start_idx = token.begin
         if start_idx.is_a?(Integer)
           start_idx += size if start_idx < 0
+          return Util::EMPTY_ARY if start_idx == size
           return nil if start_idx < 0 || start_idx > size
         elsif start_idx.nil?
           start_idx = 0
@@ -244,6 +245,7 @@ module JSI
           end_idx += size if end_idx < 0
           end_idx += 1 unless token.exclude_end?
           end_idx = size if end_idx > size
+          return Util::EMPTY_ARY if start_idx >= end_idx
         elsif end_idx.nil?
           end_idx = size
         else
