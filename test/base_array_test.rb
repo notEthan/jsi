@@ -1,6 +1,49 @@
 require_relative 'test_helper'
 
 describe 'JSI::Base array' do
+  module BaseArrayTest
+    def self.test_ranges(test_context)
+      size = 4
+      n = 2
+      classes = [
+        ["negative beyond size", -1,  -> (m) { -size - m }],
+        ["negative at size",     0,   -> (m) { -size }],
+        ["negative within size", -1,  -> (m) { -m }],
+        ["zero",                 0,   -> (m) { 0 }],
+        ["nil",                  0,   -> (m) { nil }],
+        ["positive within size", 1,   -> (m) { m }],
+        ["positive at size",     0,   -> (m) { size }],
+        ["positive beyond size", 1,   -> (m) { size + m }],
+      ]
+
+      mkit = -> (range, startclassname, endclassname, *descs) do
+        range_s = ((" " * (range.begin || range.end ? 3 - (range.begin.to_s.size) : 0)) + range.inspect).ljust(9)
+        indices = (0...size).to_a[range]
+        desc = ["range #{range_s} → #{indices.inspect} : start #{startclassname}, end #{endclassname}", *descs].join(", ")
+        test_context.it(desc) do
+          expect = indices.nil? ? nil : indices.map { |i| subject[i] }
+          assert_equal(expect, subject[range])
+        end
+      end
+
+      classes.each do |startclassname, _, mkstart|
+        classes.each do |endclassname, nvary, mkend|
+          if nvary != 0 && startclassname == endclassname
+            mkit.(mkstart[n]..mkend[n - nvary],  startclassname, endclassname, "inclusive", "start > end")
+            mkit.(mkstart[n]...mkend[n - nvary], startclassname, endclassname, "exclusive", "start > end")
+            mkit.(mkstart[n]..mkend[n],          startclassname, endclassname, "inclusive", "start = end")
+            mkit.(mkstart[n]...mkend[n],         startclassname, endclassname, "exclusive", "start = end")
+            mkit.(mkstart[n]..mkend[n + nvary],  startclassname, endclassname, "inclusive", "start < end")
+            mkit.(mkstart[n]...mkend[n + nvary], startclassname, endclassname, "exclusive", "start < end")
+          else
+            mkit.(mkstart[n]..mkend[n],          startclassname, endclassname, "inclusive")
+            mkit.(mkstart[n]...mkend[n],         startclassname, endclassname, "exclusive")
+          end
+        end
+      end
+    end
+  end
+
   let(:default_instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
   let(:instance) { default_instance }
   let(:schema_content) do
@@ -32,6 +75,7 @@ describe 'JSI::Base array' do
     end
 
     describe 'Range' do
+      BaseArrayTest.test_ranges(self)
     end
 
     describe 'arbitrary object' do
@@ -77,6 +121,11 @@ describe 'JSI::Base array' do
       end
     end
 
+    describe 'Range' do
+      # it does not try to insert basic defaults, so behavior is the same as tests without a default value.
+      BaseArrayTest.test_ranges(self)
+    end
+
     describe 'arbitrary object' do
       it 'raises, does not try to insert basic default' do
         assert_raises(TypeError) { subject[Object.new] }
@@ -117,6 +166,11 @@ describe 'JSI::Base array' do
       it 'returns nil, does not try to insert complex default' do
         assert_nil(subject[-5])
       end
+    end
+
+    describe 'Range' do
+      # it does not try to insert complex defaults, so behavior is the same as tests without a default value.
+      BaseArrayTest.test_ranges(self)
     end
 
     describe 'arbitrary object' do
