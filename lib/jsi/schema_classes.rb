@@ -275,6 +275,8 @@ module JSI
   # is another node, a NotASchemaModule for that node is returned. otherwise - when the
   # value is a basic type - that value itself is returned.
   class NotASchemaModule
+    include SchemaModulePossibly
+
     # @param node [JSI::Base]
     def initialize(node)
       raise(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
@@ -284,8 +286,6 @@ module JSI
         extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly], setters: false))
       end
     end
-
-    include SchemaModulePossibly
 
     # @return [String]
     def inspect
