@@ -9,7 +9,7 @@ gem 'gig'
 gem 'minitest'
 gem 'minitest-around'
 gem 'minitest-reporters'
-gem 'simplecov'
+gem 'simplecov', '< 0.22'
 gem 'simplecov-lcov'
 
 # jsi does not depend on these, but we wish to test integration with them
