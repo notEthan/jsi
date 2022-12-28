@@ -1,3 +1,21 @@
+# v0.7.0
+
+- JSI::Base instances include Array/Hash-like modules on subclasses rather than extending each instance; are only Enumerable when appropriate instead of always
+- PathedHashNode -> Base::HashNode, PathedArrayNode -> Base::ArrayNode, PathedNode merged with Base
+- change application of conditional schemas to instances which do not validate, always apply them
+- fix nomenclature: child is immediately below parent; descendent is anywhere at/below an ancestor
+  - deprecate previous misnamed methods
+- Base#jsi_descendent_node, Base#jsi_ancestor_nodes
+- add Schema#describes_schema!, deprecate Schema#jsi_schema_instance_modules
+- Schema#keyword?
+- Base#jmespath_search
+- MetaschemaNode keeps its jsi_root_node (reducing an enormous number of unnecessary instantiations of MetaschemaNode)
+- /metaschema_instance_modules/schema_implementation_modules/
+- separate JSI::Util (public) and JSI::Util::Private
+- support ruby 3
+- Schema.default_metaschema is nil unless set by the application
+- deprecate JSI::Typelike module, merged with Util; Arraylike -> Util::Arraylike, Hashlike -> Util::Hashlike
+
 # v0.6.0
 
 - initial validation; remove gem `json-schema` dependency
