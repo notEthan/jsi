@@ -286,7 +286,7 @@ module JSI
         parent.tap do
           parent = parent[token, as_jsi: true]
         end
-      end.reverse
+      end.reverse!.freeze
     end
 
     # the immediate parent of this JSI. nil if there is no parent.
