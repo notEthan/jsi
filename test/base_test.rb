@@ -284,8 +284,8 @@ describe JSI::Base do
       )
     end
     describe '#jsi_select_descendents_node_first: selecting in a complex structure those elements described by a schema or subschema' do
-      # note that 'described by a schema' does not imply the instance or subinstance validates against
-      # its schema(s). string subinstances ('y') are described but fail validation against `pattern`.
+      # note that 'described by a schema' does not imply the instance or child validates against
+      # its schema(s). string children ('y') are described but fail validation against `pattern`.
       let(:instance) do
         YAML.safe_load(<<~YAML
           n:

@@ -363,17 +363,17 @@ module JSI
     # @param as_jsi (see Base#[])
     # @return [JSI::Base, Object]
     def jsi_child(token, as_jsi: :auto)
-      value = jsi_node_content_child(token)
+      child_content = jsi_node_content_child(token)
 
       child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
-      child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(value)
+      child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(child_content)
 
-      jsi_subinstance_as_jsi(value, child_applied_schemas, as_jsi) do
-        jsi_subinstance_memos[
+      jsi_child_as_jsi(child_content, child_applied_schemas, as_jsi) do
+        jsi_child_node_map[
           token: token,
           child_indicated_schemas: child_indicated_schemas,
           child_applied_schemas: child_applied_schemas,
-          includes: SchemaClasses.includes_for(value),
+          includes: SchemaClasses.includes_for(child_content),
         ]
       end
     end
@@ -391,26 +391,26 @@ module JSI
     # @param as_jsi (see Base#[])
     # @return [JSI::Base, nil]
     def jsi_default_child(token, as_jsi: :auto)
-      value = jsi_node_content_child(token)
+      child_content = jsi_node_content_child(token)
 
       child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
-      child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(value)
+      child_applied_schemas = child_indicated_schemas.inplace_applicator_schemas(child_content)
 
       defaults = Set.new
-      child_applied_schemas.each do |subinstance_schema|
-        if subinstance_schema.keyword?('default')
-          defaults << subinstance_schema.jsi_node_content['default']
+      child_applied_schemas.each do |child_schema|
+        if child_schema.keyword?('default')
+          defaults << child_schema.jsi_node_content['default']
         end
       end
 
       if defaults.size == 1
         # use the default value
-        jsi_subinstance_as_jsi(defaults.first, child_applied_schemas, as_jsi) do
+        jsi_child_as_jsi(defaults.first, child_applied_schemas, as_jsi) do
           # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
           dup.tap { |o| o[token] = defaults.first }[token, as_jsi: true]
         end
       else
-        value
+        child_content
       end
     end
     private :jsi_default_child # internals for #[] but idk, could be public
@@ -633,7 +633,7 @@ module JSI
       @jsi_indicated_schemas = SchemaSet.ensure_schema_set(jsi_indicated_schemas)
     end
 
-    def jsi_subinstance_memos
+    def jsi_child_node_map
       jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }) do |token: , child_indicated_schemas: , child_applied_schemas: , includes: |
         jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas, includes: includes)
         jsi_class.new(@jsi_document,
@@ -646,21 +646,21 @@ module JSI
       end
     end
 
-    def jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi)
+    def jsi_child_as_jsi(child_content, child_schemas, as_jsi)
       if [true, false].include?(as_jsi)
-        value_as_jsi = as_jsi
+        child_as_jsi = as_jsi
       elsif as_jsi == :auto
-        complex_value = value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
-        schema_value = subinstance_schemas.any?(&:describes_schema?)
-        value_as_jsi = complex_value || schema_value
+        child_is_complex = child_content.respond_to?(:to_hash) || child_content.respond_to?(:to_ary)
+        child_is_schema = child_schemas.any?(&:describes_schema?)
+        child_as_jsi = child_is_complex || child_is_schema
       else
         raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
       end
 
-      if value_as_jsi
+      if child_as_jsi
         yield
       else
-        value
+        child_content
       end
     end
 

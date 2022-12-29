@@ -145,10 +145,10 @@ module JSI
 
     # see {Base#jsi_child}
     def jsi_child(token, as_jsi: :auto)
-      value_node = jsi_subinstance_memos[token: token]
+      child_node = jsi_child_node_map[token: token]
 
-      jsi_subinstance_as_jsi(jsi_node_content_child(token), value_node.jsi_schemas, as_jsi) do
-        value_node
+      jsi_child_as_jsi(jsi_node_content_child(token), child_node.jsi_schemas, as_jsi) do
+        child_node
       end
     end
     private :jsi_child
@@ -207,7 +207,7 @@ module JSI
       MetaschemaNode.new(jsi_document, **our_initialize_params.merge(params))
     end
 
-    def jsi_subinstance_memos
+    def jsi_child_node_map
       jsi_memomap(:subinstance) do |token: |
         new_node(
           jsi_ptr: jsi_ptr[token],
