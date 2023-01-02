@@ -5,6 +5,7 @@ describe JSI::Schema do
 
   describe 'new_schema' do
     describe 'a ruby literal that looks like json but has symbol keys' do
+      let(:line_a) { __LINE__ }
       let(:schema_content) do
         {
           "$schema": "http://json-schema.org/draft-06/schema#",
@@ -14,8 +15,16 @@ describe JSI::Schema do
           }
         }
       end
+      let(:line_b) { __LINE__ }
+
+      let(:schema_content_from_json) do
+        # this is a bit silly
+        JSON.parse(File.read(__FILE__).split("\n", -1)[line_a + 1...line_b - 2].join("\n"))
+      end
 
       it 'initializes, stringifying symbol keys' do
+        assert_equal(JSI.new_schema(schema_content_from_json), schema)
+
         assert_equal("http://json-schema.org/draft-06/schema#", schema['$schema'])
         # check that the metaschema id actually corresponds to $schema, particularly since checking
         # $schema is done before the schema content keys are stringified
