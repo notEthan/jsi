@@ -137,23 +137,25 @@ module JSI
     module DescribesSchema
       # instantiates the given schema content as a JSI Schema.
       #
-      # the schema is instantiated after recursively converting any symbol hash keys in the structure
-      # to strings. note that this is in contrast to {JSI::Schema#new_jsi}, which does not alter its
-      # given instance.
-      #
       # the schema will be registered with the `JSI.schema_registry`.
+      #
+      # By default, the `schema_content` will have any Symbol keys of Hashes replaced with Strings
+      # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
       #
       # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
       # @param uri [nil, #to_str, Addressable::URI] the URI of the schema document.
       #   relative URIs within the document are resolved using this uri as their base.
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
+      # @param stringify_symbol_keys (see SchemaSet#new_jsi)
       # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_content`
       #   and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
-          uri: nil
+          uri: nil,
+          stringify_symbol_keys: true
       )
-        schema_jsi = new_jsi(Util.deep_stringify_symbol_keys(schema_content),
+        schema_jsi = new_jsi(schema_content,
           uri: uri,
+          stringify_symbol_keys: stringify_symbol_keys,
         )
         JSI.schema_registry.register(schema_jsi)
         schema_jsi
@@ -218,9 +220,10 @@ module JSI
       # @param default_metaschema [#new_schema] the metaschema to use if the schema_object does not have
       #   a '$schema' property. this may be a metaschema or a metaschema's schema module
       #   (e.g. `JSI::JSONSchemaOrgDraft07`).
+      # @param stringify_symbol_keys (see SchemaSet#new_jsi)
       # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_object`
       #   and whose schemas are the metaschema's inplace applicators.
-      def new_schema(schema_object, default_metaschema: nil, **kw)
+      def new_schema(schema_object, default_metaschema: nil, stringify_symbol_keys: true, **kw)
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?
@@ -235,14 +238,14 @@ module JSI
           if !default_metaschema.respond_to?(:new_schema)
             raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
           end
-          default_metaschema.new_schema(schema_object, **kw)
+          default_metaschema.new_schema(schema_object, stringify_symbol_keys: stringify_symbol_keys, **kw)
         }
         if schema_object.is_a?(Schema)
           schema_object
         elsif schema_object.is_a?(JSI::Base)
           raise(NotASchemaError, "the given schema_object is a JSI::Base, but is not a JSI::Schema: #{schema_object.pretty_inspect.chomp}")
         elsif schema_object.respond_to?(:to_hash)
-          id = schema_object['$schema'] || schema_object[:'$schema']
+          id = schema_object['$schema'] || stringify_symbol_keys && schema_object[:'$schema']
           if id
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_object keyword `$schema` is not a string")
@@ -251,7 +254,7 @@ module JSI
             unless metaschema.describes_schema?
               raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
-            metaschema.new_schema(schema_object, **kw)
+            metaschema.new_schema(schema_object, stringify_symbol_keys: stringify_symbol_keys, **kw)
           else
             default_metaschema_new_schema.call
           end
