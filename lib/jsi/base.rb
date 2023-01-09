@@ -125,12 +125,12 @@ module JSI
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
     # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
-    # @param jsi_schema_resource_ancestors [Array<JSI::Base>]
+    # @param jsi_schema_resource_ancestors [Array<JSI::Base<JSI::Schema>>]
     def initialize(jsi_document,
         jsi_ptr: Ptr[],
         jsi_root_node: nil,
         jsi_schema_base_uri: nil,
-        jsi_schema_resource_ancestors: []
+        jsi_schema_resource_ancestors: Util::EMPTY_ARY
     )
       raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
@@ -293,7 +293,22 @@ module JSI
     #
     # @return [JSI::Base, nil]
     def jsi_parent_node
-      jsi_parent_nodes.first
+      jsi_ptr.root? ? nil : jsi_root_node.jsi_descendent_node(jsi_ptr.parent)
+    end
+
+    # ancestor JSI instances from this node up to the root. this node itself is always its own first ancestor.
+    #
+    # @return [Array<JSI::Base>]
+    def jsi_ancestor_nodes
+      ancestors = []
+      ancestor = jsi_root_node
+      ancestors << ancestor
+
+      jsi_ptr.tokens.each do |token|
+        ancestor = ancestor[token, as_jsi: true]
+        ancestors << ancestor
+      end
+      ancestors.reverse!.freeze
     end
 
     # the descendent node at the given pointer
@@ -367,7 +382,7 @@ module JSI
             defaults = Set.new
             subinstance_schemas.each do |subinstance_schema|
               if subinstance_schema.keyword?('default')
-                defaults << subinstance_schema['default']
+                defaults << subinstance_schema.jsi_node_content['default']
               end
             end
           end
@@ -446,6 +461,23 @@ module JSI
       jsi_schemas.instance_valid?(self)
     end
 
+    # queries this JSI using the [JMESPath Ruby](https://rubygems.org/gems/jmespath) gem.
+    # see [https://jmespath.org/](https://jmespath.org/) to learn the JMESPath query language.
+    #
+    # the JMESPath gem is not a dependency of JSI, so must be installed / added to your Gemfile to use.
+    # e.g. `gem 'jmespath', '~> 1.5'`. note that versions below 1.5 are not compatible with JSI.
+    #
+    # @param expression [String] a [JMESPath](https://jmespath.org/) expression
+    # @param runtime_options passed to [JMESPath.search](https://rubydoc.info/gems/jmespath/JMESPath#search-class_method),
+    #   though no runtime_options are publicly documented or normally used.
+    # @return [Array, Object, nil] query results.
+    #   see [JMESPath.search](https://rubydoc.info/gems/jmespath/JMESPath#search-class_method)
+    def jmespath_search(expression, **runtime_options)
+      Util.require_jmespath
+
+      JMESPath.search(expression, self, **runtime_options)
+    end
+
     def dup
       jsi_modified_copy(&:dup)
     end
@@ -455,6 +487,8 @@ module JSI
     def inspect
       "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
+
+    alias_method :to_s, :inspect
 
     # pretty-prints a representation of this JSI to the given printer
     # @return [void]
@@ -501,7 +535,7 @@ module JSI
     # a jsonifiable representation of the instance
     # @return [Object]
     def as_json(*opt)
-      Typelike.as_json(jsi_instance, *opt)
+      Util.as_json(jsi_instance, *opt)
     end
 
     # an opaque fingerprint of this JSI for {Util::FingerprintHash}.
@@ -539,12 +573,12 @@ module JSI
     end
 
     def jsi_subinstance_as_jsi(value, subinstance_schemas, as_jsi)
-      value_as_jsi = if [true, false].include?(as_jsi)
-        as_jsi
+      if [true, false].include?(as_jsi)
+        value_as_jsi = as_jsi
       elsif as_jsi == :auto
         complex_value = value.respond_to?(:to_hash) || value.respond_to?(:to_ary)
         schema_value = subinstance_schemas.any?(&:describes_schema?)
-        complex_value || schema_value
+        value_as_jsi = complex_value || schema_value
       else
         raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
       end

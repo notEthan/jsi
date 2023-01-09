@@ -27,5 +27,5 @@ module JSI
   end
 
   SimpleWrap::Implementation = simple_wrap_implementation
-  SimpleWrap::Metaschema = simple_wrap_metaschema
+  SimpleWrap::METASCHEMA = simple_wrap_metaschema
 end

@@ -8,11 +8,11 @@ module JSI
   module Schema
     autoload :Application, 'jsi/schema/application'
     autoload :Validation, 'jsi/schema/validation'
+
     autoload :Issue, 'jsi/schema/issue'
+    autoload :Ref, 'jsi/schema/ref'
 
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
-
-    autoload :Ref, 'jsi/schema/ref'
 
     autoload :Draft04, 'jsi/schema/draft04'
     autoload :Draft06, 'jsi/schema/draft06'
@@ -351,7 +351,7 @@ module JSI
       yield schema_absolute_uri if schema_absolute_uri
 
       parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
-        resource.is_a?(Schema) && resource.schema_absolute_uri
+        resource.schema_absolute_uri
       end
 
       anchored = respond_to?(:anchor) ? anchor : nil
@@ -532,24 +532,22 @@ module JSI
 
     def resource_root_subschema_map
       jsi_memomap(:resource_root_subschema_map) do |ptr: |
-        schema = self
-        if schema.is_a?(MetaschemaNode::BootstrapSchema)
+        if is_a?(MetaschemaNode::BootstrapSchema)
           # BootstrapSchema does not track jsi_schema_resource_ancestors used by #schema_resource_root;
           # resource_root_subschema is always relative to the document root.
           # BootstrapSchema also does not implement jsi_root_node or #[]. we instantiate the ptr directly
           # rather than as a subschema from the root.
-          schema.class.new(
-            schema.jsi_document,
+          self.class.new(
+            jsi_document,
             jsi_ptr: ptr,
             jsi_schema_base_uri: nil,
           )
         else
-          resource_root = schema.schema_resource_root
-          Schema.ensure_schema(resource_root.jsi_descendent_node(ptr),
+          Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
             msg: [
               "subschema is not a schema at pointer: #{ptr.pointer}"
             ],
-            reinstantiate_as: schema.jsi_schemas.select(&:describes_schema?)
+            reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
         end
       end
@@ -605,7 +603,7 @@ module JSI
     # @return [Array<JSI::Schema>]
     def jsi_subschema_resource_ancestors
       if schema_resource_root?
-        jsi_schema_resource_ancestors + [self]
+        jsi_schema_resource_ancestors.dup.push(self).freeze
       else
         jsi_schema_resource_ancestors
       end

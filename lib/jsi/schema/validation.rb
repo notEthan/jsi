@@ -15,7 +15,6 @@ module JSI
     autoload :AllOf, 'jsi/schema/validation/someof'
     autoload :AnyOf, 'jsi/schema/validation/someof'
     autoload :OneOf, 'jsi/schema/validation/someof'
-    autoload :Not,  'jsi/schema/validation/not'
     autoload :IfThenElse, 'jsi/schema/validation/ifthenelse'
 
     # child subschema application
@@ -30,6 +29,7 @@ module JSI
     autoload :Type, 'jsi/schema/validation/type'
     autoload :Enum, 'jsi/schema/validation/enum'
     autoload :Const, 'jsi/schema/validation/const'
+    autoload :Not,  'jsi/schema/validation/not'
 
     # object validation
     autoload :Required,    'jsi/schema/validation/required'

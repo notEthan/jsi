@@ -66,10 +66,11 @@ describe 'JSI::SchemaSet' do
       assert_schemas([schema_a, schema_b.definitions['b'], schema_c, schema_c.allOf[0]], schema_set.new_jsi({}))
     end
   end
-  describe '#inspect' do
+  describe '#inspect, #to_s' do
     it 'inspects' do
-      inspect = JSI::SchemaSet[schema_a].inspect
-      assert_equal(%q(JSI::SchemaSet[#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "title" => "A"}]), inspect)
+      set = JSI::SchemaSet[schema_a]
+      assert_equal(%q(JSI::SchemaSet[#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "title" => "A"}]), set.inspect)
+      assert_equal(set.inspect, set.to_s)
     end
   end
   describe '#pretty_print' do

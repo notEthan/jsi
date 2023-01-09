@@ -102,9 +102,10 @@ describe 'JSI::Base array' do
         assert_equal("cannot assign subscript (using token: 2) to instance: nil", err.message)
       end
     end
-    describe '#inspect' do
+    describe '#inspect, #to_s' do
       it 'inspects' do
         assert_equal("#[<JSI> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
+        assert_equal(subject.inspect, subject.to_s)
       end
     end
     describe '#pretty_print' do
@@ -191,8 +192,8 @@ describe 'JSI::Base array' do
       subject.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'yields each element as_jsi' do
-      expect_modules = [schema.items[0].jsi_schema_module, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base]
-      subject.each(as_jsi: true) { |e| assert_is_a(expect_modules.shift, e) }
+      expect_schemas = [[schema.items[0]], [schema.items[1]], [schema.items[2]], []]
+      subject.each(as_jsi: true) { |e| assert_schemas(expect_schemas.shift, e) }
     end
   end
   describe 'to_ary' do
@@ -201,8 +202,8 @@ describe 'JSI::Base array' do
       subject.to_ary.each { |e| assert_is_a(expect_modules.shift, e) }
     end
     it 'includes each element as_jsi' do
-      expect_modules = [schema.items[0].jsi_schema_module, schema.items[1].jsi_schema_module, schema.items[2].jsi_schema_module, JSI::Base]
-      subject.to_ary(as_jsi: true).each { |e| assert_is_a(expect_modules.shift, e) }
+      expect_schemas = [[schema.items[0]], [schema.items[1]], [schema.items[2]], []]
+      subject.to_ary(as_jsi: true).each { |e| assert_schemas(expect_schemas.shift, e) }
     end
   end
 
@@ -326,7 +327,7 @@ describe 'JSI::Base array' do
       end
     end
   end
-  JSI::Arraylike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+  JSI::Util::Arraylike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
       assert(!subject.respond_to?(destructive_method_name))
     end

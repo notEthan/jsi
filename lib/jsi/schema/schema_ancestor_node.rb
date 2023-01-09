@@ -54,9 +54,7 @@ module JSI
     end
 
     def jsi_ptr=(jsi_ptr)
-      unless jsi_ptr.is_a?(Ptr)
-        raise(TypeError, "jsi_ptr must be a JSI::Ptr; got: #{jsi_ptr.inspect}")
-      end
+      raise(Bug, "jsi_ptr not #{Ptr}: #{jsi_ptr.inspect}") unless jsi_ptr.is_a?(Ptr)
       @jsi_ptr = jsi_ptr
     end
 
@@ -79,7 +77,7 @@ module JSI
         unless jsi_schema_resource_ancestors.respond_to?(:to_ary)
           raise(TypeError, "jsi_schema_resource_ancestors must be an array; got: #{jsi_schema_resource_ancestors.inspect}")
         end
-        jsi_schema_resource_ancestors.each { |a| Schema.ensure_schema(a)  }
+        jsi_schema_resource_ancestors.each { |a| Schema.ensure_schema(a) }
         # sanity check the ancestors are in order
         last_anc_ptr = nil
         jsi_schema_resource_ancestors.each do |anc|

@@ -1,72 +1,16 @@
 # frozen_string_literal: true
 
 module JSI
-  # a module relating to objects that act like Hash or Array instances
+  # @deprecated after v0.6
   module Typelike
-    # yields the content of the given param `object`. for objects which have a #jsi_modified_copy
-    # method of their own (JSI::Base, JSI::MetaschemaNode) that method is invoked with the given
-    # block. otherwise the given object itself is yielded.
-    #
-    # the given block must result in a modified copy of its block parameter
-    # (not destructively modifying the yielded content).
-    #
-    # @yield [Object] the content of the given object. the block should result
-    #   in a (nondestructively) modified copy of this.
-    # @return [object.class] modified copy of the given object
-    def self.modified_copy(object, &block)
-      if object.respond_to?(:jsi_modified_copy)
-        object.jsi_modified_copy(&block)
-      else
-        return yield(object)
-      end
-    end
-
-    # recursive method to express the given argument object in json-compatible
-    # types of Hash, Array, and basic types of String/boolean/numeric/nil. this
-    # will raise TypeError if an object is given that is not a type that seems
-    # to be expressable as json.
-    #
-    # similar effect could be achieved by requiring 'json/add/core' and using #as_json,
-    # but I don't much care for how it represents classes that are
-    # not naturally expressable in JSON, and prefer not to load its
-    # monkey-patching.
-    #
-    # @param object [Object] the object to be converted to jsonifiability
-    # @return [Array, Hash, String, Boolean, NilClass, Numeric] jsonifiable
-    #   expression of param object
-    # @raise [TypeError] when the object (or an object nested with a hash or
-    #   array of object) cannot be expressed as json
-    def self.as_json(object, *opt)
-      if object.is_a?(JSI::Base)
-        as_json(object.jsi_node_content, *opt)
-      elsif object.respond_to?(:to_hash)
-        (object.respond_to?(:map) ? object : object.to_hash).map do |k, v|
-          unless k.is_a?(Symbol) || k.respond_to?(:to_str)
-            raise(TypeError, "json object (hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
-          end
-          {k.to_s => as_json(v, *opt)}
-        end.inject({}, &:update)
-      elsif object.respond_to?(:to_ary)
-        (object.respond_to?(:map) ? object : object.to_ary).map { |e| as_json(e, *opt) }
-      elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| object.is_a?(c) }
-        object
-      elsif object.is_a?(Symbol)
-        object.to_s
-      elsif object.is_a?(Set)
-        as_json(object.to_a, *opt)
-      elsif object.respond_to?(:as_json)
-        as_json(object.as_json(*opt), *opt)
-      else
-        raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}")
-      end
-    end
+    extend Util
   end
 
   # a module of methods for objects which behave like Hash but are not Hash.
   #
   # this module is intended to be internal to JSI. no guarantees or API promises
   # are made for non-JSI classes including this module.
-  module Hashlike
+  module Util::Hashlike
     # safe methods which can be delegated to #to_hash (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 
@@ -187,7 +131,7 @@ module JSI
   #
   # this module is intended to be internal to JSI. no guarantees or API promises
   # are made for non-JSI classes including this module.
-  module Arraylike
+  module Util::Arraylike
     # safe methods which can be delegated to #to_ary (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 

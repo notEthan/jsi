@@ -157,8 +157,8 @@ describe 'JSI Schema inplace application' do
             schema.allOf[0].allOf[0],
             schema.allOf[0].allOf[1],
             schema.allOf[1],
+            schema.allOf[1].oneOf[0],
           ], subject)
-          refute_is_a(schema.allOf[1].oneOf[0].jsi_schema_module, subject)
         end
       end
       describe 'anyOf' do
@@ -220,15 +220,15 @@ describe 'JSI Schema inplace application' do
           )
         end
         let(:instance) { {} }
-        it 'applies none' do
+        it 'applies all' do
           assert_schemas([
             schema,
+            schema.anyOf[0],
+            schema.anyOf[0].anyOf[0],
+            schema.anyOf[0].anyOf[1],
+            schema.anyOf[1],
+            schema.anyOf[1].oneOf[0],
           ], subject)
-          refute_is_a(schema.anyOf[0].jsi_schema_module, subject)
-          refute_is_a(schema.anyOf[0].anyOf[0].jsi_schema_module, subject)
-          refute_is_a(schema.anyOf[0].anyOf[1].jsi_schema_module, subject)
-          refute_is_a(schema.anyOf[1].jsi_schema_module, subject)
-          refute_is_a(schema.anyOf[1].oneOf[0].jsi_schema_module, subject)
         end
       end
       describe 'oneOf' do
@@ -292,15 +292,15 @@ describe 'JSI Schema inplace application' do
           )
         end
         let(:instance) { {} }
-        it 'applies none' do
+        it 'applies all' do
           assert_schemas([
             schema,
+            schema.oneOf[0],
+            schema.oneOf[0].oneOf[0],
+            schema.oneOf[0].oneOf[1],
+            schema.oneOf[1],
+            schema.oneOf[1].allOf[0],
           ], subject)
-          refute_is_a(schema.oneOf[0].jsi_schema_module, subject)
-          refute_is_a(schema.oneOf[0].oneOf[0].jsi_schema_module, subject)
-          refute_is_a(schema.oneOf[0].oneOf[1].jsi_schema_module, subject)
-          refute_is_a(schema.oneOf[1].jsi_schema_module, subject)
-          refute_is_a(schema.oneOf[1].allOf[0].jsi_schema_module, subject)
         end
       end
     end

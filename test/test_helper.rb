@@ -26,11 +26,15 @@ if ENV['CI'] || ENV['COV']
 end
 
 require 'bundler'
-bundler_groups = ENV['JSI_TEST_EXTDEP'] ? [:extdep, :default] : [:default]
+bundler_groups = [:default, :test]
+bundler_groups << :dev unless ENV['CI']
+bundler_groups << :extdep if ENV['JSI_TEST_EXTDEP']
 Bundler.setup(*bundler_groups)
 
-if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
-  require 'byebug'
+if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'debug' }
+  require 'debug'
+  Object.alias_method(:dbg, :debugger)
+  Object.alias_method(:byebug, :debugger) # TODO remove
 end
 
 require_relative 'jsi_helper'
@@ -64,7 +68,7 @@ module Minitest
       if lg - sigfig + 1 < 0
         seconds = "%.#{sigfig - lg - 1}f" % (duration % 60)
       else
-        seconds = "%is" % (duration % 60)
+        seconds = "%i" % (duration % 60)
       end
 
       if duration > 60 * 60
@@ -104,7 +108,7 @@ module Minitest
 
   class JSISpecReporter < Minitest::Reporters::SpecReporter
     def record_print_status(test)
-      test_name = test.name.gsub(/^test_: /, 'test:')
+      test_name = test.name.gsub(/^test_(: |\d+_)/, '')
       print pad_test(test_name)
       print_colored_status(test)
       print(" (#{format_duration(test.time, sigfig: 2)})") unless test.time.nil?
@@ -198,7 +202,7 @@ class JSISpec < Minitest::Spec
 
     assert_is_a(JSI::Base, instance)
 
-    assert_equal(instance.jsi_schemas, schemas)
+    assert_equal(schemas, instance.jsi_schemas)
     schemas.each do |schema|
       assert_is_a(schema.jsi_schema_module, instance)
     end

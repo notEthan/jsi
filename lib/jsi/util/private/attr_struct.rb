@@ -64,7 +64,7 @@ module JSI
           raise(TypeError, "expected attributes to be a Hash; got: #{attributes.inspect}")
         end
         @attributes = {}
-        attributes.each do |k, v|
+        attributes.to_hash.each do |k, v|
           @attributes[self.class.convert_key(k)] = v
         end
         bad = @attributes.keys.reject { |k| attribute_keys.include?(k) }
@@ -89,6 +89,8 @@ module JSI
       def inspect
         "\#<#{self.class.name}#{@attributes.empty? ? '' : ' '}#{@attributes.map { |k, v| "#{k}: #{v.inspect}" }.join(', ')}>"
       end
+
+      alias_method :to_s, :inspect
 
       # pretty-prints a representation of self to the given printer
       # @return [void]

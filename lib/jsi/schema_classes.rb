@@ -24,6 +24,8 @@ module JSI
       end
     end
 
+    alias_method :to_s, :inspect
+
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
     #
     # @param (see JSI::Schema#new_jsi)
@@ -105,7 +107,7 @@ module JSI
       def bootstrap_schema_class(modules)
         modules = Util.ensure_module_set(modules)
         jsi_memoize(__method__, modules: modules) do |modules: |
-          Class.new(MetaschemaNode::BootstrapSchema).instance_exec(modules) do |modules|
+          Class.new(MetaschemaNode::BootstrapSchema) do
             define_singleton_method(:schema_implementation_modules) { modules }
             define_method(:schema_implementation_modules) { modules }
             modules.each { |mod| include(mod) }
@@ -121,8 +123,8 @@ module JSI
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
         jsi_memoize(:module_for_schema, schema: schema) do |schema: |
-          Module.new.tap do |m|
-            m.module_eval do
+          Module.new do
+            begin
               define_singleton_method(:schema) { schema }
 
               extend SchemaModule
@@ -165,8 +167,8 @@ module JSI
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         Schema.ensure_schema(schema)
         jsi_memoize(:accessor_module_for_schema, schema: schema, conflicting_modules: conflicting_modules, setters: setters) do |schema: , conflicting_modules: , setters: |
-          Module.new.tap do |m|
-            m.module_eval do
+          Module.new do
+            begin
               define_singleton_method(:inspect) { '(JSI Schema Accessor Module)' }
 
               conflicting_instance_methods = conflicting_modules.map do |mod|
@@ -208,20 +210,20 @@ module JSI
     # @api private
     # @return [String, nil]
     def name_from_ancestor
-      named_parent_schema, tokens = named_ancestor_schema_tokens
-      return nil unless named_parent_schema
+      named_ancestor_schema, tokens = named_ancestor_schema_tokens
+      return nil unless named_ancestor_schema
 
-      name = named_parent_schema.jsi_schema_module.name
-      parent = named_parent_schema
+      name = named_ancestor_schema.jsi_schema_module.name
+      ancestor = named_ancestor_schema
       tokens.each do |token|
-        if parent.jsi_schemas.any? { |s| s.jsi_schema_module.jsi_property_accessors.include?(token) }
+        if ancestor.jsi_schemas.any? { |s| s.jsi_schema_module.jsi_property_accessors.include?(token) }
           name += ".#{token}"
         elsif [String, Numeric, TrueClass, FalseClass, NilClass].any? { |m| token.is_a?(m) }
           name += "[#{token.inspect}]"
         else
           return nil
         end
-        parent = parent[token]
+        ancestor = ancestor[token]
       end
       name
     end
@@ -248,7 +250,7 @@ module JSI
 
     # @return [Array<JSI::Schema, Array>, nil]
     def named_ancestor_schema_tokens
-      schema_ancestors = [possibly_schema_node] + possibly_schema_node.jsi_parent_nodes
+      schema_ancestors = possibly_schema_node.jsi_ancestor_nodes
       named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
       return nil unless named_ancestor_schema
       tokens = possibly_schema_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
@@ -272,12 +274,8 @@ module JSI
   class NotASchemaModule
     # @param node [JSI::Base]
     def initialize(node)
-      unless node.is_a?(JSI::Base)
-        raise(TypeError, "not JSI::Base: #{node.pretty_inspect.chomp}")
-      end
-      if node.is_a?(JSI::Schema)
-        raise(TypeError, "cannot instantiate NotASchemaModule for a JSI::Schema node: #{node.pretty_inspect.chomp}")
-      end
+      raise(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
+      raise(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
       @possibly_schema_node = node
       node.jsi_schemas.each do |schema|
         extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly], setters: false))
@@ -294,5 +292,7 @@ module JSI
         "(JSI wrapper for Schema Module: #{@possibly_schema_node.jsi_ptr.uri})"
       end
     end
+
+    alias_method :to_s, :inspect
   end
 end

@@ -148,9 +148,8 @@ module JSI
       def parent
         if root?
           raise(Ptr::Error, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
-        else
-          Ptr.new(tokens[0...-1])
         end
+        Ptr.new(tokens[0...-1])
       end
 
       # whether this pointer contains the other_ptr - that is, whether this pointer is an ancestor
@@ -225,7 +224,7 @@ module JSI
         # or hash in the path above the node we point to. this node's content is modified by the
         # caller, and that is recursively merged up to the document root.
         if empty?
-          Typelike.modified_copy(document, &block)
+          Util.modified_copy(document, &block)
         else
           car = tokens[0]
           cdr = Ptr.new(tokens[1..-1])

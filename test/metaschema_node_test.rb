@@ -67,6 +67,7 @@ describe JSI::MetaschemaNode do
     it 'is pretty' do
       inspect = %q(#{<JSI::MetaschemaNode (#) Metaschema> "properties" => #{<JSI::MetaschemaNode (#/properties/properties)> "properties" => #{<JSI::MetaschemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaschemaNode (#) Schema>}}})
       assert_equal(inspect, metaschema.inspect)
+      assert_equal(inspect, metaschema.to_s)
       pp = <<~PP
         \#{<JSI::MetaschemaNode (#) Metaschema>
           "properties" => \#{<JSI::MetaschemaNode (#/properties/properties)>
@@ -148,7 +149,6 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:jsi_ptr) { JSI::Ptr[] }
     let(:metaschema_root_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
     it 'acts like a metaschema' do
@@ -176,7 +176,6 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:jsi_ptr) { JSI::Ptr[] }
     let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     it 'acts like a metaschema' do

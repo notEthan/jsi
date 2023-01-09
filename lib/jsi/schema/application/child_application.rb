@@ -30,9 +30,7 @@ module JSI
     def each_child_applicator_schema(token, instance, &block)
       return to_enum(__method__, token, instance) unless block
 
-      if schema_content.respond_to?(:to_hash)
-        internal_child_applicate_keywords(token, instance, &block)
-      end
+      internal_child_applicate_keywords(token, instance, &block)
 
       nil
     end

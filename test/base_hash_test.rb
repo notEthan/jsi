@@ -147,9 +147,10 @@ describe 'JSI::Base hash' do
         assert_equal('cannot assign subscript (using token: "foo") to instance: nil', err.message)
       end
     end
-    describe '#inspect' do
+    describe '#inspect, #to_s' do
       it 'inspects' do
         assert_equal("\#{<JSI> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
+        assert_equal(subject.inspect, subject.to_s)
       end
     end
     describe '#pretty_print' do
@@ -253,8 +254,23 @@ describe 'JSI::Base hash' do
       subject.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'yields each element as_jsi' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
-      subject.each(as_jsi: true) { |_, v| assert_is_a(expect_modules.shift, v) }
+      expect_schemas = [[schema.properties['foo']], [schema.properties['bar']], []]
+      subject.each(as_jsi: true) { |_, v| assert_schemas(expect_schemas.shift, v) }
+    end
+
+    it 'gives the right number of arguments to proc and lambda' do
+      res = []
+      blocks = [
+        proc   { |k, v| res << [k, v] },
+        proc   { |a|    res << a },
+        lambda { |k, v| res << [k, v] },
+        lambda { |a|    res << a },
+        -> (k, v) {     res << [k, v] }, # -> is the same as lambda, so this is redundant, but w/e
+        -> (a) {        res << a },
+      ]
+      # none of these raise ArgumentError: wrong number of arguments
+      blocks.each { |blk| subject.each(&blk) }
+      assert_equal(%w(foo bar baz).map { |k| [k, subject[k]] } * blocks.size, res)
     end
   end
   describe 'to_hash' do
@@ -263,8 +279,8 @@ describe 'JSI::Base hash' do
       subject.to_hash.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'includes each element as_jsi' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
-      subject.to_hash(as_jsi: true).each { |_, v| assert_is_a(expect_modules.shift, v) }
+      expect_schemas = [[schema.properties['foo']], [schema.properties['bar']], []]
+      subject.to_hash(as_jsi: true).each { |_, v| assert_schemas(expect_schemas.shift, v) }
     end
   end
 
@@ -358,7 +374,7 @@ describe 'JSI::Base hash' do
       it('#compact') { assert_equal(subject, subject.compact) }
     end
   end
-  JSI::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
+  JSI::Util::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
       assert(!subject.respond_to?(destructive_method_name))
     end

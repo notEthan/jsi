@@ -32,12 +32,7 @@ module JSI
       return to_enum(__method__, instance, visited_refs: visited_refs) unless block
 
       catch(:jsi_application_done) do
-        if schema_content.respond_to?(:to_hash)
-          internal_inplace_applicate_keywords(instance, visited_refs, &block)
-        else
-          # self is the only applicator schema if there are no keywords
-          yield self
-        end
+        internal_inplace_applicate_keywords(instance, visited_refs, &block)
       end
 
       nil

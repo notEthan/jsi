@@ -42,12 +42,14 @@ describe JSI::Base do
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
-  describe 'class .inspect' do
+  describe 'class .inspect, .to_s' do
     it 'is the same as Class#inspect on the base' do
       assert_equal('JSI::Base', JSI::Base.inspect)
+      assert_equal(JSI::Base.inspect, JSI::Base.to_s)
     end
     it 'is (JSI Schema Class) for generated subclass without id' do
       assert_equal("(JSI Schema Class: #)", subject.class.inspect)
+      assert_equal(subject.class.inspect, subject.class.to_s)
     end
     describe 'with schema id' do
       let(:schema_content) { {'$id' => 'https://jsi/foo'} }
@@ -83,16 +85,7 @@ describe JSI::Base do
       assert_equal(Set[schema], schema.new_jsi({}).class.jsi_class_schemas)
     end
   end
-  describe 'module for schema .inspect' do
-    it '.inspect' do
-      assert_equal("(JSI Schema Module: #)", JSI::SchemaClasses.module_for_schema(schema).inspect)
-    end
-  end
-  describe 'module for schema .schema' do
-    it '.schema' do
-      assert_equal(schema, JSI::SchemaClasses.module_for_schema(schema).schema)
-    end
-  end
+
   describe '.class_for_schemas' do
     it 'returns a class from a schema' do
       class_for_schema = JSI::SchemaClasses.class_for_schemas([schema], includes: [])
@@ -205,36 +198,40 @@ describe JSI::Base do
     end
   end
 
-  describe '#jsi_parent_nodes, #jsi_parent_node' do
+  describe '#jsi_parent_nodes, #jsi_parent_node, #jsi_ancestor_nodes' do
     let(:schema_content) { {'properties' => {'foo' => {'properties' => {'bar' => {'properties' => {'baz' => {}}}}}}} }
     let(:instance) { {'foo' => {'bar' => {'baz' => {}}}} }
-    describe 'no jsi_parent_nodes' do
+    describe 'at the root' do
       it 'has none' do
         assert_equal([], subject.jsi_parent_nodes)
         assert_equal(nil, subject.jsi_parent_node)
+        assert_equal([subject], subject.jsi_ancestor_nodes)
       end
     end
-    describe 'one jsi_parent_node' do
+    describe 'one parent' do
       it 'has one' do
         assert_equal([subject], subject.foo.jsi_parent_nodes)
         assert_equal(subject, subject.foo.jsi_parent_node)
+        assert_equal([subject.foo, subject], subject.foo.jsi_ancestor_nodes)
       end
     end
-    describe 'more jsi_parent_nodes' do
+    describe 'more parents' do
       it 'has more' do
         assert_equal([subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.jsi_parent_nodes)
         assert_equal(subject.foo.bar, subject.foo.bar.baz.jsi_parent_node)
+        assert_equal([subject.foo.bar.baz, subject.foo.bar, subject.foo, subject], subject.foo.bar.baz.jsi_ancestor_nodes)
       end
     end
-    describe 'jsi_parent_nodes not described by schemas' do
+    describe 'jsi_ancestor_nodes not described by schemas' do
       let(:instance) { {'foo' => {'a' => {'b' => ['c']}}} }
       it 'has more' do
-        a = subject.foo['a', as_jsi: true]
-        b = a['b', as_jsi: true]
-        c = b[0, as_jsi: true] # TODO use jsi_child_node or evaluate
+        a = subject.jsi_descendent_node(['foo', 'a'])
+        b = subject.jsi_descendent_node(['foo', 'a', 'b'])
+        c = subject.jsi_descendent_node(['foo', 'a', 'b', 0])
         assert_equal([b, a, subject.foo, subject], c.jsi_parent_nodes)
         assert_equal(b, c.jsi_parent_node)
         assert_equal(a, b.jsi_parent_node)
+        assert_equal([c, b, a, subject.foo, subject], c.jsi_ancestor_nodes)
       end
     end
   end
@@ -627,7 +624,7 @@ describe JSI::Base do
               'initialize' => {},     # Base
               'inspect' => {},        # Base
               'pretty_inspect' => {}, # Kernel
-              'as_json' => {},        # Base::OverrideFromExtensions, extended on initialization
+              'as_json' => {},        # Base
               'each' => {},           # Base::HashNode / Base::ArrayNode
               'instance_exec' => {},  # BasicObject
               'jsi_instance' => {},   # Base
@@ -758,11 +755,12 @@ describe JSI::Base do
       end
     end
   end
-  describe '#inspect' do
+  describe '#inspect, #to_s' do
     # if the instance is hash-like, #inspect gets overridden
     let(:instance) { Object.new }
     it 'inspects' do
       assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.inspect)
+      assert_equal(subject.inspect, subject.to_s)
     end
   end
   describe '#pretty_print' do

@@ -174,10 +174,14 @@ describe JSI::Schema::Ref do
     end
 
     it 'is pretty' do
-      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', JSI::Schema::Ref.new(uri, schema).inspect)
-      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', JSI::Schema::Ref.new(uri, schema).pretty_inspect.chomp)
-      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', JSI::Schema::Ref.new(uri).inspect)
-      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', JSI::Schema::Ref.new(uri).pretty_inspect.chomp)
+      ref_with_schema = JSI::Schema::Ref.new(uri, schema)
+      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_with_schema.inspect)
+      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_with_schema.pretty_inspect.chomp)
+      assert_equal(ref_with_schema.inspect, ref_with_schema.to_s)
+      ref_no_schema = JSI::Schema::Ref.new(uri)
+      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_no_schema.inspect)
+      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_no_schema.pretty_inspect.chomp)
+      assert_equal(ref_no_schema.inspect, ref_no_schema.to_s)
     end
   end
 end

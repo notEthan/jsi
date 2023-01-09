@@ -9,7 +9,6 @@ require "bigdecimal"
 require "addressable/uri"
 
 require "jsi/util"
-require "jsi/typelike_modules"
 
 module JSI
   # generally put in code paths that are not expected to be valid control flow paths.
@@ -30,9 +29,7 @@ module JSI
   SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   autoload :Ptr, 'jsi/ptr'
-  autoload :Typelike, 'jsi/typelike_modules'
-  autoload :Hashlike, 'jsi/typelike_modules'
-  autoload :Arraylike, 'jsi/typelike_modules'
+  autoload :Typelike, 'jsi/util/typelike'
   autoload :Schema, 'jsi/schema'
   autoload :SchemaSet, 'jsi/schema_set'
   autoload :Base, 'jsi/base'

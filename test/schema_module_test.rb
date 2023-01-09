@@ -24,18 +24,20 @@ describe 'JSI::SchemaModule' do
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties)
     end
   end
-  describe '.inspect' do
+  describe '.inspect, .to_s' do
     it 'shows the name relative to a named parent module' do
       assert_equal(
         'SchemaModuleTestModule.properties (JSI wrapper for Schema Module)',
         SchemaModuleTestModule.properties.inspect
       )
+      assert_equal(SchemaModuleTestModule.properties.inspect, SchemaModuleTestModule.properties.to_s)
       assert_equal(
         'SchemaModuleTestModule.properties["foo"].items (JSI Schema Module)',
         SchemaModuleTestModule.properties["foo"].items.inspect
       )
+      assert_equal(SchemaModuleTestModule.properties["foo"].items.inspect, SchemaModuleTestModule.properties["foo"].items.to_s)
     end
-    it 'shows a pointer fragment uri with no named parent module' do
+    it 'shows a pointer fragment uri with no named ancestor schema module' do
       mod = JSI::JSONSchemaOrgDraft07.new_schema_module({
         'title' => 'lhzm', 'properties' => {'foo' => {'items' => {'type' => 'string'}}}
       })
@@ -43,10 +45,18 @@ describe 'JSI::SchemaModule' do
         '(JSI wrapper for Schema Module: #/properties)',
         mod.properties.inspect
       )
+      assert_equal(mod.properties.inspect, mod.properties.to_s)
       assert_equal(
         '(JSI Schema Module: #/properties/foo/items)',
         mod.properties["foo"].items.inspect
       )
+      assert_equal(mod.properties["foo"].items.inspect, mod.properties["foo"].items.to_s)
+    end
+  end
+
+  describe '.schema' do
+    it 'is its schema' do
+      assert_equal(schema, schema_module.schema)
     end
   end
 

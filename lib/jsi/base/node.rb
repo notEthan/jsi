@@ -46,7 +46,7 @@ module JSI
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(**kw, &block)
-      return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
+      return to_enum(__method__, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
         jsi_node_content_hash_pubsend(:each_key) { |k| yield k, self[k, **kw] }
       else
@@ -62,7 +62,7 @@ module JSI
       {}.tap { |h| jsi_node_content_hash_pubsend(:each_key) { |k| h[k] = self[k, **kw] } }
     end
 
-    include Hashlike
+    include Util::Hashlike
 
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       # invokes the method with the given name on the jsi_node_content (if defined) or its #to_hash
@@ -122,7 +122,7 @@ module JSI
     # @yield [Object] each element of this array node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(**kw, &block)
-      return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
+      return to_enum(__method__, **kw) { jsi_node_content_ary_pubsend(:size) } unless block
       jsi_node_content_ary_pubsend(:each_index) { |i| yield(self[i, **kw]) }
       self
     end
@@ -135,7 +135,7 @@ module JSI
       to_a(**kw)
     end
 
-    include Arraylike
+    include Util::Arraylike
 
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       # invokes the method with the given name on the jsi_node_content (if defined) or its #to_ary

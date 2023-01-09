@@ -37,9 +37,7 @@ module JSI
         jsi_ptr: Ptr[],
         jsi_schema_base_uri: nil
     )
-      unless respond_to?(:schema_implementation_modules)
-        raise(TypeError, "cannot instantiate #{self.class.inspect} which has no method #schema_implementation_modules")
-      end
+      raise(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
 
       jsi_initialize_memos
 
@@ -62,6 +60,8 @@ module JSI
     def inspect
       "\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
     end
+
+    alias_method :to_s, :inspect
 
     # pretty-prints a representation of self to the given printer
     # @return [void]
