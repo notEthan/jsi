@@ -143,7 +143,7 @@ describe 'unsupported behavior' do
           pn_item = subject.jsi_each_propertyName.detect { |j| j.size > 0 }[0, as_jsi: true]
           assert_schemas([schema.propertyNames.items], pn_item)
 
-          assert(subject.jsi_each_propertyName.all?(&:jsi_valid?))
+          assert(subject.jsi_each_propertyName.to_a.all?(&:jsi_valid?))
 
           exp_jsis = [schema.propertyNames.new_jsi([]), schema.propertyNames.new_jsi([1])]
           assert_equal(exp_jsis, subject.jsi_each_propertyName.to_a) # this test seems unnecessary, w/e
