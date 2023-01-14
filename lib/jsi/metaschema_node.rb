@@ -58,13 +58,6 @@ module JSI
 
       jsi_node_content = self.jsi_node_content
 
-      if jsi_node_content.respond_to?(:to_hash)
-        extend HashNode
-      end
-      if jsi_node_content.respond_to?(:to_ary)
-        extend ArrayNode
-      end
-
       instance_for_schemas = jsi_document
       bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules)
       root_bootstrap_schema = bootstrap_schema_class.new(
@@ -109,6 +102,11 @@ module JSI
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if is_a?(Metaschema)
         describes_schema!(schema_implementation_modules)
+      end
+
+      extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
+      extends_for_instance.each do |m|
+        extend m
       end
 
       @jsi_schemas.each do |schema|
