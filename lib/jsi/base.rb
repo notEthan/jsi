@@ -455,7 +455,8 @@ module JSI
     #
     # @return [Boolean]
     def jsi_array?
-      is_a?(ArrayNode)
+      # note: overridden by Base::ArrayNode
+      false
     end
 
     # Is the instance a ruby Hash (JSON object)?
@@ -466,7 +467,8 @@ module JSI
     #
     # @return [Boolean]
     def jsi_hash?
-      is_a?(HashNode)
+      # note: overridden by Base::HashNode
+      false
     end
 
     # validates this JSI's instance against its schemas

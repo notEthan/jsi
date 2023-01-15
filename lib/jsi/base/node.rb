@@ -36,6 +36,11 @@ module JSI
   module Base::HashNode
     include Base::Enumerable
 
+    # (see Base#jsi_hash?)
+    def jsi_hash?
+      true
+    end
+
     # (see Base#jsi_each_child_token)
     def jsi_each_child_token(&block)
       return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
@@ -118,6 +123,11 @@ module JSI
   # is an Array (or responds to `#to_ary`)
   module Base::ArrayNode
     include Base::Enumerable
+
+    # (see Base#jsi_array?)
+    def jsi_array?
+      true
+    end
 
     # (see Base#jsi_each_child_token)
     def jsi_each_child_token(&block)
