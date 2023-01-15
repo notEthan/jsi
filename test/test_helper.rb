@@ -236,7 +236,7 @@ Minitest::Spec.register_spec_type(//, JSISpec)
 
 Minitest.after_run do
   if ENV['JSI_EXITDEBUG']
-    byebug
+    dbg
     nil
   end
 end
