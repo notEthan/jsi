@@ -58,6 +58,8 @@ module JSI
 
       jsi_node_content = self.jsi_node_content
 
+      extends = Set[]
+
       instance_for_schemas = jsi_document
       bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules)
       root_bootstrap_schema = bootstrap_schema_class.new(
@@ -78,10 +80,12 @@ module JSI
           schema_implementation_modules.each do |schema_implementation_module|
             extend schema_implementation_module
           end
+          extends += schema_implementation_modules
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
           # this is the metaschema (it is described by itself)
           extend Metaschema
+          extends << Metaschema
         end
       end
 
@@ -105,6 +109,19 @@ module JSI
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
+      extends.merge(extends_for_instance)
+      extends.freeze
+
+      conflicting_modules = Set[self.class] + extends + @jsi_schemas.map(&:jsi_schema_module)
+      reader_modules = @jsi_schemas.map do |schema|
+        JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
+      end
+
+      readers = reader_modules.map(&:jsi_property_readers).inject(Set[], &:merge).freeze
+      define_singleton_method(:jsi_property_readers) { readers }
+
+      reader_modules.each { |reader_module| extend reader_module }
+
       extends_for_instance.each do |m|
         extend m
       end

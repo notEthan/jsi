@@ -93,6 +93,22 @@ module JSI
           Class.new(Base) do
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
+
+            conflicting_modules = Set[JSI::Base] + includes + schemas.map(&:jsi_schema_module)
+
+            reader_modules = schemas.map do |schema|
+              JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
+            end
+            reader_modules.each { |m| include m }
+            readers = reader_modules.map(&:jsi_property_readers).inject(Set[], &:merge).freeze
+            define_method(:jsi_property_readers) { readers }
+            define_singleton_method(:jsi_property_readers) { readers }
+
+            writer_modules = schemas.map do |schema|
+              JSI::SchemaClasses.schema_property_writer_module(schema, conflicting_modules: conflicting_modules)
+            end
+            writer_modules.each { |m| include m }
+
             includes.each { |m| include(m) }
             schemas.each { |schema| include(schema.jsi_schema_module) }
             jsi_class = self
@@ -131,17 +147,6 @@ module JSI
               define_singleton_method(:schema) { schema }
 
               extend SchemaModule
-
-              reader_module = JSI::SchemaClasses.schema_property_reader_module(schema,
-                conflicting_modules: Set[JSI::Base, JSI::Base::ArrayNode, JSI::Base::HashNode],
-              )
-              include reader_module
-
-              define_singleton_method(:jsi_property_readers) { reader_module.jsi_property_readers }
-
-              include JSI::SchemaClasses.schema_property_writer_module(schema,
-                conflicting_modules: Set[JSI::Base, JSI::Base::ArrayNode, JSI::Base::HashNode],
-              )
 
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
@@ -229,7 +234,7 @@ module JSI
       name = named_ancestor_schema.jsi_schema_module.name
       ancestor = named_ancestor_schema
       tokens.each do |token|
-        if ancestor.jsi_schemas.any? { |s| s.jsi_schema_module.jsi_property_readers.include?(token) }
+        if ancestor.jsi_property_readers.include?(token)
           name += ".#{token}"
         elsif [String, Numeric, TrueClass, FalseClass, NilClass].any? { |m| token.is_a?(m) }
           name += "[#{token.inspect}]"
