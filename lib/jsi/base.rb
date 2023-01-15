@@ -447,6 +447,28 @@ module JSI
       end
     end
 
+    # Is the instance an array?
+    #
+    # An array is typically an instance of the Array class but may be an object that supports
+    # [implicit conversion](https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html)
+    # with a `#to_ary` method.
+    #
+    # @return [Boolean]
+    def jsi_array?
+      is_a?(ArrayNode)
+    end
+
+    # Is the instance a ruby Hash (JSON object)?
+    #
+    # This is typically an instance of the Hash class but may be an object that supports
+    # [implicit conversion](https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html)
+    # with a `#to_hash` method.
+    #
+    # @return [Boolean]
+    def jsi_hash?
+      is_a?(HashNode)
+    end
+
     # validates this JSI's instance against its schemas
     #
     # @return [JSI::Validation::FullResult]
