@@ -208,13 +208,13 @@ module JSI
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_descendents_node_first(&block)
       jsi_modified_copy do |instance|
-        if respond_to?(:to_hash) || respond_to?(:to_ary)
+        if jsi_array? || jsi_hash?
           res = instance.class.new
           jsi_each_child_token do |token|
             v = self[token, as_jsi: true]
             if yield(v)
               res_v = v.jsi_select_descendents_node_first(&block).jsi_node_content
-              if respond_to?(:to_ary)
+              if jsi_array?
                 res << res_v
               else
                 res[token] = res_v
@@ -241,13 +241,13 @@ module JSI
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_descendents_leaf_first(&block)
       jsi_modified_copy do |instance|
-        if respond_to?(:to_hash) || respond_to?(:to_ary)
+        if jsi_array? || jsi_hash?
           res = instance.class.new
           jsi_each_child_token do |token|
             v = self[token, as_jsi: true].jsi_select_descendents_leaf_first(&block)
             if yield(v)
               res_v = v.jsi_node_content
-              if respond_to?(:to_ary)
+              if jsi_array?
                 res << res_v
               else
                 res[token] = res_v
@@ -407,7 +407,7 @@ module JSI
     # @param token [String, Integer, Object] token identifying the subscript to assign
     # @param value [JSI::Base, Object] the value to be assigned
     def []=(token, value)
-      unless respond_to?(:to_hash) || respond_to?(:to_ary)
+      unless jsi_array? || jsi_hash?
         raise(CannotSubscriptError, "cannot assign subscript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
       end
       if value.is_a?(Base)
