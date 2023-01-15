@@ -208,21 +208,17 @@ module JSI
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_descendents_node_first(&block)
       jsi_modified_copy do |instance|
-        if respond_to?(:to_hash)
+        if respond_to?(:to_hash) || respond_to?(:to_ary)
           res = instance.class.new
-          each_key do |k|
-            v = self[k, as_jsi: true]
+          jsi_each_child_token do |token|
+            v = self[token, as_jsi: true]
             if yield(v)
-              res[k] = v.jsi_select_descendents_node_first(&block).jsi_node_content
-            end
-          end
-          res
-        elsif respond_to?(:to_ary)
-          res = instance.class.new
-          each_index do |i|
-            e = self[i, as_jsi: true]
-            if yield(e)
-              res << e.jsi_select_descendents_node_first(&block).jsi_node_content
+              res_v = v.jsi_select_descendents_node_first(&block).jsi_node_content
+              if respond_to?(:to_ary)
+                res << res_v
+              else
+                res[token] = res_v
+              end
             end
           end
           res
@@ -245,21 +241,17 @@ module JSI
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_descendents_leaf_first(&block)
       jsi_modified_copy do |instance|
-        if respond_to?(:to_hash)
+        if respond_to?(:to_hash) || respond_to?(:to_ary)
           res = instance.class.new
-          each_key do |k|
-            v = self[k, as_jsi: true].jsi_select_descendents_leaf_first(&block)
+          jsi_each_child_token do |token|
+            v = self[token, as_jsi: true].jsi_select_descendents_leaf_first(&block)
             if yield(v)
-              res[k] = v.jsi_node_content
-            end
-          end
-          res
-        elsif respond_to?(:to_ary)
-          res = instance.class.new
-          each_index do |i|
-            e = self[i, as_jsi: true].jsi_select_descendents_leaf_first(&block)
-            if yield(e)
-              res << e.jsi_node_content
+              res_v = v.jsi_node_content
+              if respond_to?(:to_ary)
+                res << res_v
+              else
+                res[token] = res_v
+              end
             end
           end
           res
