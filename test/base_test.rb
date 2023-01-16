@@ -651,7 +651,7 @@ describe JSI::Base do
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
-          assert_schemas([schema], subject)
+          assert_equal(Set[schema], subject.jsi_schemas)
         end
       end
       describe 'properties with names to ignore' do
