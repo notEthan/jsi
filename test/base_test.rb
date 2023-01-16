@@ -614,7 +614,8 @@ describe JSI::Base do
           {
             'type' => 'object',
             'properties' => {
-              'foo' => {},            # not an instance method
+              'foo' => {},            # no conflicting instance method
+              'to_ary' => {},         # no conflicting instance method for Hash instance. this would conflict for Array instance.
               'initialize' => {},     # Base
               'inspect' => {},        # Base
               'pretty_inspect' => {}, # Kernel
@@ -622,13 +623,14 @@ describe JSI::Base do
               'each' => {},           # Base::HashNode / Base::ArrayNode
               'instance_exec' => {},  # BasicObject
               'jsi_instance' => {},   # Base
-              'jsi_schemas' => {},    # module_for_schema singleton definition
+              'jsi_schemas' => {},    # Base subclass (from class_for_schemas)
             },
           }
         end
         let(:instance) do
           {
             'foo' => 'bar',
+            'to_ary' => 'not ary',
             'initialize' => 'hi',
             'inspect' => 'hi',
             'pretty_inspect' => 'hi',
@@ -641,12 +643,13 @@ describe JSI::Base do
         end
         it 'does not define readers' do
           assert_equal('bar', subject.foo) # this one is defined
+          assert_equal('not ary', subject.to_ary) # this one is defined but would not be for an Array instance
 
           assert_equal(JSI::Base, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
-          assert_equal(%q(#{<JSI> "foo" => "bar", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
+          assert_equal(%q(#{<JSI> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
-          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
+          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "to_ary" => "not ary",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
