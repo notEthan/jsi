@@ -14,9 +14,9 @@ module JSI
             results = {}
             result_builder.instance.each_index do |i|
               if i < value.size
-                results[i] = result_builder.child_subschema_validate(['items', i], [i])
+                results[i] = result_builder.child_subschema_validate(i, ['items', i])
               elsif keyword?('additionalItems')
-                results[i] = result_builder.child_subschema_validate(['additionalItems'], [i])
+                results[i] = result_builder.child_subschema_validate(i, ['additionalItems'])
               end
             end
             result_builder.validate(
@@ -31,7 +31,7 @@ module JSI
           # against that schema.
           if result_builder.instance.respond_to?(:to_ary)
             results = result_builder.instance.each_index.map do |i|
-              result_builder.child_subschema_validate(['items'], [i])
+              result_builder.child_subschema_validate(i, ['items'])
             end
             result_builder.validate(
               results.all?(&:valid?),

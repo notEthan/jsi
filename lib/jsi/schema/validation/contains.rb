@@ -10,7 +10,7 @@ module JSI
         if result_builder.instance.respond_to?(:to_ary)
           results = {}
           result_builder.instance.each_index do |i|
-            results[i] = result_builder.child_subschema_validate(['contains'], [i])
+            results[i] = result_builder.child_subschema_validate(i, ['contains'])
           end
           result_builder.validate(
             results.values.any?(&:valid?),
