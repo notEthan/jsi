@@ -415,8 +415,9 @@ module JSI
       jsi_schema_module.module_exec(*a, **kw, &block)
     end
 
-    # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the
-    # instance.
+    # Instantiates a new JSI whose content comes from the given `instance` param.
+    # This schema indicates the schemas of the JSI - its schemas are inplace
+    # applicators of this schema which apply to the given instance.
     #
     # @param (see SchemaSet#new_jsi)
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are
