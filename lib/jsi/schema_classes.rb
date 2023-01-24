@@ -36,7 +36,7 @@ module JSI
   end
 
   # a module to extend the JSI Schema Module of a schema which describes other schemas
-  module DescribesSchemaModule
+  module SchemaModule::DescribesSchemaModule
     # @!parse include SchemaModule
 
 

@@ -439,7 +439,7 @@ module JSI
 
     # indicates that this schema describes a schema.
     # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
-    # with {DescribesSchemaModule}, and the JSI Schema Module will include the given modules.
+    # with {SchemaModule::DescribesSchemaModule}, and the JSI Schema Module will include the given modules.
     #
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality of
     #   the schema to extend schemas described by this schema.
@@ -470,7 +470,7 @@ module JSI
             end
           end
         end
-        jsi_schema_module.extend(DescribesSchemaModule)
+        jsi_schema_module.extend(SchemaModule::DescribesSchemaModule)
         jsi_schema_module.instance_variable_set(:@schema_implementation_modules, schema_implementation_modules)
       end
 
