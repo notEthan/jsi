@@ -37,6 +37,9 @@ module JSI
 
   # a module to extend the JSI Schema Module of a schema which describes other schemas
   module DescribesSchemaModule
+    # @!parse include SchemaModule
+
+
     # instantiates the given schema content as a JSI Schema.
     #
     # see {JSI::Schema::DescribesSchema#new_schema}
