@@ -44,24 +44,24 @@ module JSI
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
-  # instantiates a given schema object as a JSI Schema.
+  # Instantiates the given schema content as a JSI Schema.
   #
   # see {JSI::Schema.new_schema}
   #
   # @param (see JSI::Schema.new_schema)
   # @return (see JSI::Schema.new_schema)
-  def self.new_schema(schema_object, **kw)
-    JSI::Schema.new_schema(schema_object, **kw)
+  def self.new_schema(schema_content, **kw)
+    JSI::Schema.new_schema(schema_content, **kw)
   end
 
-  # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+  # Instantiates the given schema content as a JSI Schema and returns its JSI Schema Module.
   #
   # shortcut to chain {JSI::Schema.new_schema} + {Schema#jsi_schema_module}.
   #
   # @param (see JSI::Schema.new_schema)
   # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
-  def self.new_schema_module(schema_object, **kw)
-    JSI::Schema.new_schema(schema_object, **kw).jsi_schema_module
+  def self.new_schema_module(schema_content, **kw)
+    JSI::Schema.new_schema(schema_content, **kw).jsi_schema_module
   end
 
   # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.

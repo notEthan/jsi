@@ -9,7 +9,7 @@ describe JSI::Schema do
 
     it 'cannot instantiate from a non-string $schema' do
       err = assert_raises(ArgumentError) { JSI.new_schema({'$schema' => Object.new}) }
-      assert_equal("given schema_object keyword `$schema` is not a string", err.message)
+      assert_equal("given schema_content keyword `$schema` is not a string", err.message)
     end
 
     it 'cannot instantiate from some unknown object' do
@@ -19,12 +19,12 @@ describe JSI::Schema do
 
     it 'cannot instantiate from a JSI Schema' do
       err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
-      assert_equal("Given schema_object is already a JSI::Schema. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}", err.message)
+      assert_equal("Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}", err.message)
     end
 
     it 'cannot instantiate from a JSI' do
       err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
-      assert_equal("Given schema_object is a JSI::Base. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI>}", err.message)
+      assert_equal("Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI>}", err.message)
     end
   end
   describe 'as an instance of metaschema' do

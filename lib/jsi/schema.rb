@@ -135,14 +135,14 @@ module JSI
     # examples of a schema which describes a schema include the draft JSON Schema metaschemas and
     # the OpenAPI schema definition which describes "A deterministic version of a JSON Schema object."
     module DescribesSchema
-      # instantiates the given schema content as a JSI Schema.
+      # Instantiates the given schema content as a JSI Schema.
       #
       # the schema will be registered with the `JSI.schema_registry`.
       #
       # By default, the `schema_content` will have any Symbol keys of Hashes replaced with Strings
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
       #
-      # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
+      # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [nil, #to_str, Addressable::URI] the URI of the schema document.
       #   relative URIs within the document are resolved using this uri as their base.
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
@@ -161,7 +161,7 @@ module JSI
         schema_jsi
       end
 
-      # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+      # Instantiates the given schema content as a JSI Schema and returns its JSI Schema Module.
       #
       # shortcut to chain {#new_schema} + {Schema#jsi_schema_module}.
       #
@@ -192,7 +192,7 @@ module JSI
         @default_metaschema = default_metaschema
       end
 
-      # instantiates a given schema object as a JSI Schema.
+      # Instantiates the given schema content as a JSI Schema.
       #
       # the metaschema to use to instantiate the schema must be indicated.
       #
@@ -208,17 +208,17 @@ module JSI
       #
       # note that if you are instantiating a schema known to have no `$schema` property, an alternative to
       # passing the `default_metaschema` param is to use `.new_schema` on the metaschema or its module, e.g.
-      # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_object)`
+      # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_content)`
       #
-      # @param schema_object [#to_hash, Boolean] an object to be instantiated as a JSI Schema
+      # @param schema_content (see Schema::DescribesSchema#new_schema)
       # @param uri (see DescribesSchema#new_schema)
-      # @param default_metaschema [#new_schema] the metaschema to use if the schema_object does not have
+      # @param default_metaschema [#new_schema] the metaschema to use if the schema_content does not have
       #   a '$schema' property. this may be a metaschema or a metaschema's schema module
       #   (e.g. `JSI::JSONSchemaOrgDraft07`).
       # @param stringify_symbol_keys (see SchemaSet#new_jsi)
-      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_object`
+      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_content`
       #   and whose schemas are the metaschema's inplace applicators.
-      def new_schema(schema_object,
+      def new_schema(schema_content,
           default_metaschema: nil,
           stringify_symbol_keys: true,
           **kw
@@ -234,42 +234,42 @@ module JSI
               "you may pass the `default_metaschema` param to this method.",
               "JSI::Schema.default_metaschema may be set to an application-wide default metaschema.",
               "you may alternatively use new_schema on the appropriate metaschema or its schema module.",
-              "instantiating schema_object: #{schema_object.pretty_inspect.chomp}",
+              "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
           if !default_metaschema.respond_to?(:new_schema)
             raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
           end
-          default_metaschema.new_schema(schema_object, **new_schema_params)
+          default_metaschema.new_schema(schema_content, **new_schema_params)
         }
-        if schema_object.is_a?(Schema)
+        if schema_content.is_a?(Schema)
           raise(TypeError, [
-            "Given schema_object is already a JSI::Schema. It cannot be instantiated as the content of a schema.",
-            "given: #{schema_object.pretty_inspect.chomp}",
+            "Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.",
+            "given: #{schema_content.pretty_inspect.chomp}",
           ].join("\n"))
-        elsif schema_object.is_a?(JSI::Base)
+        elsif schema_content.is_a?(JSI::Base)
           raise(TypeError, [
-            "Given schema_object is a JSI::Base. It cannot be instantiated as the content of a schema.",
-            "given: #{schema_object.pretty_inspect.chomp}",
+            "Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.",
+            "given: #{schema_content.pretty_inspect.chomp}",
           ].join("\n"))
-        elsif schema_object.respond_to?(:to_hash)
-          id = schema_object['$schema'] || stringify_symbol_keys && schema_object[:'$schema']
+        elsif schema_content.respond_to?(:to_hash)
+          id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema']
           if id
             unless id.respond_to?(:to_str)
-              raise(ArgumentError, "given schema_object keyword `$schema` is not a string")
+              raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
             metaschema = Schema::Ref.new(id).deref_schema
             unless metaschema.describes_schema?
-              raise(TypeError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
+              raise(TypeError, "given schema_content contains a $schema but the resource it identifies does not describe a schema")
             end
-            metaschema.new_schema(schema_object, **new_schema_params)
+            metaschema.new_schema(schema_content, **new_schema_params)
           else
             default_metaschema_new_schema.call
           end
-        elsif [true, false].include?(schema_object)
+        elsif [true, false].include?(schema_content)
           default_metaschema_new_schema.call
         else
-          raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
+          raise(TypeError, "cannot instantiate Schema from: #{schema_content.pretty_inspect.chomp}")
         end
       end
 

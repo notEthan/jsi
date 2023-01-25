@@ -40,7 +40,7 @@ module JSI
     # @!parse include SchemaModule
 
 
-    # instantiates the given schema content as a JSI Schema.
+    # Instantiates the given schema content as a JSI Schema.
     #
     # see {JSI::Schema::DescribesSchema#new_schema}
     #
@@ -51,7 +51,7 @@ module JSI
       schema.new_schema(schema_content, **kw)
     end
 
-    # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+    # Instantiates the given schema content as a JSI Schema and returns its JSI Schema Module.
     #
     # shortcut to chain {JSI::Schema::DescribesSchema#new_schema} + {Schema#jsi_schema_module}.
     #
