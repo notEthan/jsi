@@ -160,7 +160,9 @@ module JSI
     end
 
     # @!method jsi_schemas
-    #   the set of schemas which describe this instance
+    #   The set of schemas that describe this instance.
+    #   These are the applicator schemas that apply to this instance, the result of inplace application
+    #   of our {#jsi_indicated_schemas}.
     #   @return [JSI::SchemaSet]
     # note: defined on subclasses by JSI::SchemaClasses.class_for_schemas
 
