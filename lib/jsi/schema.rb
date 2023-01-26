@@ -143,10 +143,20 @@ module JSI
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
-      # @param uri [nil, #to_str, Addressable::URI] the URI of the schema document.
-      #   relative URIs within the document are resolved using this uri as their base.
-      #   the result schema will be registered with this URI in the {JSI.schema_registry}.
-      # @param stringify_symbol_keys (see SchemaSet#new_jsi)
+      # @param uri [nil, #to_str, Addressable::URI] The retrieval URI of the schema document.
+      #
+      #   It is rare that this needs to be specified. Most schemas, if they use absolute URIs, will
+      #   use the `$id` keyword (`id` in draft 4) to specify this. A different retrieval URI is useful
+      #   in unusual cases:
+      #
+      #     - A schema in the document uses relative URIs for `$id` or `$ref` without an absolute id in an
+      #       ancestor schema - these will be resolved relative to this URI
+      #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
+      #       rather than an id declared in the schema - the schema is resolvable by this URI in the
+      #       {JSI::SchemaRegistry}.
+      # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
+      #   replaced with Strings (recursively through the document).
+      #   Replacement is done on a copy; the given schema content is not modified.
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
@@ -212,11 +222,11 @@ module JSI
       # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_content)`
       #
       # @param schema_content (see Schema::DescribesSchema#new_schema)
-      # @param uri (see DescribesSchema#new_schema)
       # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule]
       #   The metaschema to use if the given schema_content does not have a `$schema` property.
       #   This may be a metaschema or a metaschema's schema module. (e.g. `JSI::JSONSchemaOrgDraft07`).
-      # @param stringify_symbol_keys (see SchemaSet#new_jsi)
+      # @param uri (see Schema::DescribesSchema#new_schema)
+      # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
       #   the given `schema_content` and whose schemas are inplace applicators of the indicated metaschema
       def new_schema(schema_content,
