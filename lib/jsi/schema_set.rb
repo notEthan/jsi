@@ -76,8 +76,8 @@ module JSI
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
-    # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are inplace
-    #   applicators matched to the instance from the schemas in this set.
+    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    #   inplace applicators of the schemas in this set.
     def new_jsi(instance,
         uri: nil,
         stringify_symbol_keys: false

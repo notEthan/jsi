@@ -29,7 +29,8 @@ module JSI
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
     #
     # @param (see JSI::Schema#new_jsi)
-    # @return [JSI::Base] a JSI whose instance is the given instance
+    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    #   inplace applicators of this module's schema.
     def new_jsi(instance, **kw)
       schema.new_jsi(instance, **kw)
     end
@@ -45,8 +46,8 @@ module JSI
     # see {JSI::Schema::DescribesSchema#new_schema}
     #
     # @param (see JSI::Schema::DescribesSchema#new_schema)
-    # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
-    #   consist of this module's schema.
+    # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+    #   the given `schema_content` and whose schemas are inplace applicators of this module's schema
     def new_schema(schema_content, **kw)
       schema.new_schema(schema_content, **kw)
     end

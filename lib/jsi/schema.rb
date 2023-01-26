@@ -147,8 +147,8 @@ module JSI
       #   relative URIs within the document are resolved using this uri as their base.
       #   the result schema will be registered with this URI in the {JSI.schema_registry}.
       # @param stringify_symbol_keys (see SchemaSet#new_jsi)
-      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_content`
-      #   and whose schemas are this schema's inplace applicators.
+      # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+      #   the given `schema_content` and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
           uri: nil,
           stringify_symbol_keys: true
@@ -217,8 +217,8 @@ module JSI
       #   The metaschema to use if the given schema_content does not have a `$schema` property.
       #   This may be a metaschema or a metaschema's schema module. (e.g. `JSI::JSONSchemaOrgDraft07`).
       # @param stringify_symbol_keys (see SchemaSet#new_jsi)
-      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_content`
-      #   and whose schemas are the metaschema's inplace applicators.
+      # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+      #   the given `schema_content` and whose schemas are inplace applicators of the indicated metaschema
       def new_schema(schema_content,
           default_metaschema: nil,
           stringify_symbol_keys: true,
@@ -420,8 +420,8 @@ module JSI
     # applicators of this schema which apply to the given instance.
     #
     # @param (see SchemaSet#new_jsi)
-    # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are
-    #   inplace applicator schemas matched from this schema.
+    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    #   inplace applicators of this schema.
     def new_jsi(instance, **kw)
       SchemaSet[self].new_jsi(instance, **kw)
     end
