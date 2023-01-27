@@ -146,10 +146,10 @@ module JSI
               extend SchemaModule
 
               @possibly_schema_node = schema
-              extend(SchemaModulePossibly)
+              extend(SchemaModule::Connects)
               schema.jsi_schemas.each do |schema_schema|
                 extend JSI::SchemaClasses.schema_property_reader_module(schema_schema,
-                  conflicting_modules: Set[Module, SchemaModule, SchemaModulePossibly],
+                  conflicting_modules: Set[Module, SchemaModule, SchemaModule::Connects],
                 )
               end
             end
@@ -214,9 +214,9 @@ module JSI
     end
   end
 
-  # a JSI Schema module and a JSI::SchemaModule::Connection are both a SchemaModulePossibly.
+  # a JSI Schema module and a JSI::SchemaModule::Connection are both a SchemaModule::Connects.
   # this module provides a #[] method.
-  module SchemaModulePossibly
+  module SchemaModule::Connects
     attr_reader :possibly_schema_node
 
     # a name relative to a named schema module of an ancestor schema.
@@ -287,7 +287,7 @@ module JSI
   # is another node, a SchemaModule::Connection for that node is returned. otherwise - when the
   # value is a basic type - that value itself is returned.
   class SchemaModule::Connection
-    include SchemaModulePossibly
+    include SchemaModule::Connects
 
     # @param node [JSI::Base]
     def initialize(node)
