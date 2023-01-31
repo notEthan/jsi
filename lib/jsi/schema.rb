@@ -272,7 +272,7 @@ module JSI
         if schema.is_a?(Schema)
           schema
         else
-          if reinstantiate_as
+          if reinstantiate_as && schema.is_a?(JSI::Base)
             # TODO warn; behavior is undefined and I hate this implementation
 
             result_schema_schemas = schema.jsi_schemas + reinstantiate_as
