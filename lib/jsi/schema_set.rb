@@ -73,17 +73,26 @@ module JSI
     #   in the normal case where the document does not contain any schemas, `uri` has no effect.
     #   schemas within the document use this uri as the base URI to resolve relative URIs.
     #   the resulting JSI may be registered with a {SchemaRegistry} (see {JSI.schema_registry}).
+    # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
+    #   replaced with Strings (recursively through the document).
+    #   Conversion is done on a copy; the given instance is not modified.
     # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are inplace
     #   applicators matched to the instance from the schemas in this set.
     def new_jsi(instance,
-        uri: nil
+        uri: nil,
+        stringify_symbol_keys: false
     )
+      if stringify_symbol_keys
+        instance = Util.deep_stringify_symbol_keys(instance)
+      end
+
       applied_schemas = inplace_applicator_schemas(instance)
 
       jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
         includes: SchemaClasses.includes_for(instance),
       )
       jsi = jsi_class.new(instance,
+        jsi_indicated_schemas: self,
         jsi_schema_base_uri: uri,
       )
 

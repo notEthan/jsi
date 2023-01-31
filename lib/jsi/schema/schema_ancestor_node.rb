@@ -49,9 +49,7 @@ module JSI
 
     private
 
-    def jsi_document=(jsi_document)
-      @jsi_document = jsi_document
-    end
+    attr_writer :jsi_document
 
     def jsi_ptr=(jsi_ptr)
       raise(Bug, "jsi_ptr not #{Ptr}: #{jsi_ptr.inspect}") unless jsi_ptr.is_a?(Ptr)

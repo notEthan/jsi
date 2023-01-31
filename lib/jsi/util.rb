@@ -7,6 +7,8 @@ module JSI
 
     include Private
 
+    extend self
+
     autoload :Arraylike, 'jsi/util/typelike'
     autoload :Hashlike, 'jsi/util/typelike'
 
@@ -24,7 +26,7 @@ module JSI
       if object.respond_to?(:jsi_modified_copy)
         object.jsi_modified_copy(&block)
       else
-        return yield(object)
+        yield(object)
       end
     end
 
@@ -138,7 +140,5 @@ module JSI
 
       set
     end
-
-    extend self
   end
 end

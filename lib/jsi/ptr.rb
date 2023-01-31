@@ -169,9 +169,6 @@ module JSI
         Ptr.new(tokens[ancestor_ptr.tokens.size..-1])
       end
 
-      # @deprecated after v0.6
-      alias_method :ptr_relative_to, :relative_to
-
       # a pointer with the tokens of this one plus the given `ptr`'s.
       # @param ptr [JSI::Ptr, #to_ary]
       # @return [JSI::Ptr]

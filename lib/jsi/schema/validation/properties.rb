@@ -19,8 +19,8 @@ module JSI
               if value.key?(property_name)
                 evaluated_property_names << property_name
                 results[property_name] = result_builder.child_subschema_validate(
+                  property_name,
                   ['properties', property_name],
-                  [property_name],
                 )
               end
             end
@@ -54,8 +54,8 @@ module JSI
                   if value_property_pattern.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name.to_s)
                     evaluated_property_names << property_name
                     results[property_name] = result_builder.child_subschema_validate(
+                      property_name,
                       ['patternProperties', value_property_pattern],
-                      [property_name],
                     )
                   end
                 rescue ::RegexpError
@@ -83,8 +83,8 @@ module JSI
           result_builder.instance.keys.each do |property_name|
             if !evaluated_property_names.include?(property_name)
               results[property_name] = result_builder.child_subschema_validate(
+                property_name,
                 ['additionalProperties'],
-                [property_name],
               )
             end
           end.compact

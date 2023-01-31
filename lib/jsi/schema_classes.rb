@@ -36,7 +36,10 @@ module JSI
   end
 
   # a module to extend the JSI Schema Module of a schema which describes other schemas
-  module DescribesSchemaModule
+  module SchemaModule::DescribesSchemaModule
+    # @!parse include SchemaModule
+
+
     # instantiates the given schema content as a JSI Schema.
     #
     # see {JSI::Schema::DescribesSchema#new_schema}
@@ -87,7 +90,7 @@ module JSI
         includes = Util.ensure_module_set(includes)
 
         jsi_memoize(:class_for_schemas, schemas: schemas, includes: includes) do |schemas: , includes: |
-          Class.new(Base).instance_exec(schemas: schemas, includes: includes) do |schemas: , includes: |
+          Class.new(Base) do
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
             includes.each { |m| include(m) }
@@ -129,13 +132,8 @@ module JSI
 
               extend SchemaModule
 
-              schema.jsi_schema_instance_modules.each do |mod|
-                include(mod)
-              end
-
               accessor_module = JSI::SchemaClasses.accessor_module_for_schema(schema,
-                conflicting_modules: Set[JSI::Base, JSI::Base::ArrayNode, JSI::Base::HashNode] +
-                  schema.jsi_schema_instance_modules,
+                conflicting_modules: Set[JSI::Base, JSI::Base::ArrayNode, JSI::Base::HashNode],
               )
               include accessor_module
 
@@ -272,6 +270,8 @@ module JSI
   # is another node, a NotASchemaModule for that node is returned. otherwise - when the
   # value is a basic type - that value itself is returned.
   class NotASchemaModule
+    include SchemaModulePossibly
+
     # @param node [JSI::Base]
     def initialize(node)
       raise(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
@@ -281,8 +281,6 @@ module JSI
         extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly], setters: false))
       end
     end
-
-    include SchemaModulePossibly
 
     # @return [String]
     def inspect

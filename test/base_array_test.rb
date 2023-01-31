@@ -214,7 +214,7 @@ describe 'JSI::Base array' do
     end
 
     it 'is an array of JSIs' do
-      expect_ary = [subject[0, as_jsi: true], subject[1], subject[2], subject[3, as_jsi: true]]
+      expect_ary = instance.each_index.map { |i| subject.jsi_descendent_node([i]) }
       assert_equal(expect_ary, subject.to_a(as_jsi: true))
     end
   end

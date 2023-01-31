@@ -48,12 +48,12 @@ module JSI
           subresult
         end
 
+        # @param subinstance_token [String, Integer]
         # @param subschema_ptr [JSI::Ptr, #to_ary]
-        # @param subinstance_ptr [JSI::Ptr, #to_ary]
         # @return [JSI::Validation::Result]
-        def child_subschema_validate(subschema_ptr, subinstance_ptr)
+        def child_subschema_validate(subinstance_token, subschema_ptr)
           subresult = schema.subschema(subschema_ptr).internal_validate_instance(
-            instance_ptr + subinstance_ptr,
+            instance_ptr[subinstance_token],
             instance_document,
             validate_only: validate_only,
           )

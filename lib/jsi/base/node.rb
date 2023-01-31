@@ -21,13 +21,34 @@ module JSI
 
     alias_method :entries, :to_a
 
+    # instantiates and yields each property name (hash key) as a JSI described by any `propertyNames` schemas.
+    #
+    # @yield [JSI::Base]
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def jsi_each_propertyName
+      return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block_given?
+
+      property_schemas = SchemaSet.build do |schemas|
+        jsi_schemas.each do |s|
+          if s.keyword?('propertyNames') && s['propertyNames'].is_a?(Schema)
+            schemas << s['propertyNames']
+          end
+        end
+      end
+      jsi_node_content_hash_pubsend(:each_key) do |key|
+        yield property_schemas.new_jsi(key)
+      end
+
+      nil
+    end
+
     # a jsonifiable representation of the node content
     # @return [Object]
     def as_json(*opt)
       # include Enumerable (above) means, if ActiveSupport is loaded, its undesirable #as_json is included
       # https://github.com/rails/rails/blob/v7.0.0/activesupport/lib/active_support/core_ext/object/json.rb#L139-L143
       # although Base#as_json does clobber activesupport's, I want as_json defined correctly on the module too.
-      Typelike.as_json(jsi_node_content, *opt)
+      Util.as_json(jsi_node_content, *opt)
     end
   end
 

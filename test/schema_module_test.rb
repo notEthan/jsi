@@ -25,7 +25,7 @@ describe 'JSI::SchemaModule' do
     end
   end
   describe '.inspect, .to_s' do
-    it 'shows the name relative to a named parent module' do
+    it 'shows the name relative to a named ancestor schema module' do
       assert_equal(
         'SchemaModuleTestModule.properties (JSI wrapper for Schema Module)',
         SchemaModuleTestModule.properties.inspect
@@ -62,7 +62,7 @@ describe 'JSI::SchemaModule' do
 
   describe 'DescribesSchemaModule' do
     it 'extends a module which describes a schema' do
-      assert(JSI::JSONSchemaOrgDraft07.is_a?(JSI::DescribesSchemaModule))
+      assert(JSI::JSONSchemaOrgDraft07.is_a?(JSI::SchemaModule::DescribesSchemaModule))
     end
 
     it '#new_schema' do

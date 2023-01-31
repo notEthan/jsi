@@ -96,18 +96,12 @@ describe JSI::Base do
       assert_equal(JSI::SchemaClasses.class_for_schemas([schema_again], includes: []), class_for_schema)
       assert_operator(class_for_schema, :<, JSI::Base)
     end
-    it 'raises given a nonschema' do
-      assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaClasses.class_for_schemas([schema_content], includes: []) }
-    end
   end
   describe 'JSI::SchemaClasses.module_for_schema' do
     it 'returns a module from a schema' do
       module_for_schema = JSI::SchemaClasses.module_for_schema(schema)
       # same module every time
       assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
-    end
-    it 'raises given a nonschema' do
-      assert_raises(JSI::Schema::NotASchemaError) { JSI::SchemaClasses.module_for_schema(schema_content) }
     end
   end
   describe 'initialization' do
@@ -657,7 +651,7 @@ describe JSI::Base do
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
-          assert_schemas([schema], subject)
+          assert_equal(Set[schema], subject.jsi_schemas)
         end
       end
       describe 'properties with names to ignore' do
@@ -851,6 +845,26 @@ describe JSI::Base do
         assert_equal(exp, act)
         assert_equal('http://jsi/test/a86e', exp.schema_absolute_uri.to_s)
         assert_equal('http://jsi/test/a86e', act.schema_absolute_uri.to_s)
+      end
+    end
+
+    describe 'instance of the same applied schemas via different indicated schemas' do
+      let(:schema_content) do
+        YAML.safe_load(<<~YAML
+          $schema: "http://json-schema.org/draft-07/schema"
+          definitions:
+            A:
+              $ref: "#"
+            B:
+              $ref: "#"
+          type: object
+          YAML
+        )
+      end
+      it 'compares equality' do
+        a = schema.definitions['A'].new_jsi(instance)
+        b = schema.definitions['B'].new_jsi(instance)
+        assert_equal(a, b)
       end
     end
   end
