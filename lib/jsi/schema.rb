@@ -248,7 +248,7 @@ module JSI
             end
             metaschema = Schema::Ref.new(schema_object['$schema']).deref_schema
             unless metaschema.describes_schema?
-              raise(Schema::ReferenceError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
+              raise(TypeError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
             metaschema.new_schema(schema_object, **kw)
           else
