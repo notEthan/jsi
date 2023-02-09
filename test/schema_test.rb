@@ -705,17 +705,63 @@ describe JSI::Schema do
   end
   describe 'stringification' do
     let(:schema) do
-      JSI::JSONSchemaOrgDraft06.new_schema({'$id' => 'http://jsi/schema/stringification', type: 'object'})
+      JSI.new_schema({
+        "$schema": "http://json-schema.org/draft-06/schema",
+        "$id": "http://jsi/schema/stringification",
+        "type": ["object", "array"],
+        "properties": {
+          "foo": {
+            "items": {"$ref": "#/definitions/no"}
+          },
+        },
+        "items": [
+          {"dependencies": {"a": ["b"]}},
+          {"dependencies": {"a": {}}},
+        ],
+        "definitions": {
+          "no": {"enum": []}
+        }
+      })
     end
 
     it '#inspect' do
-      assert_equal("\#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> \"$id\" => \"http://jsi/schema/stringification\", \"type\" => \"object\"}", schema.inspect)
+      assert_equal(%q(#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaOrgDraft06.properties["type"], JSI::JSONSchemaOrgDraft06.properties["type"].anyOf[1])> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaOrgDraft06.properties["properties"])> "foo" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaOrgDraft06.properties["items"], JSI::JSONSchemaOrgDraft06) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaOrgDraft06.properties["items"], JSI::JSONSchemaOrgDraft06.definitions["schemaArray"])> #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06.properties["dependencies"])> "a" => #[<JSI (JSI::JSONSchemaOrgDraft06.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft06.definitions["stringArray"])> "b"]}}, #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06.properties["dependencies"])> "a" => #{<JSI (JSI::JSONSchemaOrgDraft06.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft06) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft06.properties["definitions"])> "no" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaOrgDraft06.properties["enum"])>]}}}), schema.inspect)
     end
     it '#pretty_print' do
       pp = <<~PP
         \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+          "$schema" => "http://json-schema.org/draft-06/schema",
           "$id" => "http://jsi/schema/stringification",
-          "type" => "object"
+          "type" => #[<JSI (JSI::JSONSchemaOrgDraft06.properties["type"], JSI::JSONSchemaOrgDraft06.properties["type"].anyOf[1])>
+            "object",
+            "array"
+          ],
+          "properties" => \#{<JSI (JSI::JSONSchemaOrgDraft06.properties["properties"])>
+            "foo" => \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+              "items" => \#{<JSI (JSI::JSONSchemaOrgDraft06.properties["items"], JSI::JSONSchemaOrgDraft06) Schema>
+                "$ref" => "#/definitions/no"
+              }
+            }
+          },
+          "items" => #[<JSI (JSI::JSONSchemaOrgDraft06.properties["items"], JSI::JSONSchemaOrgDraft06.definitions["schemaArray"])>
+            \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+              "dependencies" => \#{<JSI (JSI::JSONSchemaOrgDraft06.properties["dependencies"])>
+                "a" => #[<JSI (JSI::JSONSchemaOrgDraft06.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft06.definitions["stringArray"])>
+                  "b"
+                ]
+              }
+            },
+            \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+              "dependencies" => \#{<JSI (JSI::JSONSchemaOrgDraft06.properties["dependencies"])>
+                "a" => \#{<JSI (JSI::JSONSchemaOrgDraft06.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft06) Schema>}
+              }
+            }
+          ],
+          "definitions" => \#{<JSI (JSI::JSONSchemaOrgDraft06.properties["definitions"])>
+            "no" => \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+              "enum" => #[<JSI (JSI::JSONSchemaOrgDraft06.properties["enum"])>]
+            }
+          }
         }
         PP
       assert_equal(pp, schema.pretty_inspect)
