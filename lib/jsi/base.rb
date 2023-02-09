@@ -340,8 +340,7 @@ module JSI
     #     - the result is a complex value (responds to #to_ary or #to_hash)
     #     - the result is a schema (including true/false schemas)
     #
-    #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
-    #     simple type (anything unresponsive to #to_ary / #to_hash).
+    #     The plain content is returned when it is a simple type.
     #
     #   - true: the result value will always be returned as a JSI. the {#jsi_schemas} of the result may be
     #     empty if no schemas describe the instance.
