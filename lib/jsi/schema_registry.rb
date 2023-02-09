@@ -92,8 +92,7 @@ module JSI
         autoloaded = @autoload_uris[uri].call
         register(autoloaded)
       end
-      registered_uris = @resources.keys
-      if !registered_uris.include?(uri)
+      if !@resources.key?(uri)
         if @autoload_uris.key?(uri)
           msg = [
             "URI #{uri} was registered with autoload_uri but the result did not contain a resource with that URI.",
@@ -101,7 +100,7 @@ module JSI
             autoloaded.pretty_inspect.chomp,
           ]
         else
-          msg = ["URI #{uri} is not registered. registered URIs:", *registered_uris]
+          msg = ["URI #{uri} is not registered. registered URIs:", *(@resources.keys | @autoload_uris.keys)]
         end
         raise(ResourceNotFound, msg.join("\n"))
       end
