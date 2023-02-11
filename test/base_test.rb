@@ -229,6 +229,19 @@ describe JSI::Base do
       end
     end
   end
+
+  describe '#jsi_descendent_node, #/' do
+    let(:instance) { {'foo' => {'a' => {'b' => ['c']}}} }
+    it 'returns the descendent node' do
+      tokens = ['foo', 'a', 'b', 0]
+      ptr = JSI::Ptr.new(tokens)
+      assert_equal(ptr, subject.jsi_descendent_node(tokens).jsi_ptr)
+      assert_equal(ptr, subject.jsi_descendent_node(ptr).jsi_ptr)
+      assert_equal(ptr, (subject / tokens).jsi_ptr)
+      assert_equal(ptr, (subject / ptr).jsi_ptr)
+    end
+  end
+
   describe '#each, Enumerable methods' do
     let(:instance) { 'a string' }
     it "raises NoMethodError calling each or Enumerable methods" do

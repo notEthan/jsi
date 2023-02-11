@@ -318,6 +318,24 @@ module JSI
       descendent
     end
 
+    # A shorthand alias for {#jsi_descendent_node}.
+    #
+    # Note that, though more convenient to type, using an operator whose meaning may not be intuitive
+    # to a reader could impair readability of code.
+    #
+    # examples:
+    #
+    #     my_jsi / ['foo', 'bar']
+    #     my_jsi / %w(foo bar)
+    #     my_schema / JSI::Ptr['additionalProperties']
+    #     my_schema / %w(properties foo items additionalProperties)
+    #
+    # @param (see #jsi_descendent_node)
+    # @return (see #jsi_descendent_node)
+    def /(ptr)
+      jsi_descendent_node(ptr)
+    end
+
     # yields each token (array index or hash key) identifying a child node.
     # yields nothing if this node is not complex or has no children.
     #
