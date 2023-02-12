@@ -153,22 +153,6 @@ module JSI
     end
     private :jsi_child
 
-    # subscripts to return a child value identified by the given token.
-    #
-    # @param token (see JSI::Base#[])
-    # @param as_jsi (see JSI::Base#[])
-    # @return (see JSI::Base#[])
-    def [](token, as_jsi: :auto)
-      begin
-        if jsi_child_token_in_range?(token)
-          jsi_child(token, as_jsi: as_jsi)
-        else
-          # I think I will not support Hash#default/#default_proc in this case.
-          nil
-        end
-      end
-    end
-
     # instantiates a new MetaschemaNode whose instance is a modified copy of this MetaschemaNode's instance
     # @yield [Object] the node content of the instance. the block should result
     #   in a (nondestructively) modified copy of this.
