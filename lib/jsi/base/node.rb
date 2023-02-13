@@ -57,12 +57,12 @@ module JSI
       nil
     end
 
-    # (see Base#jsi_hash?)
+    # See {Base#jsi_hash?}. Always true for HashNode.
     def jsi_hash?
       true
     end
 
-    # (see Base#jsi_each_child_token)
+    # Yields each key - see {Base#jsi_each_child_token}
     def jsi_each_child_token(&block)
       return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block
       jsi_node_content_hash_pubsend(:each_key, &block)
@@ -145,12 +145,12 @@ module JSI
   module Base::ArrayNode
     include Base::Enumerable
 
-    # (see Base#jsi_array?)
+    # See {Base#jsi_array?}. Always true for ArrayNode.
     def jsi_array?
       true
     end
 
-    # (see Base#jsi_each_child_token)
+    # Yields each index - see {Base#jsi_each_child_token}
     def jsi_each_child_token(&block)
       return to_enum(__method__) { jsi_node_content_ary_pubsend(:size) } unless block
       jsi_node_content_ary_pubsend(:each_index, &block)
