@@ -26,16 +26,7 @@ module JSI
     end
 
     class << self
-      # @private
-      # is the constant JSI::SchemaClasses::<self.schema_classes_const_name> defined?
-      # (if so, we will prefer to use something more human-readable than that ugly mess.)
-      def in_schema_classes
-        # #name sets @in_schema_classes
-        name
-        @in_schema_classes
-      end
-
-      # a string indicating a class name if one is defined, as well as the schema module name
+      # A string indicating the schema module name
       # and/or schema URI of each schema the class represents.
       # @return [String]
       def inspect
@@ -55,18 +46,10 @@ module JSI
             end
           end
 
-          if name && !in_schema_classes
-            if jsi_class_schemas.empty?
-              "#{name} (0 schemas)"
-            else
-              "#{name} (#{schema_names.join(', ')})"
-            end
+          if schema_names.empty?
+            "(JSI Schema Class for 0 schemas)"
           else
-            if schema_names.empty?
-              "(JSI Schema Class for 0 schemas)"
-            else
-              "(JSI Schema Class: #{schema_names.join(', ')})"
-            end
+            -"(JSI Schema Class: #{schema_names.join(', ')})"
           end
         end
       end

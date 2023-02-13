@@ -1,17 +1,5 @@
 require_relative 'test_helper'
 
-NamedSchemaInstance = JSI.new_schema({
-  '$schema' => 'http://json-schema.org/draft-07/schema#',
-  '$id' => 'http://jsi/base/named_schema',
-}).new_jsi({}).class
-
-# hitting .tap(&:name) causes JSI to assign a constant name from the ID,
-# meaning the name NamedSchemaInstanceTwo is not known.
-NamedSchemaInstanceTwo = JSI.new_schema({
-  '$schema' => 'http://json-schema.org/draft-07/schema#',
-  '$id' => 'http://jsi/base/named_schema_two',
-}).new_jsi({}).class.tap(&:name)
-
 Phonebook = JSI.new_schema_module(YAML.load(<<~YAML
   $schema: http://json-schema.org/draft-07/schema
   title: Phone Book
@@ -57,13 +45,6 @@ describe JSI::Base do
         assert_equal("(JSI Schema Class: https://jsi/foo)", subject.class.inspect)
       end
     end
-    it 'is the constant name plus id for a class assigned to a constant' do
-      assert_equal(%q(NamedSchemaInstance (http://jsi/base/named_schema)), NamedSchemaInstance.inspect)
-    end
-    it 'is not the constant name when the constant name has been generated from the schema_uri' do
-      assert_equal("JSI::SchemaClasses::Xhttp___jsi_base_named_schema_two", NamedSchemaInstanceTwo.name)
-      assert_equal("(JSI Schema Class: http://jsi/base/named_schema_two)", NamedSchemaInstanceTwo.inspect)
-    end
   end
   describe 'class name' do
     let(:schema_content) { {'$id' => 'https://jsi/BaseTest'} }
@@ -75,9 +56,6 @@ describe JSI::Base do
     end
     it 'generates a class name from schema_uri' do
       assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest', subject.class.name)
-    end
-    it 'uses an existing name' do
-      assert_equal('NamedSchemaInstance', NamedSchemaInstance.name)
     end
   end
   describe 'class for schema .jsi_class_schemas' do
