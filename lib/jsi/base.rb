@@ -20,8 +20,9 @@ module JSI
     include Schema::SchemaAncestorNode
     include Util::Memoize
 
-    # an exception raised when {Base#[]} is invoked on an instance which is not an array or hash
-    class CannotSubscriptError < StandardError
+    # An exception raised when attempting to access a child of a node which cannot have children.
+    # A complex node can have children, a simple node cannot.
+    class SimpleNodeChildError < StandardError
     end
 
     class << self
@@ -349,10 +350,10 @@ module JSI
     # or the value of the instance hash/object for the given key.
     #
     # @return [Object, nil]
-    # @raise [CannotSubscriptError] if this node is not complex (its instance is not array or hash)
+    # @raise [SimpleNodeChildError] if this node is not complex (its instance is not array or hash)
     def jsi_node_content_child(token)
       # note: overridden by Base::HashNode, Base::ArrayNode
-      raise(CannotSubscriptError, "cannot subscript (using token: #{token.inspect}) from instance: #{jsi_instance.pretty_inspect.chomp}")
+      jsi_simple_node_child_error(token)
     end
 
     # subscripts to return a child value identified by the given token.
@@ -434,7 +435,7 @@ module JSI
     # @param value [JSI::Base, Object] the value to be assigned
     def []=(token, value)
       unless jsi_array? || jsi_hash?
-        raise(CannotSubscriptError, "cannot assign subscript (using token: #{token.inspect}) to instance: #{jsi_instance.pretty_inspect.chomp}")
+        jsi_simple_node_child_error(token)
       end
       if value.is_a?(Base)
         self[token] = value.jsi_instance
@@ -634,6 +635,14 @@ module JSI
       else
         value
       end
+    end
+
+    def jsi_simple_node_child_error(token)
+      raise(SimpleNodeChildError, [
+        "cannot access a child of this JSI node because this node is not complex",
+        "using token: #{token.inspect}",
+        "instance: #{jsi_instance.pretty_inspect.chomp}",
+      ].join("\n"))
     end
   end
 end

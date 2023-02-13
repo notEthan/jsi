@@ -143,8 +143,8 @@ describe 'JSI::Base hash' do
     describe 'when the instance is not hashlike' do
       let(:instance) { nil }
       it 'errors' do
-        err = assert_raises(JSI::Base::CannotSubscriptError) { subject['foo'] = 0 }
-        assert_equal('cannot assign subscript (using token: "foo") to instance: nil', err.message)
+        err = assert_raises(JSI::Base::SimpleNodeChildError) { subject['foo'] = 0 }
+        assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: "foo"\ninstance: nil), err.message)
       end
     end
     describe '#inspect, #to_s' do

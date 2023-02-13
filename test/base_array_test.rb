@@ -98,8 +98,8 @@ describe 'JSI::Base array' do
     describe 'when the instance is not arraylike' do
       let(:instance) { nil }
       it 'errors' do
-        err = assert_raises(JSI::Base::CannotSubscriptError) { subject[2] = 0 }
-        assert_equal("cannot assign subscript (using token: 2) to instance: nil", err.message)
+        err = assert_raises(JSI::Base::SimpleNodeChildError) { subject[2] = 0 }
+        assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: 2\ninstance: nil), err.message)
       end
     end
     describe '#inspect, #to_s' do
