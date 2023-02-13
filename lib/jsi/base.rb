@@ -55,44 +55,39 @@ module JSI
       end
 
       alias_method :to_s, :inspect
-
-      # @private
-      # see {.name}
-      def schema_classes_const_name
-        if respond_to?(:jsi_class_schemas)
-          schema_names = jsi_class_schemas.map do |schema|
-            named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
-            if named_ancestor_schema
-              [named_ancestor_schema.jsi_schema_module.name, *tokens].join('_')
-            elsif schema.schema_uri
-              schema.schema_uri.to_s
-            else
-              nil
-            end
-          end
-          if !schema_names.any?(&:nil?) && !schema_names.empty?
-            Util.const_name_from_parts(schema_names.sort.map { |part| 'X' + part }, join: '__')
-          end
-        end
-      end
-
-      # a constant name of this class. this is generated from the schema module name or URI of each schema
-      # this class represents. nil if any represented schema has no schema module name or schema URI.
+      # A constant name of this class. This is generated from any schema module name or URI of each schema
+      # this class represents, or random characters.
       #
       # this generated name is not too pretty but can be more helpful than an anonymous class, especially
       # in error messages.
       #
       # @return [String]
       def name
-        unless instance_variable_defined?(:@in_schema_classes)
-          const_name = schema_classes_const_name
-          if super || !const_name || SchemaClasses.const_defined?(const_name)
-            @in_schema_classes = false
+        return super if instance_variable_defined?(:@tried_to_name)
+        @tried_to_name = true
+        return super unless respond_to?(:jsi_class_schemas)
+        schema_names = jsi_class_schemas.map do |schema|
+          named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
+          if named_ancestor_schema
+            [named_ancestor_schema.jsi_schema_module.name, *tokens].join('_')
+          elsif schema.schema_uri
+            schema.schema_uri.to_s
+          elsif !schema.jsi_ptr.root?
+            schema.jsi_ptr.tokens.join('_')
           else
-            SchemaClasses.const_set(const_name, self)
-            @in_schema_classes = true
+            nil
           end
         end
+        alnum = (__id__ % 36**4).to_s(36).rjust(4, '0').upcase
+        if schema_names.any?
+          parts = schema_names.compact.sort.map { |n| 'X' + n.to_s }
+          const_name = Util.const_name_from_parts(parts, join: '__')
+          const_name += "__" + alnum if SchemaClasses.const_defined?(const_name)
+        else
+          const_name = 'X' + alnum
+        end
+        # collisions are technically possible though vanishingly unlikely
+        SchemaClasses.const_set(const_name, self) unless SchemaClasses.const_defined?(const_name)
         super
       end
     end
