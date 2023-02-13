@@ -71,7 +71,7 @@ module JSI
             end
           end
           if !schema_names.any?(&:nil?) && !schema_names.empty?
-            Util.const_name_from_parts(schema_names.sort.map { |part| 'X' + part })
+            Util.const_name_from_parts(schema_names.sort.map { |part| 'X' + part }, join: '__')
           end
         end
       end
