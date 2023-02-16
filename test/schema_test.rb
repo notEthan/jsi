@@ -725,14 +725,14 @@ describe JSI::Schema do
     end
 
     it '#inspect' do
-      assert_equal(%q(#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaOrgDraft06::Type, JSI::JSONSchemaOrgDraft06::Type.anyOf[1])> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaOrgDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06::SchemaArray)> #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaOrgDraft06::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft06::StringArray)> "b"]}}, #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft06) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaOrgDraft06::Enum)>]}}}), schema.inspect)
+      assert_equal(%q(#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaOrgDraft06::Type, JSI::JSONSchemaOrgDraft06::Type::Array)> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaOrgDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06::SchemaArray)> #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06::StringArray)> "b"]}}, #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaOrgDraft06::Enum)>]}}}), schema.inspect)
     end
     it '#pretty_print' do
       pp = <<~PP
         \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
           "$schema" => "http://json-schema.org/draft-06/schema",
           "$id" => "http://jsi/schema/stringification",
-          "type" => #[<JSI (JSI::JSONSchemaOrgDraft06::Type, JSI::JSONSchemaOrgDraft06::Type.anyOf[1])>
+          "type" => #[<JSI (JSI::JSONSchemaOrgDraft06::Type, JSI::JSONSchemaOrgDraft06::Type::Array)>
             "object",
             "array"
           ],
@@ -746,14 +746,14 @@ describe JSI::Schema do
           "items" => #[<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06::SchemaArray)>
             \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
               "dependencies" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)>
-                "a" => #[<JSI (JSI::JSONSchemaOrgDraft06::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft06::StringArray)>
+                "a" => #[<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06::StringArray)>
                   "b"
                 ]
               }
             },
             \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
               "dependencies" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)>
-                "a" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft06) Schema>}
+                "a" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06) Schema>}
               }
             }
           ],

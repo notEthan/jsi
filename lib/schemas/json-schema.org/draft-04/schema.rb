@@ -61,5 +61,12 @@ module JSI
     PositiveIntegerDefault0 = definitions['positiveIntegerDefault0']
     SimpleType             = definitions['simpleTypes']
     StringArray           = definitions['stringArray']
+
+    AdditionalItems::Boolean = AdditionalItems.anyOf[0]
+    AdditionalProperties::Boolean = AdditionalProperties.anyOf[0]
+    Dependencies::Dependency = Dependencies.additionalProperties
+    Type::Array = Type.anyOf[1]
+    PositiveIntegerDefault0::Default0 = PositiveIntegerDefault0.allOf[1]
+    StringItem = StringArray.items
   end
 end
