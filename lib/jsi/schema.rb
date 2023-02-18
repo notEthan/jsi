@@ -194,7 +194,7 @@ module JSI
 
       # Instantiates the given schema content as a JSI Schema.
       #
-      # the metaschema to use to instantiate the schema must be indicated.
+      # The metaschema which describes the schema must be indicated:
       #
       # - if the schema object has a `$schema` property, that URI is resolved using the {JSI.schema_registry},
       #   and that metaschema is used.
@@ -206,15 +206,16 @@ module JSI
       #
       # an ArgumentError is raised if none of these indicate a metaschema to use.
       #
-      # note that if you are instantiating a schema known to have no `$schema` property, an alternative to
-      # passing the `default_metaschema` param is to use `.new_schema` on the metaschema or its module, e.g.
+      # Note that if you are instantiating a schema known to have no `$schema` property, an alternative to
+      # specifying a `default_metaschema` is to call `new_schema` on the metaschema or its module
+      # ({Schema::DescribesSchema#new_schema} / {SchemaModule::DescribesSchemaModule#new_schema}), e.g.
       # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_content)`
       #
       # @param schema_content (see Schema::DescribesSchema#new_schema)
       # @param uri (see DescribesSchema#new_schema)
-      # @param default_metaschema [#new_schema] the metaschema to use if the schema_content does not have
-      #   a '$schema' property. this may be a metaschema or a metaschema's schema module
-      #   (e.g. `JSI::JSONSchemaOrgDraft07`).
+      # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule]
+      #   The metaschema to use if the given schema_content does not have a `$schema` property.
+      #   This may be a metaschema or a metaschema's schema module. (e.g. `JSI::JSONSchemaOrgDraft07`).
       # @param stringify_symbol_keys (see SchemaSet#new_jsi)
       # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_content`
       #   and whose schemas are the metaschema's inplace applicators.
