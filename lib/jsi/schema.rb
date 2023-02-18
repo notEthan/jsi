@@ -195,7 +195,8 @@ module JSI
         o.send(:jsi_schema_initialize)
       end
 
-      # an application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
+      # An application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
+      # to instantiate schemas which do not specify their metaschema using a `$schema` property.
       #
       # @return [nil, #new_schema]
       def default_metaschema
