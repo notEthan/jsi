@@ -4,8 +4,8 @@ module JSI
   # JSI Schema Modules are extended with JSI::SchemaModule
   module SchemaModule
     # @!method schema
-    #   the schema of which this is the JSI Schema Module
-    #   @return [Schema]
+    #   The schema for which this is the JSI Schema Module
+    #   @return [Base + Schema]
     # note: defined on JSI Schema Module by JSI::SchemaClasses.module_for_schema
 
 
