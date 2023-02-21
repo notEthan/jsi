@@ -514,8 +514,8 @@ module JSI
     # if any parent, or this schema itself, is a schema with an absolute uri (see {#schema_absolute_uri}),
     # the resource root is the closest schema with an absolute uri.
     #
-    # if no parent schema has an absolute uri, the schema_resource_root is the root of the document
-    # (our #jsi_root_node). in this case, the resource root may or may not be a schema itself.
+    # If no parent schema has an absolute uri, the schema_resource_root is the {Base#jsi_root_node document's root node}.
+    # In this case, the resource root may or may not be a schema itself.
     #
     # @return [JSI::Base] resource containing this schema
     def schema_resource_root
