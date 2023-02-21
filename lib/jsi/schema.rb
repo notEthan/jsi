@@ -218,7 +218,11 @@ module JSI
       # @param stringify_symbol_keys (see SchemaSet#new_jsi)
       # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_object`
       #   and whose schemas are the metaschema's inplace applicators.
-      def new_schema(schema_object, default_metaschema: nil, stringify_symbol_keys: true, **kw)
+      def new_schema(schema_object,
+          default_metaschema: nil,
+          stringify_symbol_keys: true,
+          **kw
+      )
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?
