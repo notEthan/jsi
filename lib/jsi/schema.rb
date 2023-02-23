@@ -223,6 +223,9 @@ module JSI
           stringify_symbol_keys: true,
           **kw
       )
+        new_schema_params = {
+          stringify_symbol_keys: stringify_symbol_keys,
+        }.merge(kw)
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?
@@ -237,7 +240,7 @@ module JSI
           if !default_metaschema.respond_to?(:new_schema)
             raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
           end
-          default_metaschema.new_schema(schema_object, stringify_symbol_keys: stringify_symbol_keys, **kw)
+          default_metaschema.new_schema(schema_object, **new_schema_params)
         }
         if schema_object.is_a?(Schema)
           raise(TypeError, [
@@ -259,7 +262,7 @@ module JSI
             unless metaschema.describes_schema?
               raise(TypeError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
             end
-            metaschema.new_schema(schema_object, stringify_symbol_keys: stringify_symbol_keys, **kw)
+            metaschema.new_schema(schema_object, **new_schema_params)
           else
             default_metaschema_new_schema.call
           end
