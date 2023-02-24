@@ -67,7 +67,7 @@ module JSI
     attr_writer :jsi_document
 
     def jsi_ptr=(jsi_ptr)
-      raise(Bug, "jsi_ptr not #{Ptr}: #{jsi_ptr.inspect}") unless jsi_ptr.is_a?(Ptr)
+      #chkbug raise(Bug, "jsi_ptr not #{Ptr}: #{jsi_ptr}") unless jsi_ptr.is_a?(Ptr)
       @jsi_ptr = jsi_ptr
     end
 
