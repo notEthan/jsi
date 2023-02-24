@@ -656,7 +656,8 @@ module JSI
     private
 
     def jsi_indicated_schemas=(jsi_indicated_schemas)
-      @jsi_indicated_schemas = SchemaSet.ensure_schema_set(jsi_indicated_schemas)
+      #chkbug raise(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
+      @jsi_indicated_schemas = jsi_indicated_schemas
     end
 
     def jsi_child_node_map
