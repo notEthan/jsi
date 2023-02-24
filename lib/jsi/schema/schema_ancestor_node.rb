@@ -26,10 +26,7 @@ module JSI
     # resources which are ancestors of this JSI in the document. this does not include self.
     # @api private
     # @return [Array<JSI::Schema>]
-    def jsi_schema_resource_ancestors
-      return @jsi_schema_resource_ancestors if instance_variable_defined?(:@jsi_schema_resource_ancestors)
-      Util::EMPTY_ARY
-    end
+    attr_reader :jsi_schema_resource_ancestors
 
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
@@ -80,7 +77,6 @@ module JSI
     end
 
     def jsi_schema_resource_ancestors=(jsi_schema_resource_ancestors)
-      if jsi_schema_resource_ancestors
         unless jsi_schema_resource_ancestors.respond_to?(:to_ary)
           raise(TypeError, "jsi_schema_resource_ancestors must be an array; got: #{jsi_schema_resource_ancestors.inspect}")
         end
@@ -103,10 +99,7 @@ module JSI
           last_anc_ptr = anc.jsi_ptr
         end
 
-        @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors.to_ary.freeze
-      else
-        @jsi_schema_resource_ancestors = Util::EMPTY_ARY
-      end
+      @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
     end
 
     def jsi_anchor_subschemas_map

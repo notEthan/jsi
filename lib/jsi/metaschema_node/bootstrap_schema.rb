@@ -47,6 +47,7 @@ module JSI
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
+      self.jsi_schema_resource_ancestors = Util::EMPTY_ARY
     end
 
     # document containing the schema content
