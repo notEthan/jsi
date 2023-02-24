@@ -77,27 +77,25 @@ module JSI
     end
 
     def jsi_schema_resource_ancestors=(jsi_schema_resource_ancestors)
-        unless jsi_schema_resource_ancestors.respond_to?(:to_ary)
-          raise(TypeError, "jsi_schema_resource_ancestors must be an array; got: #{jsi_schema_resource_ancestors.inspect}")
-        end
-        jsi_schema_resource_ancestors.each { |a| Schema.ensure_schema(a) }
-        # sanity check the ancestors are in order
-        last_anc_ptr = nil
-        jsi_schema_resource_ancestors.each do |anc|
-          if last_anc_ptr.nil?
-            # pass
-          elsif last_anc_ptr == anc.jsi_ptr
-            raise(Bug, "duplicate ancestors in #{jsi_schema_resource_ancestors.pretty_inspect}")
-          elsif !last_anc_ptr.contains?(anc.jsi_ptr)
-            raise(Bug, "ancestor ptr #{anc.jsi_ptr} not contained by previous: #{last_anc_ptr} in #{jsi_schema_resource_ancestors.pretty_inspect}")
-          end
-          if anc.jsi_ptr == jsi_ptr
-            raise(Bug, "ancestor is self")
-          elsif !anc.jsi_ptr.contains?(jsi_ptr)
-            raise(Bug, "ancestor does not contain self")
-          end
-          last_anc_ptr = anc.jsi_ptr
-        end
+      #chkbug raise(Bug) unless jsi_schema_resource_ancestors.respond_to?(:to_ary)
+      #chkbug jsi_schema_resource_ancestors.each { |a| Schema.ensure_schema(a) }
+      #chkbug # sanity check the ancestors are in order
+      #chkbug last_anc_ptr = nil
+      #chkbug jsi_schema_resource_ancestors.each do |anc|
+      #chkbug   if last_anc_ptr.nil?
+      #chkbug     # pass
+      #chkbug   elsif last_anc_ptr == anc.jsi_ptr
+      #chkbug     raise(Bug, "duplicate ancestors in #{jsi_schema_resource_ancestors.pretty_inspect}")
+      #chkbug   elsif !last_anc_ptr.contains?(anc.jsi_ptr)
+      #chkbug     raise(Bug, "ancestor ptr #{anc.jsi_ptr} not contained by previous: #{last_anc_ptr} in #{jsi_schema_resource_ancestors.pretty_inspect}")
+      #chkbug   end
+      #chkbug   if anc.jsi_ptr == jsi_ptr
+      #chkbug     raise(Bug, "ancestor is self")
+      #chkbug   elsif !anc.jsi_ptr.contains?(jsi_ptr)
+      #chkbug     raise(Bug, "ancestor does not contain self")
+      #chkbug   end
+      #chkbug   last_anc_ptr = anc.jsi_ptr
+      #chkbug end
 
       @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
     end
