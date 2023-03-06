@@ -44,12 +44,7 @@ module JSI
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
-  # Instantiates the given schema content as a JSI Schema.
-  #
-  # see {JSI::Schema.new_schema}
-  #
-  # @param (see JSI::Schema.new_schema)
-  # @return (see JSI::Schema.new_schema)
+  # (see JSI::Schema.new_schema)
   def self.new_schema(schema_content, **kw)
     JSI::Schema.new_schema(schema_content, **kw)
   end
