@@ -52,12 +52,7 @@ module JSI
       schema.new_schema(schema_content, **kw)
     end
 
-    # Instantiates the given schema content as a JSI Schema and returns its JSI Schema Module.
-    #
-    # shortcut to chain {JSI::Schema::DescribesSchema#new_schema} + {Schema#jsi_schema_module}.
-    #
-    # @param (see JSI::Schema::DescribesSchema#new_schema)
-    # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
+    # (see Schema::DescribesSchema#new_schema_module)
     def new_schema_module(schema_content, **kw)
       schema.new_schema(schema_content, **kw).jsi_schema_module
     end
