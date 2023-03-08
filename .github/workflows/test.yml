@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.runs-on }}
 
     env:
-      BUNDLE_WITHOUT: dev # ruby/setup-ruby's invocation of bundle install will be without the `dev` group
+      BUNDLE_WITHOUT: dev doc # ruby/setup-ruby's invocation of bundle install will be without these groups
 
     steps:
 
