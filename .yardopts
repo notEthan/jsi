@@ -2,4 +2,5 @@
 --markup=markdown
 --markup-provider=commonmarker
 --no-private
+--hide-void-return
 {lib}/**/*.rb
