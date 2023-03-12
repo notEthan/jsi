@@ -164,6 +164,15 @@ describe 'JSI::Base hash' do
           PP
         assert_equal(pp, subject.pretty_inspect)
       end
+
+      describe 'with a long module name' do
+        HashSchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaOrgDraft07.new_schema_module({"$id": "jsi:2be2"})
+        it 'does not break empty hash' do
+          subject = HashSchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines.new_jsi({})
+          pp = %Q(\#{<JSI (HashSchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines)>}\n)
+          assert_equal(pp, subject.pretty_inspect)
+        end
+      end
     end
     describe '#inspect SortOfHash' do
       let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }

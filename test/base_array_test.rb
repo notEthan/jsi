@@ -120,6 +120,15 @@ describe 'JSI::Base array' do
           PP
         assert_equal(pp, subject.pretty_inspect)
       end
+
+      describe 'with a long module name' do
+        ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaOrgDraft07.new_schema_module({"$id": "jsi:2be3"})
+        it 'does not break empty hash' do
+          subject = ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines.new_jsi([])
+          pp = %Q(\#[<JSI (ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines)>]\n)
+          assert_equal(pp, subject.pretty_inspect)
+        end
+      end
     end
     describe '#inspect SortOfArray' do
       let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
