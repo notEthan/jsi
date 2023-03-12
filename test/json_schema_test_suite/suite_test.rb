@@ -14,7 +14,7 @@ JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('
           })
           subSchemas_schema.new_jsi(remote_content, uri: uri)
         else
-          JSI.new_schema(remote_content, uri: uri, default_metaschema: JSI::JSONSchemaOrgDraft07)
+          JSI.new_schema(remote_content, uri: uri, default_metaschema: JSI::JSONSchemaDraft07)
         end
       end
     end
@@ -22,9 +22,9 @@ JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('
 
 describe 'JSON Schema Test Suite' do
     drafts = [
-      {name: 'draft4', metaschema: JSI::JSONSchemaOrgDraft04.schema},
-      {name: 'draft6', metaschema: JSI::JSONSchemaOrgDraft06.schema},
-      {name: 'draft7', metaschema: JSI::JSONSchemaOrgDraft07.schema},
+      {name: 'draft4', metaschema: JSI::JSONSchemaDraft04.schema},
+      {name: 'draft6', metaschema: JSI::JSONSchemaDraft06.schema},
+      {name: 'draft7', metaschema: JSI::JSONSchemaDraft07.schema},
     ]
     drafts.each do |draft|
       name = draft[:name]

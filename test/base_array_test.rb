@@ -57,7 +57,7 @@ describe 'JSI::Base array' do
       ],
     }
   end
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
   let(:subject) { schema.new_jsi(instance) }
 
   describe '#[]' do
@@ -265,7 +265,7 @@ describe 'JSI::Base array' do
       end
 
       describe 'with a long module name' do
-        ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaOrgDraft07.new_schema_module({"$id": "jsi:2be3"})
+        ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaDraft07.new_schema_module({"$id": "jsi:2be3"})
         it 'does not break empty array' do
           subject = ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines.new_jsi([])
           pp = %Q(\#[<JSI (ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines)>]\n)

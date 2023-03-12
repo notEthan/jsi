@@ -27,7 +27,7 @@ end
 
 describe JSI::Base do
   let(:schema_content) { {} }
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
   describe 'class .inspect, .to_s' do
@@ -59,7 +59,7 @@ describe JSI::Base do
       # same class every time
       assert_equal(JSI::SchemaClasses.class_for_schemas([schema], includes: []), class_for_schema)
       # schema_again same as `schema` but different instantiation; class_for_schemas returns same class
-      schema_again = JSI::JSONSchemaOrgDraft07.new_schema({})
+      schema_again = JSI::JSONSchemaDraft07.new_schema({})
       assert_equal(JSI::SchemaClasses.class_for_schemas([schema_again], includes: []), class_for_schema)
       assert_operator(class_for_schema, :<, JSI::Base)
     end
@@ -133,10 +133,10 @@ describe JSI::Base do
       end
     end
     describe 'Schema invalid' do
-      let(:instance) { JSI::JSONSchemaOrgDraft06.new_schema({}) }
+      let(:instance) { JSI::JSONSchemaDraft06.new_schema({}) }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI (JSI::JSONSchemaOrgDraft06) Schema>}), err.message)
+        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI (JSI::JSONSchemaDraft06) Schema>}), err.message)
       end
     end
   end
@@ -802,14 +802,14 @@ describe JSI::Base do
   end
   describe '#as_json' do
     it '#as_json' do
-      assert_equal({'a' => 'b'}, JSI::JSONSchemaOrgDraft07.new_schema({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
-      assert_equal(['a', 'b'], JSI::JSONSchemaOrgDraft07.new_schema({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
-      assert_equal(['a'], JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi(['a']).as_json(some_option: true))
+      assert_equal({'a' => 'b'}, JSI::JSONSchemaDraft07.new_schema({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
+      assert_equal(['a', 'b'], JSI::JSONSchemaDraft07.new_schema({'type' => 'array'}).new_jsi(['a', 'b']).as_json)
+      assert_equal(['a'], JSI::JSONSchemaDraft07.new_schema({}).new_jsi(['a']).as_json(some_option: true))
     end
 
     describe 'overriding as_json' do
       it 'overrides' do
-        schema = JSI::JSONSchemaOrgDraft06.new_schema({'$id' => 'http://jsi/base/def_as_json'})
+        schema = JSI::JSONSchemaDraft06.new_schema({'$id' => 'http://jsi/base/def_as_json'})
         schema.jsi_schema_module_exec { define_method(:as_json) { :foo } }
         assert_equal(:foo, schema.new_jsi({}).as_json)
         assert_equal(:foo, schema.new_jsi([]).as_json)
@@ -820,7 +820,7 @@ describe JSI::Base do
 
   describe 'overriding HashNode methods' do
     it 'can override' do
-      schema = JSI::JSONSchemaOrgDraft06.new_schema({'$id' => 'http://jsi/base/def_to_hash'})
+      schema = JSI::JSONSchemaDraft06.new_schema({'$id' => 'http://jsi/base/def_to_hash'})
       schema.jsi_schema_module_exec { define_method(:to_hash) { :foo } }
       assert_equal(:foo, schema.new_jsi({}).to_hash)
       assert_equal(:foo, schema.new_jsi([]).to_hash)
@@ -830,7 +830,7 @@ describe JSI::Base do
 
   describe 'equality' do
     describe 'with different jsi_schema_base_uri' do
-      let(:schema) { JSI::JSONSchemaOrgDraft06 }
+      let(:schema) { JSI::JSONSchemaDraft06 }
       let(:instance) { {'$id' => '4c01'} }
       it 'is not equal' do
         exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
@@ -841,7 +841,7 @@ describe JSI::Base do
       end
     end
     describe 'the jsi_schema_base_uri is different, but the schema_absolute_uri is unaffected' do
-      let(:schema) { JSI::JSONSchemaOrgDraft06 }
+      let(:schema) { JSI::JSONSchemaDraft06 }
       let(:instance) { {'$id' => 'http://jsi/test/a86e'} }
       it 'is not equal' do
         exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')

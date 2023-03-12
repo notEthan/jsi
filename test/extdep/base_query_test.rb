@@ -2,7 +2,7 @@ require_relative '../test_helper'
 
 describe JSI::Base do
   let(:schema_content) { {} }
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
 

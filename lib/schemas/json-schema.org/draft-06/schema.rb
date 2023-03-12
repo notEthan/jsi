@@ -2,12 +2,12 @@
 
 module JSI
   metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-06/schema.json').read)
-  JSONSchemaOrgDraft06 = JSI.new_metaschema_module(metaschema_document,
+  JSONSchemaDraft06 = JSI.new_metaschema_module(metaschema_document,
     schema_implementation_modules: [JSI::Schema::Draft06],
   )
 
   # the JSI schema module for `http://json-schema.org/draft-06/schema`
-  module JSONSchemaOrgDraft06
+  module JSONSchemaDraft06
     # @!parse extend JSI::SchemaModule::DescribesSchemaModule
     # @!parse include JSI::Schema::Draft06
 

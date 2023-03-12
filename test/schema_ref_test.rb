@@ -2,7 +2,7 @@ require_relative 'test_helper'
 
 describe JSI::Schema::Ref do
   let(:schema) do
-    JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07)
+    JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07)
   end
 
   describe 'pointers' do
@@ -16,8 +16,8 @@ describe JSI::Schema::Ref do
           err = assert_raises(JSI::Schema::ReferenceError) { schema.new_jsi({}) }
           msg = <<~MSG
             could not resolve pointer: "/no"
-            from: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#/no"}
-            in schema resource root: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#/no"}
+            from: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}
+            in schema resource root: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}
             MSG
           assert_equal(msg.chomp, err.message)
         end
@@ -35,8 +35,8 @@ describe JSI::Schema::Ref do
           err = assert_raises(JSI::Schema::ReferenceError) { schema.new_jsi({}) }
           msg = <<~MSG
             could not resolve pointer: "/no"
-            from: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#/no"}
-            in schema resource root: #[<JSI> \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#/no"}]
+            from: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}
+            in schema resource root: #[<JSI> \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}]
             MSG
           assert_equal(msg.chomp, err.message)
         end
@@ -54,7 +54,7 @@ describe JSI::Schema::Ref do
         err = assert_raises(JSI::Schema::ReferenceError) { schema.new_jsi({}) }
         msg = <<~MSG
           could not find schema by fragment: "no"
-          in schema resource root: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "#no"}
+          in schema resource root: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#no"}
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -75,8 +75,8 @@ describe JSI::Schema::Ref do
         err = assert_raises(JSI::Schema::ReferenceError) { schema.definitions['ref'].new_jsi({}) }
         msg = <<~MSG
           found multiple schemas for plain name fragment "collide":
-          \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$id" => "#collide"}
-          \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$id" => "#collide"}
+          \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$id" => "#collide"}
+          \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$id" => "#collide"}
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -111,7 +111,7 @@ describe JSI::Schema::Ref do
         err = assert_raises(JSI::Schema::ReferenceError) { schema.new_jsi({}) }
         msg = <<~MSG
           cannot find schema by ref: no#x
-          from: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "$ref" => "no#x"}
+          from: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "no#x"}
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -154,7 +154,7 @@ describe JSI::Schema::Ref do
 
       it 'finds a thing that is not a schema' do
         JSI.schema_registry.autoload_uri(uri) do
-          JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}, uri: uri)
+          JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, uri: uri)
         end
 
         err = assert_raises(JSI::Schema::NotASchemaError) { schema.new_jsi({}) }

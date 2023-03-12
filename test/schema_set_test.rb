@@ -3,7 +3,7 @@
 require_relative 'test_helper'
 
 describe 'JSI::SchemaSet' do
-  let(:schema_a) { JSI::JSONSchemaOrgDraft06.new_schema({'title' => 'A'}) }
+  let(:schema_a) { JSI::JSONSchemaDraft06.new_schema({'title' => 'A'}) }
   describe 'initialization' do
     describe '.new' do
       it 'initializes' do
@@ -21,7 +21,7 @@ describe 'JSI::SchemaSet' do
           "JSI::SchemaSet initialized with a JSI::Schema",
           "you probably meant to pass that to JSI::SchemaSet[]",
           "or to wrap that schema in a Set or Array for JSI::SchemaSet.new",
-          "given: \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> \"title\" => \"A\"}",
+          "given: \#{<JSI (JSI::JSONSchemaDraft06) Schema> \"title\" => \"A\"}",
         ].join("\n"), err.message)
       end
 
@@ -61,8 +61,8 @@ describe 'JSI::SchemaSet' do
   end
   describe '#new_jsi' do
     it 'instantiates' do
-      schema_b = JSI::JSONSchemaOrgDraft06.new_schema({'$ref' => '#/definitions/b', 'definitions' => {'b' => {'title' => 'B'}}})
-      schema_c = JSI::JSONSchemaOrgDraft06.new_schema({'allOf' => [{'title' => 'C'}]})
+      schema_b = JSI::JSONSchemaDraft06.new_schema({'$ref' => '#/definitions/b', 'definitions' => {'b' => {'title' => 'B'}}})
+      schema_c = JSI::JSONSchemaDraft06.new_schema({'allOf' => [{'title' => 'C'}]})
       schema_set = JSI::SchemaSet[
         schema_a,
         schema_b,
@@ -74,14 +74,14 @@ describe 'JSI::SchemaSet' do
   describe '#inspect, #to_s' do
     it 'inspects' do
       set = JSI::SchemaSet[schema_a]
-      assert_equal(%q(JSI::SchemaSet[#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "title" => "A"}]), set.inspect)
+      assert_equal(%q(JSI::SchemaSet[#{<JSI (JSI::JSONSchemaDraft06) Schema> "title" => "A"}]), set.inspect)
       assert_equal(set.inspect, set.to_s)
     end
   end
   describe '#pretty_print' do
     it 'pretty prints' do
       pp = JSI::SchemaSet[schema_a].pretty_inspect
-      assert_equal(%q(JSI::SchemaSet[#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "title" => "A"}]), pp.chomp)
+      assert_equal(%q(JSI::SchemaSet[#{<JSI (JSI::JSONSchemaDraft06) Schema> "title" => "A"}]), pp.chomp)
     end
   end
 end

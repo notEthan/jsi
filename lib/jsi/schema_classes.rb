@@ -263,7 +263,7 @@ module JSI
     attr_reader :jsi_node
 
     # a name relative to a named schema module of an ancestor schema.
-    # for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
+    # for example, if `Foos = JSI::JSONSchemaDraft07.new_schema_module({'items' => {}})`
     # then the module `Foos.items` will have a name_from_ancestor of `"Foos.items"`
     # @api private
     # @return [String, nil]

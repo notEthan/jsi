@@ -2,7 +2,7 @@
 
 module JSI
   metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read)
-  JSONSchemaOrgDraft04 = JSI.new_metaschema_module(metaschema_document,
+  JSONSchemaDraft04 = JSI.new_metaschema_module(metaschema_document,
     schema_implementation_modules: [JSI::Schema::Draft04],
   )
 
@@ -10,14 +10,14 @@ module JSI
   # properties/additionalProperties and properties/additionalItems.
   # these still describe schemas, despite not being described by the metaschema.
   also_describe_schemas =
-    JSONSchemaOrgDraft04.schema["properties"]["additionalProperties"]["anyOf"] +
-    JSONSchemaOrgDraft04.schema["properties"]["additionalItems"]["anyOf"]
+    JSONSchemaDraft04.schema["properties"]["additionalProperties"]["anyOf"] +
+    JSONSchemaDraft04.schema["properties"]["additionalItems"]["anyOf"]
   also_describe_schemas.each do |schema|
     schema.describes_schema!([JSI::Schema::Draft04])
   end
 
   # the JSI schema module for `http://json-schema.org/draft-04/schema`
-  module JSONSchemaOrgDraft04
+  module JSONSchemaDraft04
     # @!parse extend JSI::SchemaModule::DescribesSchemaModule
     # @!parse include JSI::Schema::Draft04
 

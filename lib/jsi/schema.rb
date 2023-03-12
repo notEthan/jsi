@@ -210,7 +210,7 @@ module JSI
       #
       # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str, nil]
       #   Indicates the default metaschema.
-      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`),
+      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
       #
       #   `nil` to unset.
@@ -236,7 +236,7 @@ module JSI
       #   specifies it. For example:
       #
       #   ```ruby
-      #   JSI.new_schema({"properties" => ...}, default_metaschema: JSI::JSONSchemaOrgDraft07)
+      #   JSI.new_schema({"properties" => ...}, default_metaschema: JSI::JSONSchemaDraft07)
       #   ```
       #
       # - if no `default_metaschema` param is specified, the application-wide default
@@ -244,7 +244,7 @@ module JSI
       #   if the application has set it. For example:
       #
       #   ```ruby
-      #   JSI.default_metaschema = JSI::JSONSchemaOrgDraft07
+      #   JSI.default_metaschema = JSI::JSONSchemaDraft07
       #   JSI.new_schema({"properties" => ...})
       #   ```
       #
@@ -253,12 +253,12 @@ module JSI
       # Note that if you are instantiating a schema known to have no `$schema` property, an alternative to
       # specifying a `default_metaschema` is to call `new_schema` on the metaschema or its module
       # ({Schema::DescribesSchema#new_schema} / {SchemaModule::DescribesSchemaModule#new_schema}), e.g.
-      # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_content)`
+      # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`
       #
       # @param schema_content (see Schema::DescribesSchema#new_schema)
       # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str]
       #   Indicates the metaschema to use if the given schema_content does not have a `$schema` property.
-      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`),
+      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::DescribesSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
@@ -284,11 +284,11 @@ module JSI
             raise(ArgumentError, [
               "When instantiating a schema with no `$schema` property, you must specify its metaschema by one of these methods:",
               "- pass the `default_metaschema` param to this method",
-              "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaOrgDraft07)",
+              "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaDraft07)",
               "- invoke `new_schema` on the appropriate metaschema or its schema module",
-              "  e.g.: JSI::JSONSchemaOrgDraft07.new_schema(...)",
+              "  e.g.: JSI::JSONSchemaDraft07.new_schema(...)",
               "- set JSI.default_metaschema to an application-wide default metaschema initially",
-              "  e.g.: JSI.default_metaschema = JSI::JSONSchemaOrgDraft07",
+              "  e.g.: JSI.default_metaschema = JSI::JSONSchemaDraft07",
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
