@@ -380,9 +380,6 @@ module JSI
     # a module which extends all instances of this schema. this may be opened by the application to add
     # methods to schema instances.
     #
-    # this module includes accessor methods for object property names this schema
-    # describes (see {#described_object_property_names}). these accessors wrap {Base#[]} and {Base#[]=}.
-    #
     # some functionality is also defined on the module itself (its singleton class, not for its instances):
     #
     # - the module is extended with {JSI::SchemaModule}, which defines .new_jsi to instantiate instances
