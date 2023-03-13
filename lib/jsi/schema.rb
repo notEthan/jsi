@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Schema is a module which extends instances which represent JSON schemas.
+  # JSI::Schema is a module which extends {JSI::Base} instances which represent JSON schemas.
   #
-  # the content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
-  # expected to be a Hash (JSON object) or a Boolean.
+  # This module is included on the {Schema#jsi_schema_module JSI Schema module} of any schema
+  # which describes other schemas, i.e. is a metaschema or other {Schema::DescribesSchema}.
+  # Therefore, any JSI instance described by a schema which is a {Schema::DescribesSchema} is
+  # a schema and is extended by this module.
+  #
+  # The content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
+  # typically a Hash (JSON object) or a boolean.
   module Schema
     autoload :Application, 'jsi/schema/application'
     autoload :Validation, 'jsi/schema/validation'
