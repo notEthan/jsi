@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Schema::Ref is a reference to another schema (the result of #deref_schema), resolved using a ref URI
-  # from a ref schema (the ref URI typically the contents of the ref_schema's "$ref" keyword)
+  # A JSI::Schema::Ref is a reference to a schema identified by a URI, typically from
+  # a `$ref` keyword of a schema.
   class Schema::Ref
-    # @param ref [String] a reference URI
-    # @param ref_schema [JSI::Schema] a schema from which the reference originated
+    # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
+    # @param ref_schema [JSI::Schema, nil] A schema from which the reference originated.
+    #   Optional if the ref is to be resolved only from the schema registry.
     def initialize(ref, ref_schema = nil)
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
@@ -13,10 +14,13 @@ module JSI
       @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
     end
 
+    # @return [String]
     attr_reader :ref
 
+    # @return [Addressable::URI]
     attr_reader :ref_uri
 
+    # @return [Schema, nil]
     attr_reader :ref_schema
 
     # finds the schema this ref points to
