@@ -92,6 +92,9 @@ module JSI
       nil
     end
 
+    # Defines equality methods and #hash (for Hash / Set), based on a method #jsi_fingerprint
+    # implemented by the includer. #jsi_fingerprint is to include the class and any properties
+    # of the instance which constitute its identity.
     module FingerprintHash
       # overrides BasicObject#==
       def ==(other)
