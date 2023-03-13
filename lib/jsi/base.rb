@@ -198,8 +198,6 @@ module JSI
 
     # yields a JSI of each node at or below this one in this JSI's document.
     #
-    # returns an Enumerator if no block is given.
-    #
     # @yield [JSI::Base] each descendent node, starting with self
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def jsi_each_descendent_node(&block)

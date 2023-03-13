@@ -73,8 +73,6 @@ module JSI
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
     #
-    # returns an Enumerator if no block is given.
-    #
     # @param kw keyword arguments are passed to {Base#[]}
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
@@ -160,8 +158,6 @@ module JSI
     # yields each array element of this node.
     #
     # each yielded element is the result of {Base#[]} for each index of the instance array.
-    #
-    # returns an Enumerator if no block is given.
     #
     # @param kw keyword arguments are passed to {Base#[]}
     # @yield [Object] each element of this array node
