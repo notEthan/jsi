@@ -133,12 +133,16 @@ module JSI
       end
     end
 
-    # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
-    # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema
-    # are themselves also schemas.
+    # This module extends any JSI Schema which describes schemas.
     #
-    # examples of a schema which describes a schema include the draft JSON Schema metaschemas and
+    # Examples of a schema which describes schemas include the JSON Schema metaschemas and
     # the OpenAPI schema definition which describes "A deterministic version of a JSON Schema object."
+    #
+    # Schemas which describes schemas include {JSI::Schema} in their
+    # {Schema#jsi_schema_module JSI Schema module}, so for a schema which is an instance of
+    # DescribesSchema, instances of that schema are instances of {JSI::Schema} and are schemas.
+    #
+    # A schema is indicated as describing other schemas using the {Schema#describes_schema!} method.
     module DescribesSchema
       # instantiates the given schema content as a JSI Schema.
       #
