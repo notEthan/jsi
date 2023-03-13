@@ -360,7 +360,7 @@ module JSI
     #   defaults are specified across those schemas), nil is returned.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
-    # @return [JSI::Base, Object] the child value identified by the subscript token
+    # @return [JSI::Base, Object, nil] the child value identified by the subscript token
     def [](token, as_jsi: :auto, use_default: true)
       if respond_to?(:to_hash)
         token_in_range = jsi_node_content_hash_pubsend(:key?, token)
