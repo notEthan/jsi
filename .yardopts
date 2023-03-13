@@ -3,4 +3,5 @@
 --markup-provider=commonmarker
 --no-private
 --hide-void-return
-{lib}/**/*.rb
+--files docs/**/*.md
+lib/**/*.rb

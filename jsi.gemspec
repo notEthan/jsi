@@ -20,6 +20,7 @@ Gem::Specification.new do |spec|
     'jsi.gemspec',
     *Dir['lib/**/*'],
     *Dir['\\{resources\\}/schemas/**/*'],
+    *Dir['docs/**/*'],
   ].reject { |f| File.lstat(f).ftype == 'directory' }
 
   spec.require_paths = ["lib"]
