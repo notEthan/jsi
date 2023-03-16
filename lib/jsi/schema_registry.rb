@@ -78,6 +78,7 @@ module JSI
     def autoload_uri(uri, &block)
       uri = Addressable::URI.parse(uri)
       ensure_uri_absolute(uri)
+      mutating
       @autoload_uris[uri] = block
       nil
     end
@@ -118,11 +119,19 @@ module JSI
       end
     end
 
+    def freeze
+      @resources.freeze
+      @autoload_uris.freeze
+      @resources_mutex = nil
+      super
+    end
+
     protected
     # @param uri [Addressable::URI]
     # @param resource [JSI::Base]
     # @return [void]
     def register_single(uri, resource)
+      mutating
       @resources_mutex.synchronize do
         ensure_uri_absolute(uri)
         if @resources.key?(uri)
@@ -144,6 +153,12 @@ module JSI
       end
       if uri.relative?
         raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access relative URI: #{uri}")
+      end
+    end
+
+    def mutating
+      if frozen?
+        raise(FrozenError, "cannot modify frozen #{self.class}")
       end
     end
   end

@@ -195,5 +195,25 @@ describe 'JSI::SchemaRegistry' do
       assert_equal(register_resource, schema_registry_dup.find(register_uri))
       assert_equal(autoload_uri, schema_registry_dup.find(autoload_uri).schema_absolute_uri.to_s)
     end
+
+    it 'freezes' do
+      register_uri = 'http://jsi/schema_registry/gj6v'
+      register_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => register_uri})
+      schema_registry.register(register_resource)
+      autoload_uri = 'http://jsi/schema_registry/aszv'
+      schema_registry.autoload_uri(autoload_uri) do
+        JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => autoload_uri})
+      end
+      frozen = schema_registry.freeze
+      assert(frozen.equal?(schema_registry))
+      assert_equal(register_resource, schema_registry.find(register_uri))
+      assert_raises(JSI::FrozenError) do
+        schema_registry.find(autoload_uri)
+      end
+      s = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => 'http://jsi/schema_registry/5h5c'})
+      assert_raises(JSI::FrozenError) do
+        schema_registry.register(s)
+      end
+    end
   end
 end
