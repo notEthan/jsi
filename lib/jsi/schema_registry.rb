@@ -77,8 +77,7 @@ module JSI
     # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
-      uri = Util.uri(uri)
-      ensure_uri_absolute(uri)
+      uri = ensure_uri_absolute(uri)
       mutating
       unless block
         raise(ArgumentError, ["#{SchemaRegistry}#autoload_uri must be invoked with a block", "URI: #{uri}"].join("\n"))
@@ -94,8 +93,7 @@ module JSI
     # @return [JSI::Base]
     # @raise [JSI::SchemaRegistry::ResourceNotFound]
     def find(uri)
-      uri = Util.uri(uri)
-      ensure_uri_absolute(uri)
+      uri = ensure_uri_absolute(uri)
       if @autoload_uris.key?(uri) && !@resources.key?(uri)
         autoloaded = @autoload_uris[uri].call
         register(autoloaded)
@@ -155,12 +153,14 @@ module JSI
     private
 
     def ensure_uri_absolute(uri)
+      uri = Util.uri(uri)
       if uri.fragment
         raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access URI with fragment: #{uri}")
       end
       if uri.relative?
         raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access relative URI: #{uri}")
       end
+      uri
     end
 
     def mutating
