@@ -182,6 +182,18 @@ describe 'JSI::SchemaRegistry' do
       assert_equal("JSI::SchemaRegistry only registers absolute URIs. cannot access URI with fragment: http://jsi/schema_registry/8wtm#foo", err.message)
     end
 
+    it "registers a URI with two different autoloads" do
+      uri = 'http://jsi/schema_registry/rz4l'
+      schema_registry.autoload_uri(uri) { x }
+      err = assert_raises(JSI::SchemaRegistry::Collision) { schema_registry.autoload_uri(uri) { y } }
+      msg = <<~MSG
+        already registered URI for autoload
+        URI: http://jsi/schema_registry/rz4l
+        loader: #<Proc:
+        MSG
+      assert(err.message.start_with?(msg.chomp))
+    end
+
     it 'dups' do
       register_uri = 'http://jsi/schema_registry/p4z7'
       register_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => register_uri})
