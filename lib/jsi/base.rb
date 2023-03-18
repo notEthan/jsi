@@ -648,6 +648,13 @@ module JSI
       Util.as_json(jsi_instance, **options)
     end
 
+    # A JSON encoded string of the instance content.
+    # Calls {Util.to_json} with the instance and any given options.
+    # @return [String]
+    def to_json(options = {})
+      Util.to_json(jsi_instance, **options)
+    end
+
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint

@@ -80,6 +80,20 @@ module JSI
       end
     end
 
+    # A JSON encoded string of the given object.
+    #
+    # - If the object has a `#to_json` method,
+    #   that method is used, passing any given options.
+    # - Otherwise, JSON is generated using {as_json} to coerce to compatible types.
+    # @return [String]
+    def to_json(object, options = {})
+      if object.respond_to?(:to_json)
+        object.to_json(**options)
+      else
+        JSON.generate(as_json(object, **options))
+      end
+    end
+
     # a hash copied from the given hashlike, in which any symbol keys are
     # converted to strings. behavior on collisions is undefined (but in the
     # future could take a block like
