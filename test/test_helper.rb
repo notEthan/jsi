@@ -136,10 +136,8 @@ mkreporters = {
 
 mkreporter = if ENV['JSI_TESTREPORT']
   mkreporters[ENV['JSI_TESTREPORT']] || raise("JSI_TESTREPORT must be one of: #{mkreporters.keys}")
-elsif ENV['CI']
-  mkreporters['spec']
 else
-  mkreporters['progress']
+  mkreporters['spec']
 end
 
 Minitest::Reporters.use!(mkreporter.call.extend(Minitest::WithEndSummary))
