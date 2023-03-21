@@ -45,6 +45,9 @@ module JSI
   autoload :JSONSchemaDraft04, 'schemas/json-schema.org/draft-04/schema'
   autoload :JSONSchemaDraft06, 'schemas/json-schema.org/draft-06/schema'
   autoload :JSONSchemaDraft07, 'schemas/json-schema.org/draft-07/schema'
+  autoload :JSONSchemaOrgDraft04, 'schemas/json-schema.org/draft-04/schema'
+  autoload :JSONSchemaOrgDraft06, 'schemas/json-schema.org/draft-06/schema'
+  autoload :JSONSchemaOrgDraft07, 'schemas/json-schema.org/draft-07/schema'
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 

@@ -63,4 +63,10 @@ module JSI
     NonNegativeIntegerDefault0::Default0 = NonNegativeIntegerDefault0.allOf[1]
     StringItem = StringArray.items
   end
+
+  JSONSchemaOrgDraft06 = JSONSchemaDraft06
+
+  # @deprecated after v0.7.0, alias of {JSONSchemaDraft06}
+  module JSONSchemaOrgDraft06
+  end
 end
