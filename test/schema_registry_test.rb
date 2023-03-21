@@ -194,6 +194,20 @@ describe 'JSI::SchemaRegistry' do
       assert_equal(register_uri, schema_registry_dup.find(register_uri).schema_absolute_uri.to_s)
       assert_equal(register_resource, schema_registry_dup.find(register_uri))
       assert_equal(autoload_uri, schema_registry_dup.find(autoload_uri).schema_absolute_uri.to_s)
+
+      # registering with the dup does not register in the original
+      postdup_register_uri = 'http://jsi/schema_registry/ipzf'
+      postdup_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => postdup_register_uri})
+      schema_registry_dup.register(postdup_resource)
+      assert_equal(postdup_resource, schema_registry_dup.find(postdup_register_uri))
+      assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema_registry.find(postdup_register_uri) }
+
+      postdup_autoload_uri = 'http://jsi/schema_registry/91wo'
+      schema_registry_dup.autoload_uri(postdup_autoload_uri) do
+        JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => postdup_autoload_uri})
+      end
+      assert_equal(postdup_autoload_uri, schema_registry_dup.find(postdup_autoload_uri)['$id'])
+      assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema_registry.find(postdup_autoload_uri) }
     end
 
     it 'freezes' do
