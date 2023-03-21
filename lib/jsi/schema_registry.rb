@@ -79,6 +79,9 @@ module JSI
       uri = Addressable::URI.parse(uri)
       ensure_uri_absolute(uri)
       mutating
+      unless block
+        raise(ArgumentError, ["#{SchemaRegistry}#autoload_uri must be invoked with a block", "URI: #{uri}"].join("\n"))
+      end
       if @autoload_uris.key?(uri)
         raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{@autoload_uris[uri]}"].join("\n"))
       end

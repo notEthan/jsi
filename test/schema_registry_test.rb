@@ -194,6 +194,16 @@ describe 'JSI::SchemaRegistry' do
       assert(err.message.start_with?(msg.chomp))
     end
 
+    it "registers autoload without a block" do
+      uri = 'http://jsi/schema_registry/j0s5'
+      err = assert_raises(ArgumentError) { schema_registry.autoload_uri(uri) }
+      msg = <<~MSG
+        JSI::SchemaRegistry#autoload_uri must be invoked with a block
+        URI: http://jsi/schema_registry/j0s5
+        MSG
+      assert_equal(msg.chomp, err.message)
+    end
+
     it 'dups' do
       register_uri = 'http://jsi/schema_registry/p4z7'
       register_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => register_uri})
