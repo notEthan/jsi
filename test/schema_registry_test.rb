@@ -1,7 +1,7 @@
 require_relative 'test_helper'
 
 describe 'JSI::SchemaRegistry' do
-  let(:schema_registry) { JSI::SchemaRegistry.new }
+  let(:schema_registry) { JSI::DEFAULT_SCHEMA_REGISTRY.dup }
 
   describe 'operation' do
     it 'registers a schema and finds it' do
