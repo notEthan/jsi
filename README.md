@@ -242,9 +242,9 @@ The classes used to instantiate JSIs are dynamically generated subclasses of JSI
 
 ## Registration
 
-In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry which associates URIs with schemas (or resources containing schemas). This registry is accessible on {JSI.schema_registry} and is a {JSI::SchemaRegistry}.
+In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry (a {JSI::SchemaRegistry}) which associates URIs with schemas (or resources containing schemas). The default registry is accessible on {JSI.schema_registry}.
 
-Schemas instantiated with `.new_schema`, and their subschemas, are automatically registered with `JSI.schema_registry` if they identify an absolute URI.
+Schemas instantiated with `.new_schema`, and their subschemas, are by default registered with `JSI.schema_registry` if they are identified by an absolute URI. This can be controlled by params `register` and `schema_registry`.
 
 Schemas can automatically be lazily loaded by registering a block which instantiates them with {JSI::SchemaRegistry#autoload_uri} (see its documentation).
 
