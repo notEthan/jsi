@@ -17,6 +17,9 @@ module JSI
   class Bug < NotImplementedError
   end
 
+  # @private TODO remove, any ruby without this is already long EOL
+  FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
+
   # @private
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
 
