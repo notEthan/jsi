@@ -229,12 +229,15 @@ module JSI
       #   the given `schema_content` and whose schemas are inplace applicators of the indicated metaschema
       def new_schema(schema_content,
           default_metaschema: nil,
-          stringify_symbol_keys: true,
-          **kw
+          # params of DescribesSchema#new_schema have their default values repeated here. delegating in a splat
+          # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
+          uri: nil,
+          stringify_symbol_keys: true
       )
         new_schema_params = {
+          uri: uri,
           stringify_symbol_keys: stringify_symbol_keys,
-        }.merge(kw)
+        }
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?

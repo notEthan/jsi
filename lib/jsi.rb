@@ -45,8 +45,18 @@ module JSI
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
   # (see JSI::Schema.new_schema)
-  def self.new_schema(schema_content, **kw)
-    JSI::Schema.new_schema(schema_content, **kw)
+  def self.new_schema(schema_content,
+      # params of Schema.new_schema have their default values repeated here. delegating in a splat
+      # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
+      default_metaschema: nil,
+      uri: nil,
+      stringify_symbol_keys: true
+  )
+    JSI::Schema.new_schema(schema_content,
+      default_metaschema: default_metaschema,
+      uri: uri,
+      stringify_symbol_keys: stringify_symbol_keys,
+    )
   end
 
   # Instantiates the given schema content as a JSI Schema, passing all params to
