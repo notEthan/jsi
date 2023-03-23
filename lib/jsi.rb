@@ -80,7 +80,8 @@ module JSI
     new_metaschema(metaschema_document, **kw).jsi_schema_module
   end
 
-  # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.
+  # `JSI.schema_registry` is the default {JSI::SchemaRegistry} in which schemas are registered and from
+  # which they resolve references.
   #
   # @return [JSI::SchemaRegistry]
   def self.schema_registry
