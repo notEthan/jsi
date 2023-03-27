@@ -198,20 +198,21 @@ module JSI
       # An application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
       # to instantiate schemas which do not specify their metaschema using a `$schema` property.
       #
-      # @return [nil, #new_schema]
+      # @return [nil, Base + Schema + Schema::DescribesSchema]
       def default_metaschema
         @default_metaschema
       end
 
-      # sets an application-wide default metaschema used by {JSI.new_schema}
+      # Sets {default_metaschema} to a schema indicated by the given param.
       #
-      # @param default_metaschema [#new_schema] the default metaschema. this may be a metaschema or a
-      #   metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`).
+      # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str, nil]
+      #   Indicates the default metaschema.
+      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`),
+      #   or a URI (as would be in a `$schema` keyword).
+      #
+      #   `nil` to unset.
       def default_metaschema=(default_metaschema)
-        unless default_metaschema.respond_to?(:new_schema)
-          raise(TypeError, "given default_metaschema does not respond to #new_schema")
-        end
-        @default_metaschema = default_metaschema
+        @default_metaschema = default_metaschema.nil? ? nil : ensure_describes_schema(default_metaschema)
       end
 
       # Instantiates the given schema content as a JSI Schema.
