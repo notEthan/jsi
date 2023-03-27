@@ -337,6 +337,28 @@ module JSI
           end
         end
       end
+
+      # Ensures the given param identifies a JSI Schema which describes schemas, and returns that schema.
+      #
+      # @api private
+      # @param describes_schema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str]
+      # @raise [TypeError] if the param does not indicate a schema which describes schemas
+      # @return [Base + Schema + Schema::DescribesSchema]
+      def ensure_describes_schema(describes_schema, name: nil)
+        if describes_schema.respond_to?(:to_str)
+          schema = Schema::Ref.new(describes_schema).deref_schema
+          if !schema.describes_schema?
+            raise(TypeError, [name, "URI indicates a schema which does not describe schemas: #{describes_schema.pretty_inspect.chomp}"].compact.join(" "))
+          end
+          schema
+        elsif describes_schema.is_a?(SchemaModule::DescribesSchemaModule)
+          describes_schema.schema
+        elsif describes_schema.is_a?(DescribesSchema)
+          describes_schema
+        else
+          raise(TypeError, "#{name || "param"} does not indicate a schema which describes schemas: #{describes_schema.pretty_inspect.chomp}")
+        end
+      end
     end
 
     self.default_metaschema = nil
