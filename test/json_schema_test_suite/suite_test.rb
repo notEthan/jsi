@@ -66,7 +66,7 @@ describe 'JSON Schema Test Suite' do
                             'format',
                             'contentMediaType',
                             'contentEncoding',
-                          ].select { |kw| schema.respond_to?(:to_hash) && schema.key?(kw) }
+                          ].select { |kw| schema.keyword?(kw) }
                           if unsupported_keywords.any?
                             skip("unsupported keywords: #{unsupported_keywords.join(' ')}")
                           end
