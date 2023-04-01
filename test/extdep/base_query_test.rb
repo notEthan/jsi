@@ -8,7 +8,33 @@ describe JSI::Base do
 
   describe '#jmespath_search' do
     let(:schema_content) do
-      JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').read)
+      # this is a pared-down JSON-Schema-Test-Suite/test-schema.json
+      # that having been a convenient schema to grab and have some instance data for this test
+      {
+        "$schema": "http://json-schema.org/draft-06/schema#",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "description": {"type": "string"},
+            "schema": {"description": "a valid schema"},
+            "tests": {
+              "type": "array",
+              "items": {"$ref": "#/definitions/test"}
+            }
+          }
+        },
+        "definitions": {
+          "test": {
+            "type": "object",
+            "properties": {
+              "description": {"type": "string"},
+              "data": {},
+              "valid": {"type": "boolean"},
+            }
+          }
+        }
+      }
     end
     let(:instance) do
       JSON.parse(%q(
