@@ -46,7 +46,7 @@ describe 'JSON Schema Test Suite' do
                 tests_desc_object = []
                 # :nocov:
               end
-              JSONSchemaTestSchema.new_jsi(tests_desc_object).map do |tests_desc|
+              JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
                 describe(tests_desc.description) do
                   around do |test|
                     registry_before = JSI.schema_registry.dup
