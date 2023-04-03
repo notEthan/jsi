@@ -79,9 +79,11 @@ module JSI
     @schema_registry = schema_registry
   end
 
-  self.schema_registry = SchemaRegistry.new
-end
+  DEFAULT_SCHEMA_REGISTRY = SchemaRegistry.new.tap do |schema_registry|
+    schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
+    schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaOrgDraft06.schema }
+    schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaOrgDraft07.schema }
+  end.freeze
 
-JSI.schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
-JSI.schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaOrgDraft06.schema }
-JSI.schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaOrgDraft07.schema }
+  self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup
+end
