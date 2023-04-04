@@ -219,9 +219,9 @@ describe 'JSI::SchemaRegistry' do
         JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => autoload_uri})
       end
       schema_registry_dup = schema_registry.dup
-      assert_equal(register_uri, schema_registry_dup.find(register_uri).schema_absolute_uri.to_s)
+      assert_uri(register_uri, schema_registry_dup.find(register_uri).schema_absolute_uri)
       assert_equal(register_resource, schema_registry_dup.find(register_uri))
-      assert_equal(autoload_uri, schema_registry_dup.find(autoload_uri).schema_absolute_uri.to_s)
+      assert_uri(autoload_uri, schema_registry_dup.find(autoload_uri).schema_absolute_uri)
 
       # registering with the dup does not register in the original
       postdup_register_uri = 'http://jsi/schema_registry/ipzf'
