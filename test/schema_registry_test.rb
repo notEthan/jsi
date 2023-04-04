@@ -93,7 +93,7 @@ describe 'JSI::SchemaRegistry' do
           '$id' => uri,
         })
       end
-      assert_equal(uri, schema_registry.find(uri).schema_absolute_uri.to_s)
+      assert_uri(uri, schema_registry.find(uri).schema_absolute_uri)
     end
 
     it 'autoloads a schema uri containing that resource but not at document root' do
@@ -111,7 +111,7 @@ describe 'JSI::SchemaRegistry' do
         })
       end
       resource = schema_registry.find(uri)
-      assert_equal(uri, resource.schema_absolute_uri.to_s)
+      assert_uri(uri, resource.schema_absolute_uri)
       assert_equal(JSI::Ptr['items', 'definitions', 's'], resource.jsi_ptr)
     end
 
@@ -127,7 +127,7 @@ describe 'JSI::SchemaRegistry' do
         schema.new_jsi({'x' => {'$id' => uri}})
       end
       resource = schema_registry.find(uri)
-      assert_equal(uri, resource.schema_absolute_uri.to_s)
+      assert_uri(uri, resource.schema_absolute_uri)
       assert_equal(JSI::Ptr['x'], resource.jsi_ptr)
     end
 
@@ -136,7 +136,7 @@ describe 'JSI::SchemaRegistry' do
       schema_registry.autoload_uri(uri) do
         JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}, uri: uri)
       end
-      assert_equal(uri, schema_registry.find(uri).jsi_resource_ancestor_uri.to_s)
+      assert_uri(uri, schema_registry.find(uri).jsi_resource_ancestor_uri)
     end
 
     it 'autoloads a uri but the resource is not in the JSI from the block' do
