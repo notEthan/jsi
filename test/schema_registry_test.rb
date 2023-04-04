@@ -14,6 +14,12 @@ describe 'JSI::SchemaRegistry' do
       assert_equal(resource, schema_registry.find(uri))
     end
 
+    it 'does not find a schema that is not registered' do
+      uri = 'http://jsi/schema_registry/55e6'
+      e = assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema_registry.find(uri) }
+      assert_uri(uri, e.uri)
+    end
+
     it 'registers a nonschema and finds it' do
       uri = 'http://jsi/schema_registry/d7eu'
       resource = JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}, uri: uri)
