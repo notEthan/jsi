@@ -229,6 +229,11 @@ class JSISpec < Minitest::Spec
     refute_includes(instance.jsi_schemas, schema)
     refute_is_a(schema.jsi_schema_module, instance)
   end
+
+  def assert_uri(exp, act)
+    assert_equal(JSI::Util.uri(exp), act)
+    assert_predicate(act, :frozen?)
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec
