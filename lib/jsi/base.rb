@@ -530,6 +530,7 @@ module JSI
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
           uri: @jsi_root_node.jsi_schema_base_uri,
+          register: false, # default is already false but this is a place to be explicit
         )
         modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
     end
