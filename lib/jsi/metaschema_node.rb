@@ -67,13 +67,14 @@ module JSI
         jsi_ptr: root_schema_ptr,
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
       )
-      our_bootstrap_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_schemas, tok|
+      our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
+        bootstrap_schemas = bootstrap_indicated_schemas.inplace_applicator_schemas(instance_for_schemas)
         child_indicated_schemas = bootstrap_schemas.child_applicator_schemas(tok, instance_for_schemas)
-        child_schemas = child_indicated_schemas.inplace_applicator_schemas(instance_for_schemas[tok])
         instance_for_schemas = instance_for_schemas[tok]
-        child_schemas
+        child_indicated_schemas
       end
 
+      our_bootstrap_schemas = our_bootstrap_indicated_schemas.inplace_applicator_schemas(instance_for_schemas)
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the metaschema, i.e. this is a schema
