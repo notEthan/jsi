@@ -90,18 +90,7 @@ module JSI
         end
       end
 
-      @jsi_schemas = SchemaSet.new(our_bootstrap_schemas) do |bootstrap_schema|
-        if bootstrap_schema.jsi_ptr == jsi_ptr
-          self
-        elsif bootstrap_schema.jsi_ptr.root?
-          @jsi_root_node
-        else
-          new_node(
-            jsi_ptr: bootstrap_schema.jsi_ptr,
-            jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
-          )
-        end
-      end
+      @jsi_schemas = bootstrap_schemas_to_msn(our_bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if is_a?(Metaschema)
@@ -218,6 +207,23 @@ module JSI
           jsi_ptr: jsi_ptr[token],
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
         )
+      end
+    end
+
+    # @param bootstrap_schemas [Enumerable<BootstrapSchema>]
+    # @return [SchemaSet<MetaschemaNode>]
+    def bootstrap_schemas_to_msn(bootstrap_schemas)
+      SchemaSet.new(bootstrap_schemas) do |bootstrap_schema|
+        if bootstrap_schema.jsi_ptr == jsi_ptr
+          self
+        elsif bootstrap_schema.jsi_ptr.root?
+          @jsi_root_node
+        else
+          new_node(
+            jsi_ptr: bootstrap_schema.jsi_ptr,
+            jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
+          )
+        end
       end
     end
   end
