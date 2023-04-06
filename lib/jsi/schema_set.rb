@@ -51,6 +51,10 @@ module JSI
         ].join("\n"))
       end
 
+      unless enum.is_a?(Enumerable)
+        raise(ArgumentError, "#{SchemaSet} initialized with non-Enumerable: #{enum.pretty_inspect.chomp}")
+      end
+
       super
 
       not_schemas = reject { |s| s.is_a?(Schema) }
