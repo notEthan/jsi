@@ -184,4 +184,21 @@ describe JSI::MetaschemaNode do
       assert_metaschema_behaves
     end
   end
+
+  metaschema_modules = [
+    JSI::JSONSchemaOrgDraft04,
+    JSI::JSONSchemaOrgDraft06,
+    JSI::JSONSchemaOrgDraft07,
+  ]
+  metaschema_modules.each do |metaschema_module|
+    describe(metaschema_module.name) do
+      let(:metaschema) { metaschema_module.schema }
+
+      it 'validates itself' do
+        assert(metaschema.jsi_valid?)
+        assert(metaschema.instance_valid?(metaschema))
+        assert(metaschema.jsi_each_descendent_node.all?(&:jsi_valid?))
+      end
+    end
+  end
 end
