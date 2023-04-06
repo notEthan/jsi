@@ -76,6 +76,10 @@ describe(JSI::MetaSchemaNode) do
     # check that subscripting unknown keys behaves
     assert_equal(nil, metaschema['no'])
     assert_equal(nil, metaschema.properties['no'])
+
+    # a metaschema validates itself
+    assert(metaschema.jsi_valid?)
+    assert(metaschema.instance_valid?(metaschema))
   end
 
   describe 'basic' do
