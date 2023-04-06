@@ -125,6 +125,7 @@ module JSI
       # @return [Module]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
+        raise(Bug, "non-Base schema cannot have schema module: #{schema}") unless schema.is_a?(Base)
         jsi_memoize(:module_for_schema, schema: schema) do |schema: |
           Module.new do
             begin
