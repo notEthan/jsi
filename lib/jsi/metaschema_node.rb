@@ -94,7 +94,6 @@ module JSI
           new_node(
             jsi_ptr: bootstrap_schema.jsi_ptr,
             jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
-            jsi_root_node: @jsi_root_node,
           )
         end
       end
@@ -225,7 +224,7 @@ module JSI
 
     # note: not for root node
     def new_node(params)
-      MetaschemaNode.new(jsi_document, **our_initialize_params.merge(params))
+      MetaschemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params.merge(params))
     end
 
     def jsi_subinstance_memos
@@ -233,7 +232,6 @@ module JSI
         new_node(
           jsi_ptr: jsi_ptr[token],
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
-          jsi_root_node: jsi_root_node,
         )
       end
     end
