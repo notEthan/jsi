@@ -235,9 +235,10 @@ module JSI
       # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_content)`
       #
       # @param schema_content (see Schema::DescribesSchema#new_schema)
-      # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule]
-      #   The metaschema to use if the given schema_content does not have a `$schema` property.
-      #   This may be a metaschema or a metaschema's schema module. (e.g. `JSI::JSONSchemaOrgDraft07`).
+      # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str]
+      #   Indicates the metaschema to use if the given schema_content does not have a `$schema` property.
+      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`),
+      #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::DescribesSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
@@ -254,8 +255,11 @@ module JSI
           stringify_symbol_keys: stringify_symbol_keys,
         }
         default_metaschema_new_schema = -> {
-          default_metaschema ||= JSI::Schema.default_metaschema
-          if default_metaschema.nil?
+          default_metaschema = if default_metaschema
+            ensure_describes_schema(default_metaschema, name: "default_metaschema")
+          elsif Schema.default_metaschema
+            Schema.default_metaschema
+          else
             raise(ArgumentError, [
               "When instantiating a schema with no `$schema` property, you must specify its metaschema by one of these methods:",
               "- pass the `default_metaschema` param to this method",
@@ -266,9 +270,6 @@ module JSI
               "  e.g.: JSI::Schema.default_metaschema = JSI::JSONSchemaOrgDraft07",
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
-          end
-          if !default_metaschema.respond_to?(:new_schema)
-            raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
           end
           default_metaschema.new_schema(schema_content, **new_schema_params)
         }
