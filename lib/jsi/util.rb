@@ -82,12 +82,12 @@ module JSI
 
     # A JSON encoded string of the given object.
     #
-    # - If the object has a `#to_json` method,
+    # - If the object has a `#to_json` method that isn't defined by the stdlib `json` gem,
     #   that method is used, passing any given options.
     # - Otherwise, JSON is generated using {as_json} to coerce to compatible types.
     # @return [String]
     def to_json(object, options = {})
-      if object.respond_to?(:to_json)
+      if USE_TO_JSON_METHOD[object.class]
         options.empty? ? object.to_json : object.to_json(**options) # TODO remove eventually (keyword argument compatibility)
       else
         JSON.generate(as_json(object, **options))
