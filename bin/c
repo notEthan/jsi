@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+# c is for console, that's good enough for me
+
+require_relative "../test/jsi_helper"
+
+require "irb"
+IRB.start(__FILE__)
