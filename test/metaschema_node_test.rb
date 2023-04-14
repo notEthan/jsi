@@ -24,12 +24,14 @@ describe JSI::MetaschemaNode do
 
   let(:metaschema_root_ptr) { JSI::Ptr[] }
   let(:root_schema_ptr) { JSI::Ptr[] }
+  let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
-    JSI::MetaschemaNode.new(jsi_document,
+    JSI::MetaschemaNode.new(to_immutable[jsi_document],
       schema_implementation_modules: schema_implementation_modules,
       metaschema_root_ptr: metaschema_root_ptr,
       root_schema_ptr: root_schema_ptr,
+      jsi_content_to_immutable: to_immutable,
     )
   end
   let(:metaschema) { root_node.jsi_descendent_node(metaschema_root_ptr) }
