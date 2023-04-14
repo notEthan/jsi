@@ -9,6 +9,12 @@ class JSONifiable
   end
 end
 
+class OptJson
+  def as_json(opt = nil)
+    JSI::Util.as_json(opt)
+  end
+end
+
 describe JSI::Util do
   describe 'as_json' do
     it 'expresses as json' do
@@ -41,6 +47,12 @@ describe JSI::Util do
 
       # #as_json
       assert_equal(['a'], JSI::Util.as_json(JSONifiable.new(['a'])))
+
+      # #as_json opt
+      assert_equal({'a' => 0}, JSI::Util.as_json(OptJson.new, a: 0))
+      assert_equal({'a' => 0}, JSI::SchemaSet[].new_jsi(OptJson.new).as_json(a: 0))
+      assert_equal(nil, JSI::Util.as_json(OptJson.new))
+      assert_equal(nil, JSI::SchemaSet[].new_jsi(OptJson.new).as_json)
 
       # not jsonifiable
       object = Object.new
