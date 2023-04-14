@@ -47,8 +47,8 @@ module JSI
     #   array of object) cannot be expressed as json
     def as_json(object, options = {})
       type_err = proc { raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}") }
-      if object.is_a?(JSI::Base)
-        as_json(object.jsi_node_content, **options)
+      if object.respond_to?(:as_json)
+        options.empty? ? object.as_json : object.as_json(**options) # TODO remove eventually (keyword argument compatibility)
       elsif object.is_a?(Addressable::URI)
         object.to_s
       elsif object.respond_to?(:to_hash)
@@ -69,9 +69,6 @@ module JSI
         object.to_s
       elsif object.is_a?(Set)
         as_json(object.to_a, **options)
-      elsif object.respond_to?(:as_json)
-        object_as_json = options.empty? ? object.as_json : object.as_json(**options) # TODO remove eventually (keyword argument compatibility)
-        as_json(object_as_json, **options)
       else
         type_err.call
       end
