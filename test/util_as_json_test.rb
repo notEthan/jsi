@@ -31,6 +31,8 @@ describe JSI::Util do
       # responds to #to_hash / #to_ary but naught else
       assert_equal({'a' => 'b'}, JSI::Util.as_json(SortOfHash.new({'a' => 'b'})))
       assert_equal(['a'], JSI::Util.as_json(SortOfArray.new(['a'])))
+      assert_raises(TypeError) { JSI::Util.as_json(SortOfHash.new(0)) }
+      assert_raises(TypeError) { JSI::Util.as_json(SortOfArray.new(0)) }
 
       # symbol keys to string
       assert_equal({'a' => 'b'}, JSI::Util.as_json({a: 'b'}))

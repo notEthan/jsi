@@ -51,17 +51,17 @@ module JSI
         options.empty? ? object.as_json : object.as_json(**options) # TODO remove eventually (keyword argument compatibility)
       elsif object.is_a?(Addressable::URI)
         object.to_s
-      elsif object.respond_to?(:to_hash)
+      elsif object.respond_to?(:to_hash) && (object_to_hash = object.to_hash).is_a?(Hash)
         result = {}
-        object.to_hash.each_pair do |k, v|
+        object_to_hash.each_pair do |k, v|
           unless k.is_a?(Symbol) || k.respond_to?(:to_str)
             raise(TypeError, "json object (hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
           end
           result[k.to_s] = as_json(v, **options)
         end
         result
-      elsif object.respond_to?(:to_ary)
-        object.to_ary.map { |e| as_json(e, **options) }
+      elsif object.respond_to?(:to_ary) && (object_to_ary = object.to_ary).is_a?(Array)
+        object_to_ary.map { |e| as_json(e, **options) }
       elsif [String, Integer, TrueClass, FalseClass, NilClass].any? { |c| object.is_a?(c) }
         object
       elsif object.is_a?(Float)
@@ -71,10 +71,10 @@ module JSI
         object.to_s
       elsif object.is_a?(Set)
         as_json(object.to_a, **options)
-      elsif object.respond_to?(:to_str)
-        object.to_str
-      elsif object.respond_to?(:to_int)
-        object.to_int
+      elsif object.respond_to?(:to_str) && (object_to_str = object.to_str).is_a?(String)
+        object_to_str
+      elsif object.respond_to?(:to_int) && (object_to_int = object.to_int).is_a?(Integer)
+        object_to_int
       else
         type_err.call
       end
