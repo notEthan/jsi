@@ -46,6 +46,7 @@ module JSI
     # @raise [TypeError] when the object (or an object nested with a hash or
     #   array of object) cannot be expressed as json
     def as_json(object, *opt)
+      type_err = proc { raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}") }
       if object.is_a?(JSI::Base)
         as_json(object.jsi_node_content, *opt)
       elsif object.respond_to?(:to_hash)
@@ -66,7 +67,7 @@ module JSI
       elsif object.respond_to?(:as_json)
         as_json(object.as_json(*opt), *opt)
       else
-        raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}")
+        type_err.call
       end
     end
 
