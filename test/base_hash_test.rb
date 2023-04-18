@@ -107,6 +107,8 @@ describe 'JSI::Base hash' do
     end
   end
   describe 'hashlike []=' do
+    let(:subject_opt) { {mutable: true} }
+
     it 'sets a property' do
       orig_foo = subject['foo']
 

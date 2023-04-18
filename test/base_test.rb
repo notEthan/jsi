@@ -714,6 +714,7 @@ describe JSI::Base do
            },
           }
         end
+        let(:subject_opt) { {mutable: true} }
         let(:instance) do
           {
             '😀' => '💜'
@@ -727,6 +728,8 @@ describe JSI::Base do
       end
     end
     describe 'writers' do
+      let(:subject_opt) { {mutable: true} }
+
       it 'writes attributes described as properties' do
         orig_foo = subject.foo
 

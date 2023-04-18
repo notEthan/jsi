@@ -187,6 +187,8 @@ describe 'JSI::Base array' do
     end
   end
   describe 'arraylike []=' do
+    let(:subject_opt) { {mutable: true} }
+
     it 'sets an index' do
       orig_2 = subject[2]
 

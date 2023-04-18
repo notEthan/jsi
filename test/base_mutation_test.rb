@@ -2,7 +2,8 @@ require_relative 'test_helper'
 
 describe JSI::Base do
   let(:schema) { JSI.new_schema(schema_content) }
-  let(:subject) { schema.new_jsi(instance) }
+  let(:subject_opt) { {mutable: true} }
+  let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
   describe 'instance mutation' do
     let(:schema_content) do
