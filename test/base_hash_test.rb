@@ -1,7 +1,8 @@
 require_relative 'test_helper'
 
 describe 'JSI::Base hash' do
-  let(:instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
+  let(:default_instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
+  let(:instance) { default_instance }
   let(:schema_content) do
     {
       'description' => 'hash schema',
@@ -175,13 +176,13 @@ describe 'JSI::Base hash' do
       end
     end
     describe '#inspect SortOfHash' do
-      let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
+      let(:instance) { SortOfHash.new(default_instance) }
       it 'inspects' do
         assert_equal("\#{<JSI SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print SortOfHash' do
-      let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
+      let(:instance) { SortOfHash.new(default_instance) }
       it 'pretty prints' do
         pp = <<~PP
           \#{<JSI SortOfHash>
@@ -214,14 +215,14 @@ describe 'JSI::Base hash' do
     end
     describe '#inspect with id SortOfHash' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
-      let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
+      let(:instance) { SortOfHash.new(default_instance) }
       it 'inspects' do
         assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfHash' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
-      let(:subject) { schema.new_jsi(SortOfHash.new(instance)) }
+      let(:instance) { SortOfHash.new(default_instance) }
       it 'pretty prints' do
         pp = <<~PP
           \#{<JSI (http://jsi/base_hash/withid) SortOfHash>
@@ -235,14 +236,14 @@ describe 'JSI::Base hash' do
     end
     describe '#inspect jsi_object_group_text' do
       let(:instance_class) { Class.new(SortOfHash) { define_method(:jsi_object_group_text) { ['☺'] } } }
-      let(:subject) { schema.new_jsi(instance_class.new(instance)) }
+      let(:instance) { instance_class.new(default_instance) }
       it 'inspects' do
         assert_equal("\#{<JSI ☺> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print jsi_object_group_text' do
       let(:instance_class) { Class.new(SortOfHash) { define_method(:jsi_object_group_text) { ['☺'] } } }
-      let(:subject) { schema.new_jsi(instance_class.new(instance)) }
+      let(:instance) { instance_class.new(default_instance) }
       it 'pretty prints' do
         pp = <<~PP
           \#{<JSI ☺>

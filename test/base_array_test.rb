@@ -1,7 +1,8 @@
 require_relative 'test_helper'
 
 describe 'JSI::Base array' do
-  let(:instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
+  let(:default_instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
+  let(:instance) { default_instance }
   let(:schema_content) do
     {
       'description' => 'hash schema',
@@ -131,13 +132,13 @@ describe 'JSI::Base array' do
       end
     end
     describe '#inspect SortOfArray' do
-      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      let(:instance) { SortOfArray.new(default_instance) }
       it 'inspects' do
         assert_equal("#[<JSI SortOfArray> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print SortOfArray' do
-      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      let(:instance) { SortOfArray.new(default_instance) }
       it 'pretty prints' do
         pp = <<~PP
           #[<JSI SortOfArray>
@@ -172,14 +173,14 @@ describe 'JSI::Base array' do
     end
     describe '#inspect with id SortOfArray' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
-      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      let(:instance) { SortOfArray.new(default_instance) }
       it 'inspects' do
         assert_equal("#[<JSI (http://jsi/base_array/withid) SortOfArray> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfArray' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
-      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      let(:instance) { SortOfArray.new(default_instance) }
       it 'pretty prints' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid) SortOfArray>
