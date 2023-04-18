@@ -31,7 +31,9 @@ module JSI
           inputs
         end
       end
+    end
 
+    class MemoMap::Mutable < MemoMap
       def [](**inputs)
         key = key_for(inputs)
 

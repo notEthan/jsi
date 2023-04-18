@@ -137,13 +137,13 @@ module JSI
 
       # @return [Util::MemoMap]
       def jsi_memomap(name = nil, **options, &block)
-        return Util::MemoMap.new(**options, &block) if !name
+        return Util::MemoMap::Mutable.new(**options, &block) if !name
         raise(Bug, 'must jsi_initialize_memos') unless @jsi_memomaps
         unless @jsi_memomaps.key?(name)
           @jsi_memomaps_mutex.synchronize do
             # note: this ||= appears redundant with `unless @jsi_memomaps.key?(name)`,
             # but that check is not thread safe. this check is.
-            @jsi_memomaps[name] ||= Util::MemoMap.new(**options, &block)
+            @jsi_memomaps[name] ||= Util::MemoMap::Mutable.new(**options, &block)
           end
         end
         @jsi_memomaps[name]
