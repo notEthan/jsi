@@ -195,14 +195,12 @@ describe 'JSI::Base hash' do
     end
     describe '#inspect with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
-      let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
         assert_equal("\#{<JSI (http://jsi/base_hash/withid)> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
-      let(:subject) { schema.new_jsi(instance) }
       it 'pretty prints' do
         pp = <<~PP
           \#{<JSI (http://jsi/base_hash/withid)>

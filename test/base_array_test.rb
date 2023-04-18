@@ -152,14 +152,12 @@ describe 'JSI::Base array' do
     end
     describe '#inspect with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
-      let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
         assert_equal("#[<JSI (http://jsi/base_array/withid)> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
-      let(:subject) { schema.new_jsi(instance) }
       it 'pretty prints' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid)>
