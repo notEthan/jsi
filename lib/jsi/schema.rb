@@ -176,6 +176,7 @@ module JSI
       # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
+      # @param to_immutable (see SchemaSet#new_jsi)
       # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
@@ -185,6 +186,7 @@ module JSI
           register: true,
           schema_registry: JSI.schema_registry,
           stringify_symbol_keys: true,
+          to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           &block
       )
         schema_jsi = new_jsi(schema_content,
@@ -192,6 +194,7 @@ module JSI
           register: register,
           schema_registry: schema_registry,
           stringify_symbol_keys: stringify_symbol_keys,
+          to_immutable: to_immutable,
         )
         if block
           schema_jsi.jsi_schema_module_exec(&block)
@@ -284,6 +287,7 @@ module JSI
       # @param register (see DescribesSchema#new_schema)
       # @param schema_registry (see DescribesSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
+      # @param to_immutable (see Schema::DescribesSchema#new_schema)
       # @yield (see Schema::DescribesSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
       #   the given `schema_content` and whose schemas are inplace applicators of the indicated metaschema
@@ -295,6 +299,7 @@ module JSI
           register: true,
           schema_registry: JSI.schema_registry,
           stringify_symbol_keys: true,
+          to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           &block
       )
         new_schema_params = {
@@ -302,6 +307,7 @@ module JSI
           register: register,
           schema_registry: schema_registry,
           stringify_symbol_keys: stringify_symbol_keys,
+          to_immutable: to_immutable,
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
@@ -380,6 +386,7 @@ module JSI
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
               jsi_schema_registry: schema.jsi_schema_registry,
+              jsi_content_to_immutable: schema.jsi_content_to_immutable,
               jsi_root_node: schema.jsi_ptr.root? ? nil : schema.jsi_root_node, # bad
             )
           else

@@ -114,6 +114,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_registry: ,
+        jsi_content_to_immutable: ,
         jsi_root_node: nil
     )
       raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
@@ -126,6 +127,7 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_registry = jsi_schema_registry
+      @jsi_content_to_immutable = jsi_content_to_immutable
       if @jsi_ptr.root?
         raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
@@ -156,6 +158,12 @@ module JSI
     # {JSI::Ptr} pointing to this JSI's instance within our {#jsi_document}
     # @return [JSI::Ptr]
     attr_reader :jsi_ptr
+
+    # Comes from the param `to_immutable` of {SchemaSet#new_jsi} (or other `new_jsi` /
+    # `new_schema` / `new_schema_module` method).
+    # Immutable JSIs use this when instantiating a modified copy so its instance is also immutable.
+    # @return [#call]
+    attr_reader(:jsi_content_to_immutable)
 
     # the JSI at the root of this JSI's document
     # @return [JSI::Base]
@@ -537,6 +545,7 @@ module JSI
           register: false, # default is already false but this is a place to be explicit
           schema_registry: jsi_schema_registry,
           mutable: jsi_mutable?,
+          to_immutable: jsi_content_to_immutable,
         )
         modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
     end
@@ -707,6 +716,7 @@ module JSI
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
           jsi_schema_registry: jsi_schema_registry,
+          jsi_content_to_immutable: @jsi_content_to_immutable,
           jsi_root_node: @jsi_root_node,
         )
     end

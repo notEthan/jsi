@@ -42,6 +42,7 @@ module JSI
         root_schema_ptr: Ptr[],
         jsi_schema_base_uri: nil,
         jsi_schema_registry: nil,
+        jsi_content_to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         jsi_root_node: nil
     )
       super(jsi_document,
@@ -49,6 +50,7 @@ module JSI
         jsi_indicated_schemas: SchemaSet[],
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_registry: jsi_schema_registry,
+        jsi_content_to_immutable: jsi_content_to_immutable,
         jsi_root_node: jsi_root_node,
       )
 
@@ -224,6 +226,7 @@ module JSI
         root_schema_ptr: root_schema_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_registry: jsi_schema_registry,
+        jsi_content_to_immutable: jsi_content_to_immutable,
       }
     end
 
