@@ -122,5 +122,11 @@ module JSI
         schema_implementation_modules: schema_implementation_modules,
       }
     end
+
+    private
+
+    def jsi_memomap_class
+      Util::MemoMap::Immutable
+    end
   end
 end

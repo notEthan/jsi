@@ -14,6 +14,10 @@ module JSI
 
     def jsi_mutability_initialize
     end
+
+    def jsi_memomap_class
+      Util::MemoMap::Mutable
+    end
   end
 
   module Base::Immutable
@@ -27,6 +31,10 @@ module JSI
 
     def jsi_mutability_initialize
       @jsi_node_content = @jsi_ptr.evaluate(@jsi_document)
+    end
+
+    def jsi_memomap_class
+      Util::MemoMap::Immutable
     end
   end
 end

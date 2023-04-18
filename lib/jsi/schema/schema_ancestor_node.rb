@@ -116,7 +116,7 @@ module JSI
 
     # @return [Util::MemoMap]
     def jsi_memomap(**options, &block)
-      Util::MemoMap::Mutable.new(**options, &block)
+      jsi_memomap_class.new(**options, &block)
     end
   end
 end
