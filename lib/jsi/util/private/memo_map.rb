@@ -3,15 +3,6 @@
 module JSI
   module Util::Private
     class MemoMap
-      Result = AttrStruct[*%w(
-        value
-        inputs
-        inputs_hash
-      )]
-
-      class Result
-      end
-
       def initialize(key_by: nil, &block)
         @key_by = key_by
         @block = block || raise(ArgumentError, "no block given")
@@ -34,6 +25,15 @@ module JSI
     end
 
     class MemoMap::Mutable < MemoMap
+      Result = AttrStruct[*%w(
+        value
+        inputs
+        inputs_hash
+      )]
+
+      class Result
+      end
+
       def [](**inputs)
         key = key_for(inputs)
 
