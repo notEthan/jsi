@@ -137,6 +137,8 @@ module JSI
 
       jsi_initialize_memos
 
+      super()
+
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
       if @jsi_ptr.root?

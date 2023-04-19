@@ -41,6 +41,8 @@ module JSI
 
       jsi_initialize_memos
 
+      super()
+
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
