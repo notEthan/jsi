@@ -41,20 +41,20 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_root_node: nil
     )
-      jsi_initialize_memos
+      super(jsi_document,
+        jsi_ptr: jsi_ptr,
+        jsi_root_node: jsi_root_node,
+        jsi_indicated_schemas: [],
+        jsi_schema_base_uri: jsi_schema_base_uri,
+      )
 
-      self.jsi_document = jsi_document
-      self.jsi_ptr = jsi_ptr
       @schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
-      raise(Bug, 'jsi_root_node') if jsi_ptr.root? ^ !jsi_root_node
-      @jsi_root_node = jsi_ptr.root? ? self : jsi_root_node
 
       if jsi_ptr.root? && jsi_schema_base_uri
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
       end
-      self.jsi_schema_base_uri = jsi_schema_base_uri
 
       jsi_node_content = self.jsi_node_content
 
