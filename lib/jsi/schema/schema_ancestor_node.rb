@@ -4,6 +4,16 @@ module JSI
   # a node in a document which may contain a schema somewhere within is extended with SchemaAncestorNode, for
   # tracking things necessary for a schema to function correctly
   module Schema::SchemaAncestorNode
+    if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+      def initialize(*)
+        super
+      end
+    else
+      def initialize(*, **)
+        super
+      end
+    end
+
     # the base URI used to resolve the ids of schemas at or below this JSI.
     # this is always an absolute URI (with no fragment).
     # this may be the absolute schema URI of a parent schema or the URI from which the document was retrieved.
