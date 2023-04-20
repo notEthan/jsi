@@ -443,17 +443,11 @@ module JSI
     #   in a nondestructively modified copy of this.
     # @return [JSI::Base subclass] the modified copy of self
     def jsi_modified_copy(&block)
-      if @jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        jsi_indicated_schemas.new_jsi(modified_document,
-          uri: jsi_schema_base_uri,
+        modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
+          uri: @jsi_root_node.jsi_schema_base_uri,
         )
-      else
-        modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
-          @jsi_ptr.modified_document_copy(root, &block)
-        end
         modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
-      end
     end
 
     # Is the instance an array?
