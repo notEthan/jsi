@@ -136,8 +136,6 @@ module JSI
     )
       raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
-      jsi_initialize_memos
-
       super()
 
       self.jsi_document = jsi_document

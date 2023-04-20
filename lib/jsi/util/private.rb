@@ -173,33 +173,11 @@ module JSI
     end
 
     module Memoize
-      def self.extended(object)
-        object.send(:jsi_initialize_memos)
-      end
-
       private
 
-      def jsi_initialize_memos
-        @jsi_memomaps_mutex = Mutex.new
-        @jsi_memomaps = {}
-      end
-
       # @return [Util::MemoMap]
-      def jsi_memomap(name = nil, **options, &block)
-        return Util::MemoMap::Mutable.new(**options, &block) if !name
-        raise(Bug, 'must jsi_initialize_memos') unless @jsi_memomaps
-        unless @jsi_memomaps.key?(name)
-          @jsi_memomaps_mutex.synchronize do
-            # note: this ||= appears redundant with `unless @jsi_memomaps.key?(name)`,
-            # but that check is not thread safe. this check is.
-            @jsi_memomaps[name] ||= Util::MemoMap::Mutable.new(**options, &block)
-          end
-        end
-        @jsi_memomaps[name]
-      end
-
-      def jsi_memoize(name, **inputs, &block)
-        jsi_memomap(name, &block)[**inputs]
+      def jsi_memomap(**options, &block)
+        Util::MemoMap::Mutable.new(**options, &block)
       end
     end
 

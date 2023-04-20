@@ -40,8 +40,6 @@ module JSI
     )
       raise(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
 
-      jsi_initialize_memos
-
       super()
 
       self.jsi_ptr = jsi_ptr
