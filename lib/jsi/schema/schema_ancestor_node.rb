@@ -42,7 +42,7 @@ module JSI
     #
     # @return [JSI::Schema, nil]
     def jsi_anchor_subschema(anchor)
-      subschemas = jsi_anchor_subschemas_map[anchor: anchor]
+      subschemas = @anchor_subschemas_map[anchor: anchor]
       if subschemas.size == 1
         subschemas.first
       else
@@ -54,12 +54,13 @@ module JSI
     #
     # @return [Set<JSI::Schema>]
     def jsi_anchor_subschemas(anchor)
-      jsi_anchor_subschemas_map[anchor: anchor]
+      @anchor_subschemas_map[anchor: anchor]
     end
 
     private
 
     def jsi_schema_ancestor_node_initialize
+      @anchor_subschemas_map = jsi_memomap(&method(:jsi_anchor_subschemas_compute))
     end
 
     attr_writer :jsi_document
@@ -101,12 +102,10 @@ module JSI
       @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
     end
 
-    def jsi_anchor_subschemas_map
-      jsi_memomap(__method__) do |anchor: |
+    def jsi_anchor_subschemas_compute(anchor: )
         jsi_each_descendent_node.select do |node|
           node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
         end.to_set.freeze
-      end
     end
   end
 end

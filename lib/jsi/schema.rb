@@ -432,9 +432,11 @@ module JSI
     # nonrelative URIs (that is, absolute, but possibly with a fragment) which refer to this schema
     # @return [Array<Addressable::URI>]
     def schema_uris
-      jsi_memoize(:schema_uris) do
+      @schema_uris_map[]
+    end
+
+    private def schema_uris_compute(**_) # TODO remove **_ eventually (keyword argument compatibility)
         each_schema_uri.to_a
-      end
     end
 
     # see {#schema_uris}
@@ -573,20 +575,14 @@ module JSI
     # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
     def subschema(subptr)
-      subschema_map[subptr: Ptr.ary_ptr(subptr)]
+      @subschema_map[subptr: Ptr.ary_ptr(subptr)]
     end
 
-    private
-
-    def subschema_map
-      jsi_memomap(:subschema) do |subptr: |
+    private def subschema_compute(subptr: )
           Schema.ensure_schema(jsi_descendent_node(subptr), msg: [
             "subschema is not a schema at pointer: #{subptr.pointer}"
           ])
-      end
     end
-
-    public
 
     # a schema in the same schema resource as this one (see {#schema_resource_root}) at the given
     # pointer relative to the root of the schema resource.
@@ -594,30 +590,27 @@ module JSI
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-      resource_root_subschema_map[ptr: Ptr.ary_ptr(ptr)]
+      @resource_root_subschema_map[ptr: Ptr.ary_ptr(ptr)]
     end
 
-    private
-
-    def resource_root_subschema_map
-      jsi_memomap(:resource_root_subschema_map) do |ptr: |
+    private def resource_root_subschema_compute(ptr: )
           Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
             msg: [
               "subschema is not a schema at pointer: #{ptr.pointer}"
             ],
             reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
-      end
     end
-
-    public
 
     # any object property names this schema indicates may be present on its instances.
     # this includes any keys of this schema's "properties" object and any entries of this schema's
     # array of "required" property keys.
     # @return [Set]
     def described_object_property_names
-      jsi_memoize(:described_object_property_names) do
+      @described_object_property_names_map[]
+    end
+
+    private def described_object_property_names_compute(**_) # TODO remove **_ eventually (keyword argument compatibility)
         Set.new.tap do |property_names|
           if schema_content.respond_to?(:to_hash) && schema_content['properties'].respond_to?(:to_hash)
             property_names.merge(schema_content['properties'].keys)
@@ -626,7 +619,6 @@ module JSI
             property_names.merge(schema_content['required'].to_ary)
           end
         end.freeze
-      end
     end
 
     # validates the given instance against this schema
@@ -672,6 +664,10 @@ module JSI
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end
+      @schema_uris_map = jsi_memomap(&method(:schema_uris_compute))
+      @subschema_map = jsi_memomap(&method(:subschema_compute))
+      @resource_root_subschema_map = jsi_memomap(&method(:resource_root_subschema_compute))
+      @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
     end
   end
 end

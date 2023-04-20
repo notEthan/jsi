@@ -101,7 +101,10 @@ module JSI
         schemas = SchemaSet.ensure_schema_set(schemas)
         includes = Util.ensure_module_set(includes)
 
-        jsi_memoize(:class_for_schemas, schemas: schemas, includes: includes) do |schemas: , includes: |
+        @class_for_schemas_map[schemas: schemas, includes: includes]
+      end
+
+      private def class_for_schemas_compute(schemas: , includes: )
           Class.new(Base) do
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
@@ -128,7 +131,6 @@ module JSI
 
             self
           end
-        end
       end
 
       # a subclass of MetaschemaNode::BootstrapSchema with the given modules included
@@ -137,7 +139,10 @@ module JSI
       # @return [Class]
       def bootstrap_schema_class(modules)
         modules = Util.ensure_module_set(modules)
-        jsi_memoize(__method__, modules: modules) do |modules: |
+        @bootstrap_schema_class_map[modules: modules]
+      end
+
+      private def bootstrap_schema_class_compute(modules: )
           Class.new(MetaschemaNode::BootstrapSchema) do
             define_singleton_method(:schema_implementation_modules) { modules }
             define_method(:schema_implementation_modules) { modules }
@@ -145,7 +150,6 @@ module JSI
 
             self
           end
-        end
       end
 
       # see {Schema#jsi_schema_module}
@@ -154,7 +158,10 @@ module JSI
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
         raise(Bug, "non-Base schema cannot have schema module: #{schema}") unless schema.is_a?(Base)
-        jsi_memoize(:module_for_schema, schema: schema) do |schema: |
+        @schema_module_map[schema: schema]
+      end
+
+      private def schema_module_compute(schema: )
           Module.new do
             begin
               define_singleton_method(:schema) { schema }
@@ -170,7 +177,6 @@ module JSI
               end
             end
           end
-        end
       end
 
       # @deprecated after v0.7
@@ -191,7 +197,10 @@ module JSI
       # @return [Module]
       def schema_property_reader_module(schema, conflicting_modules: )
         Schema.ensure_schema(schema)
-        jsi_memoize(__method__, schema: schema, conflicting_modules: conflicting_modules) do |schema: , conflicting_modules: |
+        @schema_property_reader_module_map[schema: schema, conflicting_modules: conflicting_modules]
+      end
+
+      private def schema_property_reader_module_compute(schema: , conflicting_modules: )
           Module.new do
             define_singleton_method(:inspect) { '(JSI Schema Property Reader Module)' }
 
@@ -208,14 +217,16 @@ module JSI
                 end
             end
           end
-        end
       end
 
       # a module of writers for described property names of the given schema.
       # @api private
       def schema_property_writer_module(schema, conflicting_modules: )
         Schema.ensure_schema(schema)
-        jsi_memoize(__method__, schema: schema, conflicting_modules: conflicting_modules) do |schema: , conflicting_modules: |
+        @schema_property_writer_module_map[schema: schema, conflicting_modules: conflicting_modules]
+      end
+
+      private def schema_property_writer_module_compute(schema: , conflicting_modules: )
           Module.new do
             define_singleton_method(:inspect) { '(JSI Schema Property Writer Module)' }
 
@@ -233,9 +244,14 @@ module JSI
                   end
             end
           end
-        end
       end
     end
+
+    @class_for_schemas_map          = jsi_memomap(&method(:class_for_schemas_compute))
+    @bootstrap_schema_class_map      = jsi_memomap(&method(:bootstrap_schema_class_compute))
+    @schema_module_map                = jsi_memomap(&method(:schema_module_compute))
+    @schema_property_reader_module_map = jsi_memomap(&method(:schema_property_reader_module_compute))
+    @schema_property_writer_module_map = jsi_memomap(&method(:schema_property_writer_module_compute))
   end
 
   # connecting {SchemaModule}s via {SchemaModule::Connection}s

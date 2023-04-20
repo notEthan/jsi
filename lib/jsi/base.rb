@@ -391,7 +391,7 @@ module JSI
       child_applied_schemas = @child_applied_schemas_map[token: token, child_indicated_schemas: child_indicated_schemas, child_content: child_content]
 
       jsi_child_as_jsi(child_content, child_applied_schemas, as_jsi) do
-        jsi_child_node_map[
+        @child_node_map[
           token: token,
           child_indicated_schemas: child_indicated_schemas,
           child_applied_schemas: child_applied_schemas,
@@ -677,15 +677,12 @@ module JSI
     def jsi_memomaps_initialize
       @child_indicated_schemas_map = jsi_memomap(key_by: proc { |i| i[:token] }, &method(:jsi_child_indicated_schemas_compute))
       @child_applied_schemas_map = jsi_memomap(key_by: proc { |i| i[:token] }, &method(:jsi_child_applied_schemas_compute))
+      @child_node_map = jsi_memomap(key_by: proc { |i| i[:token] }, &method(:jsi_child_node_compute))
     end
 
     def jsi_indicated_schemas=(jsi_indicated_schemas)
       #chkbug raise(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
       @jsi_indicated_schemas = jsi_indicated_schemas
-    end
-
-    def jsi_child_node_map
-      jsi_memomap(:subinstance, key_by: -> (i) { i[:token] }, &method(:jsi_child_node_compute))
     end
 
     def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )
