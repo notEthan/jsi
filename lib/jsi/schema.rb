@@ -173,6 +173,11 @@ module JSI
     end
 
     class << self
+      def extended(o)
+        super
+        o.send(:jsi_schema_initialize)
+      end
+
       # an application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
       #
       # @return [nil, #new_schema]
