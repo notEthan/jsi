@@ -24,12 +24,17 @@ module JSI
         @results = {}
       end
 
-      def [](**inputs)
+      def key_for(inputs)
         if @key_by
-          key = @key_by.call(**inputs)
+          @key_by.call(**inputs)
         else
-          key = inputs
+          inputs
         end
+      end
+
+      def [](**inputs)
+        key = key_for(inputs)
+
         result_mutex = @result_mutexes_mutex.synchronize do
           @result_mutexes[key] ||= Mutex.new
         end
