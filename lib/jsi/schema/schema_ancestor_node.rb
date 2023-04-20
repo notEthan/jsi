@@ -7,10 +7,12 @@ module JSI
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       def initialize(*)
         super
+        jsi_schema_ancestor_node_initialize
       end
     else
       def initialize(*, **)
         super
+        jsi_schema_ancestor_node_initialize
       end
     end
 
@@ -58,6 +60,9 @@ module JSI
     end
 
     private
+
+    def jsi_schema_ancestor_node_initialize
+    end
 
     attr_writer :jsi_document
 

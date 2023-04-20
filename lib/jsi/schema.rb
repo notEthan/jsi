@@ -306,10 +306,12 @@ module JSI
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       def initialize(*)
         super
+        jsi_schema_initialize
       end
     else
       def initialize(*, **)
         super
+        jsi_schema_initialize
       end
     end
 
@@ -610,6 +612,11 @@ module JSI
       else
         jsi_schema_resource_ancestors
       end
+    end
+
+    private
+
+    def jsi_schema_initialize
     end
   end
 end
