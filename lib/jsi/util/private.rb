@@ -12,6 +12,8 @@ module JSI
 
     EMPTY_ARY = [].freeze
 
+    EMPTY_HASH = {}.freeze
+
     EMPTY_SET = Set[].freeze
 
     CLASSES_ALWAYS_FROZEN = Set[TrueClass, FalseClass, NilClass, Integer, Float, BigDecimal, Rational, Symbol].freeze
