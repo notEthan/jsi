@@ -16,7 +16,7 @@ module JSI
       each(**kw) do |e|
         ary << e
       end
-      ary
+      ary.freeze
     end
 
     alias_method :entries, :to_a
@@ -92,7 +92,7 @@ module JSI
     def to_hash(**kw)
       hash = {}
       jsi_node_content_hash_pubsend(:each_key) { |k| hash[k] = self[k, **kw] }
-      hash
+      hash.freeze
     end
 
     include Util::Hashlike
