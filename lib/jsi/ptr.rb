@@ -42,7 +42,7 @@ module JSI
       # @param tokens any number of tokens
       # @return [JSI::Ptr]
       def self.[](*tokens)
-        tokens.empty? ? EMPTY : new(tokens)
+        tokens.empty? ? EMPTY : new(tokens.freeze)
       end
 
       # parse a URI-escaped fragment and instantiate as a JSI::Ptr
@@ -84,10 +84,12 @@ module JSI
         pointer_string = pointer_string.to_str
         if pointer_string[0] == ?/
           tokens = pointer_string.split('/', -1).map! do |piece|
-            piece.gsub('~1', '/').gsub('~0', '~')
+            piece.gsub!('~1', '/')
+            piece.gsub!('~0', '~')
+            piece.freeze
           end
           tokens.shift
-          new(tokens)
+          new(tokens.freeze)
         elsif pointer_string.empty?
           EMPTY
         else
@@ -158,7 +160,7 @@ module JSI
         if root?
           raise(Ptr::Error, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
         end
-        Ptr.new(tokens[0...-1])
+        Ptr.new(tokens[0...-1].freeze)
       end
 
       # whether this pointer contains the other_ptr - that is, whether this pointer is an ancestor
@@ -175,7 +177,7 @@ module JSI
         unless ancestor_ptr.contains?(self)
           raise(Error, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
-        Ptr.new(tokens[ancestor_ptr.tokens.size..-1])
+        Ptr.new(tokens[ancestor_ptr.tokens.size..-1].freeze)
       end
 
       # a pointer with the tokens of this one plus the given `ptr`'s.
@@ -189,7 +191,7 @@ module JSI
         else
           raise(TypeError, "ptr must be a #{Ptr} or Array of tokens; got: #{ptr.inspect}")
         end
-        Ptr.new(tokens + ptr_tokens)
+        Ptr.new((tokens + ptr_tokens).freeze)
       end
 
       # a pointer consisting of the first `n` of our tokens
@@ -200,7 +202,7 @@ module JSI
         unless n.is_a?(Integer) && n >= 0 && n <= tokens.size
           raise(ArgumentError, "n not in range (0..#{tokens.size}): #{n.inspect}")
         end
-        Ptr.new(tokens.take(n))
+        Ptr.new(tokens.take(n).freeze)
       end
 
       # appends the given token to this pointer's tokens and returns the result
@@ -208,7 +210,7 @@ module JSI
       # @param token [Object]
       # @return [JSI::Ptr] pointer to a child node of this pointer with the given token
       def [](token)
-        Ptr.new(tokens.dup.push(token))
+        Ptr.new(tokens.dup.push(token).freeze)
       end
 
       # takes a document and a block. the block is yielded the content of the given document at this
@@ -233,7 +235,7 @@ module JSI
           Util.modified_copy(document, &block)
         else
           car = tokens[0]
-          cdr = Ptr.new(tokens[1..-1])
+          cdr = Ptr.new(tokens[1..-1].freeze)
           token, document_child = node_subscript_token_child(document, car)
           modified_document_child = cdr.modified_document_copy(document_child, &block)
           if modified_document_child.object_id == document_child.object_id
