@@ -532,17 +532,9 @@ module JSI
 
     def subschema_map
       jsi_memomap(:subschema) do |subptr: |
-        if is_a?(MetaschemaNode::BootstrapSchema)
-          self.class.new(
-            jsi_document,
-            jsi_ptr: jsi_ptr + subptr,
-            jsi_schema_base_uri: jsi_resource_ancestor_uri,
-          )
-        else
           Schema.ensure_schema(jsi_descendent_node(subptr), msg: [
             "subschema is not a schema at pointer: #{subptr.pointer}"
           ])
-        end
       end
     end
 
@@ -561,24 +553,12 @@ module JSI
 
     def resource_root_subschema_map
       jsi_memomap(:resource_root_subschema_map) do |ptr: |
-        if is_a?(MetaschemaNode::BootstrapSchema)
-          # BootstrapSchema does not track jsi_schema_resource_ancestors used by #schema_resource_root;
-          # resource_root_subschema is always relative to the document root.
-          # BootstrapSchema also does not implement jsi_root_node or #[]. we instantiate the ptr directly
-          # rather than as a subschema from the root.
-          self.class.new(
-            jsi_document,
-            jsi_ptr: ptr,
-            jsi_schema_base_uri: nil,
-          )
-        else
           Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
             msg: [
               "subschema is not a schema at pointer: #{ptr.pointer}"
             ],
             reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
-        end
       end
     end
 
