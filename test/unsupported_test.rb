@@ -6,7 +6,8 @@ require_relative 'test_helper'
 # behaviors are tested so I know if any of it breaks, but unsupported behavior may change at any time.
 
 describe 'unsupported behavior' do
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
+  let(:schema_opt) { {} }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07, **schema_opt) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
 
@@ -98,6 +99,7 @@ describe 'unsupported behavior' do
           },
         }
       end
+      let(:schema_opt) { {to_immutable: nil} }
       let(:instance) do
         {
           ARBITRARY_OBJECT => {},

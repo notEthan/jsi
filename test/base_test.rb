@@ -27,7 +27,8 @@ end
 
 describe JSI::Base do
   let(:schema_content) { {} }
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
+  let(:schema_opt) { {} }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07, **schema_opt) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
   describe 'class .inspect, .to_s' do
@@ -671,6 +672,7 @@ describe JSI::Base do
            },
           }
         end
+        let(:schema_opt) { {to_immutable: nil} }
         let(:instance) do
           {
             X.new => 'x',
