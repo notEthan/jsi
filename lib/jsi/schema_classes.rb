@@ -78,8 +78,6 @@ module JSI
 
   # this module is a namespace for building schema classes and schema modules.
   module SchemaClasses
-    extend Util::Memoize
-
     class << self
       # @api private
       # @return [Set<Module>]
@@ -247,11 +245,11 @@ module JSI
       end
     end
 
-    @class_for_schemas_map          = jsi_memomap(&method(:class_for_schemas_compute))
-    @bootstrap_schema_class_map      = jsi_memomap(&method(:bootstrap_schema_class_compute))
-    @schema_module_map                = jsi_memomap(&method(:schema_module_compute))
-    @schema_property_reader_module_map = jsi_memomap(&method(:schema_property_reader_module_compute))
-    @schema_property_writer_module_map = jsi_memomap(&method(:schema_property_writer_module_compute))
+    @class_for_schemas_map          = Hash.new { |h, k| h[k] = class_for_schemas_compute(**k) }
+    @bootstrap_schema_class_map      = Hash.new { |h, k| h[k] = bootstrap_schema_class_compute(**k) }
+    @schema_module_map                = Hash.new { |h, k| h[k] = schema_module_compute(**k) }
+    @schema_property_reader_module_map = Hash.new { |h, k| h[k] = schema_property_reader_module_compute(**k) }
+    @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(**k) }
   end
 
   # connecting {SchemaModule}s via {SchemaModule::Connection}s
