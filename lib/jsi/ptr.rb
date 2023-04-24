@@ -263,7 +263,7 @@ module JSI
       def jsi_fingerprint
         {class: Ptr, tokens: tokens}
       end
-      include Util::FingerprintHash
+      include Util::FingerprintHash::Immutable
 
       private
 
