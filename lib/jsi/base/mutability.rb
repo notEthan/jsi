@@ -2,6 +2,8 @@
 
 module JSI
   module Base::Mutable
+    include(Util::FingerprintHash)
+
     def jsi_node_content
       jsi_ptr.evaluate(jsi_document)
     end
@@ -21,6 +23,8 @@ module JSI
   end
 
   module Base::Immutable
+    include(Util::FingerprintHash::Immutable)
+
     attr_reader(:jsi_node_content)
 
     def jsi_mutable?

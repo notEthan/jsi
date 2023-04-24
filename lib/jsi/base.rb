@@ -694,7 +694,6 @@ module JSI
         jsi_schema_registry: jsi_schema_registry,
       }
     end
-    include Util::FingerprintHash
 
     private
 
