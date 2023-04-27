@@ -86,7 +86,9 @@ module JSI
     # @return duplicate of this hash with the other hash merged in
     # @raise [TypeError] when `other` does not respond to #to_hash
     def merge(other, &block)
-      dup.update(other, &block)
+      jsi_modified_copy do |instance|
+        instance.merge(other.is_a?(Base) ? other.jsi_node_content : other, &block)
+      end
     end
 
     # basically the same #inspect as Hash, but has the class name and, if responsive,
