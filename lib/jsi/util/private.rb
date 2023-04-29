@@ -42,6 +42,8 @@ module JSI
       127..159, # C1 control chars
     ].inject(Set[], &:merge).freeze
 
+    RUBY_REJECT_NAME_RE = Regexp.new('[' + Regexp.escape(RUBY_REJECT_NAME_CODEPOINTS.to_a.pack('U*')) + ']').freeze
+
     # is the given name ok to use as a ruby method name?
     def ok_ruby_method_name?(name)
       # must be a string
@@ -49,7 +51,7 @@ module JSI
       # must not begin with a digit
       return false if name =~ /\A[0-9]/
       # must not contain special or control characters
-      return false if name.each_codepoint.any? { |c| RUBY_REJECT_NAME_CODEPOINTS.include?(c) }
+      return false if name =~ RUBY_REJECT_NAME_RE
 
       return true
     end
@@ -59,7 +61,8 @@ module JSI
         part = part.dup
         part[/\A[^a-zA-Z]*/] = ''
         part[0] = part[0].upcase if part[0]
-        part.each_char.map { |c| RUBY_REJECT_NAME_CODEPOINTS.include?(c.ord) ? '_' : c }.join
+        part.gsub!(RUBY_REJECT_NAME_RE, '_')
+        part
       end
       if !parts.all?(&:empty?)
         parts.join.freeze
