@@ -36,14 +36,20 @@ module JSI
       end
     end
 
+    RUBY_REJECT_NAME_CODEPOINTS = [
+      0..31, # C0 control chars
+      %q( !"#$%&'()*+,-./:;<=>?@[\\]^`{|}~).each_codepoint, # printable special chars (note: "_" not included)
+      127..159, # C1 control chars
+    ].inject(Set[], &:merge).freeze
+
     # is the given name ok to use as a ruby method name?
     def ok_ruby_method_name?(name)
       # must be a string
       return false unless name.respond_to?(:to_str)
       # must not begin with a digit
       return false if name =~ /\A[0-9]/
-      # must not contain characters special to ruby syntax
-      return false if name =~ /[\\\s\#;\.,\(\)\[\]\{\}'"`%\+\-\/\*\^\|&=<>\?:!@\$~]/
+      # must not contain special or control characters
+      return false if name.each_codepoint.any? { |c| RUBY_REJECT_NAME_CODEPOINTS.include?(c) }
 
       return true
     end
