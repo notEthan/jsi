@@ -58,7 +58,7 @@ module JSI
       return true
     end
 
-    def const_name_from_parts(parts)
+    def const_name_from_parts(parts, join: '')
       parts = parts.map do |part|
         part = part.dup
         part[/\A[^a-zA-Z]*/] = ''
@@ -67,7 +67,7 @@ module JSI
         part
       end
       if !parts.all?(&:empty?)
-        parts.join.freeze
+        parts.reject(&:empty?).join(join).freeze
       else
         nil
       end
