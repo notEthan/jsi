@@ -309,14 +309,14 @@ describe 'JSI::Base array' do
   end
   describe 'modified copy methods' do
     it('#reject') { assert_equal(schema.new_jsi(['foo']), subject.reject { |e| e != 'foo' }) }
-    it('#reject block var') do
-      subj_a = subject.to_a
-      subject.reject { |e| assert_equal(e, subj_a.shift) }
+    it('#reject block param is Base#[]') do
+      i = 0
+      subject.reject { |e| assert_equal(e, subject[i]); i += 1 }
     end
     it('#select') { assert_equal(schema.new_jsi(['foo']), subject.select { |e| e == 'foo' }) }
-    it('#select block var') do
-      subj_a = subject.to_a
-      subject.select { |e| assert_equal(e, subj_a.shift) }
+    it('#select block param is Base#[]') do
+      i = 0
+      subject.select { |e| assert_equal(e, subject[i]); i += 1 }
     end
     describe '#select' do
       it 'passes as_jsi' do
