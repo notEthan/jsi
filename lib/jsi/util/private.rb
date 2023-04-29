@@ -54,6 +54,20 @@ module JSI
       return true
     end
 
+    def const_name_from_parts(parts)
+      parts = parts.map do |part|
+        part = part.dup
+        part[/\A[^a-zA-Z]*/] = ''
+        part[0] = part[0].upcase if part[0]
+        part.each_char.map { |c| RUBY_REJECT_NAME_CODEPOINTS.include?(c.ord) ? '_' : c }.join
+      end
+      if !parts.all?(&:empty?)
+        parts.join.freeze
+      else
+        nil
+      end
+    end
+
     # string or URI → frozen URI
     # @return [Addressable::URI]
     def uri(uri)

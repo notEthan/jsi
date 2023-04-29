@@ -88,7 +88,7 @@ module JSI
             end
           end
           if !schema_names.any?(&:nil?) && !schema_names.empty?
-            schema_names.sort.map { |n| 'X' + n.to_s.gsub(/[^\w]/, '_') }.join('')
+            Util.const_name_from_parts(schema_names.sort.map { |part| 'X' + part })
           end
         end
       end
