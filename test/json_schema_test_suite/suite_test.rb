@@ -100,7 +100,7 @@ describe 'JSON Schema Test Suite' do
 
                 bootstrap_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_bootstrap_schema = dialect.bootstrap_schema(
-                  tests_desc.jsi_instance['schema'],
+                  jsi_document: tests_desc.jsi_instance['schema'],
                   jsi_registry: bootstrap_registry,
                 )
                 bootstrap_registry.register(desc_bootstrap_schema)

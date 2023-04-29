@@ -118,7 +118,8 @@ module JSI
         includes: SchemaClasses.includes_for(instance),
         mutable: mutable,
       )
-      jsi = jsi_class.new(instance,
+      jsi = jsi_class.new(
+        jsi_document: instance,
         jsi_indicated_schemas: self,
         jsi_base_uri: uri,
         jsi_conf: conf,

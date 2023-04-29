@@ -84,16 +84,13 @@ module JSI
     #
     # Note: when instantiating MetaSchemaNode directly, the caller must invoke #jsi_initialize_finish.
     # @api private
-    # @param jsi_document the document containing the meta-schema.
-    #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
     def initialize(
-        jsi_document,
         jsi_ptr: Ptr[],
         jsi_root_node: nil,
         **kw
     )
-      super(jsi_document,
+      super(
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: SchemaSet[],
         # MSN doesn't track schema_resource_ancestors through descendents, but the root is included when appropriate
@@ -118,7 +115,7 @@ module JSI
         if ref_uri_nofrag.empty?
           ptr = Ptr.from_fragment(ref_uri.fragment).resolve_against(jsi_document) # anchor not supported
           jsi_conf.dialect.bootstrap_schema(
-            jsi_document,
+            jsi_document: jsi_document,
             jsi_ptr: ptr,
             jsi_base_uri: nil, # not supported
             jsi_registry: jsi_conf.bootstrap_registry,
@@ -283,7 +280,8 @@ module JSI
       if ptr.root? && dynamic_anchor_map == jsi_schema_dynamic_anchor_map
         self
       else
-        MetaSchemaNode.new(jsi_document,
+        MetaSchemaNode.new(
+          jsi_document: jsi_document,
           jsi_ptr: ptr,
           jsi_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
           jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
@@ -335,7 +333,7 @@ module JSI
           resource.jsi_descendent_node(relative_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
         else
           root = to_initialize_finish(MetaSchemaNode.new(
-            bootstrap_schema.jsi_document,
+            jsi_document: bootstrap_schema.jsi_document,
             jsi_ptr: Ptr[],
             jsi_base_uri: nil,
             jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,

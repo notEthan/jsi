@@ -56,7 +56,7 @@ module JSI
         @bootstrap_schema_map = Hash.new do |dochash, document|
           dochash[document] = Hash.new do |paramhash, kw|
             #chkbug fail if kw[:dialect]
-            paramhash[kw] = MetaSchemaNode::BootstrapSchema.new(document, dialect: self, **kw)
+            paramhash[kw] = MetaSchemaNode::BootstrapSchema.new(dialect: self, jsi_document: document, **kw)
           end
         end
         @bootstrap_schema_map.compare_by_identity
@@ -78,8 +78,8 @@ module JSI
 
       # @api private
       # @return [MetaSchemaNode::BootstrapSchema]
-      def bootstrap_schema(document, **kw)
-        @bootstrap_schema_map[document][kw]
+      def bootstrap_schema(jsi_document: , **kw)
+        @bootstrap_schema_map[jsi_document][kw]
       end
 
       # Invoke the indicated action of each Element on the given context

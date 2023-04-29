@@ -327,7 +327,8 @@ module JSI
               mutable: schema.jsi_mutable?,
             )
 
-            result_schema_class.new(schema.jsi_document,
+            result_schema_class.new(
+              jsi_document: schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,
               jsi_indicated_schemas: result_schema_indicated_schemas,
               jsi_base_uri: schema.jsi_base_uri,
@@ -961,8 +962,8 @@ module JSI
           # a minimal bootstrap schema is used instead.
           # note: not using dialect.bootstrap_schema. this bootstrap is only used once, skip memoization.
           descendent_subschema = MetaSchemaNode::BootstrapSchema.new(
-            jsi_document,
             dialect: dialect,
+            jsi_document: jsi_document,
             jsi_ptr: descendent_schema.jsi_ptr + subptr,
             # note: same as anchor_root.jsi_resource_ancestor_uri since we don't cross resource boundaries.
             jsi_base_uri: descendent_schema.jsi_resource_ancestor_uri,

@@ -191,7 +191,8 @@ module JSI
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @param jsi_conf [Base::Conf]
     # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
-    def initialize(jsi_document,
+    def initialize(
+        jsi_document: ,
         jsi_ptr: Ptr[],
         jsi_indicated_schemas: ,
         jsi_base_uri: nil,
@@ -839,7 +840,8 @@ module JSI
       # we instantiate a node the same as self but with the given dynamic_anchor_map,
       # under the same root node - so this node is not a descendent of its root node,
       # which is odd but does not cause problems at the moment.
-      self.class.new(jsi_document,
+      self.class.new(
+        jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: jsi_indicated_schemas,
         jsi_base_uri: jsi_base_uri,
@@ -993,7 +995,8 @@ module JSI
           includes: includes,
           mutable: jsi_mutable?,
         )
-        jsi_class.new(@jsi_document,
+        jsi_class.new(
+          jsi_document: @jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_indicated_schemas: child_indicated_schemas,
           jsi_base_uri: jsi_resource_ancestor_uri,

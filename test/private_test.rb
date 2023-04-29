@@ -18,7 +18,7 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
   end
 
   it 'is pretty' do
-    schema = dialect.bootstrap_schema(document)
+    schema = dialect.bootstrap_schema(jsi_document: document)
 
     inspect = -%Q(#<JSI::MetaSchemaNode::BootstrapSchema (tag:dialect:dqzk) # #{document.inspect}>)
     assert_equal(inspect, schema.inspect)
