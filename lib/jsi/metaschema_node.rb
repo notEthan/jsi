@@ -223,8 +223,8 @@ module JSI
     end
 
     # note: not for root node
-    def new_node(params)
-      MetaschemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params.merge(params))
+    def new_node(**params)
+      MetaschemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params, **params)
     end
 
     def jsi_subinstance_memos
