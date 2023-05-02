@@ -10,7 +10,7 @@ module JSI
         value = schema_content['$ref']
 
         if value.respond_to?(:to_str)
-          schema_ref = jsi_memoize(:ref) { Schema::Ref.new(value, self) }
+          schema_ref = self.schema_ref
 
           if result_builder.visited_refs.include?(schema_ref)
             result_builder.schema_error('self-referential schema structure', '$ref')

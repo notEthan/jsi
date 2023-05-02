@@ -463,6 +463,13 @@ module JSI
       SchemaSet[self].new_jsi(instance, **kw)
     end
 
+    # @param keyword schema keyword e.g. "$ref", "$schema"
+    # @return [Schema::Ref]
+    def schema_ref(keyword: "$ref")
+      raise(ArgumentError, "keyword not present: #{keyword}") unless keyword?(keyword)
+      @schema_ref_map[keyword: keyword, value: schema_content[keyword]]
+    end
+
     # does this schema itself describe a schema?
     # @return [Boolean]
     def describes_schema?
@@ -621,6 +628,9 @@ module JSI
     private
 
     def jsi_schema_initialize
+      @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
+        Schema::Ref.new(value, self)
+      end
     end
   end
 end
