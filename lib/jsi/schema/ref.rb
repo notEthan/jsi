@@ -12,6 +12,7 @@ module JSI
       @ref = ref
       @ref_uri = Util.uri(ref)
       @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
+      @deref_schema = nil
     end
 
     # @return [String]
@@ -28,7 +29,7 @@ module JSI
     # @raise [JSI::Schema::NotASchemaError] when the thing this ref points to is not a schema
     # @raise [JSI::Schema::ReferenceError] when this reference cannot be resolved
     def deref_schema
-      return @deref_schema if instance_variable_defined?(:@deref_schema)
+      return @deref_schema if @deref_schema
 
       schema_resource_root = nil
       check_schema_resource_root = -> {
