@@ -149,7 +149,7 @@ module JSI
 
     # see {Base#jsi_child}
     def jsi_child(token, as_jsi: )
-      child_node = jsi_child_node_map[token: token]
+      child_node = @root_descendent_node_map[ptr: jsi_ptr[token]]
 
       jsi_child_as_jsi(jsi_node_content_child(token), child_node.jsi_schemas, as_jsi) do
         child_node
@@ -194,9 +194,18 @@ module JSI
       {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
     end
 
+    protected
+
+    attr_reader :root_descendent_node_map
+
     private
 
     def jsi_memomaps_initialize
+      if jsi_ptr.root?
+        @root_descendent_node_map = jsi_memomap(key_by: proc { |i| i[:ptr] }, &method(:jsi_root_descendent_node_compute))
+      else
+        @root_descendent_node_map = @jsi_root_node.root_descendent_node_map
+      end
     end
 
     # note: does not include jsi_root_node
@@ -215,10 +224,13 @@ module JSI
       MetaschemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params, **params)
     end
 
-    def jsi_child_node_map
-      jsi_memomap(:subinstance) do |token: |
+    def jsi_root_descendent_node_compute(ptr: )
+      #chkbug raise(Bug) unless jsi_ptr.root?
+      if ptr.root?
+        self
+      else
         new_node(
-          jsi_ptr: jsi_ptr[token],
+          jsi_ptr: ptr,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
         )
       end
