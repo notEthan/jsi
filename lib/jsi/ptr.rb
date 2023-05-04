@@ -279,7 +279,8 @@ module JSI
           unless token.is_a?(Integer)
             raise(ResolutionError, "Invalid resolution: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
           end
-          unless (0...(value.respond_to?(:size) ? value : value.to_ary).size).include?(token)
+          size = (value.respond_to?(:size) ? value : value.to_ary).size
+          unless token >= 0 && token < size
             raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid index of #{value.inspect}")
           end
 
