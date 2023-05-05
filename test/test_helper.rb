@@ -221,6 +221,11 @@ end
 Minitest::Spec.register_spec_type(//, JSISpec)
 
 Minitest.after_run do
+  if Object.const_defined?(:Coverage) && Coverage.running?
+    lines_s = Coverage.peek_result.values.sum([]).compact.sum(0).to_s.reverse.gsub(/...(?=.)/, '\&,').reverse
+    puts "Lines executed: #{lines_s}"
+  end
+
   if ENV['JSI_EXITDEBUG']
     dbg
     nil
