@@ -14,7 +14,7 @@ module JSI
 
       def initialize(key_by: nil, &block)
         @key_by = key_by
-        @block = block
+        @block = block || raise(ArgumentError, "no block given")
 
         # each result has its own mutex to update its memoized value thread-safely
         @result_mutexes = {}
