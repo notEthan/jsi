@@ -221,11 +221,21 @@ end
 Minitest::Spec.register_spec_type(//, JSISpec)
 
 Minitest.after_run do
-  cov = Object.const_defined?(:SimpleCov) && SimpleCov.result
-  if cov
-    lines = cov.original_result.values.map(&:values).sum([]).sum([]).compact.sum(0)
-    lines_s = lines.to_s.reverse.gsub(/...(?=.)/, '\&,').reverse
-    puts "Lines executed (#{cov.command_name}): #{lines_s}"
+  if Object.const_defined?(:SimpleCov)
+    counts = {}
+    resultset = SimpleCov::ResultMerger.respond_to?(:read_resultset) ? SimpleCov::ResultMerger.read_resultset : SimpleCov::ResultMerger.resultset
+    resultset.each do |command_name, result|
+      if result['timestamp'] + SimpleCov.merge_timeout >= Time.now.to_i
+        counts[command_name] = result['coverage'].values.map do |c|
+          (c.is_a?(Hash) ? c['lines'] : c).compact.inject(0, &:+)
+        end.inject(0, &:+)
+      end
+    end
+    i_commas = -> (i) { i.to_s.reverse.gsub(/...(?=.)/, '\&,').reverse }
+    if counts.size > 1 && counts.key?(SimpleCov.command_name)
+      puts "Lines executed (#{SimpleCov.command_name}): #{i_commas[counts[SimpleCov.command_name]]}"
+    end
+    puts "Lines executed (#{counts.keys.join(' + ')}): #{i_commas[counts.values.inject(0, &:+)]}"
   end
 
   if ENV['JSI_EXITDEBUG']
