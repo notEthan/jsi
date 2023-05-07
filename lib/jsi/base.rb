@@ -675,8 +675,8 @@ module JSI
     private
 
     def jsi_memomaps_initialize
-      @child_indicated_schemas_map = method(:jsi_child_indicated_schemas_compute)
-      @child_applied_schemas_map = method(:jsi_child_applied_schemas_compute)
+      @child_indicated_schemas_map = jsi_memomap(key_by: proc { |i| i[:token] }, &method(:jsi_child_indicated_schemas_compute))
+      @child_applied_schemas_map = jsi_memomap(key_by: proc { |i| i[:token] }, &method(:jsi_child_applied_schemas_compute))
     end
 
     def jsi_indicated_schemas=(jsi_indicated_schemas)
