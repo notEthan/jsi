@@ -107,5 +107,10 @@ module JSI
           node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
         end.to_set.freeze
     end
+
+    # @return [Util::MemoMap]
+    def jsi_memomap(**options, &block)
+      Util::MemoMap::Mutable.new(**options, &block)
+    end
   end
 end

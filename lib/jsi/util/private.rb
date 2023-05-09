@@ -174,11 +174,6 @@ module JSI
 
     module Memoize
       private
-
-      # @return [Util::MemoMap]
-      def jsi_memomap(**options, &block)
-        Util::MemoMap::Mutable.new(**options, &block)
-      end
     end
 
     module Virtual
