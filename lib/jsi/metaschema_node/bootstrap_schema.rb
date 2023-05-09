@@ -14,7 +14,6 @@ module JSI
   #
   # @api private
   class MetaschemaNode::BootstrapSchema
-    include Util::Memoize
     include Util::FingerprintHash
     include Schema::SchemaAncestorNode
     include Schema

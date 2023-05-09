@@ -172,10 +172,6 @@ module JSI
       end
     end
 
-    module Memoize
-      private
-    end
-
     module Virtual
       class InstantiationError < StandardError
       end

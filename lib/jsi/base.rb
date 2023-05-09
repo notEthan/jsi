@@ -18,7 +18,6 @@ module JSI
     autoload :HashNode, 'jsi/base/node'
 
     include Schema::SchemaAncestorNode
-    include Util::Memoize
 
     # An exception raised when attempting to access a child of a node which cannot have children.
     # A complex node can have children, a simple node cannot.
