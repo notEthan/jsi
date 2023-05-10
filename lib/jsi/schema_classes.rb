@@ -142,8 +142,9 @@ module JSI
       # @param modules [Set<Module>] schema implementation modules
       # @return [Class]
       def bootstrap_schema_class(modules)
-        modules = Util.ensure_module_set(modules)
-        @bootstrap_schema_class_map[modules: modules]
+        @bootstrap_schema_class_map[
+          modules: Util.ensure_module_set(modules),
+        ]
       end
 
       private def bootstrap_schema_class_compute(modules: )
