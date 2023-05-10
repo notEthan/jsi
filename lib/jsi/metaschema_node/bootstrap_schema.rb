@@ -8,7 +8,7 @@ module JSI
   # Schema#subschema and Schema#resource_root_subschema are the intended mechanisms to instantiate subschemas
   # and resolve references. #[] and #jsi_root_node are not implemented.
   #
-  # schema implementation modules are attached to generated subclasses of BootstrapSchema by
+  # schema implementation modules are included on generated subclasses of BootstrapSchema by
   # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
   #
