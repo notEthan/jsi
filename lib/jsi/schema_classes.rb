@@ -100,10 +100,10 @@ module JSI
       # @param includes [Enumerable<Module>] modules which will be included on the class
       # @return [Class subclassing JSI::Base]
       def class_for_schemas(schemas, includes: )
-        schemas = SchemaSet.ensure_schema_set(schemas)
-        includes = Util.ensure_module_set(includes)
-
-        @class_for_schemas_map[schemas: schemas, includes: includes]
+        @class_for_schemas_map[
+          schemas: SchemaSet.ensure_schema_set(schemas),
+          includes: Util.ensure_module_set(includes),
+        ]
       end
 
       private def class_for_schemas_compute(schemas: , includes: )
