@@ -85,7 +85,8 @@ module JSI
           piece.gsub('~1', '/').gsub('~0', '~')
         end
         if tokens[0] == ''
-          new(tokens[1..-1])
+          tokens.shift
+          new(tokens)
         elsif tokens.empty?
           new(tokens)
         else
