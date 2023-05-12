@@ -82,13 +82,13 @@ module JSI
       # @raise [JSI::Ptr::PointerSyntaxError] when the pointer_string does not have valid pointer syntax
       def self.from_pointer(pointer_string)
         pointer_string = pointer_string.to_str
-        tokens = pointer_string.split('/', -1).map! do |piece|
-          piece.gsub('~1', '/').gsub('~0', '~')
-        end
-        if tokens[0] == ''
+        if pointer_string[0] == ?/
+          tokens = pointer_string.split('/', -1).map! do |piece|
+            piece.gsub('~1', '/').gsub('~0', '~')
+          end
           tokens.shift
           new(tokens)
-        elsif tokens.empty?
+        elsif pointer_string.empty?
           EMPTY
         else
           raise(PointerSyntaxError, "Invalid pointer syntax in #{pointer_string.inspect}: pointer must begin with /")
