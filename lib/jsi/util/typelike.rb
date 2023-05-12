@@ -96,7 +96,7 @@ module JSI
     # @return [String]
     def inspect
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
-      "\#{<#{object_group_str}>#{map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
+      -"\#{<#{object_group_str}>#{map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
     end
 
     alias_method :to_s, :inspect
@@ -200,7 +200,7 @@ module JSI
     # @return [String]
     def inspect
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
-      "\#[<#{object_group_str}>#{map { |e| ' ' + e.inspect }.join(',')}]"
+      -"\#[<#{object_group_str}>#{map { |e| ' ' + e.inspect }.join(',')}]"
     end
 
     alias_method :to_s, :inspect

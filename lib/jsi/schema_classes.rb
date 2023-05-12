@@ -324,9 +324,9 @@ module JSI
     # @return [String]
     def inspect
       if name_from_ancestor
-        "#{name_from_ancestor} (#{self.class})"
+        -"#{name_from_ancestor} (#{self.class})"
       else
-        "(#{self.class}: #{@jsi_node.jsi_ptr.uri})"
+        -"(#{self.class}: #{@jsi_node.jsi_ptr.uri})"
       end
     end
 

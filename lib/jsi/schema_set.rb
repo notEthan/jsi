@@ -181,7 +181,7 @@ module JSI
 
     # @return [String]
     def inspect
-      "#{self.class}[#{map(&:inspect).join(", ")}]"
+      -"#{self.class}[#{map(&:inspect).join(", ")}]"
     end
 
     alias_method :to_s, :inspect

@@ -141,7 +141,7 @@ module JSI
 
     # @return [String]
     def inspect
-      %Q(\#<#{self.class.name} #{ref}>)
+      -%Q(\#<#{self.class.name} #{ref}>)
     end
 
     alias_method :to_s, :inspect

@@ -24,7 +24,7 @@ module JSI
         if self == MetaschemaNode::BootstrapSchema
           name
         else
-          "#{name || MetaschemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
+          -"#{name || MetaschemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
         end
       end
 
@@ -84,7 +84,7 @@ module JSI
 
     # @return [String]
     def inspect
-      "\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
+      -"\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
     end
 
     alias_method :to_s, :inspect

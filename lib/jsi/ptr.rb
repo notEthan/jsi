@@ -253,7 +253,7 @@ module JSI
       # a string representation of this pointer
       # @return [String]
       def inspect
-        "#{self.class.name}[#{tokens.map(&:inspect).join(", ")}]"
+        -"#{self.class.name}[#{tokens.map(&:inspect).join(", ")}]"
       end
 
       alias_method :to_s, :inspect

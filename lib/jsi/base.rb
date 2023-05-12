@@ -606,7 +606,7 @@ module JSI
     # a string representing this JSI, indicating any named schemas and inspecting its instance
     # @return [String]
     def inspect
-      "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
+      -"\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
     alias_method :to_s, :inspect
@@ -633,7 +633,7 @@ module JSI
       if schema_names.empty?
         class_txt = "JSI"
       else
-        class_txt = "JSI (#{schema_names.join(', ')})"
+        class_txt = -"JSI (#{schema_names.join(', ')})"
       end
 
       if (is_a?(ArrayNode) || is_a?(HashNode)) && ![Array, Hash].include?(jsi_node_content.class)
