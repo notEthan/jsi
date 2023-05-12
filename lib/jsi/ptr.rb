@@ -81,6 +81,7 @@ module JSI
       # @return [JSI::Ptr]
       # @raise [JSI::Ptr::PointerSyntaxError] when the pointer_string does not have valid pointer syntax
       def self.from_pointer(pointer_string)
+        pointer_string = pointer_string.to_str
         tokens = pointer_string.split('/', -1).map! do |piece|
           piece.gsub('~1', '/').gsub('~0', '~')
         end
