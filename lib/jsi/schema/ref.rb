@@ -176,7 +176,7 @@ module JSI
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
-      {class: self.class, ref: ref, ref_schema: ref_schema}
+      {class: self.class, ref: ref, ref_schema: ref_schema}.freeze
     end
     include Util::FingerprintHash
   end

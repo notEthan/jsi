@@ -264,7 +264,7 @@ module JSI
       # see {Util::Private::FingerprintHash}
       # @api private
       def jsi_fingerprint
-        {class: Ptr, tokens: tokens}
+        {class: Ptr, tokens: tokens}.freeze
       end
       include Util::FingerprintHash::Immutable
 

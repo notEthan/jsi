@@ -649,7 +649,7 @@ module JSI
         class_txt,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
         *content_txt,
-      ].compact
+      ].compact.freeze
     end
 
     # A structure coerced to JSONifiable types from the instance content.
@@ -676,7 +676,7 @@ module JSI
         jsi_resource_ancestor_uri: jsi_resource_ancestor_uri,
         # different registries mean references may resolve to different resources so must not be equal
         jsi_schema_registry: jsi_schema_registry,
-      }
+      }.freeze
     end
     include Util::FingerprintHash
 

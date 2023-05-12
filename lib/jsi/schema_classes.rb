@@ -277,7 +277,7 @@ module JSI
         end
         ancestor = ancestor[token]
       end
-      name
+      name.freeze
     end
 
     # Subscripting a JSI schema module or a {SchemaModule::Connection} will subscript its node, and

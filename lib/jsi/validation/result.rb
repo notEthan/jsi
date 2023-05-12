@@ -167,7 +167,7 @@ module JSI
           class: self.class,
           validation_errors: validation_errors,
           schema_issues: schema_issues,
-        }
+        }.freeze
       end
     end
 
@@ -205,7 +205,7 @@ module JSI
         {
           class: self.class,
           valid: valid?,
-        }
+        }.freeze
       end
     end
   end
