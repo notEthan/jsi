@@ -205,7 +205,7 @@ module JSI
       # @param token [Object]
       # @return [JSI::Ptr] pointer to a child node of this pointer with the given token
       def [](token)
-        Ptr.new(tokens + [token])
+        Ptr.new(tokens.dup.push(token))
       end
 
       # takes a document and a block. the block is yielded the content of the given document at this
