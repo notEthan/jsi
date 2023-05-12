@@ -102,7 +102,7 @@ module JSI
             valid,
             message,
             keyword: nil,
-            results: []
+            results: Util::EMPTY_ARY
         )
           results.each { |res| result.schema_issues.merge(res.schema_issues) }
           if !valid
@@ -179,7 +179,7 @@ module JSI
             valid,
             message,
             keyword: nil,
-            results: []
+            results: Util::EMPTY_ARY
         )
           if !valid
             throw(:jsi_validation_result, INVALID)

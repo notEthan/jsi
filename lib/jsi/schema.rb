@@ -661,7 +661,7 @@ module JSI
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def each_inplace_applicator_schema(instance, visited_refs: [], &block)
+    def each_inplace_applicator_schema(instance, visited_refs: Util::EMPTY_ARY, &block)
       return to_enum(__method__, instance, visited_refs: visited_refs) unless block
 
       catch(:jsi_application_done) do
@@ -748,7 +748,7 @@ module JSI
     # @param validate_only [Boolean] whether to return a full schema validation result or a simple, validation-only result
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @return [JSI::Validation::Result]
-    def internal_validate_instance(instance_ptr, instance_document, validate_only: false, visited_refs: [])
+    def internal_validate_instance(instance_ptr, instance_document, validate_only: false, visited_refs: Util::EMPTY_ARY)
       if validate_only
         result = JSI::Validation::VALID
       else
