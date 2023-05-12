@@ -123,7 +123,7 @@ module JSI
       # see {Util::Private::FingerprintHash}
       # @api private
       def jsi_fingerprint
-        {class: self.class, attributes: @attributes}
+        {class: self.class, attributes: @attributes}.freeze
       end
     end
   end

@@ -21,7 +21,7 @@ module JSI
     class << self
       def inspect
         if self == MetaschemaNode::BootstrapSchema
-          name
+          name.freeze
         else
           -"#{name || MetaschemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
         end
@@ -108,7 +108,7 @@ module JSI
         self.class.name || MetaschemaNode::BootstrapSchema.name,
         -"(#{schema_implementation_modules.map(&:inspect).join(', ')})",
         jsi_ptr.uri,
-      ]
+      ].freeze
     end
 
     # see {Util::Private::FingerprintHash}
@@ -118,7 +118,7 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
-      }
+      }.freeze
     end
   end
 end
