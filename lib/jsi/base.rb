@@ -621,10 +621,10 @@ module JSI
         if jsi_node_content.respond_to?(:jsi_object_group_text)
           content_txt = jsi_node_content.jsi_object_group_text
         else
-          content_txt = [jsi_node_content.class.to_s]
+          content_txt = jsi_node_content.class.to_s
         end
       else
-        content_txt = []
+        content_txt = nil
       end
 
       [
