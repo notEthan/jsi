@@ -24,7 +24,7 @@ module JSI
           -"#{name_from_ancestor} (JSI Schema Module)"
         end
       else
-        "(JSI Schema Module: #{schema.schema_uri || schema.jsi_ptr.uri})"
+        -"(JSI Schema Module: #{schema.schema_uri || schema.jsi_ptr.uri})"
       end
     end
 
