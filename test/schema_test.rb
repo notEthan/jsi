@@ -894,6 +894,16 @@ describe JSI::Schema do
       ))
     end
 
+    around do |test|
+      as_jsi = JSI::Base.instance_method(:jsi_child_as_jsi)
+      JSI::Base.send(:define_method, :jsi_child_as_jsi) { |*, &b| b.call }
+      begin
+        test.call
+      ensure
+        JSI::Base.send(:define_method, :jsi_child_as_jsi, as_jsi)
+      end
+    end
+
     it '#pretty_print' do
       pppath = JSI::TEST_RESOURCES_PATH.join('schema.thorough.pretty_print')
       assert_equal(pppath.read, schema.pretty_inspect)
