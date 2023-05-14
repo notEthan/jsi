@@ -902,6 +902,9 @@ describe JSI::Schema do
 
     it '#pretty_print' do
       pppath = JSI::TEST_RESOURCES_PATH.join('schema.thorough.pretty_print')
+      if ENV['JSI_TEST_REGEN']
+        pppath.write(schema.pretty_inspect)
+      end
       assert_equal(pppath.read, schema.pretty_inspect)
     end
   end
