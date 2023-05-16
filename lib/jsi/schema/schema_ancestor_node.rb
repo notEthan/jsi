@@ -72,17 +72,11 @@ module JSI
     end
 
     def jsi_schema_base_uri=(jsi_schema_base_uri)
-      if jsi_schema_base_uri
-        unless jsi_schema_base_uri.respond_to?(:to_str)
-          raise(TypeError, "jsi_schema_base_uri must be string or Addressable::URI; got: #{jsi_schema_base_uri.inspect}")
-        end
-        @jsi_schema_base_uri = Util.uri(jsi_schema_base_uri)
-        unless @jsi_schema_base_uri.absolute? && !@jsi_schema_base_uri.fragment
-          raise(ArgumentError, "jsi_schema_base_uri must be an absolute URI with no fragment; got: #{jsi_schema_base_uri.inspect}")
-        end
-      else
-        @jsi_schema_base_uri = nil
-      end
+      #chkbug raise(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.is_a?(Addressable::URI)
+      #chkbug raise(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.absolute?
+      #chkbug raise(Bug) if jsi_schema_base_uri && jsi_schema_base_uri.fragment
+
+      @jsi_schema_base_uri = jsi_schema_base_uri
     end
 
     def jsi_schema_resource_ancestors=(jsi_schema_resource_ancestors)
