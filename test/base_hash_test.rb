@@ -313,7 +313,7 @@ describe 'JSI::Base hash' do
 
     describe "when a schema's `propertyNames` is not a schema" do
       let(:schema) do
-        JSI::MetaschemaNode.new({}, schema_implementation_modules: [Module.new {
+        JSI.new_metaschema({}, schema_implementation_modules: [Module.new {
           include JSI::Schema
           include JSI::Schema::Application::ChildApplication
           include JSI::Schema::Application::InplaceApplication
