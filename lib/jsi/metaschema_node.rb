@@ -73,7 +73,7 @@ module JSI
         instance_for_schemas = instance_for_schemas[tok]
         child_indicated_schemas
       end
-      @bootstrap_indicated_schemas = our_bootstrap_indicated_schemas
+      @indicated_schemas_map = jsi_memomap { bootstrap_schemas_to_msn(our_bootstrap_indicated_schemas) }
 
       our_bootstrap_schemas = our_bootstrap_indicated_schemas.inplace_applicator_schemas(instance_for_schemas)
       our_bootstrap_schemas.each do |bootstrap_schema|
@@ -141,7 +141,7 @@ module JSI
     # See {Base#jsi_indicated_schemas}
     # @return [JSI::SchemaSet]
     def jsi_indicated_schemas
-      bootstrap_schemas_to_msn(@bootstrap_indicated_schemas)
+      @indicated_schemas_map[]
     end
 
     # see {Base#jsi_child}
