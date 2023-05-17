@@ -34,6 +34,21 @@ module JSI
     def new_jsi(instance, **kw)
       schema.new_jsi(instance, **kw)
     end
+
+    # See {Schema#schema_content}
+    def schema_content
+      schema.jsi_node_content
+    end
+
+    # See {Schema#instance_validate}
+    def instance_validate(instance)
+      schema.instance_validate(instance)
+    end
+
+    # See {Schema#instance_valid?}
+    def instance_valid?(instance)
+      schema.instance_valid?(instance)
+    end
   end
 
   # a module to extend the JSI Schema Module of a schema which describes other schemas
