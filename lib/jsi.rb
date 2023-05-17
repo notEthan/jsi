@@ -33,6 +33,7 @@ module JSI
   autoload :Base, 'jsi/base'
   autoload :Metaschema, 'jsi/metaschema'
   autoload :MetaschemaNode, 'jsi/metaschema_node'
+  autoload :SchemaModule, 'jsi/schema_classes'
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :SchemaRegistry, 'jsi/schema_registry'
   autoload :Validation, 'jsi/validation'
