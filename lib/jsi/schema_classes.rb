@@ -145,7 +145,7 @@ module JSI
 
               extend SchemaModule
 
-              @possibly_schema_node = schema
+              @jsi_node = schema
               extend(SchemaModule::Connects)
               schema.jsi_schemas.each do |schema_schema|
                 extend JSI::SchemaClasses.schema_property_reader_module(schema_schema,
@@ -217,7 +217,7 @@ module JSI
   # a JSI Schema module and a JSI::SchemaModule::Connection are both a SchemaModule::Connects.
   # this module provides a #[] method.
   module SchemaModule::Connects
-    attr_reader :possibly_schema_node
+    attr_reader :jsi_node
 
     # a name relative to a named schema module of an ancestor schema.
     # for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
@@ -251,7 +251,7 @@ module JSI
     # @return [Module, SchemaModule::Connection, Object]
     def [](token, **kw)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
-      sub = @possibly_schema_node[token]
+      sub = @jsi_node[token]
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module
       elsif sub.is_a?(JSI::Base)
@@ -265,10 +265,10 @@ module JSI
 
     # @return [Array<JSI::Schema, Array>, nil]
     def named_ancestor_schema_tokens
-      schema_ancestors = possibly_schema_node.jsi_ancestor_nodes
+      schema_ancestors = @jsi_node.jsi_ancestor_nodes
       named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
       return nil unless named_ancestor_schema
-      tokens = possibly_schema_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
+      tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
       [named_ancestor_schema, tokens]
     end
   end
@@ -293,7 +293,7 @@ module JSI
     def initialize(node)
       raise(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
       raise(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
-      @possibly_schema_node = node
+      @jsi_node = node
       node.jsi_schemas.each do |schema|
         extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [SchemaModule::Connection]))
       end
@@ -304,7 +304,7 @@ module JSI
       if name_from_ancestor
         "#{name_from_ancestor} (#{self.class})"
       else
-        "(#{self.class}: #{@possibly_schema_node.jsi_ptr.uri})"
+        "(#{self.class}: #{@jsi_node.jsi_ptr.uri})"
       end
     end
 
