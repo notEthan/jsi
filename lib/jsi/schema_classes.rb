@@ -146,10 +146,10 @@ module JSI
               extend SchemaModule
 
               @jsi_node = schema
-              extend(SchemaModule::Connects)
+
               schema.jsi_schemas.each do |schema_schema|
                 extend JSI::SchemaClasses.schema_property_reader_module(schema_schema,
-                  conflicting_modules: Set[Module, SchemaModule, SchemaModule::Connects],
+                  conflicting_modules: Set[Module, SchemaModule],
                 )
               end
             end
@@ -271,6 +271,10 @@ module JSI
       tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
       [named_ancestor_schema, tokens]
     end
+  end
+
+  module SchemaModule
+    include Connects
   end
 
   # A JSI Schema Module is a module which represents a schema. A SchemaModule::Connection represents
