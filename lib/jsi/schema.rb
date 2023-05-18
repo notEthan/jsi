@@ -401,7 +401,7 @@ module JSI
     #   as `schema.items.jsi_schema_module`.
     # - method .schema which returns this schema.
     #
-    # @return [Module]
+    # @return [Module + SchemaModule]
     def jsi_schema_module
       JSI::SchemaClasses.module_for_schema(self)
     end

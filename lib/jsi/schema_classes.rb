@@ -122,7 +122,7 @@ module JSI
 
       # see {Schema#jsi_schema_module}
       # @api private
-      # @return [Module]
+      # @return [Module + SchemaModule]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
         raise(Bug, "non-Base schema cannot have schema module: #{schema}") unless schema.is_a?(Base)
