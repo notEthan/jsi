@@ -214,8 +214,7 @@ module JSI
     end
   end
 
-  # a JSI Schema module and a JSI::SchemaModule::Connection are both a SchemaModule::Connects.
-  # this module provides a #[] method.
+  # connecting {SchemaModule}s via {SchemaModule::Connection}s
   module SchemaModule::Connects
     attr_reader :jsi_node
 
@@ -284,12 +283,7 @@ module JSI
   # instances of this class act as a stand-in to allow users to subscript or call property accessors on
   # schema modules to refer to their subschemas' schema modules.
   #
-  # a SchemaModule::Connection is extended with the module_for_schema of the node's schema.
-  #
-  # SchemaModule::Connection holds a node which is not a schema. when subscripted, it subscripts
-  # its node. if the value is a JSI::Schema, its schema module is returned. if the value
-  # is another node, a SchemaModule::Connection for that node is returned. otherwise - when the
-  # value is a basic type - that value itself is returned.
+  # A SchemaModule::Connection has readers for property names described by the node's schemas.
   class SchemaModule::Connection
     include SchemaModule::Connects
 
