@@ -12,6 +12,7 @@ describe 'JSI::SchemaModule' do
   let(:schema_module) { schema.jsi_schema_module }
   describe 'accessors and subscripts' do
     it 'returns schemas using accessors and subscripts' do
+      assert_is_a(JSI::SchemaModule::Connection, schema_module.properties)
       assert_equal(schema.properties, schema_module.properties.jsi_node)
       assert_equal(schema.properties['foo'], schema_module.properties['foo'].jsi_node)
       assert_equal(schema.properties['foo'].jsi_schema_module, schema_module.properties['foo'])
@@ -20,8 +21,10 @@ describe 'JSI::SchemaModule' do
       assert_equal('string', schema_module.properties['foo'].items.type)
     end
     it 'accessors and subscripts with a metaschema' do
+      assert_is_a(JSI::SchemaModule::Connection, JSI::JSONSchemaOrgDraft06.properties)
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties, JSI::JSONSchemaOrgDraft06.properties.jsi_node)
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties)
+      assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties.jsi_node)
     end
   end
   describe '.inspect, .to_s' do
