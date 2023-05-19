@@ -201,4 +201,28 @@ describe JSI::MetaschemaNode do
       end
     end
   end
+
+  describe 'a metaschema fails to validate itself' do
+    let(:schema_implementation_modules) { [JSI::Schema::Draft06] }
+    let(:jsi_document) { JSI::JSONSchemaOrgDraft06.schema.schema_content.merge({'title' => []}) }
+    let(:metaschema_root_ptr) { JSI::Ptr[] }
+    let(:root_schema_ptr) { JSI::Ptr[] }
+
+    it 'has validation error for `title`' do
+      results = [
+        metaschema.jsi_validate,
+        metaschema.instance_validate(metaschema),
+      ]
+      metaschema.jsi_each_descendent_node do |node|
+        if node.jsi_ptr.contains?(JSI::Ptr['title'])
+          results << node.jsi_validate
+        else
+          assert(node.jsi_valid?)
+        end
+      end
+      results.each do |result|
+        assert_includes(result.validation_errors.map(&:keyword), 'type')
+      end
+    end
+  end
 end
