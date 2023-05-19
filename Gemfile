@@ -7,7 +7,13 @@ gem 'gig'
 
 group(:dev) do
   gem 'irb'
-  platform(:mri) { gem 'debug', '> 1' if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7') }
+  platform(:mri) do
+    if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7')
+      gem 'debug', '> 1'
+    else
+      gem 'byebug'
+    end
+  end
 end
 
 group(:test) do

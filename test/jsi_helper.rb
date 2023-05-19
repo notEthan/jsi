@@ -8,6 +8,10 @@ if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'debug' }
   require 'debug'
   Object.alias_method(:dbg, :debugger)
 end
+if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
+  require 'byebug'
+  Object.alias_method(:dbg, :byebug)
+end
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
