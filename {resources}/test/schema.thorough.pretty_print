@@ -1,183 +1,163 @@
 #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-  "$schema" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$schema"])
+  "$schema" => #<JSI (JSI::JSONSchemaOrgDraft07::Xschema)
     "http://json-schema.org/draft-07/schema#"
   >,
-  "description" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["description"])
+  "description" => #<JSI (JSI::JSONSchemaOrgDraft07::Description)
     "A schema containing each keyword of the metaschema with valid and invalid type / structure of the keyword value"
   >,
-  "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["definitions"])>
+  "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft07::Definitions)>
     "true" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema true>,
     "false" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema false>,
     "empty" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>},
     "invalid-int" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>,
     "invalid-array" => #[<JSI (JSI::JSONSchemaOrgDraft07) Schema>],
     "id" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "$id" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$id"]) "tag:test">
+      "$id" => #<JSI (JSI::JSONSchemaOrgDraft07::Id) "tag:test">
     },
     "id-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "$id" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$id"]) 0>
+      "$id" => #<JSI (JSI::JSONSchemaOrgDraft07::Id) 0>
     },
     "schema" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "$schema" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$schema"])
-        "tag:test"
-      >
+      "$schema" => #<JSI (JSI::JSONSchemaOrgDraft07::Xschema) "tag:test">
     },
     "schema-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "$schema" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$schema"]) 0>
+      "$schema" => #<JSI (JSI::JSONSchemaOrgDraft07::Xschema) 0>
     },
     "ref" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "$ref" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$ref"]) "#">
+      "$ref" => #<JSI (JSI::JSONSchemaOrgDraft07::Ref) "#">
     },
     "ref-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "$ref" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$ref"]) 0>
+      "$ref" => #<JSI (JSI::JSONSchemaOrgDraft07::Ref) 0>
     },
     "comment" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "$comment" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$comment"])
-        "comment"
-      >
+      "$comment" => #<JSI (JSI::JSONSchemaOrgDraft07::Comment) "comment">
     },
     "comment-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "$comment" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["$comment"]) 0>
+      "$comment" => #<JSI (JSI::JSONSchemaOrgDraft07::Comment) 0>
     },
     "title" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "title" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["title"]) "title">
+      "title" => #<JSI (JSI::JSONSchemaOrgDraft07::Title) "title">
     },
     "title-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "title" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["title"]) 0>
+      "title" => #<JSI (JSI::JSONSchemaOrgDraft07::Title) 0>
     },
     "description" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "description" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["description"])
+      "description" => #<JSI (JSI::JSONSchemaOrgDraft07::Description)
         "description"
       >
     },
     "description-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "description" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["description"])
-        0
-      >
+      "description" => #<JSI (JSI::JSONSchemaOrgDraft07::Description) 0>
     },
     "default" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "default" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["default"])>
+      "default" => #[<JSI (JSI::JSONSchemaOrgDraft07::Default)>
         #<JSI "default">
       ]
     },
     "readOnly" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "readOnly" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["readOnly"])
-        true
-      >
+      "readOnly" => #<JSI (JSI::JSONSchemaOrgDraft07::ReadOnly) true>
     },
     "readOnly-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "readOnly" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["readOnly"]) 0>
+      "readOnly" => #<JSI (JSI::JSONSchemaOrgDraft07::ReadOnly) 0>
     },
     "examples" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "examples" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["examples"])>
-        #{<JSI (JSI::JSONSchemaOrgDraft07.properties["examples"].items)>},
-        #<JSI (JSI::JSONSchemaOrgDraft07.properties["examples"].items) "x">
+      "examples" => #[<JSI (JSI::JSONSchemaOrgDraft07::Examples)>
+        #{<JSI (JSI::JSONSchemaOrgDraft07::Examples.items)>},
+        #<JSI (JSI::JSONSchemaOrgDraft07::Examples.items) "x">
       ]
     },
     "examples-dict" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "examples" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["examples"])>
+      "examples" => #{<JSI (JSI::JSONSchemaOrgDraft07::Examples)>
         "x" => #<JSI 0>
       }
     },
     "multipleOf" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "multipleOf" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["multipleOf"])
-        1
-      >
+      "multipleOf" => #<JSI (JSI::JSONSchemaOrgDraft07::MultipleOf) 1>
     },
     "multipleOf-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "multipleOf" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["multipleOf"])>]
+      "multipleOf" => #[<JSI (JSI::JSONSchemaOrgDraft07::MultipleOf)>]
     },
     "maximum" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "maximum" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["maximum"]) 0>
+      "maximum" => #<JSI (JSI::JSONSchemaOrgDraft07::Maximum) 0>
     },
     "maximum-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "maximum" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["maximum"])>
-        #<JSI 0>
-      ]
+      "maximum" => #[<JSI (JSI::JSONSchemaOrgDraft07::Maximum)> #<JSI 0>]
     },
     "exclusiveMaximum" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "exclusiveMaximum" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["exclusiveMaximum"])
+      "exclusiveMaximum" => #<JSI (JSI::JSONSchemaOrgDraft07::ExclusiveMaximum)
         0
       >
     },
     "exclusiveMaximum-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "exclusiveMaximum" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["exclusiveMaximum"])>
+      "exclusiveMaximum" => #[<JSI (JSI::JSONSchemaOrgDraft07::ExclusiveMaximum)>
         #<JSI 0>
       ]
     },
     "minimum" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "minimum" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["minimum"]) 0>
+      "minimum" => #<JSI (JSI::JSONSchemaOrgDraft07::Minimum) 0>
     },
     "minimum-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "minimum" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["minimum"])>
-        #<JSI 0>
-      ]
+      "minimum" => #[<JSI (JSI::JSONSchemaOrgDraft07::Minimum)> #<JSI 0>]
     },
     "exclusiveMinimum" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "exclusiveMinimum" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["exclusiveMinimum"])
+      "exclusiveMinimum" => #<JSI (JSI::JSONSchemaOrgDraft07::ExclusiveMinimum)
         0
       >
     },
     "exclusiveMinimum-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "exclusiveMinimum" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["exclusiveMinimum"])>
+      "exclusiveMinimum" => #[<JSI (JSI::JSONSchemaOrgDraft07::ExclusiveMinimum)>
         #<JSI 0>
       ]
     },
     "maxLength" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "maxLength" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"])
-        0
-      >
+      "maxLength" => #<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeInteger) 0>
     },
     "maxLength-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "maxLength" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"])>]
+      "maxLength" => #[<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeInteger)>]
     },
     "minLength" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "minLength" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"].allOf[1])
+      "minLength" => #<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0, JSI::JSONSchemaOrgDraft07::NonNegativeInteger, JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0.allOf[1])
         0
       >
     },
     "minLength-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "minLength" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"].allOf[1])>]
+      "minLength" => #[<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0, JSI::JSONSchemaOrgDraft07::NonNegativeInteger, JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0.allOf[1])>]
     },
     "maxItems" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "maxItems" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"])
-        0
-      >
+      "maxItems" => #<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeInteger) 0>
     },
     "maxItems-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "maxItems" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"])>]
+      "maxItems" => #[<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeInteger)>]
     },
     "minItems" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "minItems" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"].allOf[1])
+      "minItems" => #<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0, JSI::JSONSchemaOrgDraft07::NonNegativeInteger, JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0.allOf[1])
         0
       >
     },
     "minItems-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "minItems" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"].allOf[1])>]
+      "minItems" => #[<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0, JSI::JSONSchemaOrgDraft07::NonNegativeInteger, JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0.allOf[1])>]
     },
     "maxProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "maxProperties" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"])
+      "maxProperties" => #<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeInteger)
         0
       >
     },
     "maxProperties-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "maxProperties" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"])>]
+      "maxProperties" => #[<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeInteger)>]
     },
     "minProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "minProperties" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"].allOf[1])
+      "minProperties" => #<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0, JSI::JSONSchemaOrgDraft07::NonNegativeInteger, JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0.allOf[1])
         0
       >
     },
     "minProperties-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "minProperties" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeInteger"], JSI::JSONSchemaOrgDraft07.definitions["nonNegativeIntegerDefault0"].allOf[1])>]
+      "minProperties" => #[<JSI (JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0, JSI::JSONSchemaOrgDraft07::NonNegativeInteger, JSI::JSONSchemaOrgDraft07::NonNegativeIntegerDefault0.allOf[1])>]
     },
     "pattern" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "pattern" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["pattern"])
-        "pattern"
-      >
+      "pattern" => #<JSI (JSI::JSONSchemaOrgDraft07::Pattern) "pattern">
     },
     "pattern-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "pattern" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["pattern"]) 0>
+      "pattern" => #<JSI (JSI::JSONSchemaOrgDraft07::Pattern) 0>
     },
     "additionalItems" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
       "additionalItems" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
@@ -186,32 +166,28 @@
       "additionalItems" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
     },
     "items" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "items" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["items"], JSI::JSONSchemaOrgDraft07) Schema>}
+      "items" => #{<JSI (JSI::JSONSchemaOrgDraft07::Items, JSI::JSONSchemaOrgDraft07) Schema>}
     },
     "items-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "items" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["items"], JSI::JSONSchemaOrgDraft07.definitions["schemaArray"])>
+      "items" => #[<JSI (JSI::JSONSchemaOrgDraft07::Items, JSI::JSONSchemaOrgDraft07::SchemaArray)>
         #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
       ]
     },
     "items-ary-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "items" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["items"], JSI::JSONSchemaOrgDraft07, JSI::JSONSchemaOrgDraft07.definitions["schemaArray"]) Schema>
+      "items" => #[<JSI (JSI::JSONSchemaOrgDraft07::Items, JSI::JSONSchemaOrgDraft07, JSI::JSONSchemaOrgDraft07::SchemaArray) Schema>
         #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
       ]
     },
     "items-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "items" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["items"], JSI::JSONSchemaOrgDraft07, JSI::JSONSchemaOrgDraft07.definitions["schemaArray"]) Schema
+      "items" => #<JSI (JSI::JSONSchemaOrgDraft07::Items, JSI::JSONSchemaOrgDraft07, JSI::JSONSchemaOrgDraft07::SchemaArray) Schema
         0
       >
     },
     "uniqueItems" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "uniqueItems" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["uniqueItems"])
-        true
-      >
+      "uniqueItems" => #<JSI (JSI::JSONSchemaOrgDraft07::UniqueItems) true>
     },
     "uniqueItems-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "uniqueItems" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["uniqueItems"])
-        0
-      >
+      "uniqueItems" => #<JSI (JSI::JSONSchemaOrgDraft07::UniqueItems) 0>
     },
     "contains" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
       "contains" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
@@ -220,19 +196,17 @@
       "contains" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
     },
     "required" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "required" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["stringArray"])>
-        #<JSI (JSI::JSONSchemaOrgDraft07.definitions["stringArray"].items) "a">
+      "required" => #[<JSI (JSI::JSONSchemaOrgDraft07::StringArray)>
+        #<JSI (JSI::JSONSchemaOrgDraft07::StringArray.items) "a">
       ]
     },
     "required-ary-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "required" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["stringArray"])>
-        #<JSI (JSI::JSONSchemaOrgDraft07.definitions["stringArray"].items) 0>
+      "required" => #[<JSI (JSI::JSONSchemaOrgDraft07::StringArray)>
+        #<JSI (JSI::JSONSchemaOrgDraft07::StringArray.items) 0>
       ]
     },
     "required-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "required" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["stringArray"])
-        0
-      >
+      "required" => #<JSI (JSI::JSONSchemaOrgDraft07::StringArray) 0>
     },
     "additionalProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
       "additionalProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
@@ -241,121 +215,107 @@
       "additionalProperties" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
     },
     "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["definitions"])>
+      "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft07::Definitions)>
         "definition" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
       }
     },
     "definitions-schema-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["definitions"])>
+      "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft07::Definitions)>
         "definition" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
       }
     },
     "definitions-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "definitions" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["definitions"])>
+      "definitions" => #[<JSI (JSI::JSONSchemaOrgDraft07::Definitions)>
         #{<JSI>}
       ]
     },
     "definitions-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "definitions" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["definitions"])
-        0
-      >
+      "definitions" => #<JSI (JSI::JSONSchemaOrgDraft07::Definitions) 0>
     },
     "properties" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "properties" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["properties"])>
+      "properties" => #{<JSI (JSI::JSONSchemaOrgDraft07::Properties)>
         "property" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
       }
     },
     "properties-schema-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "properties" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["properties"])>
+      "properties" => #{<JSI (JSI::JSONSchemaOrgDraft07::Properties)>
         "property" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
       }
     },
     "properties-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "properties" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["properties"])>
-        #{<JSI>}
-      ]
+      "properties" => #[<JSI (JSI::JSONSchemaOrgDraft07::Properties)> #{<JSI>}]
     },
     "properties-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "properties" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["properties"])
-        0
-      >
+      "properties" => #<JSI (JSI::JSONSchemaOrgDraft07::Properties) 0>
     },
     "patternProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "patternProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["patternProperties"])>
+      "patternProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07::PatternProperties)>
         "patternProperty" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
       }
     },
     "patternProperties-schema-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "patternProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["patternProperties"])>
+      "patternProperties" => #{<JSI (JSI::JSONSchemaOrgDraft07::PatternProperties)>
         "patternProperty" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
       }
     },
     "patternProperties-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "patternProperties" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["patternProperties"])>
+      "patternProperties" => #[<JSI (JSI::JSONSchemaOrgDraft07::PatternProperties)>
         #{<JSI>}
       ]
     },
     "patternProperties-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "patternProperties" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["patternProperties"])
+      "patternProperties" => #<JSI (JSI::JSONSchemaOrgDraft07::PatternProperties)
         0
       >
     },
     "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"])>}
+      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies)>}
     },
     "dependencies-dep-schema" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"])>
-        "s" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft07) Schema>}
+      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies)>
+        "s" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft07) Schema>}
       }
     },
     "dependencies-dep-strary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"])>
-        "a" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft07.definitions["stringArray"])>
-          #<JSI (JSI::JSONSchemaOrgDraft07.definitions["stringArray"].items)
-            "b"
-          >
+      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies)>
+        "a" => #[<JSI (JSI::JSONSchemaOrgDraft07::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft07::StringArray)>
+          #<JSI (JSI::JSONSchemaOrgDraft07::StringArray.items) "b">
         ]
       }
     },
     "dependencies-dep-schema+strary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"])>
-        "a" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft07.definitions["stringArray"])>
-          #<JSI (JSI::JSONSchemaOrgDraft07.definitions["stringArray"].items)
-            "b"
-          >
+      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies)>
+        "a" => #[<JSI (JSI::JSONSchemaOrgDraft07::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft07::StringArray)>
+          #<JSI (JSI::JSONSchemaOrgDraft07::StringArray.items) "b">
         ],
-        "s" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft07) Schema>}
+        "s" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft07) Schema>}
       }
     },
     "dependencies-dep-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"])>
-        "i" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft07, JSI::JSONSchemaOrgDraft07.definitions["stringArray"]) Schema
+      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies)>
+        "i" => #<JSI (JSI::JSONSchemaOrgDraft07::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft07, JSI::JSONSchemaOrgDraft07::StringArray) Schema
           0
         >
       }
     },
     "dependencies-dep-schema+strary+int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"])>
-        "s" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft07) Schema>},
-        "a" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft07.definitions["stringArray"])>
-          #<JSI (JSI::JSONSchemaOrgDraft07.definitions["stringArray"].items)
-            "b"
-          >
+      "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies)>
+        "s" => #{<JSI (JSI::JSONSchemaOrgDraft07::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft07) Schema>},
+        "a" => #[<JSI (JSI::JSONSchemaOrgDraft07::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft07::StringArray)>
+          #<JSI (JSI::JSONSchemaOrgDraft07::StringArray.items) "b">
         ],
-        "i" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"].additionalProperties, JSI::JSONSchemaOrgDraft07, JSI::JSONSchemaOrgDraft07.definitions["stringArray"]) Schema
+        "i" => #<JSI (JSI::JSONSchemaOrgDraft07::Dependencies.additionalProperties, JSI::JSONSchemaOrgDraft07, JSI::JSONSchemaOrgDraft07::StringArray) Schema
           0
         >
       }
     },
     "dependencies-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "dependencies" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"])>
+      "dependencies" => #[<JSI (JSI::JSONSchemaOrgDraft07::Dependencies)>
         #{<JSI> "a" => #{<JSI>}}
       ]
     },
     "dependencies-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "dependencies" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["dependencies"])
-        0
-      >
+      "dependencies" => #<JSI (JSI::JSONSchemaOrgDraft07::Dependencies) 0>
     },
     "propertyNames" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
       "propertyNames" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
@@ -364,72 +324,69 @@
       "propertyNames" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
     },
     "const" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "const" => #{<JSI (JSI::JSONSchemaOrgDraft07.properties["const"])>}
+      "const" => #{<JSI (JSI::JSONSchemaOrgDraft07::Const)>}
     },
     "enum" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "enum" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["enum"])>
-        #{<JSI (JSI::JSONSchemaOrgDraft07.properties["enum"].items)>}
+      "enum" => #[<JSI (JSI::JSONSchemaOrgDraft07::Enum)>
+        #{<JSI (JSI::JSONSchemaOrgDraft07::Enum.items)>}
       ]
     },
     "enum-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "enum" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["enum"]) 0>
+      "enum" => #<JSI (JSI::JSONSchemaOrgDraft07::Enum) 0>
     },
     "type" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["type"], JSI::JSONSchemaOrgDraft07.definitions["simpleTypes"])
+      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes)
         "string"
       >
     },
     "type-badstr" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["type"], JSI::JSONSchemaOrgDraft07.definitions["simpleTypes"], JSI::JSONSchemaOrgDraft07.properties["type"].anyOf[1])
+      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])
         "a"
       >
     },
     "type-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["type"], JSI::JSONSchemaOrgDraft07.properties["type"].anyOf[1])>
-        #<JSI (JSI::JSONSchemaOrgDraft07.definitions["simpleTypes"]) "string">
+      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])>
+        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleTypes) "string">
       ]
     },
     "type-ary-badstr" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["type"], JSI::JSONSchemaOrgDraft07.definitions["simpleTypes"], JSI::JSONSchemaOrgDraft07.properties["type"].anyOf[1])>
-        #<JSI (JSI::JSONSchemaOrgDraft07.definitions["simpleTypes"]) "a">
+      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])>
+        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleTypes) "a">
       ]
     },
     "type-ary-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07.properties["type"], JSI::JSONSchemaOrgDraft07.definitions["simpleTypes"], JSI::JSONSchemaOrgDraft07.properties["type"].anyOf[1])>
-        #<JSI (JSI::JSONSchemaOrgDraft07.definitions["simpleTypes"]) 0>
+      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])>
+        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleTypes) 0>
       ]
     },
     "type-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["type"], JSI::JSONSchemaOrgDraft07.definitions["simpleTypes"], JSI::JSONSchemaOrgDraft07.properties["type"].anyOf[1])
+      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])
         0
       >
     },
     "format" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "format" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["format"])
-        "format"
-      >
+      "format" => #<JSI (JSI::JSONSchemaOrgDraft07::Format) "format">
     },
     "format-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "format" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["format"]) 0>
+      "format" => #<JSI (JSI::JSONSchemaOrgDraft07::Format) 0>
     },
     "contentMediaType" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "contentMediaType" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["contentMediaType"])
+      "contentMediaType" => #<JSI (JSI::JSONSchemaOrgDraft07::ContentMediaType)
         "contentMediaType"
       >
     },
     "contentMediaType-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "contentMediaType" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["contentMediaType"])
+      "contentMediaType" => #<JSI (JSI::JSONSchemaOrgDraft07::ContentMediaType)
         0
       >
     },
     "contentEncoding" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "contentEncoding" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["contentEncoding"])
+      "contentEncoding" => #<JSI (JSI::JSONSchemaOrgDraft07::ContentEncoding)
         "contentEncoding"
       >
     },
     "contentEncoding-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "contentEncoding" => #<JSI (JSI::JSONSchemaOrgDraft07.properties["contentEncoding"])
-        0
+      "contentEncoding" => #<JSI (JSI::JSONSchemaOrgDraft07::ContentEncoding) 0
       >
     },
     "if" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
@@ -451,46 +408,43 @@
       "else" => #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
     },
     "allOf" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "allOf" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"])>
+      "allOf" => #[<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray)>
         #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
       ]
     },
     "allOf-ary-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "allOf" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"])>
+      "allOf" => #[<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray)>
         #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
       ]
     },
     "allOf-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "allOf" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"]) 0
-      >
+      "allOf" => #<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray) 0>
     },
     "anyOf" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "anyOf" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"])>
+      "anyOf" => #[<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray)>
         #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
       ]
     },
     "anyOf-ary-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "anyOf" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"])>
+      "anyOf" => #[<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray)>
         #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
       ]
     },
     "anyOf-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "anyOf" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"]) 0
-      >
+      "anyOf" => #<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray) 0>
     },
     "oneOf" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "oneOf" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"])>
+      "oneOf" => #[<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray)>
         #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
       ]
     },
     "oneOf-ary-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "oneOf" => #[<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"])>
+      "oneOf" => #[<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray)>
         #<JSI (JSI::JSONSchemaOrgDraft07) Schema 0>
       ]
     },
     "oneOf-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "oneOf" => #<JSI (JSI::JSONSchemaOrgDraft07.definitions["schemaArray"]) 0
-      >
+      "oneOf" => #<JSI (JSI::JSONSchemaOrgDraft07::SchemaArray) 0>
     },
     "not" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
       "not" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}
