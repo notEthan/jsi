@@ -1,11 +1,18 @@
 require_relative 'test_helper'
 
-class JSONifiable
-  def initialize(object)
-    @object = object
-  end
+class HashAsJson < Hash
   def as_json
-    @object
+    {'from' => 'HashAsJson#as_json'}
+  end
+end
+
+class HashAsToJson < Hash
+  def as_json
+    {'from' => 'HashAsToJson#as_json'}
+  end
+
+  def to_json
+    JSON.generate({'from' => 'HashAsToJson#to_json'})
   end
 end
 
@@ -41,7 +48,7 @@ describe JSI::Util do
       assert_equal(['a'], JSI::Util.as_json(Set.new(['a'])))
       assert_equal(%q(["a"]), JSI::Util.to_json(Set.new(['a'])))
 
-      # responds to #to_hash / #to_ary but naught else
+      # responds to #to_hash / #to_ary; no #as_json; does not use #to_json from JSON gem
       assert_equal({'a' => 'b'}, JSI::Util.as_json(SortOfHash.new({'a' => 'b'})))
       assert_equal(['a'], JSI::Util.as_json(SortOfArray.new(['a'])))
       assert_equal(%q({"a":"b"}), JSI::Util.to_json(SortOfHash.new({'a' => 'b'})))
@@ -50,6 +57,17 @@ describe JSI::Util do
       assert_raises(TypeError) { JSI::Util.as_json(SortOfArray.new(0)) }
       assert_raises(TypeError) { JSI::Util.to_json(SortOfHash.new(0)) }
       assert_raises(TypeError) { JSI::Util.to_json(SortOfArray.new(0)) }
+
+      # responds to #as_json; does not use #to_json from JSON gem
+      o = HashAsJson.new
+      assert_match(/\AJSON::\w+::Generator::GeneratorMethods::Hash\z/, o.method(:to_json).owner.name)
+      assert_equal({'from' => 'HashAsJson#as_json'}, JSI::Util.as_json(o))
+      assert_equal(%q({"from":"HashAsJson#as_json"}), JSI::Util.to_json(o))
+
+      # responds to #as_json; uses #to_json (not from JSON gem)
+      o = HashAsToJson.new
+      assert_equal({'from' => 'HashAsToJson#as_json'}, JSI::Util.as_json(o))
+      assert_equal(%q({"from":"HashAsToJson#to_json"}), JSI::Util.to_json(o))
 
       # symbol keys to string
       assert_equal({'a' => 'b'}, JSI::Util.as_json({a: 'b'}))
@@ -77,10 +95,6 @@ describe JSI::Util do
       # Addressable::URI, which responds to both #to_hash and #to_str
       assert_equal('tag:x', JSI::Util.as_json(Addressable::URI.parse('tag:x')))
       assert_equal(%q("tag:x"), JSI::Util.to_json(Addressable::URI.parse('tag:x')))
-
-      # #as_json
-      assert_equal(['a'], JSI::Util.as_json(JSONifiable.new(['a'])))
-      assert_equal(%q(["a"]), JSI::Util.to_json(JSONifiable.new(['a'])))
 
       # #as_json opt
       assert_equal({'a' => 0}, JSI::Util.as_json(OptJson.new, a: 0))
