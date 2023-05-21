@@ -17,6 +17,7 @@ describe JSI::Util do
 
       # symbols to string
       assert_equal(['a'], JSI::Util.as_json([:a]))
+      assert_equal({'a' => 'b'}, JSI::Util.as_json({:a => :b}))
 
       # set
       assert_equal(['a'], JSI::Util.as_json(Set.new(['a'])))
