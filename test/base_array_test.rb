@@ -1,7 +1,8 @@
 require_relative 'test_helper'
 
 describe 'JSI::Base array' do
-  let(:instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
+  let(:default_instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
+  let(:instance) { default_instance }
   let(:schema_content) do
     {
       'description' => 'hash schema',
@@ -205,15 +206,24 @@ describe 'JSI::Base array' do
           PP
         assert_equal(pp, subject.pretty_inspect)
       end
+
+      describe 'with a long module name' do
+        ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaOrgDraft07.new_schema_module({"$id": "jsi:2be3"})
+        it 'does not break empty hash' do
+          subject = ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines.new_jsi([])
+          pp = %Q(\#[<JSI (ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines)>]\n)
+          assert_equal(pp, subject.pretty_inspect)
+        end
+      end
     end
     describe '#inspect SortOfArray' do
-      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      let(:instance) { SortOfArray.new(default_instance) }
       it 'inspects' do
         assert_equal("#[<JSI SortOfArray> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print SortOfArray' do
-      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      let(:instance) { SortOfArray.new(default_instance) }
       it 'pretty prints' do
         pp = <<~PP
           #[<JSI SortOfArray>
@@ -228,14 +238,12 @@ describe 'JSI::Base array' do
     end
     describe '#inspect with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
-      let(:subject) { schema.new_jsi(instance) }
       it 'inspects' do
         assert_equal("#[<JSI (http://jsi/base_array/withid)> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
-      let(:subject) { schema.new_jsi(instance) }
       it 'pretty prints' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid)>
@@ -250,14 +258,14 @@ describe 'JSI::Base array' do
     end
     describe '#inspect with id SortOfArray' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
-      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      let(:instance) { SortOfArray.new(default_instance) }
       it 'inspects' do
         assert_equal("#[<JSI (http://jsi/base_array/withid) SortOfArray> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfArray' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
-      let(:subject) { schema.new_jsi(SortOfArray.new(instance)) }
+      let(:instance) { SortOfArray.new(default_instance) }
       it 'pretty prints' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid) SortOfArray>
@@ -386,14 +394,14 @@ describe 'JSI::Base array' do
   end
   describe 'modified copy methods' do
     it('#reject') { assert_equal(schema.new_jsi(['foo']), subject.reject { |e| e != 'foo' }) }
-    it('#reject block var') do
-      subj_a = subject.to_a
-      subject.reject { |e| assert_equal(e, subj_a.shift) }
+    it('#reject block param is Base#[]') do
+      i = 0
+      subject.reject { |e| assert_equal(e, subject[i]); i += 1 }
     end
     it('#select') { assert_equal(schema.new_jsi(['foo']), subject.select { |e| e == 'foo' }) }
-    it('#select block var') do
-      subj_a = subject.to_a
-      subject.select { |e| assert_equal(e, subj_a.shift) }
+    it('#select block param is Base#[]') do
+      i = 0
+      subject.select { |e| assert_equal(e, subject[i]); i += 1 }
     end
     describe '#select' do
       it 'passes as_jsi' do

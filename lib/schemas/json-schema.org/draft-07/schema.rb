@@ -8,7 +8,7 @@ module JSI
 
   # the JSI schema module for `http://json-schema.org/draft-07/schema`
   module JSONSchemaOrgDraft07
-    # @!parse extend JSI::DescribesSchemaModule
+    # @!parse extend JSI::SchemaModule::DescribesSchemaModule
     # @!parse include JSI::Schema::Draft07
   end
 end

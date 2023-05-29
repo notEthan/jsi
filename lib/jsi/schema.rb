@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Schema is a module which extends instances which represent JSON schemas.
+  # JSI::Schema is a module which extends {JSI::Base} instances which represent JSON schemas.
   #
-  # the content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
-  # expected to be a Hash (JSON object) or a Boolean.
+  # This module is included on the {Schema#jsi_schema_module JSI Schema module} of any schema
+  # which describes other schemas, i.e. is a metaschema or other {Schema::DescribesSchema}.
+  # Therefore, any JSI instance described by a schema which is a {Schema::DescribesSchema} is
+  # a schema and is extended by this module.
+  #
+  # The content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
+  # typically a Hash (JSON object) or a boolean.
   module Schema
     autoload :Application, 'jsi/schema/application'
     autoload :Validation, 'jsi/schema/validation'
@@ -62,7 +67,7 @@ module JSI
       # @return [Addressable::URI, nil]
       def id_without_fragment
         if id
-          id_uri = Addressable::URI.parse(id)
+          id_uri = Util.uri(id)
           if id_uri.merge(fragment: nil).empty?
             # fragment-only id is just an anchor
             # e.g. #foo
@@ -74,7 +79,7 @@ module JSI
           elsif id_uri.fragment == ''
             # empty fragment
             # e.g. http://json-schema.org/draft-07/schema#
-            id_uri.merge(fragment: nil)
+            id_uri.merge(fragment: nil).freeze
           elsif jsi_schema_base_uri && jsi_schema_base_uri.join(id_uri).merge(fragment: nil) == jsi_schema_base_uri
             # the id, resolved against the base uri, consists of the base uri plus an anchor fragment.
             # so there's no non-fragment id.
@@ -83,7 +88,7 @@ module JSI
             nil
           else
             # e.g. http://localhost:1234/bar#foo
-            id_uri.merge(fragment: nil)
+            id_uri.merge(fragment: nil).freeze
           end
         else
           nil
@@ -94,7 +99,7 @@ module JSI
       # @return [String]
       def anchor
         if id
-          id_uri = Addressable::URI.parse(id)
+          id_uri = Util.uri(id)
           if id_uri.fragment == ''
             nil
           else
@@ -128,27 +133,41 @@ module JSI
       end
     end
 
-    # JSI::Schema::DescribesSchema: a schema which describes another schema. this module
-    # extends a JSI::Schema instance and indicates that JSIs which instantiate the schema
-    # are themselves also schemas.
+    # This module extends any JSI Schema which describes schemas.
     #
-    # examples of a schema which describes a schema include the draft JSON Schema metaschemas and
+    # Examples of a schema which describes schemas include the JSON Schema metaschemas and
     # the OpenAPI schema definition which describes "A deterministic version of a JSON Schema object."
+    #
+    # Schemas which describes schemas include {JSI::Schema} in their
+    # {Schema#jsi_schema_module JSI Schema module}, so for a schema which is an instance of
+    # DescribesSchema, instances of that schema are instances of {JSI::Schema} and are schemas.
+    #
+    # A schema is indicated as describing other schemas using the {Schema#describes_schema!} method.
     module DescribesSchema
-      # instantiates the given schema content as a JSI Schema.
+      # Instantiates the given schema content as a JSI Schema.
       #
       # the schema will be registered with the `JSI.schema_registry`.
       #
       # By default, the `schema_content` will have any Symbol keys of Hashes replaced with Strings
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
       #
-      # @param schema_content [#to_hash, Boolean] an object to be instantiated as a schema
-      # @param uri [nil, #to_str, Addressable::URI] the URI of the schema document.
-      #   relative URIs within the document are resolved using this uri as their base.
-      #   the result schema will be registered with this URI in the {JSI.schema_registry}.
-      # @param stringify_symbol_keys (see SchemaSet#new_jsi)
-      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_content`
-      #   and whose schemas are this schema's inplace applicators.
+      # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
+      # @param uri [nil, #to_str, Addressable::URI] The retrieval URI of the schema document.
+      #
+      #   It is rare that this needs to be specified. Most schemas, if they use absolute URIs, will
+      #   use the `$id` keyword (`id` in draft 4) to specify this. A different retrieval URI is useful
+      #   in unusual cases:
+      #
+      #     - A schema in the document uses relative URIs for `$id` or `$ref` without an absolute id in an
+      #       ancestor schema - these will be resolved relative to this URI
+      #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
+      #       rather than an id declared in the schema - the schema is resolvable by this URI in the
+      #       {JSI::SchemaRegistry}.
+      # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
+      #   replaced with Strings (recursively through the document).
+      #   Replacement is done on a copy; the given schema content is not modified.
+      # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+      #   the given `schema_content` and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
           uri: nil,
           stringify_symbol_keys: true
@@ -161,18 +180,21 @@ module JSI
         schema_jsi
       end
 
-      # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+      # Instantiates the given schema content as a JSI Schema, passing all params to
+      # {Schema::DescribesSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
       #
-      # shortcut to chain {#new_schema} + {Schema#jsi_schema_module}.
-      #
-      # @param (see #new_schema)
-      # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
+      # @return [Module + JSI::SchemaModule]
       def new_schema_module(schema_content, **kw)
         new_schema(schema_content, **kw).jsi_schema_module
       end
     end
 
     class << self
+      def extended(o)
+        super
+        o.send(:jsi_schema_initialize)
+      end
+
       # an application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
       #
       # @return [nil, #new_schema]
@@ -192,9 +214,9 @@ module JSI
         @default_metaschema = default_metaschema
       end
 
-      # instantiates a given schema object as a JSI Schema.
+      # Instantiates the given schema content as a JSI Schema.
       #
-      # the metaschema to use to instantiate the schema must be indicated.
+      # The metaschema which describes the schema must be indicated:
       #
       # - if the schema object has a `$schema` property, that URI is resolved using the {JSI.schema_registry},
       #   and that metaschema is used.
@@ -206,63 +228,77 @@ module JSI
       #
       # an ArgumentError is raised if none of these indicate a metaschema to use.
       #
-      # note that if you are instantiating a schema known to have no `$schema` property, an alternative to
-      # passing the `default_metaschema` param is to use `.new_schema` on the metaschema or its module, e.g.
-      # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_object)`
+      # Note that if you are instantiating a schema known to have no `$schema` property, an alternative to
+      # specifying a `default_metaschema` is to call `new_schema` on the metaschema or its module
+      # ({Schema::DescribesSchema#new_schema} / {SchemaModule::DescribesSchemaModule#new_schema}), e.g.
+      # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_content)`
       #
-      # @param schema_object [#to_hash, Boolean] an object to be instantiated as a JSI Schema
-      # @param uri (see DescribesSchema#new_schema)
-      # @param default_metaschema [#new_schema] the metaschema to use if the schema_object does not have
-      #   a '$schema' property. this may be a metaschema or a metaschema's schema module
-      #   (e.g. `JSI::JSONSchemaOrgDraft07`).
-      # @param stringify_symbol_keys (see SchemaSet#new_jsi)
-      # @return [JSI::Base] a JSI which is a {JSI::Schema} whose instance is the given `schema_object`
-      #   and whose schemas are the metaschema's inplace applicators.
-      def new_schema(schema_object, default_metaschema: nil, stringify_symbol_keys: true, **kw)
+      # @param schema_content (see Schema::DescribesSchema#new_schema)
+      # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule]
+      #   The metaschema to use if the given schema_content does not have a `$schema` property.
+      #   This may be a metaschema or a metaschema's schema module. (e.g. `JSI::JSONSchemaOrgDraft07`).
+      # @param uri (see Schema::DescribesSchema#new_schema)
+      # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
+      # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+      #   the given `schema_content` and whose schemas are inplace applicators of the indicated metaschema
+      def new_schema(schema_content,
+          default_metaschema: nil,
+          # params of DescribesSchema#new_schema have their default values repeated here. delegating in a splat
+          # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
+          uri: nil,
+          stringify_symbol_keys: true
+      )
+        new_schema_params = {
+          uri: uri,
+          stringify_symbol_keys: stringify_symbol_keys,
+        }
         default_metaschema_new_schema = -> {
           default_metaschema ||= JSI::Schema.default_metaschema
           if default_metaschema.nil?
             raise(ArgumentError, [
-              "when instantiating a schema with no `$schema` property, you must specify the metaschema.",
-              "you may pass the `default_metaschema` param to this method.",
-              "JSI::Schema.default_metaschema may be set to an application-wide default metaschema.",
-              "you may alternatively use new_schema on the appropriate metaschema or its schema module.",
-              "instantiating schema_object: #{schema_object.pretty_inspect.chomp}",
+              "When instantiating a schema with no `$schema` property, you must specify its metaschema by one of these methods:",
+              "- pass the `default_metaschema` param to this method",
+              "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaOrgDraft07)",
+              "- invoke `new_schema` on the appropriate metaschema or its schema module",
+              "  e.g.: JSI::JSONSchemaOrgDraft07.new_schema(...)",
+              "- set JSI::Schema.default_metaschema to an application-wide default metaschema initially",
+              "  e.g.: JSI::Schema.default_metaschema = JSI::JSONSchemaOrgDraft07",
+              "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
           if !default_metaschema.respond_to?(:new_schema)
             raise(TypeError, "given default_metaschema does not respond to #new_schema: #{default_metaschema.pretty_inspect.chomp}")
           end
-          default_metaschema.new_schema(schema_object, stringify_symbol_keys: stringify_symbol_keys, **kw)
+          default_metaschema.new_schema(schema_content, **new_schema_params)
         }
-        if schema_object.is_a?(Schema)
+        if schema_content.is_a?(Schema)
           raise(TypeError, [
-            "Given schema_object is already a JSI::Schema. It cannot be instantiated as the content of a schema.",
-            "given: #{schema_object.pretty_inspect.chomp}",
+            "Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.",
+            "given: #{schema_content.pretty_inspect.chomp}",
           ].join("\n"))
-        elsif schema_object.is_a?(JSI::Base)
+        elsif schema_content.is_a?(JSI::Base)
           raise(TypeError, [
-            "Given schema_object is a JSI::Base. It cannot be instantiated as the content of a schema.",
-            "given: #{schema_object.pretty_inspect.chomp}",
+            "Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.",
+            "given: #{schema_content.pretty_inspect.chomp}",
           ].join("\n"))
-        elsif schema_object.respond_to?(:to_hash)
-          id = schema_object['$schema'] || stringify_symbol_keys && schema_object[:'$schema']
+        elsif schema_content.respond_to?(:to_hash)
+          id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema']
           if id
             unless id.respond_to?(:to_str)
-              raise(ArgumentError, "given schema_object keyword `$schema` is not a string")
+              raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
             metaschema = Schema::Ref.new(id).deref_schema
             unless metaschema.describes_schema?
-              raise(TypeError, "given schema_object contains a $schema but the resource it identifies does not describe a schema")
+              raise(TypeError, "given schema_content contains a $schema but the resource it identifies does not describe a schema")
             end
-            metaschema.new_schema(schema_object, stringify_symbol_keys: stringify_symbol_keys, **kw)
+            metaschema.new_schema(schema_content, **new_schema_params)
           else
             default_metaschema_new_schema.call
           end
-        elsif [true, false].include?(schema_object)
+        elsif [true, false].include?(schema_content)
           default_metaschema_new_schema.call
         else
-          raise(TypeError, "cannot instantiate Schema from: #{schema_object.pretty_inspect.chomp}")
+          raise(TypeError, "cannot instantiate Schema from: #{schema_content.pretty_inspect.chomp}")
         end
       end
 
@@ -288,7 +324,7 @@ module JSI
 
             result_schema_class.new(schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,
-              jsi_root_node: schema.jsi_root_node,
+              jsi_root_node: schema.jsi_ptr.root? ? nil : schema.jsi_root_node, # bad
               jsi_indicated_schemas: schema.jsi_indicated_schemas,
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
@@ -300,6 +336,18 @@ module JSI
             ].join("\n"))
           end
         end
+      end
+    end
+
+    if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+      def initialize(*)
+        super
+        jsi_schema_initialize
+      end
+    else
+      def initialize(*, **)
+        super
+        jsi_schema_initialize
       end
     end
 
@@ -322,7 +370,7 @@ module JSI
     def schema_absolute_uri
       if respond_to?(:id_without_fragment) && id_without_fragment
         if jsi_schema_base_uri
-          jsi_schema_base_uri.join(id_without_fragment)
+          jsi_schema_base_uri.join(id_without_fragment).freeze
         elsif id_without_fragment.absolute?
           id_without_fragment
         else
@@ -364,14 +412,14 @@ module JSI
       parent_schemas.each do |parent_schema|
         if anchored
           if parent_schema.jsi_anchor_subschema(anchor) == self
-            yield parent_schema.schema_absolute_uri.merge(fragment: anchor)
+            yield parent_schema.schema_absolute_uri.merge(fragment: anchor).freeze
           else
             anchored = false
           end
         end
 
         relative_ptr = jsi_ptr.relative_to(parent_schema.jsi_ptr)
-        yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment)
+        yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment).freeze
       end
 
       nil
@@ -379,9 +427,6 @@ module JSI
 
     # a module which extends all instances of this schema. this may be opened by the application to add
     # methods to schema instances.
-    #
-    # this module includes accessor methods for object property names this schema
-    # describes (see {#described_object_property_names}). these accessors wrap {Base#[]} and {Base#[]=}.
     #
     # some functionality is also defined on the module itself (its singleton class, not for its instances):
     #
@@ -392,7 +437,7 @@ module JSI
     #   as `schema.items.jsi_schema_module`.
     # - method .schema which returns this schema.
     #
-    # @return [Module]
+    # @return [Module + SchemaModule]
     def jsi_schema_module
       JSI::SchemaClasses.module_for_schema(self)
     end
@@ -407,12 +452,13 @@ module JSI
       jsi_schema_module.module_exec(*a, **kw, &block)
     end
 
-    # instantiates the given instance as a JSI::Base class for schemas matched from this schema to the
-    # instance.
+    # Instantiates a new JSI whose content comes from the given `instance` param.
+    # This schema indicates the schemas of the JSI - its schemas are inplace
+    # applicators of this schema which apply to the given instance.
     #
     # @param (see SchemaSet#new_jsi)
-    # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are
-    #   inplace applicator schemas matched from this schema.
+    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    #   inplace applicators of this schema.
     def new_jsi(instance, **kw)
       SchemaSet[self].new_jsi(instance, **kw)
     end
@@ -425,18 +471,14 @@ module JSI
 
     # indicates that this schema describes a schema.
     # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
-    # with {SchemaModule::DescribesSchemaModule}, and the JSI Schema Module will include the given modules.
+    # with {SchemaModule::DescribesSchemaModule}, and the JSI Schema Module will include
+    # JSI::Schema and the given modules.
     #
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality of
     #   the schema to extend schemas described by this schema.
-    #   this must include JSI::Schema (usually indirectly).
     # @return [void]
     def describes_schema!(schema_implementation_modules, objectspace: false)
       schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
-
-      unless schema_implementation_modules.any? { |mod| mod <= Schema }
-        raise(ArgumentError, "schema_implementation_modules for a schema must include #{Schema}")
-      end
 
       if describes_schema?
         # this schema, or one equal to it, has already had describes_schema! called on it.
@@ -446,11 +488,13 @@ module JSI
           raise(ArgumentError, "this schema already describes a schema with different schema_implementation_modules")
         end
       else
+        jsi_schema_module.include(Schema)
         schema_implementation_modules.each do |mod|
           jsi_schema_module.include(mod)
         end
         if objectspace
           ObjectSpace.each_object(jsi_schema_module) do |schema|
+            schema.extend(Schema)
             schema_implementation_modules.each do |mod|
               schema.extend(mod)
             end
@@ -600,6 +644,11 @@ module JSI
       else
         jsi_schema_resource_ancestors
       end
+    end
+
+    private
+
+    def jsi_schema_initialize
     end
   end
 end

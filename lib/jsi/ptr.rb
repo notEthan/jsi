@@ -42,7 +42,7 @@ module JSI
       # @param tokens any number of tokens
       # @return [JSI::Ptr]
       def self.[](*tokens)
-        new(tokens)
+        tokens.empty? ? EMPTY : new(tokens)
       end
 
       # parse a URI-escaped fragment and instantiate as a JSI::Ptr
@@ -54,6 +54,12 @@ module JSI
       #
       #     JSI::Ptr.from_fragment('/foo%20bar')
       #     => JSI::Ptr["foo bar"]
+      #
+      # Note: A fragment does not include a leading '#'. The string "#/foo" is a URI containing the
+      # fragment "/foo", which should be parsed by `Addressable::URI` before passing to this method, e.g.:
+      #
+      #     JSI::Ptr.from_fragment(Addressable::URI.parse("#/foo").fragment)
+      #     => JSI::Ptr["foo"]
       #
       # @param fragment [String] a fragment containing a pointer
       # @return [JSI::Ptr]
@@ -75,13 +81,15 @@ module JSI
       # @return [JSI::Ptr]
       # @raise [JSI::Ptr::PointerSyntaxError] when the pointer_string does not have valid pointer syntax
       def self.from_pointer(pointer_string)
-        tokens = pointer_string.split('/', -1).map! do |piece|
-          piece.gsub('~1', '/').gsub('~0', '~')
-        end
-        if tokens[0] == ''
-          new(tokens[1..-1])
-        elsif tokens.empty?
+        pointer_string = pointer_string.to_str
+        if pointer_string[0] == ?/
+          tokens = pointer_string.split('/', -1).map! do |piece|
+            piece.gsub('~1', '/').gsub('~0', '~')
+          end
+          tokens.shift
           new(tokens)
+        elsif pointer_string.empty?
+          EMPTY
         else
           raise(PointerSyntaxError, "Invalid pointer syntax in #{pointer_string.inspect}: pointer must begin with /")
         end
@@ -96,6 +104,8 @@ module JSI
         end
         @tokens = tokens.to_ary.map(&:freeze).freeze
       end
+
+      EMPTY = new(Util::EMPTY_ARY)
 
       attr_reader :tokens
 
@@ -129,7 +139,7 @@ module JSI
       # a URI consisting of a fragment containing this pointer's fragment string representation
       # @return [Addressable::URI]
       def uri
-        Addressable::URI.new(fragment: fragment)
+        Addressable::URI.new(fragment: fragment).freeze
       end
 
       # whether this pointer is empty, i.e. it has no tokens
@@ -188,7 +198,7 @@ module JSI
       # @return [JSI::Ptr]
       # @raise [ArgumentError] if n is not between 0 and the size of our tokens
       def take(n)
-        unless (0..tokens.size).include?(n)
+        unless n.is_a?(Integer) && n >= 0 && n <= tokens.size
           raise(ArgumentError, "n not in range (0..#{tokens.size}): #{n.inspect}")
         end
         Ptr.new(tokens.take(n))
@@ -199,7 +209,7 @@ module JSI
       # @param token [Object]
       # @return [JSI::Ptr] pointer to a child node of this pointer with the given token
       def [](token)
-        Ptr.new(tokens + [token])
+        Ptr.new(tokens.dup.push(token))
       end
 
       # takes a document and a block. the block is yielded the content of the given document at this
@@ -248,7 +258,8 @@ module JSI
 
       alias_method :to_s, :inspect
 
-      # pointers are equal if the tokens are equal
+      # see {Util::Private::FingerprintHash}
+      # @api private
       def jsi_fingerprint
         {class: Ptr, tokens: tokens}
       end

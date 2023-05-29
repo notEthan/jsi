@@ -1,22 +1,26 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Schema::Ref is a reference to another schema (the result of #deref_schema), resolved using a ref URI
-  # from a ref schema (the ref URI typically the contents of the ref_schema's "$ref" keyword)
+  # A JSI::Schema::Ref is a reference to a schema identified by a URI, typically from
+  # a `$ref` keyword of a schema.
   class Schema::Ref
-    # @param ref [String] a reference URI
-    # @param ref_schema [JSI::Schema] a schema from which the reference originated
+    # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
+    # @param ref_schema [JSI::Schema, nil] A schema from which the reference originated.
+    #   Optional if the ref is to be resolved only from the schema registry.
     def initialize(ref, ref_schema = nil)
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
-      @ref_uri = Addressable::URI.parse(ref)
+      @ref_uri = Util.uri(ref)
       @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
     end
 
+    # @return [String]
     attr_reader :ref
 
+    # @return [Addressable::URI]
     attr_reader :ref_uri
 
+    # @return [Schema, nil]
     attr_reader :ref_schema
 
     # finds the schema this ref points to
@@ -36,7 +40,7 @@ module JSI
         end
       }
 
-      ref_uri_nofrag = ref_uri.merge(fragment: nil)
+      ref_uri_nofrag = ref_uri.merge(fragment: nil).freeze
 
       if ref_uri_nofrag.empty?
         unless ref_schema
@@ -57,7 +61,7 @@ module JSI
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
         elsif ref_schema && ref_schema.jsi_resource_ancestor_uri
-          ref_abs_uri = ref_schema.jsi_resource_ancestor_uri.join(ref_uri_nofrag)
+          ref_abs_uri = ref_schema.jsi_resource_ancestor_uri.join(ref_uri_nofrag).freeze
         else
           ref_abs_uri = nil
         end
@@ -151,7 +155,8 @@ module JSI
       q.text '>'
     end
 
-    # @private
+    # see {Util::Private::FingerprintHash}
+    # @api private
     def jsi_fingerprint
       {class: self.class, ref: ref, ref_schema: ref_schema}
     end

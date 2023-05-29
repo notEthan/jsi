@@ -4,6 +4,18 @@ module JSI
   # a node in a document which may contain a schema somewhere within is extended with SchemaAncestorNode, for
   # tracking things necessary for a schema to function correctly
   module Schema::SchemaAncestorNode
+    if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+      def initialize(*)
+        super
+        jsi_schema_ancestor_node_initialize
+      end
+    else
+      def initialize(*, **)
+        super
+        jsi_schema_ancestor_node_initialize
+      end
+    end
+
     # the base URI used to resolve the ids of schemas at or below this JSI.
     # this is always an absolute URI (with no fragment).
     # this may be the absolute schema URI of a parent schema or the URI from which the document was retrieved.
@@ -49,6 +61,9 @@ module JSI
 
     private
 
+    def jsi_schema_ancestor_node_initialize
+    end
+
     attr_writer :jsi_document
 
     def jsi_ptr=(jsi_ptr)
@@ -61,7 +76,7 @@ module JSI
         unless jsi_schema_base_uri.respond_to?(:to_str)
           raise(TypeError, "jsi_schema_base_uri must be string or Addressable::URI; got: #{jsi_schema_base_uri.inspect}")
         end
-        @jsi_schema_base_uri = Addressable::URI.parse(jsi_schema_base_uri).freeze
+        @jsi_schema_base_uri = Util.uri(jsi_schema_base_uri)
         unless @jsi_schema_base_uri.absolute? && !@jsi_schema_base_uri.fragment
           raise(ArgumentError, "jsi_schema_base_uri must be an absolute URI with no fragment; got: #{jsi_schema_base_uri.inspect}")
         end

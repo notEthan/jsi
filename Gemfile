@@ -7,7 +7,13 @@ gem 'gig'
 
 group(:dev) do
   gem 'irb'
-  platform(:mri) { gem 'debug' }
+  platform(:mri) do
+    if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('2.7')
+      gem 'debug', '> 1'
+    else
+      gem 'byebug'
+    end
+  end
 end
 
 group(:test) do
@@ -24,4 +30,10 @@ group(:extdep) do
   gem 'scorpio', '~> 0.6'
   gem 'spreedly_openapi', github: 'notEthan/spreedly_openapi', tag: 'v0.2.0'
   gem 'activesupport'
+  gem 'hashie'
+end
+
+group(:doc) do
+  gem 'yard'
+  platform(:mri, :truffleruby) { gem 'commonmarker' }
 end

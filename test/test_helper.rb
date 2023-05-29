@@ -25,18 +25,6 @@ if ENV['CI'] || ENV['COV']
   end
 end
 
-require 'bundler'
-bundler_groups = [:default, :test]
-bundler_groups << :dev unless ENV['CI']
-bundler_groups << :extdep if ENV['JSI_TEST_EXTDEP']
-Bundler.setup(*bundler_groups)
-
-if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'debug' }
-  require 'debug'
-  Object.alias_method(:dbg, :debugger)
-  Object.alias_method(:byebug, :debugger) # TODO remove
-end
-
 require_relative 'jsi_helper'
 
 require 'yaml'
@@ -136,10 +124,8 @@ mkreporters = {
 
 mkreporter = if ENV['JSI_TESTREPORT']
   mkreporters[ENV['JSI_TESTREPORT']] || raise("JSI_TESTREPORT must be one of: #{mkreporters.keys}")
-elsif ENV['CI']
-  mkreporters['spec']
 else
-  mkreporters['progress']
+  mkreporters['spec']
 end
 
 Minitest::Reporters.use!(mkreporter.call.extend(Minitest::WithEndSummary))
@@ -217,6 +203,7 @@ class JSISpec < Minitest::Spec
 
     assert_includes(instance.jsi_schemas, schema)
     assert_is_a(schema.jsi_schema_module, instance)
+    assert(instance.described_by?(schema))
   end
 
   # @param schema [JSI::Schema]
@@ -228,6 +215,12 @@ class JSISpec < Minitest::Spec
 
     refute_includes(instance.jsi_schemas, schema)
     refute_is_a(schema.jsi_schema_module, instance)
+    refute(instance.described_by?(schema))
+  end
+
+  def assert_uri(exp, act)
+    assert_equal(JSI::Util.uri(exp), act)
+    assert_predicate(act, :frozen?)
   end
 end
 
@@ -235,6 +228,23 @@ end
 Minitest::Spec.register_spec_type(//, JSISpec)
 
 Minitest.after_run do
+  if Object.const_defined?(:SimpleCov)
+    counts = {}
+    resultset = SimpleCov::ResultMerger.respond_to?(:read_resultset) ? SimpleCov::ResultMerger.read_resultset : SimpleCov::ResultMerger.resultset
+    resultset.each do |command_name, result|
+      if result['timestamp'] + SimpleCov.merge_timeout >= Time.now.to_i
+        counts[command_name] = result['coverage'].values.map do |c|
+          (c.is_a?(Hash) ? c['lines'] : c).compact.inject(0, &:+)
+        end.inject(0, &:+)
+      end
+    end
+    i_commas = -> (i) { i.to_s.reverse.gsub(/...(?=.)/, '\&,').reverse }
+    if counts.size > 1 && counts.key?(SimpleCov.command_name)
+      puts "Lines executed (#{SimpleCov.command_name}): #{i_commas[counts[SimpleCov.command_name]]}"
+    end
+    puts "Lines executed (#{counts.keys.join(' + ')}): #{i_commas[counts.values.inject(0, &:+)]}"
+  end
+
   if ENV['JSI_EXITDEBUG']
     dbg
     nil

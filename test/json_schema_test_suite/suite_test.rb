@@ -1,19 +1,13 @@
 require_relative '../test_helper'
 
-JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').open('r:UTF-8').read))
+JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').open('r:UTF-8', &:read)))
 
-JSI::Util.ycomb do |rec|
-  proc do |subpath|
-    path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes').join(*subpath)
-
-    if path.directory?
-      with_directory = false
-      path.children(with_directory).each { |c| rec.call(subpath + [c.to_s]) }
-    elsif path.file? && path.to_s =~ /\.json\z/
-      remote_content = ::JSON.parse(path.open('r:UTF-8').read)
-      uri = File.join('http://localhost:1234/', *subpath)
+  Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
+    Dir.glob('**/*.json').each do |subpath|
+      remote_content = ::JSON.parse(File.open(subpath, 'r:UTF-8', &:read))
+      uri = File.join('http://localhost:1234/', subpath)
       JSI.schema_registry.autoload_uri(uri) do
-        if subpath == ['subSchemas.json']
+        if subpath == 'subSchemas.json'
           subSchemas_schema = JSI.new_schema({
             '$schema' => 'http://json-schema.org/draft-07/schema',
             'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
@@ -25,10 +19,8 @@ JSI::Util.ycomb do |rec|
       end
     end
   end
-end.call([])
 
 describe 'JSON Schema Test Suite' do
-  describe 'validity' do
     drafts = [
       {name: 'draft4', metaschema: JSI::JSONSchemaOrgDraft04.schema},
       {name: 'draft6', metaschema: JSI::JSONSchemaOrgDraft06.schema},
@@ -37,16 +29,14 @@ describe 'JSON Schema Test Suite' do
     drafts.each do |draft|
       name = draft[:name]
       metaschema = draft[:metaschema]
-      JSI::Util.ycomb do |rec|
-        proc do |subpath|
-          path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests').join(*subpath)
-          if path.directory?
-            with_directory = false
-            path.children(with_directory).each { |c| rec.call(subpath + [c.to_s]) }
-          elsif path.file? && path.to_s =~ /\.json\z/
-            describe(subpath.join('/')) do
+
+          base = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests')
+          subpaths = Dir.chdir(base) { Dir.glob(File.join(name, '**/*.json')) }
+          subpaths.each do |subpath|
+            path = base.join(subpath)
+            describe(subpath) do
               begin
-                tests_desc_object = ::JSON.parse(path.open('r:UTF-8').read)
+                tests_desc_object = ::JSON.parse(path.open('r:UTF-8', &:read))
               rescue JSON::ParserError => e
                 # :nocov:
                 # known json/pure issue https://github.com/flori/json/pull/483
@@ -56,7 +46,7 @@ describe 'JSON Schema Test Suite' do
                 tests_desc_object = []
                 # :nocov:
               end
-              JSONSchemaTestSchema.new_jsi(tests_desc_object).map do |tests_desc|
+              JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
                 describe(tests_desc.description) do
                   around do |test|
                     registry_before = JSI.schema_registry.dup
@@ -67,9 +57,8 @@ describe 'JSON Schema Test Suite' do
                     metaschema.new_schema(tests_desc.jsi_instance['schema'])
                   end
                   tests_desc.tests.each do |test|
-                    describe(test.description) do
-                      let(:jsi) { schema.new_jsi(test.jsi_instance['data']) }
-                      it(test.valid ? 'is valid' : 'is invalid') do
+                      it(test.description) do
+                        jsi = schema.new_jsi(test.jsi_instance['data'])
                         result = jsi.jsi_validate
                         assert_equal(result.valid?, jsi.jsi_valid?)
                         if test.valid != result.valid?
@@ -77,7 +66,7 @@ describe 'JSON Schema Test Suite' do
                             'format',
                             'contentMediaType',
                             'contentEncoding',
-                          ].select { |kw| schema.respond_to?(:to_hash) && schema.key?(kw) }
+                          ].select { |kw| schema.keyword?(kw) }
                           if unsupported_keywords.any?
                             skip("unsupported keywords: #{unsupported_keywords.join(' ')}")
                           end
@@ -107,14 +96,10 @@ describe 'JSON Schema Test Suite' do
                           # :nocov:
                         end
                       end
-                    end
                   end
                 end
               end
             end
           end
-        end
-      end.call([name])
     end
-  end
 end

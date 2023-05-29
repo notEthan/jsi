@@ -29,7 +29,8 @@ module JSI
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
     #
     # @param (see JSI::Schema#new_jsi)
-    # @return [JSI::Base] a JSI whose instance is the given instance
+    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    #   inplace applicators of this module's schema.
     def new_jsi(instance, **kw)
       schema.new_jsi(instance, **kw)
     end
@@ -40,23 +41,18 @@ module JSI
     # @!parse include SchemaModule
 
 
-    # instantiates the given schema content as a JSI Schema.
+    # Instantiates the given schema content as a JSI Schema.
     #
     # see {JSI::Schema::DescribesSchema#new_schema}
     #
     # @param (see JSI::Schema::DescribesSchema#new_schema)
-    # @return [JSI::Base, JSI::Schema] a JSI whose instance is the given schema_content and whose schemas
-    #   consist of this module's schema.
+    # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+    #   the given `schema_content` and whose schemas are inplace applicators of this module's schema
     def new_schema(schema_content, **kw)
       schema.new_schema(schema_content, **kw)
     end
 
-    # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
-    #
-    # shortcut to chain {JSI::Schema::DescribesSchema#new_schema} + {Schema#jsi_schema_module}.
-    #
-    # @param (see JSI::Schema::DescribesSchema#new_schema)
-    # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
+    # (see Schema::DescribesSchema#new_schema_module)
     def new_schema_module(schema_content, **kw)
       schema.new_schema(schema_content, **kw).jsi_schema_module
     end
@@ -93,6 +89,22 @@ module JSI
           Class.new(Base) do
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
+
+            conflicting_modules = Set[JSI::Base] + includes + schemas.map(&:jsi_schema_module)
+
+            reader_modules = schemas.map do |schema|
+              JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
+            end
+            reader_modules.each { |m| include m }
+            readers = reader_modules.map(&:jsi_property_readers).inject(Set[], &:merge).freeze
+            define_method(:jsi_property_readers) { readers }
+            define_singleton_method(:jsi_property_readers) { readers }
+
+            writer_modules = schemas.map do |schema|
+              JSI::SchemaClasses.schema_property_writer_module(schema, conflicting_modules: conflicting_modules)
+            end
+            writer_modules.each { |m| include m }
+
             includes.each { |m| include(m) }
             schemas.each { |schema| include(schema.jsi_schema_module) }
             jsi_class = self
@@ -122,9 +134,10 @@ module JSI
 
       # see {Schema#jsi_schema_module}
       # @api private
-      # @return [Module]
+      # @return [Module + SchemaModule]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
+        raise(Bug, "non-Base schema cannot have schema module: #{schema}") unless schema.is_a?(Base)
         jsi_memoize(:module_for_schema, schema: schema) do |schema: |
           Module.new do
             begin
@@ -132,19 +145,11 @@ module JSI
 
               extend SchemaModule
 
-              accessor_module = JSI::SchemaClasses.accessor_module_for_schema(schema,
-                conflicting_modules: Set[JSI::Base, JSI::Base::ArrayNode, JSI::Base::HashNode],
-              )
-              include accessor_module
-
-              define_singleton_method(:jsi_property_accessors) { accessor_module.jsi_property_accessors }
-
               @possibly_schema_node = schema
               extend(SchemaModulePossibly)
               schema.jsi_schemas.each do |schema_schema|
-                extend JSI::SchemaClasses.accessor_module_for_schema(schema_schema,
+                extend JSI::SchemaClasses.schema_property_reader_module(schema_schema,
                   conflicting_modules: Set[Module, SchemaModule, SchemaModulePossibly],
-                  setters: false,
                 )
               end
             end
@@ -152,44 +157,56 @@ module JSI
         end
       end
 
-      # a module of accessors for described property names of the given schema.
-      # getters are always defined. setters are defined by default.
+      # a module of readers for described property names of the given schema.
       #
       # @api private
-      # @param schema [JSI::Schema] a schema for which to define accessors for any described property names
+      # @param schema [JSI::Schema] a schema for which to define readers for any described property names
       # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
       #   may be used alongside the accessor module. methods defined by any conflicting_module
       #   will not be defined as accessors.
-      # @param setters [Boolean] whether to define setter methods
       # @return [Module]
-      def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
+      def schema_property_reader_module(schema, conflicting_modules: )
         Schema.ensure_schema(schema)
-        jsi_memoize(:accessor_module_for_schema, schema: schema, conflicting_modules: conflicting_modules, setters: setters) do |schema: , conflicting_modules: , setters: |
+        jsi_memoize(__method__, schema: schema, conflicting_modules: conflicting_modules) do |schema: , conflicting_modules: |
           Module.new do
-            begin
-              define_singleton_method(:inspect) { '(JSI Schema Accessor Module)' }
+            define_singleton_method(:inspect) { '(JSI Schema Property Reader Module)' }
 
-              conflicting_instance_methods = conflicting_modules.map do |mod|
-                mod.instance_methods + mod.private_instance_methods
-              end.inject(Set.new, &:|)
+            readers = schema.described_object_property_names.select do |name|
+              Util.ok_ruby_method_name?(name) &&
+                !conflicting_modules.any? { |m| m.method_defined?(name) || m.private_method_defined?(name) }
+            end.to_set.freeze
 
-              accessors_to_define = schema.described_object_property_names.select do |name|
-                # must not conflict with any method on a conflicting module
-                Util.ok_ruby_method_name?(name) && !conflicting_instance_methods.any? { |mn| mn.to_s == name }
-              end.to_set.freeze
+            define_singleton_method(:jsi_property_readers) { readers }
 
-              define_singleton_method(:jsi_property_accessors) { accessors_to_define }
-
-              accessors_to_define.each do |property_name|
+            readers.each do |property_name|
                 define_method(property_name) do |**kw|
                   self[property_name, **kw]
                 end
-                if setters
+            end
+          end
+        end
+      end
+
+      # a module of writers for described property names of the given schema.
+      # @api private
+      def schema_property_writer_module(schema, conflicting_modules: )
+        Schema.ensure_schema(schema)
+        jsi_memoize(__method__, schema: schema, conflicting_modules: conflicting_modules) do |schema: , conflicting_modules: |
+          Module.new do
+            define_singleton_method(:inspect) { '(JSI Schema Property Writer Module)' }
+
+            writers = schema.described_object_property_names.select do |name|
+              writer = "#{name}="
+              Util.ok_ruby_method_name?(name) &&
+                !conflicting_modules.any? { |m| m.method_defined?(writer) || m.private_method_defined?(writer) }
+            end.to_set.freeze
+
+            define_singleton_method(:jsi_property_writers) { writers }
+
+            writers.each do |property_name|
                   define_method("#{property_name}=") do |value|
                     self[property_name] = value
                   end
-                end
-              end
             end
           end
         end
@@ -214,7 +231,7 @@ module JSI
       name = named_ancestor_schema.jsi_schema_module.name
       ancestor = named_ancestor_schema
       tokens.each do |token|
-        if ancestor.jsi_schemas.any? { |s| s.jsi_schema_module.jsi_property_accessors.include?(token) }
+        if ancestor.jsi_property_readers.include?(token)
           name += ".#{token}"
         elsif [String, Numeric, TrueClass, FalseClass, NilClass].any? { |m| token.is_a?(m) }
           name += "[#{token.inspect}]"
@@ -278,7 +295,7 @@ module JSI
       raise(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
       @possibly_schema_node = node
       node.jsi_schemas.each do |schema|
-        extend(JSI::SchemaClasses.accessor_module_for_schema(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly], setters: false))
+        extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly]))
       end
     end
 

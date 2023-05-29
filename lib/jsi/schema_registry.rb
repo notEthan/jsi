@@ -14,6 +14,7 @@ module JSI
 
     # an exception raised when a URI we are looking for has not been registered
     class ResourceNotFound < StandardError
+      attr_accessor :uri
     end
 
     def initialize
@@ -76,8 +77,15 @@ module JSI
     # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
-      uri = Addressable::URI.parse(uri)
+      uri = Util.uri(uri)
       ensure_uri_absolute(uri)
+      mutating
+      unless block
+        raise(ArgumentError, ["#{SchemaRegistry}#autoload_uri must be invoked with a block", "URI: #{uri}"].join("\n"))
+      end
+      if @autoload_uris.key?(uri)
+        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{@autoload_uris[uri]}"].join("\n"))
+      end
       @autoload_uris[uri] = block
       nil
     end
@@ -86,14 +94,13 @@ module JSI
     # @return [JSI::Base]
     # @raise [JSI::SchemaRegistry::ResourceNotFound]
     def find(uri)
-      uri = Addressable::URI.parse(uri)
+      uri = Util.uri(uri)
       ensure_uri_absolute(uri)
       if @autoload_uris.key?(uri) && !@resources.key?(uri)
         autoloaded = @autoload_uris[uri].call
         register(autoloaded)
       end
-      registered_uris = @resources.keys
-      if !registered_uris.include?(uri)
+      if !@resources.key?(uri)
         if @autoload_uris.key?(uri)
           msg = [
             "URI #{uri} was registered with autoload_uri but the result did not contain a resource with that URI.",
@@ -101,9 +108,9 @@ module JSI
             autoloaded.pretty_inspect.chomp,
           ]
         else
-          msg = ["URI #{uri} is not registered. registered URIs:", *registered_uris]
+          msg = ["URI #{uri} is not registered. registered URIs:", *(@resources.keys | @autoload_uris.keys)]
         end
-        raise(ResourceNotFound, msg.join("\n"))
+        raise(ResourceNotFound.new(msg.join("\n")).tap { |e| e.uri = uri })
       end
       @resources[uri]
     end
@@ -119,11 +126,19 @@ module JSI
       end
     end
 
+    def freeze
+      @resources.freeze
+      @autoload_uris.freeze
+      @resources_mutex = nil
+      super
+    end
+
     protected
     # @param uri [Addressable::URI]
     # @param resource [JSI::Base]
     # @return [void]
     def register_single(uri, resource)
+      mutating
       @resources_mutex.synchronize do
         ensure_uri_absolute(uri)
         if @resources.key?(uri)
@@ -145,6 +160,12 @@ module JSI
       end
       if uri.relative?
         raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access relative URI: #{uri}")
+      end
+    end
+
+    def mutating
+      if frozen?
+        raise(FrozenError, "cannot modify frozen #{self.class}")
       end
     end
   end

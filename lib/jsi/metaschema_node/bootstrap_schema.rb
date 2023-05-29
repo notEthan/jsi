@@ -17,6 +17,7 @@ module JSI
     include Util::Memoize
     include Util::FingerprintHash
     include Schema::SchemaAncestorNode
+    include Schema
 
     class << self
       def inspect
@@ -40,6 +41,8 @@ module JSI
       raise(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
 
       jsi_initialize_memos
+
+      super()
 
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
@@ -88,7 +91,8 @@ module JSI
       ]
     end
 
-    # @private
+    # see {Util::Private::FingerprintHash}
+    # @api private
     def jsi_fingerprint
       {
         class: self.class,

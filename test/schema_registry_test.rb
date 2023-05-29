@@ -1,7 +1,7 @@
 require_relative 'test_helper'
 
 describe 'JSI::SchemaRegistry' do
-  let(:schema_registry) { JSI::SchemaRegistry.new }
+  let(:schema_registry) { JSI::DEFAULT_SCHEMA_REGISTRY.dup }
 
   describe 'operation' do
     it 'registers a schema and finds it' do
@@ -93,7 +93,7 @@ describe 'JSI::SchemaRegistry' do
           '$id' => uri,
         })
       end
-      assert_equal(uri, schema_registry.find(uri).schema_absolute_uri.to_s)
+      assert_uri(uri, schema_registry.find(uri).schema_absolute_uri)
     end
 
     it 'autoloads a schema uri containing that resource but not at document root' do
@@ -111,7 +111,7 @@ describe 'JSI::SchemaRegistry' do
         })
       end
       resource = schema_registry.find(uri)
-      assert_equal(uri, resource.schema_absolute_uri.to_s)
+      assert_uri(uri, resource.schema_absolute_uri)
       assert_equal(JSI::Ptr['items', 'definitions', 's'], resource.jsi_ptr)
     end
 
@@ -127,7 +127,7 @@ describe 'JSI::SchemaRegistry' do
         schema.new_jsi({'x' => {'$id' => uri}})
       end
       resource = schema_registry.find(uri)
-      assert_equal(uri, resource.schema_absolute_uri.to_s)
+      assert_uri(uri, resource.schema_absolute_uri)
       assert_equal(JSI::Ptr['x'], resource.jsi_ptr)
     end
 
@@ -136,7 +136,7 @@ describe 'JSI::SchemaRegistry' do
       schema_registry.autoload_uri(uri) do
         JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}, uri: uri)
       end
-      assert_equal(uri, schema_registry.find(uri).jsi_resource_ancestor_uri.to_s)
+      assert_uri(uri, schema_registry.find(uri).jsi_resource_ancestor_uri)
     end
 
     it 'autoloads a uri but the resource is not in the JSI from the block' do
@@ -182,6 +182,28 @@ describe 'JSI::SchemaRegistry' do
       assert_equal("JSI::SchemaRegistry only registers absolute URIs. cannot access URI with fragment: http://jsi/schema_registry/8wtm#foo", err.message)
     end
 
+    it "registers a URI with two different autoloads" do
+      uri = 'http://jsi/schema_registry/rz4l'
+      schema_registry.autoload_uri(uri) { x }
+      err = assert_raises(JSI::SchemaRegistry::Collision) { schema_registry.autoload_uri(uri) { y } }
+      msg = <<~MSG
+        already registered URI for autoload
+        URI: http://jsi/schema_registry/rz4l
+        loader: #<Proc:
+        MSG
+      assert(err.message.start_with?(msg.chomp))
+    end
+
+    it "registers autoload without a block" do
+      uri = 'http://jsi/schema_registry/j0s5'
+      err = assert_raises(ArgumentError) { schema_registry.autoload_uri(uri) }
+      msg = <<~MSG
+        JSI::SchemaRegistry#autoload_uri must be invoked with a block
+        URI: http://jsi/schema_registry/j0s5
+        MSG
+      assert_equal(msg.chomp, err.message)
+    end
+
     it 'dups' do
       register_uri = 'http://jsi/schema_registry/p4z7'
       register_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => register_uri})
@@ -194,6 +216,55 @@ describe 'JSI::SchemaRegistry' do
       assert_equal(register_uri, schema_registry_dup.find(register_uri).schema_absolute_uri.to_s)
       assert_equal(register_resource, schema_registry_dup.find(register_uri))
       assert_equal(autoload_uri, schema_registry_dup.find(autoload_uri).schema_absolute_uri.to_s)
+
+      # registering with the dup does not register in the original
+      postdup_register_uri = 'http://jsi/schema_registry/ipzf'
+      postdup_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => postdup_register_uri})
+      schema_registry_dup.register(postdup_resource)
+      assert_equal(postdup_resource, schema_registry_dup.find(postdup_register_uri))
+      assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema_registry.find(postdup_register_uri) }
+
+      postdup_autoload_uri = 'http://jsi/schema_registry/91wo'
+      schema_registry_dup.autoload_uri(postdup_autoload_uri) do
+        JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => postdup_autoload_uri})
+      end
+      assert_equal(postdup_autoload_uri, schema_registry_dup.find(postdup_autoload_uri)['$id'])
+      assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema_registry.find(postdup_autoload_uri) }
+    end
+
+    it 'freezes' do
+      register_uri = 'http://jsi/schema_registry/gj6v'
+      register_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => register_uri})
+      schema_registry.register(register_resource)
+      autoload_uri = 'http://jsi/schema_registry/aszv'
+      schema_registry.autoload_uri(autoload_uri) do
+        JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => autoload_uri})
+      end
+      frozen = schema_registry.freeze
+      assert(frozen.equal?(schema_registry))
+      assert_equal(register_resource, schema_registry.find(register_uri))
+      assert_raises(JSI::FrozenError) do
+        schema_registry.find(autoload_uri)
+      end
+      s = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => 'http://jsi/schema_registry/5h5c'})
+      assert_raises(JSI::FrozenError) do
+        schema_registry.register(s)
+      end
+    end
+
+    it 'freezes; #dup is unfrozen' do
+      schema_registry.freeze
+      dup = schema_registry.dup
+
+      register_uri = 'http://jsi/schema_registry/79oh'
+      dup.register(JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => register_uri}))
+      assert_equal(register_uri, dup.find(register_uri)['$id'])
+
+      autoload_uri = 'http://jsi/schema_registry/6j17'
+      dup.autoload_uri(autoload_uri) do
+        JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => autoload_uri})
+      end
+      assert_equal(autoload_uri, dup.find(autoload_uri)['$id'])
     end
   end
 end

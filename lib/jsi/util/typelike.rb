@@ -106,7 +106,7 @@ module JSI
       q.text "\#{<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {
-          q.breakable(empty? ? '' : ' ')
+          q.breakable ' ' if !empty?
           q.seplist(self, nil, :each_pair) { |k, v|
             q.group {
               q.pp k
@@ -116,7 +116,7 @@ module JSI
           }
         }
       }
-      q.breakable ''
+      q.breakable '' if !empty?
       q.text '}'
     end
   end
@@ -210,13 +210,13 @@ module JSI
       q.text "\#[<#{object_group_str}>"
       q.group_sub {
         q.nest(2) {
-          q.breakable(empty? ? '' : ' ')
+          q.breakable ' ' if !empty?
           q.seplist(self, nil, :each) { |e|
             q.pp e
           }
         }
       }
-      q.breakable ''
+      q.breakable '' if !empty?
       q.text ']'
     end
   end

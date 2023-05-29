@@ -1,1 +1,6 @@
---main README.md --markup=markdown --no-private {lib}/**/*.rb
+--main README.md
+--markup=markdown
+--markup-provider=commonmarker
+--no-private
+--hide-void-return
+{lib}/**/*.rb

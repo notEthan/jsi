@@ -1,3 +1,18 @@
+require 'bundler'
+bundler_groups = [:default, :test]
+bundler_groups << :dev unless ENV['CI']
+bundler_groups << :extdep if ENV['JSI_TEST_EXTDEP']
+Bundler.setup(*bundler_groups)
+
+if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'debug' }
+  require 'debug'
+  Object.alias_method(:dbg, :debugger)
+end
+if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
+  require 'byebug'
+  Object.alias_method(:dbg, :byebug)
+end
+
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
 

@@ -3,7 +3,6 @@
 module JSI
   module Schema
     module Draft04
-      include Schema
       include OldId
       include IdWithAnchor
       include IntegerDisallows0Fraction

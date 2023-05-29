@@ -5,7 +5,7 @@
 
 JSI offers an Object-Oriented representation for JSON data using JSON Schemas. Given your JSON Schemas, JSI constructs Ruby modules and classes which are used to instantiate your JSON data. These modules let you use JSON with all the niceties of OOP such as property accessors and application-defined instance methods.
 
-To learn more about JSON Schema see [https://json-schema.org/](https://json-schema.org/).
+To learn more about JSON Schema see <https://json-schema.org/>.
 
 JSI marries object-oriented programming with JSON Schemas by associating a module with each schema, and extending every instance described by a schema with that module. When an application adds methods to a schema module, those methods can be used on its instances.
 

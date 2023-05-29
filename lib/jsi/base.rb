@@ -138,6 +138,8 @@ module JSI
 
       jsi_initialize_memos
 
+      super()
+
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
       if @jsi_ptr.root?
@@ -198,8 +200,6 @@ module JSI
     attr_reader :jsi_indicated_schemas
 
     # yields a JSI of each node at or below this one in this JSI's document.
-    #
-    # returns an Enumerator if no block is given.
     #
     # @yield [JSI::Base] each descendent node, starting with self
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
@@ -319,6 +319,24 @@ module JSI
       descendent
     end
 
+    # A shorthand alias for {#jsi_descendent_node}.
+    #
+    # Note that, though more convenient to type, using an operator whose meaning may not be intuitive
+    # to a reader could impair readability of code.
+    #
+    # examples:
+    #
+    #     my_jsi / ['foo', 'bar']
+    #     my_jsi / %w(foo bar)
+    #     my_schema / JSI::Ptr['additionalProperties']
+    #     my_schema / %w(properties foo items additionalProperties)
+    #
+    # @param (see #jsi_descendent_node)
+    # @return (see #jsi_descendent_node)
+    def /(ptr)
+      jsi_descendent_node(ptr)
+    end
+
     # yields each token (array index or hash key) identifying a child node.
     # yields nothing if this node is not complex or has no children.
     #
@@ -426,8 +444,7 @@ module JSI
     #     - the result is a complex value (responds to #to_ary or #to_hash)
     #     - the result is a schema (including true/false schemas)
     #
-    #     a plain value is returned when no schemas are known to describe the instance, or when the value is a
-    #     simple type (anything unresponsive to #to_ary / #to_hash).
+    #     The plain content is returned when it is a simple type.
     #
     #   - true: the result value will always be returned as a JSI. the {#jsi_schemas} of the result may be
     #     empty if no schemas describe the instance.
@@ -449,7 +466,7 @@ module JSI
     #   defaults are specified across those schemas), nil is returned.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
-    # @return [JSI::Base, Object] the child value identified by the subscript token
+    # @return [JSI::Base, Object, nil] the child value identified by the subscript token
     def [](token, as_jsi: :auto, use_default: true)
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
@@ -477,6 +494,20 @@ module JSI
       Util.ensure_module_set(jsi_schemas.map(&:jsi_schema_module))
     end
 
+    # Is this JSI described by the given schema (or schema module)?
+    #
+    # @param schema [Schema, SchemaModule]
+    # @return [Boolean]
+    def described_by?(schema)
+      if schema.is_a?(Schema)
+        jsi_schemas.include?(schema)
+      elsif schema.is_a?(SchemaModule)
+        jsi_schema_modules.include?(schema)
+      else
+        raise(TypeError, "expected a Schema or Schema Module; got: #{schema.pretty_inspect.chomp}")
+      end
+    end
+
     # yields the content of this JSI's instance. the block must result in
     # a modified copy of the yielded instance (not modified in place, which would alter this JSI
     # as well) which will be used to instantiate and return a new JSI with the modified content.
@@ -488,17 +519,11 @@ module JSI
     #   in a nondestructively modified copy of this.
     # @return [JSI::Base subclass] the modified copy of self
     def jsi_modified_copy(&block)
-      if @jsi_ptr.root?
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        jsi_indicated_schemas.new_jsi(modified_document,
-          uri: jsi_schema_base_uri,
+        modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
+          uri: @jsi_root_node.jsi_schema_base_uri,
         )
-      else
-        modified_jsi_root_node = @jsi_root_node.jsi_modified_copy do |root|
-          @jsi_ptr.modified_document_copy(root, &block)
-        end
         modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
-      end
     end
 
     # Is the instance an array?
@@ -615,7 +640,8 @@ module JSI
       Util.as_json(jsi_instance, *opt)
     end
 
-    # an opaque fingerprint of this JSI for {Util::FingerprintHash}.
+    # see {Util::Private::FingerprintHash}
+    # @api private
     def jsi_fingerprint
       {
         class: jsi_class,

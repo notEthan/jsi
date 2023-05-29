@@ -48,6 +48,20 @@ module JSI
       return true
     end
 
+    # string or URI → frozen URI
+    # @return [Addressable::URI]
+    def uri(uri)
+      if uri.is_a?(Addressable::URI)
+        if uri.frozen?
+          uri
+        else
+          uri.dup.freeze
+        end
+      else
+        Addressable::URI.parse(uri).freeze
+      end
+    end
+
     # this is the Y-combinator, which allows anonymous recursive functions. for a simple example,
     # to define a recursive function to return the length of an array:
     #
@@ -92,6 +106,9 @@ module JSI
       nil
     end
 
+    # Defines equality methods and #hash (for Hash / Set), based on a method #jsi_fingerprint
+    # implemented by the includer. #jsi_fingerprint is to include the class and any properties
+    # of the instance which constitute its identity.
     module FingerprintHash
       # overrides BasicObject#==
       def ==(other)
@@ -119,7 +136,8 @@ module JSI
       end
 
       # @return [Util::MemoMap]
-      def jsi_memomap(name, **options, &block)
+      def jsi_memomap(name = nil, **options, &block)
+        return Util::MemoMap.new(**options, &block) if !name
         raise(Bug, 'must jsi_initialize_memos') unless @jsi_memomaps
         unless @jsi_memomaps.key?(name)
           @jsi_memomaps_mutex.synchronize do

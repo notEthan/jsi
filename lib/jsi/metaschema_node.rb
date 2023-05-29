@@ -41,22 +41,24 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_root_node: nil
     )
-      jsi_initialize_memos
+      super(jsi_document,
+        jsi_ptr: jsi_ptr,
+        jsi_root_node: jsi_root_node,
+        jsi_indicated_schemas: [],
+        jsi_schema_base_uri: jsi_schema_base_uri,
+      )
 
-      self.jsi_document = jsi_document
-      self.jsi_ptr = jsi_ptr
       @schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
-      raise(Bug, 'jsi_root_node') if jsi_ptr.root? ^ !jsi_root_node
-      @jsi_root_node = jsi_ptr.root? ? self : jsi_root_node
 
       if jsi_ptr.root? && jsi_schema_base_uri
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
       end
-      self.jsi_schema_base_uri = jsi_schema_base_uri
 
       jsi_node_content = self.jsi_node_content
+
+      extends = Set[]
 
       instance_for_schemas = jsi_document
       bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules)
@@ -75,13 +77,16 @@ module JSI
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the metaschema, i.e. this is a schema
+          extend Schema
           schema_implementation_modules.each do |schema_implementation_module|
             extend schema_implementation_module
           end
+          extends += schema_implementation_modules
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
           # this is the metaschema (it is described by itself)
           extend Metaschema
+          extends << Metaschema
         end
       end
 
@@ -94,7 +99,6 @@ module JSI
           new_node(
             jsi_ptr: bootstrap_schema.jsi_ptr,
             jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
-            jsi_root_node: @jsi_root_node,
           )
         end
       end
@@ -105,25 +109,25 @@ module JSI
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
+      extends.merge(extends_for_instance)
+      extends.freeze
+
+      conflicting_modules = Set[self.class] + extends + @jsi_schemas.map(&:jsi_schema_module)
+      reader_modules = @jsi_schemas.map do |schema|
+        JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
+      end
+
+      readers = reader_modules.map(&:jsi_property_readers).inject(Set[], &:merge).freeze
+      define_singleton_method(:jsi_property_readers) { readers }
+
+      reader_modules.each { |reader_module| extend reader_module }
+
       extends_for_instance.each do |m|
         extend m
       end
 
       @jsi_schemas.each do |schema|
         extend schema.jsi_schema_module
-      end
-
-      # workarounds
-      begin # draft 4 boolean schema workaround
-        # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
-        # properties/additionalProperties and properties/additionalItems.
-        # these still describe schemas, despite not being described by the metaschema.
-        addtlPropsanyOf = metaschema_root_ptr["properties"]["additionalProperties"]["anyOf"]
-        addtlItemsanyOf = metaschema_root_ptr["properties"]["additionalItems"]["anyOf"]
-
-        if !jsi_ptr.root? && [addtlPropsanyOf, addtlItemsanyOf].include?(jsi_ptr.parent)
-          describes_schema!(schema_implementation_modules)
-        end
       end
     end
 
@@ -184,7 +188,8 @@ module JSI
       ].compact
     end
 
-    # an opaque fingerprint of this MetaschemaNode for FingerprintHash
+    # see {Util::Private::FingerprintHash}
+    # @api private
     def jsi_fingerprint
       {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
     end
@@ -203,8 +208,8 @@ module JSI
     end
 
     # note: not for root node
-    def new_node(params)
-      MetaschemaNode.new(jsi_document, **our_initialize_params.merge(params))
+    def new_node(**params)
+      MetaschemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params, **params)
     end
 
     def jsi_child_node_map
@@ -212,7 +217,6 @@ module JSI
         new_node(
           jsi_ptr: jsi_ptr[token],
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
-          jsi_root_node: jsi_root_node,
         )
       end
     end

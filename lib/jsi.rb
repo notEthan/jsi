@@ -17,6 +17,9 @@ module JSI
   class Bug < NotImplementedError
   end
 
+  # @private TODO remove, any ruby without this is already long EOL
+  FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
+
   # @private
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
 
@@ -33,6 +36,7 @@ module JSI
   autoload :Base, 'jsi/base'
   autoload :Metaschema, 'jsi/metaschema'
   autoload :MetaschemaNode, 'jsi/metaschema_node'
+  autoload :SchemaModule, 'jsi/schema_classes'
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :SchemaRegistry, 'jsi/schema_registry'
   autoload :Validation, 'jsi/validation'
@@ -44,35 +48,46 @@ module JSI
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
-  # instantiates a given schema object as a JSI Schema.
-  #
-  # see {JSI::Schema.new_schema}
-  #
-  # @param (see JSI::Schema.new_schema)
-  # @return (see JSI::Schema.new_schema)
-  def self.new_schema(schema_object, **kw)
-    JSI::Schema.new_schema(schema_object, **kw)
+  # (see JSI::Schema.new_schema)
+  def self.new_schema(schema_content,
+      # params of Schema.new_schema have their default values repeated here. delegating in a splat
+      # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
+      default_metaschema: nil,
+      uri: nil,
+      stringify_symbol_keys: true
+  )
+    JSI::Schema.new_schema(schema_content,
+      default_metaschema: default_metaschema,
+      uri: uri,
+      stringify_symbol_keys: stringify_symbol_keys,
+    )
   end
 
-  # instantiates a given schema object as a JSI Schema and returns its JSI Schema Module.
+  # Instantiates the given schema content as a JSI Schema, passing all params to
+  # {JSI.new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
-  # shortcut to chain {JSI::Schema.new_schema} + {Schema#jsi_schema_module}.
-  #
-  # @param (see JSI::Schema.new_schema)
-  # @return [Module, JSI::SchemaModule] the JSI Schema Module of the schema
-  def self.new_schema_module(schema_object, **kw)
-    JSI::Schema.new_schema(schema_object, **kw).jsi_schema_module
+  # @return [Module + JSI::SchemaModule]
+  def self.new_schema_module(schema_content, **kw)
+    JSI::Schema.new_schema(schema_content, **kw).jsi_schema_module
   end
 
   # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.
   #
   # @return [JSI::SchemaRegistry]
   def self.schema_registry
-    return @schema_registry if instance_variable_defined?(:@schema_registry)
-    @schema_registry = SchemaRegistry.new
+    @schema_registry
   end
-end
 
-JSI.schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
-JSI.schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaOrgDraft06.schema }
-JSI.schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaOrgDraft07.schema }
+  # @param schema_registry [JSI::SchemaRegistry]
+  def self.schema_registry=(schema_registry)
+    @schema_registry = schema_registry
+  end
+
+  DEFAULT_SCHEMA_REGISTRY = SchemaRegistry.new.tap do |schema_registry|
+    schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
+    schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaOrgDraft06.schema }
+    schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaOrgDraft07.schema }
+  end.freeze
+
+  self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup
+end

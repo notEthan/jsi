@@ -51,6 +51,10 @@ module JSI
         ].join("\n"))
       end
 
+      unless enum.is_a?(Enumerable)
+        raise(ArgumentError, "#{SchemaSet} initialized with non-Enumerable: #{enum.pretty_inspect.chomp}")
+      end
+
       super
 
       not_schemas = reject { |s| s.is_a?(Schema) }
@@ -64,20 +68,20 @@ module JSI
       freeze
     end
 
-    # instantiates the given instance as a JSI. its schemas are inplace applicators matched from the schemas
-    # in this SchemaSet which apply to the given instance.
+    # Instantiates a new JSI whose content comes from the given `instance` param.
+    # This SchemaSet indicates the schemas of the JSI - its schemas are inplace
+    # applicators of this set's schemas which apply to the given instance.
     #
-    # @param instance [Object] the JSON Schema instance to be represented as a JSI
-    # @param uri [nil, #to_str, Addressable::URI] for an instance document containing schemas, this is
-    #   the URI of the document, whether or not the document is itself a schema.
-    #   in the normal case where the document does not contain any schemas, `uri` has no effect.
-    #   schemas within the document use this uri as the base URI to resolve relative URIs.
-    #   the resulting JSI may be registered with a {SchemaRegistry} (see {JSI.schema_registry}).
+    # @param instance [Object] the instance to be represented as a JSI
+    # @param uri [nil, #to_str, Addressable::URI] The retrieval URI of the instance.
+    #
+    #   It is rare that this needs to be specified, and only useful for instances which contain schemas.
+    #   See {Schema::DescribesSchema#new_schema}'s `uri` param documentation.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
-    #   Conversion is done on a copy; the given instance is not modified.
-    # @return [JSI::Base subclass] a JSI whose instance is the given instance and whose schemas are inplace
-    #   applicators matched to the instance from the schemas in this set.
+    #   Replacement is done on a copy; the given instance is not modified.
+    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    #   inplace applicators of the schemas in this set.
     def new_jsi(instance,
         uri: nil,
         stringify_symbol_keys: false
