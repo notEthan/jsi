@@ -65,7 +65,8 @@ module JSI
       elsif object.is_a?(Set)
         as_json(object.to_a, **options)
       elsif object.respond_to?(:as_json)
-        as_json(object.as_json(**options), **options)
+        object_as_json = options.empty? ? object.as_json : object.as_json(**options) # TODO remove eventually (keyword argument compatibility)
+        as_json(object_as_json, **options)
       else
         type_err.call
       end
