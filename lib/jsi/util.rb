@@ -88,7 +88,7 @@ module JSI
     # @return [String]
     def to_json(object, options = {})
       if object.respond_to?(:to_json)
-        object.to_json(**options)
+        options.empty? ? object.to_json : object.to_json(**options) # TODO remove eventually (keyword argument compatibility)
       else
         JSON.generate(as_json(object, **options))
       end
