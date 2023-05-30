@@ -256,6 +256,7 @@ describe JSI::Base do
           'foo' => {'items' => {'title' => 'foo items'}},
         },
         'additionalProperties' => {'title' => 'addtl'},
+        'propertyNames' => {'title' => 'propNames'},
       }
     end
 
@@ -271,6 +272,20 @@ describe JSI::Base do
           JSI::Ptr["bar"] => Set[schema.additionalProperties],
           JSI::Ptr["bar", 0] => Set[],
         }, descendent_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
+      end
+
+      it "yields descendent JSIs and propertyNames" do
+        expected_nodes = Set[
+          subject,
+          schema.propertyNames.new_jsi('foo'),
+          schema.propertyNames.new_jsi('bar'),
+          subject / ["foo"],
+          subject / ["foo", 0],
+          subject / ["foo", 1],
+          subject / ["bar"],
+          subject / ["bar", 0],
+        ]
+        assert_equal(expected_nodes, subject.jsi_each_descendent_node(propertyNames: true).to_set)
       end
 
       it 'greps' do
