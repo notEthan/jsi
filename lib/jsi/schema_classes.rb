@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI Schema Modules are extended with JSI::SchemaModule
-  module SchemaModule
+  # A Module associated with a JSI Schema. See {Schema#jsi_schema_module}.
+  class SchemaModule < Module
     # @!method schema
     #   The schema for which this is the JSI Schema Module
     #   @return [Base + Schema]
@@ -57,9 +57,6 @@ module JSI
 
   # A module to extend the {SchemaModule} of a schema which describes other schemas (a {Schema::DescribesSchema})
   module SchemaModule::DescribesSchemaModule
-    # @!parse include SchemaModule
-
-
     # Instantiates the given schema content as a JSI Schema.
     #
     # see {JSI::Schema::DescribesSchema#new_schema}
@@ -166,17 +163,15 @@ module JSI
       end
 
       private def schema_module_compute(schema: )
-          Module.new do
+          SchemaModule.new do
             begin
               define_singleton_method(:schema) { schema }
-
-              extend SchemaModule
 
               @jsi_node = schema
 
               schema.jsi_schemas.each do |schema_schema|
                 extend JSI::SchemaClasses.schema_property_reader_module(schema_schema,
-                  conflicting_modules: Set[Module, SchemaModule],
+                  conflicting_modules: Set[SchemaModule],
                 )
               end
             end
@@ -316,7 +311,7 @@ module JSI
     end
   end
 
-  module SchemaModule
+  class SchemaModule
     include Connects
   end
 
