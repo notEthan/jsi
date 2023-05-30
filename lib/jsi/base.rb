@@ -218,7 +218,9 @@ module JSI
       yield self
 
       if propertyNames && is_a?(HashNode)
-        jsi_each_propertyName(&block)
+        jsi_each_propertyName do |propertyName|
+          propertyName.jsi_each_descendent_node(propertyNames: propertyNames, &block)
+        end
       end
 
       jsi_each_child_token do |token|
