@@ -335,32 +335,32 @@
       "enum" => #<JSI (JSI::JSONSchemaOrgDraft07::Enum) 0>
     },
     "type" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes)
+      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleType)
         "string"
       >
     },
     "type-badstr" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])
+      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleType, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])
         "a"
       >
     },
     "type-ary" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
       "type" => #[<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])>
-        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleTypes) "string">
+        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleType) "string">
       ]
     },
     "type-ary-badstr" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])>
-        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleTypes) "a">
+      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleType, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])>
+        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleType) "a">
       ]
     },
     "type-ary-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])>
-        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleTypes) 0>
+      "type" => #[<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleType, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])>
+        #<JSI (JSI::JSONSchemaOrgDraft07::SimpleType) 0>
       ]
     },
     "type-int" => #{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
-      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleTypes, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])
+      "type" => #<JSI (JSI::JSONSchemaOrgDraft07::Type, JSI::JSONSchemaOrgDraft07::SimpleType, JSI::JSONSchemaOrgDraft07::Type.anyOf[1])
         0
       >
     },
