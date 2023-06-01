@@ -295,7 +295,7 @@ module JSI
       raise(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
       @possibly_schema_node = node
       node.jsi_schemas.each do |schema|
-        extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly]))
+        extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [NotASchemaModule]))
       end
     end
 
