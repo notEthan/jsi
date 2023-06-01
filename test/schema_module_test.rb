@@ -27,7 +27,7 @@ describe 'JSI::SchemaModule' do
   describe '.inspect, .to_s' do
     it 'shows the name relative to a named ancestor schema module' do
       assert_equal(
-        'SchemaModuleTestModule.properties (JSI wrapper for Schema Module)',
+        'SchemaModuleTestModule.properties (JSI::SchemaModule::Connection)',
         SchemaModuleTestModule.properties.inspect
       )
       assert_equal(SchemaModuleTestModule.properties.inspect, SchemaModuleTestModule.properties.to_s)
@@ -42,7 +42,7 @@ describe 'JSI::SchemaModule' do
         'title' => 'lhzm', 'properties' => {'foo' => {'items' => {'type' => 'string'}}}
       })
       assert_equal(
-        '(JSI wrapper for Schema Module: #/properties)',
+        '(JSI::SchemaModule::Connection: #/properties)',
         mod.properties.inspect
       )
       assert_equal(mod.properties.inspect, mod.properties.to_s)

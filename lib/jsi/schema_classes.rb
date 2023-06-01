@@ -302,9 +302,9 @@ module JSI
     # @return [String]
     def inspect
       if name_from_ancestor
-        "#{name_from_ancestor} (JSI wrapper for Schema Module)"
+        "#{name_from_ancestor} (#{self.class})"
       else
-        "(JSI wrapper for Schema Module: #{@possibly_schema_node.jsi_ptr.uri})"
+        "(#{self.class}: #{@possibly_schema_node.jsi_ptr.uri})"
       end
     end
 
