@@ -200,8 +200,7 @@ module JSI
       #
       # @return [nil, #new_schema]
       def default_metaschema
-        return @default_metaschema if instance_variable_defined?(:@default_metaschema)
-        return nil
+        @default_metaschema
       end
 
       # sets an application-wide default metaschema used by {JSI.new_schema}
@@ -339,6 +338,8 @@ module JSI
         end
       end
     end
+
+    self.default_metaschema = nil
 
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       def initialize(*)
