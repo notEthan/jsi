@@ -5,7 +5,7 @@ module JSI
   # a `$ref` keyword of a schema.
   class Schema::Ref
     # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
-    # @param ref_schema [JSI::Schema, nil] A schema from which the reference originated.
+    # @param ref_schema [JSI::Schema] A schema from which the reference originated.
     #   Optional if the ref is to be resolved only from the schema registry.
     def initialize(ref, ref_schema = nil)
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)

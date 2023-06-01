@@ -152,7 +152,7 @@ module JSI
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
-      # @param uri [nil, #to_str, Addressable::URI] The retrieval URI of the schema document.
+      # @param uri [#to_str, Addressable::URI] The retrieval URI of the schema document.
       #
       #   It is rare that this needs to be specified. Most schemas, if they use absolute URIs, will
       #   use the `$id` keyword (`id` in draft 4) to specify this. A different retrieval URI is useful

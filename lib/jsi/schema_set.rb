@@ -73,7 +73,7 @@ module JSI
     # applicators of this set's schemas which apply to the given instance.
     #
     # @param instance [Object] the instance to be represented as a JSI
-    # @param uri [nil, #to_str, Addressable::URI] The retrieval URI of the instance.
+    # @param uri [#to_str, Addressable::URI] The retrieval URI of the instance.
     #
     #   It is rare that this needs to be specified, and only useful for instances which contain schemas.
     #   See {Schema::DescribesSchema#new_schema}'s `uri` param documentation.
