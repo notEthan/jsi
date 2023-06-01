@@ -289,10 +289,7 @@ module JSI
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
-            metaschema = Schema::Ref.new(id).deref_schema
-            unless metaschema.describes_schema?
-              raise(TypeError, "given schema_content contains a $schema but the resource it identifies does not describe a schema")
-            end
+            metaschema = ensure_describes_schema(id, name: '$schema')
             metaschema.new_schema(schema_content, **new_schema_params)
           else
             default_metaschema_new_schema.call

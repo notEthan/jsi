@@ -12,6 +12,12 @@ describe JSI::Schema do
       assert_equal("given schema_content keyword `$schema` is not a string", err.message)
     end
 
+    it '$schema resolves but does not describe schemas' do
+      JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#", "$id": "tag:guqh"})
+      e = assert_raises(TypeError) { JSI.new_schema({"$schema": "tag:guqh"}) }
+      assert_equal(%q($schema URI indicates a schema which does not describe schemas: "tag:guqh"), e.message)
+    end
+
     it 'cannot instantiate from some unknown object' do
       err = assert_raises(TypeError) { JSI.new_schema(Object.new, default_metaschema: JSI::JSONSchemaOrgDraft07) }
       assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
