@@ -3,11 +3,22 @@
 module JSI
   # A Module associated with a JSI Schema. See {Schema#jsi_schema_module}.
   class SchemaModule < Module
-    # @!method schema
-    #   The schema for which this is the JSI Schema Module
-    #   @return [Base + Schema]
-    # note: defined on JSI Schema Module by JSI::SchemaClasses.module_for_schema
+    # @private
+    def initialize(schema, &block)
+      super(&block)
 
+      @jsi_node = schema
+
+      schema.jsi_schemas.each do |schema_schema|
+        extend SchemaClasses.schema_property_reader_module(schema_schema, conflicting_modules: Set[SchemaModule])
+      end
+    end
+
+    # The schema for which this is the JSI Schema Module
+    # @return [Base + Schema]
+    def schema
+      @jsi_node
+    end
 
     # a URI which refers to the schema. see {Schema#schema_uri}.
     # @return (see Schema#schema_uri)
@@ -163,19 +174,7 @@ module JSI
       end
 
       private def schema_module_compute(schema: )
-          SchemaModule.new do
-            begin
-              define_singleton_method(:schema) { schema }
-
-              @jsi_node = schema
-
-              schema.jsi_schemas.each do |schema_schema|
-                extend JSI::SchemaClasses.schema_property_reader_module(schema_schema,
-                  conflicting_modules: Set[SchemaModule],
-                )
-              end
-            end
-          end
+        SchemaModule.new(schema)
       end
 
       # @deprecated after v0.7
