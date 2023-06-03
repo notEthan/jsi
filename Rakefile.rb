@@ -77,6 +77,7 @@ ignore_files = %w(
   .github/**/*
   .gitignore
   .gitmodules
+  bin/c
   Gemfile
   Rakefile.rb
   test/**/*
