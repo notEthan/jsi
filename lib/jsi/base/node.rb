@@ -297,8 +297,36 @@ module JSI
   end
 
   module Base::StringNode
-    def to_str
-      jsi_node_content.to_str
+    delegate_methods = %w(% * + << =~ [] []=
+      ascii_only? b byteindex byterindex bytes bytesize byteslice bytesplice capitalize capitalize!
+      casecmp casecmp? center chars chomp chomp! chop chop! chr clear codepoints concat count delete delete!
+      delete_prefix delete_prefix! delete_suffix delete_suffix! downcase downcase!
+      each_byte each_char each_codepoint each_grapheme_cluster each_line
+      empty? encode encode! encoding end_with? force_encoding getbyte grapheme_clusters gsub gsub! hex
+      include? index insert intern length lines ljust lstrip lstrip! match match? next next! oct ord
+      partition prepend replace reverse reverse! rindex rjust rpartition rstrip rstrip! scan scrub scrub!
+      setbyte size slice slice! split squeeze squeeze! start_with? strip strip! sub sub! succ succ! sum
+      swapcase swapcase! to_c to_f to_i to_r to_s to_str to_sym tr tr! tr_s tr_s!
+      unicode_normalize unicode_normalize! unicode_normalized? unpack unpack1 upcase upcase! upto valid_encoding?
+    )
+    delegate_methods.each do |method_name|
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        define_method(method_name) do |*a, &b|
+          if jsi_node_content.respond_to?(method_name)
+            jsi_node_content.public_send(method_name, *a, &b)
+          else
+            jsi_node_content.to_str.public_send(method_name, *a, &b)
+          end
+        end
+      else
+        define_method(method_name) do |*a, **kw, &b|
+          if jsi_node_content.respond_to?(method_name)
+            jsi_node_content.public_send(method_name, *a, **kw, &b)
+          else
+            jsi_node_content.to_str.public_send(method_name, *a, **kw, &b)
+          end
+        end
+      end
     end
   end
 end
