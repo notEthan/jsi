@@ -393,9 +393,9 @@ module JSI
       # @param describes_schema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str]
       # @raise [TypeError] if the param does not indicate a schema which describes schemas
       # @return [Base + Schema + Schema::DescribesSchema]
-      def ensure_describes_schema(describes_schema, name: nil)
+      def ensure_describes_schema(describes_schema, name: nil, schema_registry: JSI.schema_registry)
         if describes_schema.respond_to?(:to_str)
-          schema = Schema::Ref.new(describes_schema).deref_schema
+          schema = Schema::Ref.new(describes_schema, schema_registry: schema_registry).deref_schema
           if !schema.describes_schema?
             raise(TypeError, [name, "URI indicates a schema which does not describe schemas: #{describes_schema.pretty_inspect.chomp}"].compact.join(" "))
           end
