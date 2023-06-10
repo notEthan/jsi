@@ -173,6 +173,7 @@ module JSI
     def jsi_modified_copy(&block)
       if jsi_ptr.root?
         modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
+        modified_document = jsi_content_to_immutable.call(modified_document)
         MetaschemaNode.new(modified_document, **our_initialize_params)
       else
         modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
