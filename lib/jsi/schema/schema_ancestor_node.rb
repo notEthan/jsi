@@ -54,7 +54,7 @@ module JSI
 
     # schemas at or below node with the given anchor.
     #
-    # @return [Array<JSI::Schema>]
+    # @return [Set<JSI::Schema>]
     def jsi_anchor_subschemas(anchor)
       jsi_anchor_subschemas_map[anchor: anchor]
     end
@@ -119,7 +119,7 @@ module JSI
       jsi_memomap(__method__) do |anchor: |
         jsi_each_descendent_node.select do |node|
           node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
-        end.freeze
+        end.to_set.freeze
       end
     end
   end
