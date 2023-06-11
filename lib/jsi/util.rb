@@ -120,15 +120,16 @@ module JSI
     # returns an object which is equal to the param object, and is recursively frozen.
     # the given object is not modified.
     def deep_to_frozen(object)
+      dtf = proc { |o| deep_to_frozen(o) }
       if object.instance_of?(Hash)
         out = {}
         object.each do |k, v|
-          out[deep_to_frozen(k)] = deep_to_frozen(v)
+          out[dtf[k]] = dtf[v]
         end
         out.freeze
       elsif object.instance_of?(Array)
         object.map do |e|
-          deep_to_frozen(e)
+          dtf[e]
         end.freeze
       elsif object.instance_of?(String)
         object.dup.freeze
