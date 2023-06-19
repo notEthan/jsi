@@ -145,11 +145,11 @@ module JSI
         end
       elsif object.instance_of?(Array)
         identical = object.frozen?
-        out = []
-        object.each do |e|
+        out = Array.new(object.size)
+        object.each_with_index do |e, i|
           fe = dtf[e]
           identical &&= fe.__id__ == e.__id__
-          out << fe
+          out[i] = fe
         end
         if identical
           object
