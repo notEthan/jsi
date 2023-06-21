@@ -564,6 +564,12 @@ module JSI
       false
     end
 
+    # Is this JSI mutable?
+    # @return [Boolean]
+    def jsi_mutable?
+      # note: overridden by Base::Mutable / Immutable
+    end
+
     # validates this JSI's instance against its schemas
     #
     # @return [JSI::Validation::FullResult]
