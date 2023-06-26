@@ -162,7 +162,7 @@ module JSI
     # Comes from the param `to_immutable` of {SchemaSet#new_jsi} (or other `new_jsi` /
     # `new_schema` / `new_schema_module` method).
     # Immutable JSIs use this when instantiating a modified copy so its instance is also immutable.
-    # @return [#call]
+    # @return [#call, nil]
     attr_reader(:jsi_content_to_immutable)
 
     # the JSI at the root of this JSI's document

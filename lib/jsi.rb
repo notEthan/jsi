@@ -80,7 +80,7 @@ module JSI
       schema_implementation_modules: ,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE
   )
-    metaschema_document = to_immutable.call(metaschema_document)
+    metaschema_document = to_immutable.call(metaschema_document) if to_immutable
 
     MetaschemaNode.new(metaschema_document,
       schema_implementation_modules: schema_implementation_modules,

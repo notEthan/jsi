@@ -88,9 +88,11 @@ module JSI
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
-    # @param to_immutable [#call] A proc/callable which takes given instance content
+    # @param to_immutable [#call, nil] A proc/callable which takes given instance content
     #   and results in an immutable (i.e. deeply frozen) object equal to that.
     #   If the instantiated JSI will be mutable, this is not used.
+    #   Though not recommended, this may be nil with immutable JSIs if the instance content is otherwise
+    #   guaranteed to be immutable, as well as any modified copies of the instance.
     # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
     #   The instance content will be transformed with `to_immutable` if the JSI will be immutable.
     # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
@@ -107,7 +109,7 @@ module JSI
         instance = Util.deep_stringify_symbol_keys(instance)
       end
 
-      instance = to_immutable.call(instance) if !mutable
+      instance = to_immutable.call(instance) if !mutable && to_immutable
 
       applied_schemas = inplace_applicator_schemas(instance)
 
