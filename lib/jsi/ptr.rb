@@ -269,7 +269,7 @@ module JSI
 
       def node_subscript_token_child(value, token, *a, **kw)
         if value.respond_to?(:to_ary)
-          if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
+          if token.is_a?(String) && (token == '0' || token =~ /\A[1-9]\d*\z/)
             token = token.to_i
           elsif token == '-'
             # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
