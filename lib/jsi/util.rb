@@ -132,7 +132,7 @@ module JSI
         end.freeze
       elsif object.instance_of?(String)
         object.dup.freeze
-      elsif CLASSES_ALWAYS_FROZEN.any? { |c| object.instance_of?(c) }
+      elsif CLASSES_ALWAYS_FROZEN.any? { |c| object.is_a?(c) } # note: `is_a?`, not `instance_of?`, here because instance_of?(Integer) is false until Fixnum/Bignum is gone. this is fine here; there is no concern of subclasses of CLASSES_ALWAYS_FROZEN duping/freezing differently (as with e.g. ActiveSupport::HashWithIndifferentAccess)
         object
       else
           raise(NotImplementedError, [
