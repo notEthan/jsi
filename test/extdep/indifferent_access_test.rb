@@ -48,5 +48,13 @@ other_instantiations.each do |inst|
       assert_equal('i', subject[:c][:h][0]['i'])
       assert_equal(nil, subject['c']['h'][0][:i]) # hwia recurses down array containers to reinstantiate contained hashes as hwia on instantiation, not retrieval, so modifying h later results in a plain hash
     end
+
+    it 'merges' do
+      merged = subject.merge(:j => [], 'k' => [])
+      assert(merged[:j])
+      assert(merged['j'])
+      assert(merged[:k])
+      assert(merged['k'])
+    end
   end
 end
