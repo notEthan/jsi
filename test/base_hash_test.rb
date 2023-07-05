@@ -434,7 +434,8 @@ describe 'JSI::Base hash' do
     end
   end
   describe 'modified copy methods' do
-    it('#merge') { assert_equal(subject, subject.merge({})) }
+    it('#merge') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge({'a' => ['b']})) }
+    it('#merge Base') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge(schema.new_jsi({'a' => ['b']}))) }
     it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
     it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
     describe '#select' do
