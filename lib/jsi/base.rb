@@ -154,6 +154,8 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
+      jsi_memomaps_initialize
+
       if jsi_instance.is_a?(JSI::Base)
         raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
       end
@@ -654,6 +656,9 @@ module JSI
     include Util::FingerprintHash
 
     private
+
+    def jsi_memomaps_initialize
+    end
 
     def jsi_indicated_schemas=(jsi_indicated_schemas)
       @jsi_indicated_schemas = SchemaSet.ensure_schema_set(jsi_indicated_schemas)

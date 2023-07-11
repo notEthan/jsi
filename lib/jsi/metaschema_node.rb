@@ -196,6 +196,9 @@ module JSI
 
     private
 
+    def jsi_memomaps_initialize
+    end
+
     # note: does not include jsi_root_node
     def our_initialize_params
       {
