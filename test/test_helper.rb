@@ -138,6 +138,10 @@ class JSISpec < Minitest::Spec
     # :nocov:
   end
 
+  def self.schema_instance_child_use_default_default_true
+    before { schema.jsi_schema_module_exec { redef_method(:jsi_child_use_default_default) { true } } }
+  end
+
   def assert_equal exp, act, msg = nil
     msg = message(msg, E) do
       [].tap do |ms|

@@ -52,6 +52,9 @@ describe 'JSI::Base array' do
         'items' => {'default' => 'foo'},
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { [1] }
       it 'returns the default value' do
@@ -93,6 +96,9 @@ describe 'JSI::Base array' do
         'items' => {'default' => {'foo' => 2}},
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { [{'bar' => 3}] }
       it 'returns the default value' do

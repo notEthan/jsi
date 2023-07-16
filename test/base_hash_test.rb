@@ -25,6 +25,9 @@ describe 'JSI::Base hash' do
         },
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
@@ -56,6 +59,9 @@ describe 'JSI::Base hash' do
         },
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
@@ -88,6 +94,9 @@ describe 'JSI::Base hash' do
         },
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { Hash.new({'foo' => 2}).merge({'bar' => 3}) }
       it 'returns the default value' do
