@@ -106,17 +106,18 @@ describe JSI::MetaschemaNode do
   describe 'basic, named' do
     it 'is pretty' do
       pretty = <<~str
-      \#{<JSI::MetaschemaNode (#) Metaschema>
+      \#{<JSI::MetaschemaNode (BasicMetaschema) Metaschema>
         "$id" => "tag:named-basic-metaschema",
-        "properties" => \#{<JSI::MetaschemaNode (#/properties/properties)>
-          "properties" => \#{<JSI::MetaschemaNode (#) Schema>
-            "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema>
+        "properties" => \#{<JSI::MetaschemaNode (BasicMetaschema.properties["properties"])>
+          "properties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+            "additionalProperties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
               "$ref" => "#"
             }
           },
-          "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"
+          "additionalProperties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+            "$ref" => "#"
           },
-          "$ref" => \#{<JSI::MetaschemaNode (#) Schema>}
+          "$ref" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>}
         }
       }
       str
