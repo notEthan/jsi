@@ -769,8 +769,17 @@ describe JSI::Schema do
   end
 
   describe 'stringification, thorough for draft 7' do
+    let(:recursive_default_child_as_jsi_true) do
+      schema = JSI::JSONSchemaOrgDraft07.new_schema({
+        "items" => {"$ref" => "#"},
+        "additionalProperties" => {"$ref" => "#"},
+      })
+      schema.jsi_schema_module_exec { define_method(:jsi_child_as_jsi) { |*, &b| b.call } }
+      schema
+    end
+
     let(:schema) do
-      JSI.new_schema(YAML.load(<<~YAML
+      JSI::SchemaSet[JSI::JSONSchemaOrgDraft07.schema, recursive_default_child_as_jsi_true].new_jsi(YAML.load(<<~YAML
         $schema: "http://json-schema.org/draft-07/schema#"
         description:
           A schema containing each keyword of the metaschema with valid and invalid type / structure of the keyword value
@@ -892,16 +901,6 @@ describe JSI::Schema do
           not-int: {not: 0}
         YAML
       ))
-    end
-
-    around do |test|
-      as_jsi = JSI::Base.instance_method(:jsi_child_as_jsi)
-      JSI::Base.send(:define_method, :jsi_child_as_jsi) { |*, &b| b.call }
-      begin
-        test.call
-      ensure
-        JSI::Base.send(:define_method, :jsi_child_as_jsi, as_jsi)
-      end
     end
 
     it '#pretty_print' do
