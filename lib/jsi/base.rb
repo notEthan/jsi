@@ -482,7 +482,7 @@ module JSI
     # returned when a token refers to a child that is not in the document.
     # @return [true, false] a valid value of the `use_default` param of {#[]}
     def jsi_child_use_default_default
-      true
+      false
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.
