@@ -770,10 +770,7 @@ describe JSI::Schema do
 
   describe 'stringification, thorough for draft 7' do
     let(:recursive_default_child_as_jsi_true) do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({
-        "items" => {"$ref" => "#"},
-        "additionalProperties" => {"$ref" => "#"},
-      })
+      schema = JSI::SimpleWrap::METASCHEMA.new_schema(:recursive_default_child_as_jsi_true)
       schema.jsi_schema_module_exec { redef_method(:jsi_child_as_jsi_default) { true } }
       schema
     end
