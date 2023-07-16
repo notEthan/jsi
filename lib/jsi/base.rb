@@ -467,9 +467,22 @@ module JSI
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
     # @return [JSI::Base, Object, nil] the child value identified by the subscript token
-    def [](token, as_jsi: :auto, use_default: true)
+    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
+    end
+
+    # The default value for the param `as_jsi` of {#[]}, controlling whether a child is returned as a JSI instance.
+    # @return [:auto, true, false] a valid value of the `as_jsi` param of {#[]}
+    def jsi_child_as_jsi_default
+      :auto
+    end
+
+    # The default value for the param `use_default` of {#[]}, controlling whether a schema default value is
+    # returned when a token refers to a child that is not in the document.
+    # @return [true, false] a valid value of the `use_default` param of {#[]}
+    def jsi_child_use_default_default
+      true
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.

@@ -84,7 +84,7 @@ module JSI
     end
 
     # See {Base#[]}
-    def [](token, as_jsi: :auto, use_default: true)
+    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       if jsi_node_content_hash_pubsend(:key?, token)
         jsi_child(token, as_jsi: as_jsi)
       else
@@ -201,7 +201,7 @@ module JSI
     end
 
     # See {Base#[]}
-    def [](token, as_jsi: :auto, use_default: true)
+    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       size = jsi_node_content_ary_pubsend(:size)
       if token.is_a?(Integer)
         if token < 0
