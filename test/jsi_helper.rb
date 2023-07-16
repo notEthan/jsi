@@ -47,3 +47,18 @@ class SortOfArray
     {class: self.class, ary: @ary}
   end
 end
+
+class Module
+  def redef_method(method_name, method = nil, &block)
+    begin
+      remove_method(method_name)
+    rescue NameError
+    end
+
+    if method
+      define_method(method_name, method, &block)
+    else
+      define_method(method_name, &block)
+    end
+  end
+end
