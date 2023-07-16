@@ -774,7 +774,7 @@ describe JSI::Schema do
         "items" => {"$ref" => "#"},
         "additionalProperties" => {"$ref" => "#"},
       })
-      schema.jsi_schema_module_exec { define_method(:jsi_child_as_jsi) { |*, &b| b.call } }
+      schema.jsi_schema_module_exec { redef_method(:jsi_child_as_jsi_default) { true } }
       schema
     end
 
