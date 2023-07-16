@@ -148,7 +148,7 @@ module JSI
     attr_reader :jsi_schemas
 
     # see {Base#jsi_child}
-    def jsi_child(token, as_jsi: :auto)
+    def jsi_child(token, as_jsi: )
       child_node = jsi_child_node_map[token: token]
 
       jsi_child_as_jsi(jsi_node_content_child(token), child_node.jsi_schemas, as_jsi) do

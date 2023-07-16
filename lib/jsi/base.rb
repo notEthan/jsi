@@ -380,7 +380,7 @@ module JSI
     # @param token (see Base#[])
     # @param as_jsi (see Base#[])
     # @return [JSI::Base, Object]
-    def jsi_child(token, as_jsi: :auto)
+    def jsi_child(token, as_jsi: )
       child_content = jsi_node_content_child(token)
 
       child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
@@ -408,7 +408,7 @@ module JSI
     # @param token (see Base#[])
     # @param as_jsi (see Base#[])
     # @return [JSI::Base, nil]
-    def jsi_default_child(token, as_jsi: :auto)
+    def jsi_default_child(token, as_jsi: )
       child_content = jsi_node_content_child(token)
 
       child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
