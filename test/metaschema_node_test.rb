@@ -255,4 +255,23 @@ describe JSI::MetaschemaNode do
       end
     end
   end
+
+  describe 'metaschema subschema modules' do
+    # sanity check that metaschemas' named subschema modules are actually subschemas of the metaschema
+    def check_consts(metaschema, mod)
+      assert_is_a(JSI::SchemaModule, mod)
+      assert_equal(metaschema, mod.schema.jsi_root_node)
+      mod.constants.each do |const_name|
+        const = mod.const_get(const_name)
+        next if !const.name.start_with?(mod.name)
+        check_consts(metaschema, const)
+      end
+    end
+
+    it 'named constants are subschema modules' do
+      [JSI::JSONSchemaOrgDraft04, JSI::JSONSchemaOrgDraft06, JSI::JSONSchemaOrgDraft07].each do |metaschema_module|
+        check_consts(metaschema_module.schema, metaschema_module)
+      end
+    end
+  end
 end
