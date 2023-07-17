@@ -65,15 +65,16 @@ module JSI
     # see {JSI::Schema::DescribesSchema#new_schema}
     #
     # @param (see JSI::Schema::DescribesSchema#new_schema)
+    # @yield (see JSI::Schema::DescribesSchema#new_schema)
     # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
     #   the given `schema_content` and whose schemas are inplace applicators of this module's schema
-    def new_schema(schema_content, **kw)
-      schema.new_schema(schema_content, **kw)
+    def new_schema(schema_content, **kw, &block)
+      schema.new_schema(schema_content, **kw, &block)
     end
 
     # (see Schema::DescribesSchema#new_schema_module)
-    def new_schema_module(schema_content, **kw)
-      schema.new_schema(schema_content, **kw).jsi_schema_module
+    def new_schema_module(schema_content, **kw, &block)
+      schema.new_schema(schema_content, **kw, &block).jsi_schema_module
     end
 
     # @return [Set<Module>]

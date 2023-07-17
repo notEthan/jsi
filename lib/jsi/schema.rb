@@ -166,17 +166,23 @@ module JSI
       # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
+      # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
+      #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
           uri: nil,
-          stringify_symbol_keys: true
+          stringify_symbol_keys: true,
+          &block
       )
         schema_jsi = new_jsi(schema_content,
           uri: uri,
           stringify_symbol_keys: stringify_symbol_keys,
         )
         JSI.schema_registry.register(schema_jsi)
+        if block
+          schema_jsi.jsi_schema_module_exec(&block)
+        end
         schema_jsi
       end
 
@@ -184,8 +190,8 @@ module JSI
       # {Schema::DescribesSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
       #
       # @return [Module + JSI::SchemaModule] the JSI Schema Module of the instantiated schema
-      def new_schema_module(schema_content, **kw)
-        new_schema(schema_content, **kw).jsi_schema_module
+      def new_schema_module(schema_content, **kw, &block)
+        new_schema(schema_content, **kw, &block).jsi_schema_module
       end
     end
 
@@ -262,6 +268,7 @@ module JSI
       #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::DescribesSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
+      # @yield (see Schema::DescribesSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
       #   the given `schema_content` and whose schemas are inplace applicators of the indicated metaschema
       def new_schema(schema_content,
@@ -269,7 +276,8 @@ module JSI
           # params of DescribesSchema#new_schema have their default values repeated here. delegating in a splat
           # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
-          stringify_symbol_keys: true
+          stringify_symbol_keys: true,
+          &block
       )
         new_schema_params = {
           uri: uri,
@@ -292,7 +300,7 @@ module JSI
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
-          default_metaschema.new_schema(schema_content, **new_schema_params)
+          default_metaschema.new_schema(schema_content, **new_schema_params, &block)
         }
         if schema_content.is_a?(Schema)
           raise(TypeError, [
@@ -311,7 +319,7 @@ module JSI
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
             metaschema = Schema.ensure_describes_schema(id, name: '$schema')
-            metaschema.new_schema(schema_content, **new_schema_params)
+            metaschema.new_schema(schema_content, **new_schema_params, &block)
           else
             default_metaschema_new_schema.call
           end
