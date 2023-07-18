@@ -84,6 +84,47 @@ describe JSI::MetaschemaNode do
       assert_equal(pp, metaschema.pretty_inspect)
     end
   end
+
+  describe 'with schema default' do
+    let(:jsi_document) do
+      YAML.load(<<~YAML
+        properties:
+          properties:
+            additionalProperties:
+              "$ref": "#"
+          additionalProperties:
+            "$ref": "#"
+          "$ref": {}
+          default:
+            default:
+              default
+        default: {}
+        YAML
+      )
+    end
+    let(:metaschema_root_ptr) { JSI::Ptr[] }
+    let(:root_schema_ptr) { JSI::Ptr[] }
+
+    it 'inserts a default value' do
+      metaschema.jsi_schema_module_exec { define_method(:jsi_child_use_default_default) { true } }
+
+      assert_equal({}, metaschema.additionalProperties.jsi_node_content)
+      assert_schemas([metaschema.additionalProperties.jsi_root_node], metaschema.additionalProperties)
+      assert_schemas([metaschema.additionalProperties.additionalProperties.jsi_root_node], metaschema.additionalProperties.additionalProperties)
+      schema_without_default = metaschema.properties['additionalProperties']
+      assert_equal('default', schema_without_default.default)
+      assert_equal('default', schema_without_default.default(as_jsi: true).jsi_node_content)
+      assert_schemas(
+        [schema_without_default.default(as_jsi: true).jsi_root_node.properties['default']],
+        schema_without_default.default(as_jsi: true)
+      )
+      assert_schemas(
+        [schema_without_default.additionalProperties.default(as_jsi: true).jsi_root_node.properties['default']],
+        schema_without_default.additionalProperties.default(as_jsi: true)
+      )
+    end
+  end
+
   describe 'json schema draft' do
     it 'type has a schema' do
       assert(JSI::JSONSchemaOrgDraft06.schema.type.jsi_schemas.any?)
