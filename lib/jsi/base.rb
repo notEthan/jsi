@@ -437,9 +437,10 @@ module JSI
     #
     # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
     #   of the instance identifying the child value
-    # @param as_jsi [:auto, true, false] whether to return the result value as a JSI. one of:
+    # @param as_jsi [:auto, true, false] (default is `:auto`)
+    #   Whether to return the child as a JSI. One of:
     #
-    #   - :auto (default): by default a JSI will be returned when either:
+    #   - `:auto`: By default a JSI will be returned when either:
     #
     #     - the result is a complex value (responds to #to_ary or #to_hash)
     #     - the result is a schema (including true/false schemas)
@@ -454,8 +455,9 @@ module JSI
     #   is not a hash key or array index of the instance and no default value applies.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
-    # @param use_default [true, false] whether to return a schema default value when the token is not in
-    #   range. if the token is not an array index or hash key of the instance, and one schema for the child
+    # @param use_default [true, false] (default is `false`)
+    #   Whether to return a schema default value when the token refers to a child that is not in the document.
+    #   If the token is not an array index or hash key of the instance, and one schema for the child
     #   instance specifies a default value, that default is returned.
     #
     #   if the result with the default value is a JSI (per the `as_jsi` param), that JSI is not a child of
