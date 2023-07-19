@@ -105,23 +105,12 @@ describe JSI::MetaschemaNode do
     let(:metaschema_root_ptr) { JSI::Ptr[] }
     let(:root_schema_ptr) { JSI::Ptr[] }
 
-    it 'inserts a default value' do
+    it 'does not insert a default value' do
       metaschema.jsi_schema_module_exec { define_method(:jsi_child_use_default_default) { true } }
 
-      assert_equal({}, metaschema.additionalProperties.jsi_node_content)
-      assert_schemas([metaschema.additionalProperties.jsi_root_node], metaschema.additionalProperties)
-      assert_schemas([metaschema.additionalProperties.additionalProperties.jsi_root_node], metaschema.additionalProperties.additionalProperties)
-      schema_without_default = metaschema.properties['additionalProperties']
-      assert_equal('default', schema_without_default.default)
-      assert_equal('default', schema_without_default.default(as_jsi: true).jsi_node_content)
-      assert_schemas(
-        [schema_without_default.default(as_jsi: true).jsi_root_node.properties['default']],
-        schema_without_default.default(as_jsi: true)
-      )
-      assert_schemas(
-        [schema_without_default.additionalProperties.default(as_jsi: true).jsi_root_node.properties['default']],
-        schema_without_default.additionalProperties.default(as_jsi: true)
-      )
+      assert_nil(metaschema.additionalProperties)
+      assert_nil(metaschema.properties['additionalProperties'].default)
+      assert_nil(metaschema.properties['additionalProperties'].default(as_jsi: true))
     end
   end
 

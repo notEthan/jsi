@@ -159,31 +159,7 @@ module JSI
 
     # See {Base#jsi_default_child}
     def jsi_default_child(token, as_jsi: )
-      child_content = jsi_node_content_child(token)
-
-      jsi_child_node_with_content = proc do |cc|
-        jsi_modified_copy do |i|
-          i_dup = i.dup
-          i_dup[token] = cc
-          i_dup
-        end[token, as_jsi: true]
-      end
-
-      defaults = Set.new
-      jsi_child_node_with_content[child_content].jsi_schemas.each do |child_schema|
-        if child_schema.keyword?('default')
-          defaults << child_schema.jsi_node_content['default']
-        end
-      end
-
-      if defaults.size == 1
-        child_node = jsi_child_node_with_content[defaults.first]
-        jsi_child_as_jsi(defaults.first, child_node.jsi_schemas, as_jsi) do
-          child_node
-        end
-      else
-        child_content
-      end
+      jsi_node_content_child(token)
     end
     private :jsi_default_child # internals for #[] but idk, could be public
 
