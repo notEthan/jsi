@@ -14,6 +14,7 @@ group(:dev) do
       gem 'byebug'
     end
   end
+  platform(:jruby) { gem 'ruby-debug' }
 end
 
 group(:test) do
