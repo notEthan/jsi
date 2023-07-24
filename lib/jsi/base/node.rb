@@ -21,8 +21,7 @@ module JSI
 
     alias_method :entries, :to_a
 
-    # a jsonifiable representation of the node content
-    # @return [Object]
+    # See {Base#as_json}
     def as_json(options = {})
       # include Enumerable (above) means, if ActiveSupport is loaded, its undesirable #as_json is included
       # https://github.com/rails/rails/blob/v7.0.0/activesupport/lib/active_support/core_ext/object/json.rb#L139-L143

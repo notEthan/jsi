@@ -642,8 +642,8 @@ module JSI
       ].compact
     end
 
-    # a jsonifiable representation of the instance
-    # @return [Object]
+    # A structure coerced to JSONifiable types from the instance content.
+    # Calls {Util.as_json} with the instance and any given options.
     def as_json(options = {})
       Util.as_json(jsi_instance, **options)
     end
