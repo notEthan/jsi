@@ -30,21 +30,18 @@ module JSI
       end
     end
 
-    # recursive method to express the given argument object in json-compatible
-    # types of Hash, Array, and basic types of String/boolean/numeric/nil. this
-    # will raise TypeError if an object is given that is not a type that seems
-    # to be expressable as json.
+    # A structure like the given `object`, recursively coerced to JSON-compatible types.
     #
-    # similar effect could be achieved by requiring 'json/add/core' and using #as_json,
-    # but I don't much care for how it represents classes that are
-    # not naturally expressable in JSON, and prefer not to load its
-    # monkey-patching.
+    # - Structures of Hash, Array, and basic types of String/number/boolean/nil are returned as-is.
+    # - If the object responds to `#as_json`, that method is used, passing any given options.
+    # - If the object supports [implicit conversion](https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html)
+    #   with `#to_hash`, `#to_ary`, `#to_str`, or `#to_int`, that is used.
+    # - Set becomes Array; Symbol becomes String.
+    # - Types with no known coersion to JSON-compatible raise TypeError.
     #
-    # @param object [Object] the object to be converted to jsonifiability
-    # @return [Array, Hash, String, Boolean, NilClass, Numeric] jsonifiable
-    #   expression of param object
-    # @raise [TypeError] when the object (or an object nested with a hash or
-    #   array of object) cannot be expressed as json
+    # @param object [Object]
+    # @return [Array, Hash, String, Integer, Float, Boolean, NilClass] a JSON-compatible structure like the given `object`
+    # @raise [TypeError] If the object cannot be coerced to a JSON-compatible structure
     def as_json(object, options = {})
       type_err = proc { raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}") }
       if object.respond_to?(:as_json)
