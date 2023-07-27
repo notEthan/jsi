@@ -550,14 +550,14 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_none"],
           "module.name_from_ancestor": nil,
           "module.inspect": %q((JSI Schema Module: #/definitions/with_none/definitions/with_none)),
-          "class.name": %q(JSI::SchemaClasses::Xdefinitions_with_none_definitions_with_none),
+          "class.name": %q(JSI::SchemaClasses::X0000_definitions_with_none_definitions_with_none),
           "class.inspect": %q((JSI Schema Class: #/definitions/with_none/definitions/with_none)),
         },
         {
           "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_none_multi"],
           "module.name_from_ancestor": nil,
           "module.inspect": %q((JSI Schema Module: #/definitions/with_none/definitions/with_none_multi)),
-          "class.name": %q(JSI::SchemaClasses::Xdefinitions_with_none_definitions_with_none_multi__Xdefinitions_with_none_definitions_with_none_multi_allOf_0__Xtag_examples_anon_with_none_with_none_multi_with_id),
+          "class.name": %q(JSI::SchemaClasses::X0000_definitions_with_none_definitions_with_none_multi__X0000_definitions_with_none_definitions_with_none_multi_allOf_0__Xtag_examples_anon_with_none_with_none_multi_with_id),
           "class.inspect": %q((JSI Schema Class: #/definitions/with_none/definitions/with_none_multi, #/definitions/with_none/definitions/with_none_multi/allOf/0, tag:examples_anon:with_none:with_none_multi:with_id)),
         },
         {
