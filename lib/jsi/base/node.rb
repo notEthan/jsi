@@ -20,14 +20,6 @@ module JSI
     end
 
     alias_method :entries, :to_a
-
-    # See {Base#as_json}
-    def as_json(options = {})
-      # include Enumerable (above) means, if ActiveSupport is loaded, its undesirable #as_json is included
-      # https://github.com/rails/rails/blob/v7.0.0/activesupport/lib/active_support/core_ext/object/json.rb#L139-L143
-      # although Base#as_json does clobber activesupport's, I want as_json defined correctly on the module too.
-      Util.as_json(jsi_node_content, **options)
-    end
   end
 
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
@@ -119,6 +111,19 @@ module JSI
       hash = {}
       jsi_node_content_hash_pubsend(:each_key) { |k| hash[k] = self[k, **kw] }
       hash.freeze
+    end
+
+    # See {Base#as_json}
+    def as_json(options = {})
+      hash = {}
+      each_key do |k|
+        ks = k.is_a?(String) ? k :
+          k.is_a?(Symbol) ? k.to_s :
+          k.respond_to?(:to_str) && (kstr = k.to_str).is_a?(String) ? kstr :
+          raise(TypeError, "JSON object (Hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
+        hash[ks] = jsi_child(k, as_jsi: true).as_json(**options)
+      end
+      hash
     end
 
     include Util::Hashlike
@@ -279,6 +284,11 @@ module JSI
     # @return [Array]
     def to_ary(**kw)
       to_a(**kw)
+    end
+
+    # See {Base#as_json}
+    def as_json(options = {})
+      each_index.map { |i| jsi_child(i, as_jsi: true).as_json(**options) }
     end
 
     include Util::Arraylike

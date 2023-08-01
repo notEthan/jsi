@@ -816,6 +816,26 @@ describe JSI::Base do
         assert_equal(:foo, schema.new_jsi(0).as_json)
       end
     end
+
+    describe('children override #as_json') do
+      let(:schema_content) do
+        {
+          "$id": "tag:3576",
+          "items": {},
+        }
+      end
+      before do
+        schema.items.jsi_schema_module_exec do
+          def as_json(**)
+            inspect
+          end
+        end
+      end
+
+      it('uses overridden as_jsi') do
+        assert_equal([%q(#{<JSI (tag:3576#/items)> "a" => "b"})], schema.new_jsi([{'a' => 'b'}]).as_json)
+      end
+    end
   end
 
   describe 'overriding HashNode methods' do
