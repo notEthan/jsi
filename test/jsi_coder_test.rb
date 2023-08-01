@@ -61,7 +61,7 @@ describe JSI::JSICoder do
         assert_nil(coder.dump(nil))
       end
       it 'dumps a JSI' do
-        assert_equal({"foo" => "x", "bar" => "y"}, coder.dump(schema.new_jsi({foo: 'x', bar: 'y'})))
+        assert_equal({"foo" => "x", "bar" => "y"}, coder.dump(schema.new_jsi({'foo' => 'x', 'bar' => 'y'})))
       end
       it 'dumps something else' do
         assert_raises(TypeError) do
@@ -77,14 +77,14 @@ describe JSI::JSICoder do
       describe 'array' do
         let(:options) { {array: true} }
         it 'dumps an array of JSIs' do
-          jsis = [schema.new_jsi({foo: 'x', bar: 'y'}), schema.new_jsi({foo: 'z', bar: 'q'})]
+          jsis = [schema.new_jsi({'foo' => 'x', 'bar' => 'y'}), schema.new_jsi({'foo' => 'z', 'bar' => 'q'})]
           assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], coder.dump(jsis))
         end
       end
       describe 'array schema' do
         let(:schema_content) { {items: {properties: {foo: {}, bar: {}}}} }
         it 'dumps a JSI array' do
-          jsis = schema.new_jsi([{foo: 'x', bar: 'y'}, {foo: 'z', bar: 'q'}])
+          jsis = schema.new_jsi([{'foo' => 'x', 'bar' => 'y'}, {'foo' => 'z', 'bar' => 'q'}])
           assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], coder.dump(jsis))
         end
       end
