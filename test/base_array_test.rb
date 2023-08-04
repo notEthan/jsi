@@ -209,7 +209,7 @@ describe 'JSI::Base array' do
 
       describe 'with a long module name' do
         ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaOrgDraft07.new_schema_module({"$id": "jsi:2be3"})
-        it 'does not break empty hash' do
+        it 'does not break empty array' do
           subject = ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines.new_jsi([])
           pp = %Q(\#[<JSI (ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines)>]\n)
           assert_equal(pp, subject.pretty_inspect)
