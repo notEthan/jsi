@@ -661,9 +661,10 @@ describe JSI::Base do
         end
         it 'does not define readers' do
           assert_equal('bar', subject.foo) # this one is defined
+          assert_respond_to(subject.method(:foo).owner, :jsi_property_readers)
           assert_equal('not ary', subject.to_ary) # this one is defined but would not be for an Array instance
 
-          assert_equal(JSI::Base, subject.method(:initialize).owner)
+          refute_respond_to(subject.method(:initialize).owner, :jsi_property_readers)
           assert_equal('hi', subject['initialize'])
           assert_equal(%q(#{<JSI> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
