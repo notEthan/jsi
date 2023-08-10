@@ -14,6 +14,8 @@ module JSI
 
     EMPTY_SET = Set[].freeze
 
+    CLASSES_ALWAYS_FROZEN = Set[TrueClass, FalseClass, NilClass, Integer, Float, BigDecimal, Rational, Symbol].freeze
+
     # is a hash as the last argument passed to keyword params? (false in ruby 3; true before - generates
     # a warning in 2.7 but no way to make 2.7 behave like 3 so the warning is useless)
     #
@@ -36,16 +38,39 @@ module JSI
       end
     end
 
+    RUBY_REJECT_NAME_CODEPOINTS = [
+      0..31, # C0 control chars
+      %q( !"#$%&'()*+,-./:;<=>?@[\\]^`{|}~).each_codepoint, # printable special chars (note: "_" not included)
+      127..159, # C1 control chars
+    ].inject(Set[], &:merge).freeze
+
+    RUBY_REJECT_NAME_RE = Regexp.new('[' + Regexp.escape(RUBY_REJECT_NAME_CODEPOINTS.to_a.pack('U*')) + ']').freeze
+
     # is the given name ok to use as a ruby method name?
     def ok_ruby_method_name?(name)
       # must be a string
       return false unless name.respond_to?(:to_str)
       # must not begin with a digit
       return false if name =~ /\A[0-9]/
-      # must not contain characters special to ruby syntax
-      return false if name =~ /[\\\s\#;\.,\(\)\[\]\{\}'"`%\+\-\/\*\^\|&=<>\?:!@\$~]/
+      # must not contain special or control characters
+      return false if name =~ RUBY_REJECT_NAME_RE
 
       return true
+    end
+
+    def const_name_from_parts(parts)
+      parts = parts.map do |part|
+        part = part.dup
+        part[/\A[^a-zA-Z]*/] = ''
+        part[0] = part[0].upcase if part[0]
+        part.gsub!(RUBY_REJECT_NAME_RE, '_')
+        part
+      end
+      if !parts.all?(&:empty?)
+        parts.join.freeze
+      else
+        nil
+      end
     end
 
     # string or URI → frozen URI
@@ -112,7 +137,7 @@ module JSI
     module FingerprintHash
       # overrides BasicObject#==
       def ==(other)
-        __id__ == other.__id__ || (other.respond_to?(:jsi_fingerprint) && other.jsi_fingerprint == jsi_fingerprint)
+        __id__ == other.__id__ || (other.is_a?(FingerprintHash) && jsi_fingerprint == other.jsi_fingerprint)
       end
 
       alias_method :eql?, :==
@@ -120,6 +145,30 @@ module JSI
       # overrides Kernel#hash
       def hash
         jsi_fingerprint.hash
+      end
+    end
+
+    module FingerprintHash::Immutable
+      include FingerprintHash
+
+      def ==(other)
+        return true if __id__ == other.__id__
+        return false unless other.is_a?(FingerprintHash)
+        # FingerprintHash::Immutable#hash being memoized, comparing that is basically free.
+        # not done with FingerprintHash, its #hash can be expensive.
+        return false if other.is_a?(FingerprintHash::Immutable) && hash != other.hash
+        jsi_fingerprint == other.jsi_fingerprint
+      end
+
+      alias_method :eql?, :==
+
+      def hash
+        @jsi_fingerprint_hash ||= jsi_fingerprint.hash
+      end
+
+      def freeze
+        hash
+        super
       end
     end
 
@@ -137,13 +186,13 @@ module JSI
 
       # @return [Util::MemoMap]
       def jsi_memomap(name = nil, **options, &block)
-        return Util::MemoMap.new(**options, &block) if !name
+        return Util::MemoMap::Mutable.new(**options, &block) if !name
         raise(Bug, 'must jsi_initialize_memos') unless @jsi_memomaps
         unless @jsi_memomaps.key?(name)
           @jsi_memomaps_mutex.synchronize do
             # note: this ||= appears redundant with `unless @jsi_memomaps.key?(name)`,
             # but that check is not thread safe. this check is.
-            @jsi_memomaps[name] ||= Util::MemoMap.new(**options, &block)
+            @jsi_memomaps[name] ||= Util::MemoMap::Mutable.new(**options, &block)
           end
         end
         @jsi_memomaps[name]

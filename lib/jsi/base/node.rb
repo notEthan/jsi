@@ -84,7 +84,7 @@ module JSI
     end
 
     # See {Base#[]}
-    def [](token, as_jsi: :auto, use_default: true)
+    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       if jsi_node_content_hash_pubsend(:key?, token)
         jsi_child(token, as_jsi: as_jsi)
       else
@@ -201,7 +201,7 @@ module JSI
     end
 
     # See {Base#[]}
-    def [](token, as_jsi: :auto, use_default: true)
+    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       size = jsi_node_content_ary_pubsend(:size)
       if token.is_a?(Integer)
         if token < 0
@@ -221,9 +221,41 @@ module JSI
             end
           end
         end
+      elsif token.is_a?(Range)
+        type_err = proc do
+          raise(TypeError, [
+            "given range does not contain Integers",
+            "range: #{token.inspect}",
+          ].join("\n"))
+        end
+
+        start_idx = token.begin
+        if start_idx.is_a?(Integer)
+          start_idx += size if start_idx < 0
+          return Util::EMPTY_ARY if start_idx == size
+          return nil if start_idx < 0 || start_idx > size
+        elsif start_idx.nil?
+          start_idx = 0
+        else
+          type_err.call
+        end
+
+        end_idx = token.end
+        if end_idx.is_a?(Integer)
+          end_idx += size if end_idx < 0
+          end_idx += 1 unless token.exclude_end?
+          end_idx = size if end_idx > size
+          return Util::EMPTY_ARY if start_idx >= end_idx
+        elsif end_idx.nil?
+          end_idx = size
+        else
+          type_err.call
+        end
+
+        (start_idx...end_idx).map { |i| jsi_child(i, as_jsi: as_jsi) }.freeze
       else
         raise(TypeError, [
-          "expected `token` param to be an Integer",
+          "expected `token` param to be an Integer or Range",
           "token: #{token.inspect}",
         ].join("\n"))
       end

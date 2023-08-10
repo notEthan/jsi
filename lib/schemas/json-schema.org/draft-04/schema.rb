@@ -2,9 +2,9 @@
 
 module JSI
   metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read)
-  JSONSchemaOrgDraft04 = MetaschemaNode.new(metaschema_document,
+  JSONSchemaOrgDraft04 = JSI.new_metaschema_module(metaschema_document,
     schema_implementation_modules: [JSI::Schema::Draft04],
-  ).jsi_schema_module
+  )
 
   # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
   # properties/additionalProperties and properties/additionalItems.

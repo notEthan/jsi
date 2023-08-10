@@ -6,11 +6,15 @@ Bundler.setup(*bundler_groups)
 
 if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'debug' }
   require 'debug'
-  Object.alias_method(:dbg, :debugger)
+  Object.send(:alias_method, :dbg, :debugger)
 end
 if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'byebug' }
   require 'byebug'
-  Object.alias_method(:dbg, :byebug)
+  Object.send(:alias_method, :dbg, :byebug)
+end
+if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'ruby-debug' }
+  require 'ruby-debug'
+  Object.send(:alias_method, :dbg, :debugger)
 end
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
@@ -45,5 +49,20 @@ class SortOfArray
   include JSI::Util::FingerprintHash
   def jsi_fingerprint
     {class: self.class, ary: @ary}
+  end
+end
+
+class Module
+  def redef_method(method_name, method = nil, &block)
+    begin
+      remove_method(method_name)
+    rescue NameError
+    end
+
+    if method
+      define_method(method_name, method, &block)
+    else
+      define_method(method_name, &block)
+    end
   end
 end

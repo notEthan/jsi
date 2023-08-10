@@ -3,15 +3,6 @@
 module JSI
   module Util::Private
     class MemoMap
-      Result = AttrStruct[*%w(
-        value
-        inputs
-        inputs_hash
-      )]
-
-      class Result
-      end
-
       def initialize(key_by: nil, &block)
         @key_by = key_by
         @block = block || raise(ArgumentError, "no block given")
@@ -24,12 +15,28 @@ module JSI
         @results = {}
       end
 
-      def [](**inputs)
+      def key_for(inputs)
         if @key_by
-          key = @key_by.call(**inputs)
+          @key_by.call(**inputs)
         else
-          key = inputs
+          inputs
         end
+      end
+    end
+
+    class MemoMap::Mutable < MemoMap
+      Result = AttrStruct[*%w(
+        value
+        inputs
+        inputs_hash
+      )]
+
+      class Result
+      end
+
+      def [](**inputs)
+        key = key_for(inputs)
+
         result_mutex = @result_mutexes_mutex.synchronize do
           @result_mutexes[key] ||= Mutex.new
         end
@@ -42,6 +49,24 @@ module JSI
             value = @block.call(**inputs)
             @results[key] = Result.new(value: value, inputs: inputs, inputs_hash: inputs_hash)
             value
+          end
+        end
+      end
+    end
+
+    class MemoMap::Immutable < MemoMap
+      def [](**inputs)
+        key = key_for(inputs)
+
+        result_mutex = @result_mutexes_mutex.synchronize do
+          @result_mutexes[key] ||= Mutex.new
+        end
+
+        result_mutex.synchronize do
+          if @results.key?(key)
+            @results[key]
+          else
+            @results[key] = @block.call(**inputs)
           end
         end
       end

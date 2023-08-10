@@ -67,13 +67,15 @@ module JSI
         jsi_ptr: root_schema_ptr,
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
       )
-      our_bootstrap_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_schemas, tok|
+      our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
+        bootstrap_schemas = bootstrap_indicated_schemas.inplace_applicator_schemas(instance_for_schemas)
         child_indicated_schemas = bootstrap_schemas.child_applicator_schemas(tok, instance_for_schemas)
-        child_schemas = child_indicated_schemas.inplace_applicator_schemas(instance_for_schemas[tok])
         instance_for_schemas = instance_for_schemas[tok]
-        child_schemas
+        child_indicated_schemas
       end
+      @indicated_schemas_map = jsi_memomap { bootstrap_schemas_to_msn(our_bootstrap_indicated_schemas) }
 
+      our_bootstrap_schemas = our_bootstrap_indicated_schemas.inplace_applicator_schemas(instance_for_schemas)
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the metaschema, i.e. this is a schema
@@ -90,18 +92,7 @@ module JSI
         end
       end
 
-      @jsi_schemas = SchemaSet.new(our_bootstrap_schemas) do |bootstrap_schema|
-        if bootstrap_schema.jsi_ptr == jsi_ptr
-          self
-        elsif bootstrap_schema.jsi_ptr.root?
-          @jsi_root_node
-        else
-          new_node(
-            jsi_ptr: bootstrap_schema.jsi_ptr,
-            jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
-          )
-        end
-      end
+      @jsi_schemas = bootstrap_schemas_to_msn(our_bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if is_a?(Metaschema)
@@ -147,15 +138,27 @@ module JSI
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
 
+    # See {Base#jsi_indicated_schemas}
+    # @return [JSI::SchemaSet]
+    def jsi_indicated_schemas
+      @indicated_schemas_map[]
+    end
+
     # see {Base#jsi_child}
-    def jsi_child(token, as_jsi: :auto)
-      child_node = jsi_child_node_map[token: token]
+    def jsi_child(token, as_jsi: )
+      child_node = @root_descendent_node_map[ptr: jsi_ptr[token]]
 
       jsi_child_as_jsi(jsi_node_content_child(token), child_node.jsi_schemas, as_jsi) do
         child_node
       end
     end
     private :jsi_child
+
+    # See {Base#jsi_default_child}
+    def jsi_default_child(token, as_jsi: )
+      jsi_node_content_child(token)
+    end
+    private :jsi_default_child # internals for #[] but idk, could be public
 
     # instantiates a new MetaschemaNode whose instance is a modified copy of this MetaschemaNode's instance
     # @yield [Object] the node content of the instance. the block should result
@@ -184,7 +187,7 @@ module JSI
       [
         class_n_schemas,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
-        *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : []),
+        *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : nil),
       ].compact
     end
 
@@ -194,7 +197,19 @@ module JSI
       {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
     end
 
+    protected
+
+    attr_reader :root_descendent_node_map
+
     private
+
+    def jsi_memomaps_initialize
+      if jsi_ptr.root?
+        @root_descendent_node_map = jsi_memomap(key_by: proc { |i| i[:ptr] }, &method(:jsi_root_descendent_node_compute))
+      else
+        @root_descendent_node_map = @jsi_root_node.root_descendent_node_map
+      end
+    end
 
     # note: does not include jsi_root_node
     def our_initialize_params
@@ -212,12 +227,32 @@ module JSI
       MetaschemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params, **params)
     end
 
-    def jsi_child_node_map
-      jsi_memomap(:subinstance) do |token: |
+    def jsi_root_descendent_node_compute(ptr: )
+      #chkbug raise(Bug) unless jsi_ptr.root?
+      if ptr.root?
+        self
+      else
         new_node(
-          jsi_ptr: jsi_ptr[token],
+          jsi_ptr: ptr,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
         )
+      end
+    end
+
+    # @param bootstrap_schemas [Enumerable<BootstrapSchema>]
+    # @return [SchemaSet<MetaschemaNode>]
+    def bootstrap_schemas_to_msn(bootstrap_schemas)
+      SchemaSet.new(bootstrap_schemas) do |bootstrap_schema|
+        if bootstrap_schema.jsi_ptr == jsi_ptr
+          self
+        elsif bootstrap_schema.jsi_ptr.root?
+          @jsi_root_node
+        else
+          new_node(
+            jsi_ptr: bootstrap_schema.jsi_ptr,
+            jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
+          )
+        end
       end
     end
   end

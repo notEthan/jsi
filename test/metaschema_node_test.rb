@@ -84,6 +84,36 @@ describe JSI::MetaschemaNode do
       assert_equal(pp, metaschema.pretty_inspect)
     end
   end
+
+  describe 'with schema default' do
+    let(:jsi_document) do
+      YAML.load(<<~YAML
+        properties:
+          properties:
+            additionalProperties:
+              "$ref": "#"
+          additionalProperties:
+            "$ref": "#"
+          "$ref": {}
+          default:
+            default:
+              default
+        default: {}
+        YAML
+      )
+    end
+    let(:metaschema_root_ptr) { JSI::Ptr[] }
+    let(:root_schema_ptr) { JSI::Ptr[] }
+
+    it 'does not insert a default value' do
+      metaschema.jsi_schema_module_exec { define_method(:jsi_child_use_default_default) { true } }
+
+      assert_nil(metaschema.additionalProperties)
+      assert_nil(metaschema.properties['additionalProperties'].default)
+      assert_nil(metaschema.properties['additionalProperties'].default(as_jsi: true))
+    end
+  end
+
   describe 'json schema draft' do
     it 'type has a schema' do
       assert(JSI::JSONSchemaOrgDraft06.schema.type.jsi_schemas.any?)
@@ -182,6 +212,47 @@ describe JSI::MetaschemaNode do
       assert_schemas([metaschema.properties['schemas']], root_node.schemas)
 
       assert_metaschema_behaves
+    end
+  end
+
+  metaschema_modules = [
+    JSI::JSONSchemaOrgDraft04,
+    JSI::JSONSchemaOrgDraft06,
+    JSI::JSONSchemaOrgDraft07,
+  ]
+  metaschema_modules.each do |metaschema_module|
+    describe(metaschema_module.name) do
+      let(:metaschema) { metaschema_module.schema }
+
+      it 'validates itself' do
+        assert(metaschema.jsi_valid?)
+        assert(metaschema.instance_valid?(metaschema))
+        assert(metaschema.jsi_each_descendent_node.all?(&:jsi_valid?))
+      end
+    end
+  end
+
+  describe 'a metaschema fails to validate itself' do
+    let(:schema_implementation_modules) { [JSI::Schema::Draft06] }
+    let(:jsi_document) { JSI::JSONSchemaOrgDraft06.schema.schema_content.merge({'title' => []}) }
+    let(:metaschema_root_ptr) { JSI::Ptr[] }
+    let(:root_schema_ptr) { JSI::Ptr[] }
+
+    it 'has validation error for `title`' do
+      results = [
+        metaschema.jsi_validate,
+        metaschema.instance_validate(metaschema),
+      ]
+      metaschema.jsi_each_descendent_node do |node|
+        if node.jsi_ptr.contains?(JSI::Ptr['title'])
+          results << node.jsi_validate
+        else
+          assert(node.jsi_valid?)
+        end
+      end
+      results.each do |result|
+        assert_includes(result.validation_errors.map(&:keyword), 'type')
+      end
     end
   end
 end

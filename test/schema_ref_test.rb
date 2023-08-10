@@ -174,7 +174,7 @@ describe JSI::Schema::Ref do
     end
 
     it 'is pretty' do
-      ref_with_schema = JSI::Schema::Ref.new(uri, schema)
+      ref_with_schema = JSI::Schema::Ref.new(uri, ref_schema: schema)
       assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_with_schema.inspect)
       assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_with_schema.pretty_inspect.chomp)
       assert_equal(ref_with_schema.inspect, ref_with_schema.to_s)

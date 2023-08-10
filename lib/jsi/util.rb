@@ -117,6 +117,65 @@ module JSI
       end
     end
 
+    # returns an object which is equal to the param object, and is recursively frozen.
+    # the given object is not modified.
+    def deep_to_frozen(object, not_implemented: nil)
+      dtf = proc { |o| deep_to_frozen(o, not_implemented: not_implemented) }
+      if object.instance_of?(Hash)
+        out = {}
+        identical = object.frozen?
+        object.each do |k, v|
+          fk = dtf[k]
+          fv = dtf[v]
+          identical &&= fk.__id__ == k.__id__
+          identical &&= fv.__id__ == v.__id__
+          out[fk] = fv
+        end
+        if !object.default.nil?
+          out.default = dtf[object.default]
+          identical &&= out.default.__id__ == object.default.__id__
+        end
+        if object.default_proc
+          raise(ArgumentError, "cannot make immutable copy of a Hash with default_proc")
+        end
+        if identical
+          object
+        else
+          out.freeze
+        end
+      elsif object.instance_of?(Array)
+        identical = object.frozen?
+        out = Array.new(object.size)
+        object.each_with_index do |e, i|
+          fe = dtf[e]
+          identical &&= fe.__id__ == e.__id__
+          out[i] = fe
+        end
+        if identical
+          object
+        else
+          out.freeze
+        end
+      elsif object.instance_of?(String)
+        if object.frozen?
+          object
+        else
+          object.dup.freeze
+        end
+      elsif CLASSES_ALWAYS_FROZEN.any? { |c| object.is_a?(c) } # note: `is_a?`, not `instance_of?`, here because instance_of?(Integer) is false until Fixnum/Bignum is gone. this is fine here; there is no concern of subclasses of CLASSES_ALWAYS_FROZEN duping/freezing differently (as with e.g. ActiveSupport::HashWithIndifferentAccess)
+        object
+      else
+        if not_implemented
+          not_implemented.call(object)
+        else
+          raise(NotImplementedError, [
+            "deep_to_frozen not implemented for class: #{object.class}",
+            "object: #{object.pretty_inspect.chomp}",
+          ].join("\n"))
+        end
+      end
+    end
+
     # ensures the given param becomes a frozen Set of Modules.
     # returns the param if it is already that, otherwise initializes and freezes such a Set.
     #

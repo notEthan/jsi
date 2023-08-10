@@ -1,6 +1,49 @@
 require_relative 'test_helper'
 
 describe 'JSI::Base array' do
+  module BaseArrayTest
+    def self.test_ranges(test_context)
+      size = 4
+      n = 2
+      classes = [
+        ["negative beyond size", -1,  -> (m) { -size - m }],
+        ["negative at size",     0,   -> (m) { -size }],
+        ["negative within size", -1,  -> (m) { -m }],
+        ["zero",                 0,   -> (m) { 0 }],
+        (["nil",                 0,   -> (m) { nil }] if (0..nil rescue false)), # compatibility: skip on ancient ruby versions without beginless/endless ranges
+        ["positive within size", 1,   -> (m) { m }],
+        ["positive at size",     0,   -> (m) { size }],
+        ["positive beyond size", 1,   -> (m) { size + m }],
+      ].compact
+
+      mkit = -> (range, startclassname, endclassname, *descs) do
+        range_s = ((" " * (range.begin || range.end ? 3 - (range.begin.to_s.size) : 0)) + range.inspect).ljust(9)
+        indices = (0...size).to_a[range]
+        desc = ["range #{range_s} → #{indices.inspect} : start #{startclassname}, end #{endclassname}", *descs].join(", ")
+        test_context.it(desc) do
+          expect = indices.nil? ? nil : indices.map { |i| subject[i] }
+          assert_equal(expect, subject[range])
+        end
+      end
+
+      classes.each do |startclassname, _, mkstart|
+        classes.each do |endclassname, nvary, mkend|
+          if nvary != 0 && startclassname == endclassname
+            mkit.(mkstart[n]..mkend[n - nvary],  startclassname, endclassname, "inclusive", "start > end")
+            mkit.(mkstart[n]...mkend[n - nvary], startclassname, endclassname, "exclusive", "start > end")
+            mkit.(mkstart[n]..mkend[n],          startclassname, endclassname, "inclusive", "start = end")
+            mkit.(mkstart[n]...mkend[n],         startclassname, endclassname, "exclusive", "start = end")
+            mkit.(mkstart[n]..mkend[n + nvary],  startclassname, endclassname, "inclusive", "start < end")
+            mkit.(mkstart[n]...mkend[n + nvary], startclassname, endclassname, "exclusive", "start < end")
+          else
+            mkit.(mkstart[n]..mkend[n],          startclassname, endclassname, "inclusive")
+            mkit.(mkstart[n]...mkend[n],         startclassname, endclassname, "exclusive")
+          end
+        end
+      end
+    end
+  end
+
   let(:default_instance) { ['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}] }
   let(:instance) { default_instance }
   let(:schema_content) do
@@ -32,15 +75,13 @@ describe 'JSI::Base array' do
     end
 
     describe 'Range' do
-      it 'is not supported (yet?), raises' do
-        assert_raises(TypeError) { subject[0..3] }
-      end
+      BaseArrayTest.test_ranges(self)
     end
 
     describe 'arbitrary object' do
       it 'raises' do
         err = assert_raises(TypeError) { subject[{"valid" => 0}] }
-        assert_equal(["expected `token` param to be an Integer", %q(token: {"valid"=>0})].join("\n"), err.message)
+        assert_equal(["expected `token` param to be an Integer or Range", %q(token: {"valid"=>0})].join("\n"), err.message)
       end
     end
   end
@@ -52,6 +93,9 @@ describe 'JSI::Base array' do
         'items' => {'default' => 'foo'},
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { [1] }
       it 'returns the default value' do
@@ -80,6 +124,11 @@ describe 'JSI::Base array' do
       end
     end
 
+    describe 'Range' do
+      # it does not try to insert basic defaults, so behavior is the same as tests without a default value.
+      BaseArrayTest.test_ranges(self)
+    end
+
     describe 'arbitrary object' do
       it 'raises, does not try to insert basic default' do
         assert_raises(TypeError) { subject[Object.new] }
@@ -93,6 +142,9 @@ describe 'JSI::Base array' do
         'items' => {'default' => {'foo' => 2}},
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { [{'bar' => 3}] }
       it 'returns the default value' do
@@ -120,6 +172,11 @@ describe 'JSI::Base array' do
       it 'returns nil, does not try to insert complex default' do
         assert_nil(subject[-5])
       end
+    end
+
+    describe 'Range' do
+      # it does not try to insert complex defaults, so behavior is the same as tests without a default value.
+      BaseArrayTest.test_ranges(self)
     end
 
     describe 'arbitrary object' do
@@ -209,7 +266,7 @@ describe 'JSI::Base array' do
 
       describe 'with a long module name' do
         ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaOrgDraft07.new_schema_module({"$id": "jsi:2be3"})
-        it 'does not break empty hash' do
+        it 'does not break empty array' do
           subject = ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines.new_jsi([])
           pp = %Q(\#[<JSI (ArraySchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines)>]\n)
           assert_equal(pp, subject.pretty_inspect)

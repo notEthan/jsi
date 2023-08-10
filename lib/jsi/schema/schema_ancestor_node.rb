@@ -26,10 +26,7 @@ module JSI
     # resources which are ancestors of this JSI in the document. this does not include self.
     # @api private
     # @return [Array<JSI::Schema>]
-    def jsi_schema_resource_ancestors
-      return @jsi_schema_resource_ancestors if instance_variable_defined?(:@jsi_schema_resource_ancestors)
-      Util::EMPTY_ARY
-    end
+    attr_reader :jsi_schema_resource_ancestors
 
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
@@ -40,7 +37,8 @@ module JSI
       (is_a?(Schema) && schema_absolute_uri) || jsi_schema_base_uri
     end
 
-    # a schema at or below this node with the given anchor.
+    # The schema at or below this node with the given anchor.
+    # If no schema has that anchor (or multiple schemas do, incorrectly), nil.
     #
     # @return [JSI::Schema, nil]
     def jsi_anchor_subschema(anchor)
@@ -52,9 +50,9 @@ module JSI
       end
     end
 
-    # schemas at or below node with the given anchor.
+    # All schemas at or below this node with the given anchor.
     #
-    # @return [Array<JSI::Schema>]
+    # @return [Set<JSI::Schema>]
     def jsi_anchor_subschemas(anchor)
       jsi_anchor_subschemas_map[anchor: anchor]
     end
@@ -67,59 +65,47 @@ module JSI
     attr_writer :jsi_document
 
     def jsi_ptr=(jsi_ptr)
-      raise(Bug, "jsi_ptr not #{Ptr}: #{jsi_ptr.inspect}") unless jsi_ptr.is_a?(Ptr)
+      #chkbug raise(Bug, "jsi_ptr not #{Ptr}: #{jsi_ptr}") unless jsi_ptr.is_a?(Ptr)
       @jsi_ptr = jsi_ptr
     end
 
     def jsi_schema_base_uri=(jsi_schema_base_uri)
-      if jsi_schema_base_uri
-        unless jsi_schema_base_uri.respond_to?(:to_str)
-          raise(TypeError, "jsi_schema_base_uri must be string or Addressable::URI; got: #{jsi_schema_base_uri.inspect}")
-        end
-        @jsi_schema_base_uri = Util.uri(jsi_schema_base_uri)
-        unless @jsi_schema_base_uri.absolute? && !@jsi_schema_base_uri.fragment
-          raise(ArgumentError, "jsi_schema_base_uri must be an absolute URI with no fragment; got: #{jsi_schema_base_uri.inspect}")
-        end
-      else
-        @jsi_schema_base_uri = nil
-      end
+      #chkbug raise(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.is_a?(Addressable::URI)
+      #chkbug raise(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.absolute?
+      #chkbug raise(Bug) if jsi_schema_base_uri && jsi_schema_base_uri.fragment
+
+      @jsi_schema_base_uri = jsi_schema_base_uri
     end
 
     def jsi_schema_resource_ancestors=(jsi_schema_resource_ancestors)
-      if jsi_schema_resource_ancestors
-        unless jsi_schema_resource_ancestors.respond_to?(:to_ary)
-          raise(TypeError, "jsi_schema_resource_ancestors must be an array; got: #{jsi_schema_resource_ancestors.inspect}")
-        end
-        jsi_schema_resource_ancestors.each { |a| Schema.ensure_schema(a) }
-        # sanity check the ancestors are in order
-        last_anc_ptr = nil
-        jsi_schema_resource_ancestors.each do |anc|
-          if last_anc_ptr.nil?
-            # pass
-          elsif last_anc_ptr == anc.jsi_ptr
-            raise(Bug, "duplicate ancestors in #{jsi_schema_resource_ancestors.pretty_inspect}")
-          elsif !last_anc_ptr.contains?(anc.jsi_ptr)
-            raise(Bug, "ancestor ptr #{anc.jsi_ptr} not contained by previous: #{last_anc_ptr} in #{jsi_schema_resource_ancestors.pretty_inspect}")
-          end
-          if anc.jsi_ptr == jsi_ptr
-            raise(Bug, "ancestor is self")
-          elsif !anc.jsi_ptr.contains?(jsi_ptr)
-            raise(Bug, "ancestor does not contain self")
-          end
-          last_anc_ptr = anc.jsi_ptr
-        end
+      #chkbug raise(Bug) unless jsi_schema_resource_ancestors.respond_to?(:to_ary)
+      #chkbug jsi_schema_resource_ancestors.each { |a| Schema.ensure_schema(a) }
+      #chkbug # sanity check the ancestors are in order
+      #chkbug last_anc_ptr = nil
+      #chkbug jsi_schema_resource_ancestors.each do |anc|
+      #chkbug   if last_anc_ptr.nil?
+      #chkbug     # pass
+      #chkbug   elsif last_anc_ptr == anc.jsi_ptr
+      #chkbug     raise(Bug, "duplicate ancestors in #{jsi_schema_resource_ancestors.pretty_inspect}")
+      #chkbug   elsif !last_anc_ptr.contains?(anc.jsi_ptr)
+      #chkbug     raise(Bug, "ancestor ptr #{anc.jsi_ptr} not contained by previous: #{last_anc_ptr} in #{jsi_schema_resource_ancestors.pretty_inspect}")
+      #chkbug   end
+      #chkbug   if anc.jsi_ptr == jsi_ptr
+      #chkbug     raise(Bug, "ancestor is self")
+      #chkbug   elsif !anc.jsi_ptr.contains?(jsi_ptr)
+      #chkbug     raise(Bug, "ancestor does not contain self")
+      #chkbug   end
+      #chkbug   last_anc_ptr = anc.jsi_ptr
+      #chkbug end
 
-        @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors.to_ary.freeze
-      else
-        @jsi_schema_resource_ancestors = Util::EMPTY_ARY
-      end
+      @jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
     end
 
     def jsi_anchor_subschemas_map
       jsi_memomap(__method__) do |anchor: |
         jsi_each_descendent_node.select do |node|
           node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
-        end.freeze
+        end.to_set.freeze
       end
     end
   end

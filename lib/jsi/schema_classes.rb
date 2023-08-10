@@ -4,8 +4,8 @@ module JSI
   # JSI Schema Modules are extended with JSI::SchemaModule
   module SchemaModule
     # @!method schema
-    #   the schema of which this is the JSI Schema Module
-    #   @return [Schema]
+    #   The schema for which this is the JSI Schema Module
+    #   @return [Base + Schema]
     # note: defined on JSI Schema Module by JSI::SchemaClasses.module_for_schema
 
 
@@ -33,6 +33,21 @@ module JSI
     #   inplace applicators of this module's schema.
     def new_jsi(instance, **kw)
       schema.new_jsi(instance, **kw)
+    end
+
+    # See {Schema#schema_content}
+    def schema_content
+      schema.jsi_node_content
+    end
+
+    # See {Schema#instance_validate}
+    def instance_validate(instance)
+      schema.instance_validate(instance)
+    end
+
+    # See {Schema#instance_valid?}
+    def instance_valid?(instance)
+      schema.instance_valid?(instance)
     end
   end
 
@@ -146,15 +161,23 @@ module JSI
 
               extend SchemaModule
 
-              @possibly_schema_node = schema
-              extend(SchemaModulePossibly)
+              @jsi_node = schema
+
               schema.jsi_schemas.each do |schema_schema|
                 extend JSI::SchemaClasses.schema_property_reader_module(schema_schema,
-                  conflicting_modules: Set[Module, SchemaModule, SchemaModulePossibly],
+                  conflicting_modules: Set[Module, SchemaModule],
                 )
               end
             end
           end
+        end
+      end
+
+      # @deprecated after v0.7
+      def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
+        Module.new do
+          include SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
+          include SchemaClasses.schema_property_writer_module(schema, conflicting_modules: conflicting_modules) if setters
         end
       end
 
@@ -215,10 +238,9 @@ module JSI
     end
   end
 
-  # a JSI Schema module and a JSI::NotASchemaModule are both a SchemaModulePossibly.
-  # this module provides a #[] method.
-  module SchemaModulePossibly
-    attr_reader :possibly_schema_node
+  # connecting {SchemaModule}s via {SchemaModule::Connection}s
+  module SchemaModule::Connects
+    attr_reader :jsi_node
 
     # a name relative to a named schema module of an ancestor schema.
     # for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
@@ -244,19 +266,19 @@ module JSI
       name
     end
 
-    # subscripting a JSI schema module or a NotASchemaModule will subscript the node, and
+    # Subscripting a JSI schema module or a {SchemaModule::Connection} will subscript its node, and
     # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a JSI::Base,
-    # return a NotASchemaModule; or if it is another value (a basic type), return that value.
+    # return a SchemaModule::Connection; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
-    # @return [Module, NotASchemaModule, Object]
+    # @return [Module, SchemaModule::Connection, Object]
     def [](token, **kw)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
-      sub = @possibly_schema_node[token]
+      sub = @jsi_node[token]
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module
       elsif sub.is_a?(JSI::Base)
-        NotASchemaModule.new(sub)
+        SchemaModule::Connection.new(sub)
       else
         sub
       end
@@ -266,46 +288,45 @@ module JSI
 
     # @return [Array<JSI::Schema, Array>, nil]
     def named_ancestor_schema_tokens
-      schema_ancestors = possibly_schema_node.jsi_ancestor_nodes
+      schema_ancestors = @jsi_node.jsi_ancestor_nodes
       named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
       return nil unless named_ancestor_schema
-      tokens = possibly_schema_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
+      tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
       [named_ancestor_schema, tokens]
     end
   end
 
-  # a JSI Schema Module is a module which represents a schema. a NotASchemaModule represents
+  module SchemaModule
+    include Connects
+  end
+
+  # A JSI Schema Module is a module which represents a schema. A SchemaModule::Connection represents
   # a node in a schema's document which is not a schema, such as the 'properties'
   # object (which contains schemas but is not a schema).
   #
   # instances of this class act as a stand-in to allow users to subscript or call property accessors on
   # schema modules to refer to their subschemas' schema modules.
   #
-  # a NotASchemaModule is extended with the module_for_schema of the node's schema.
-  #
-  # NotASchemaModule holds a node which is not a schema. when subscripted, it subscripts
-  # its node. if the value is a JSI::Schema, its schema module is returned. if the value
-  # is another node, a NotASchemaModule for that node is returned. otherwise - when the
-  # value is a basic type - that value itself is returned.
-  class NotASchemaModule
-    include SchemaModulePossibly
+  # A SchemaModule::Connection has readers for property names described by the node's schemas.
+  class SchemaModule::Connection
+    include SchemaModule::Connects
 
     # @param node [JSI::Base]
     def initialize(node)
       raise(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
       raise(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
-      @possibly_schema_node = node
+      @jsi_node = node
       node.jsi_schemas.each do |schema|
-        extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [NotASchemaModule, SchemaModulePossibly]))
+        extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [SchemaModule::Connection]))
       end
     end
 
     # @return [String]
     def inspect
       if name_from_ancestor
-        "#{name_from_ancestor} (JSI wrapper for Schema Module)"
+        "#{name_from_ancestor} (#{self.class})"
       else
-        "(JSI wrapper for Schema Module: #{@possibly_schema_node.jsi_ptr.uri})"
+        "(#{self.class}: #{@jsi_node.jsi_ptr.uri})"
       end
     end
 

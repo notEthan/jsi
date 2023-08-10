@@ -25,6 +25,9 @@ describe 'JSI::Base hash' do
         },
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
@@ -56,6 +59,9 @@ describe 'JSI::Base hash' do
         },
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { {'bar' => 3} }
       it 'returns the default value' do
@@ -88,6 +94,9 @@ describe 'JSI::Base hash' do
         },
       }
     end
+
+    schema_instance_child_use_default_default_true
+
     describe 'default value' do
       let(:instance) { Hash.new({'foo' => 2}).merge({'bar' => 3}) }
       it 'returns the default value' do
@@ -313,7 +322,7 @@ describe 'JSI::Base hash' do
 
     describe "when a schema's `propertyNames` is not a schema" do
       let(:schema) do
-        JSI::MetaschemaNode.new({}, schema_implementation_modules: [Module.new {
+        JSI.new_metaschema({}, schema_implementation_modules: [Module.new {
           include JSI::Schema
           include JSI::Schema::Application::ChildApplication
           include JSI::Schema::Application::InplaceApplication
@@ -434,7 +443,8 @@ describe 'JSI::Base hash' do
     end
   end
   describe 'modified copy methods' do
-    it('#merge') { assert_equal(subject, subject.merge({})) }
+    it('#merge') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge({'a' => ['b']})) }
+    it('#merge Base') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge(schema.new_jsi({'a' => ['b']}))) }
     it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
     it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
     describe '#select' do

@@ -1,18 +1,18 @@
 # frozen_string_literal: true
 
 module JSI
-  # JSI::Base is the base class of every JSI instance of a JSON schema.
+  # A JSI::Base instance represents a node in a JSON document (its {#jsi_document}) at a particular
+  # location (its {#jsi_ptr}), described by any number of JSON Schemas (its {#jsi_schemas}).
   #
-  # instances are described by a set of one or more JSON schemas. JSI dynamically creates a subclass of
-  # JSI::Base for each set of JSON schemas which describe an instance that is to be instantiated.
+  # JSI::Base is an abstract base class. The subclasses used to instantiate JSIs are dynamically created as
+  # needed for a given instance.
   #
-  # a JSI instance of such a subclass represents a JSON schema instance described by that set of schemas.
+  # These subclasses are generally intended to be ignored by applications using this library - the purpose
+  # they serve is to include modules relevant to the instance. The modules these classes include are:
   #
-  # this subclass includes the JSI Schema Module of each schema it represents.
-  #
-  # the method {Base#jsi_schemas} is defined to indicate the schemas the class represents.
-  #
-  # the JSI::Base class itself is not intended to be instantiated.
+  # - the {Schema#jsi_schema_module} of each schema which describes the instance
+  # - {Base::HashNode} or {Base::ArrayNode}, if the instance is a hash/object or array
+  # - Modules defining accessor methods for property names described by the schemas
   class Base
     autoload :ArrayNode, 'jsi/base/node'
     autoload :HashNode, 'jsi/base/node'
@@ -88,7 +88,7 @@ module JSI
             end
           end
           if !schema_names.any?(&:nil?) && !schema_names.empty?
-            schema_names.sort.map { |n| 'X' + n.to_s.gsub(/[^\w]/, '_') }.join('')
+            Util.const_name_from_parts(schema_names.sort.map { |part| 'X' + part })
           end
         end
       end
@@ -154,13 +154,17 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
+      jsi_memomaps_initialize
+
       if jsi_instance.is_a?(JSI::Base)
         raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
       end
     end
 
     # @!method jsi_schemas
-    #   the set of schemas which describe this instance
+    #   The set of schemas that describe this instance.
+    #   These are the applicator schemas that apply to this instance, the result of inplace application
+    #   of our {#jsi_indicated_schemas}.
     #   @return [JSI::SchemaSet]
     # note: defined on subclasses by JSI::SchemaClasses.class_for_schemas
 
@@ -380,7 +384,7 @@ module JSI
     # @param token (see Base#[])
     # @param as_jsi (see Base#[])
     # @return [JSI::Base, Object]
-    def jsi_child(token, as_jsi: :auto)
+    def jsi_child(token, as_jsi: )
       child_content = jsi_node_content_child(token)
 
       child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
@@ -408,7 +412,7 @@ module JSI
     # @param token (see Base#[])
     # @param as_jsi (see Base#[])
     # @return [JSI::Base, nil]
-    def jsi_default_child(token, as_jsi: :auto)
+    def jsi_default_child(token, as_jsi: )
       child_content = jsi_node_content_child(token)
 
       child_indicated_schemas = jsi_schemas.child_applicator_schemas(token, jsi_node_content)
@@ -437,9 +441,10 @@ module JSI
     #
     # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
     #   of the instance identifying the child value
-    # @param as_jsi [:auto, true, false] whether to return the result value as a JSI. one of:
+    # @param as_jsi [:auto, true, false] (default is `:auto`)
+    #   Whether to return the child as a JSI. One of:
     #
-    #   - :auto (default): by default a JSI will be returned when either:
+    #   - `:auto`: By default a JSI will be returned when either:
     #
     #     - the result is a complex value (responds to #to_ary or #to_hash)
     #     - the result is a schema (including true/false schemas)
@@ -454,8 +459,9 @@ module JSI
     #   is not a hash key or array index of the instance and no default value applies.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
-    # @param use_default [true, false] whether to return a schema default value when the token is not in
-    #   range. if the token is not an array index or hash key of the instance, and one schema for the child
+    # @param use_default [true, false] (default is `false`)
+    #   Whether to return a schema default value when the token refers to a child that is not in the document.
+    #   If the token is not an array index or hash key of the instance, and one schema for the child
     #   instance specifies a default value, that default is returned.
     #
     #   if the result with the default value is a JSI (per the `as_jsi` param), that JSI is not a child of
@@ -467,9 +473,22 @@ module JSI
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
     # @return [JSI::Base, Object, nil] the child value identified by the subscript token
-    def [](token, as_jsi: :auto, use_default: true)
+    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
+    end
+
+    # The default value for the param `as_jsi` of {#[]}, controlling whether a child is returned as a JSI instance.
+    # @return [:auto, true, false] a valid value of the `as_jsi` param of {#[]}
+    def jsi_child_as_jsi_default
+      :auto
+    end
+
+    # The default value for the param `use_default` of {#[]}, controlling whether a schema default value is
+    # returned when a token refers to a child that is not in the document.
+    # @return [true, false] a valid value of the `use_default` param of {#[]}
+    def jsi_child_use_default_default
+      false
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.
@@ -621,10 +640,10 @@ module JSI
         if jsi_node_content.respond_to?(:jsi_object_group_text)
           content_txt = jsi_node_content.jsi_object_group_text
         else
-          content_txt = [jsi_node_content.class.to_s]
+          content_txt = jsi_node_content.class.to_s
         end
       else
-        content_txt = []
+        content_txt = nil
       end
 
       [
@@ -655,8 +674,12 @@ module JSI
 
     private
 
+    def jsi_memomaps_initialize
+    end
+
     def jsi_indicated_schemas=(jsi_indicated_schemas)
-      @jsi_indicated_schemas = SchemaSet.ensure_schema_set(jsi_indicated_schemas)
+      #chkbug raise(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
+      @jsi_indicated_schemas = jsi_indicated_schemas
     end
 
     def jsi_child_node_map

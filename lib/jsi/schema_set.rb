@@ -73,7 +73,7 @@ module JSI
     # applicators of this set's schemas which apply to the given instance.
     #
     # @param instance [Object] the instance to be represented as a JSI
-    # @param uri [nil, #to_str, Addressable::URI] The retrieval URI of the instance.
+    # @param uri [#to_str, Addressable::URI] The retrieval URI of the instance.
     #
     #   It is rare that this needs to be specified, and only useful for instances which contain schemas.
     #   See {Schema::DescribesSchema#new_schema}'s `uri` param documentation.
@@ -91,6 +91,16 @@ module JSI
       end
 
       applied_schemas = inplace_applicator_schemas(instance)
+
+      if uri
+        unless uri.respond_to?(:to_str)
+          raise(TypeError, "uri must be string or Addressable::URI; got: #{uri.inspect}")
+        end
+        uri = Util.uri(uri)
+        unless uri.absolute? && !uri.fragment
+          raise(ArgumentError, "uri must be an absolute URI with no fragment; got: #{uri.inspect}")
+        end
+      end
 
       jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
         includes: SchemaClasses.includes_for(instance),

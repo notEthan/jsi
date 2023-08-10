@@ -12,6 +12,12 @@ describe JSI::Schema do
       assert_equal("given schema_content keyword `$schema` is not a string", err.message)
     end
 
+    it '$schema resolves but does not describe schemas' do
+      JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#", "$id": "tag:guqh"})
+      e = assert_raises(TypeError) { JSI.new_schema({"$schema": "tag:guqh"}) }
+      assert_equal(%q($schema URI indicates a schema which does not describe schemas: "tag:guqh"), e.message)
+    end
+
     it 'cannot instantiate from some unknown object' do
       err = assert_raises(TypeError) { JSI.new_schema(Object.new, default_metaschema: JSI::JSONSchemaOrgDraft07) }
       assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
@@ -25,6 +31,25 @@ describe JSI::Schema do
     it 'cannot instantiate from a JSI' do
       err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
       assert_equal("Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI>}", err.message)
+    end
+
+    it 'instantiates using default_metaschema' do
+      # URI
+      schema = JSI.new_schema({}, default_metaschema: "http://json-schema.org/draft-07/schema#")
+      assert_schemas([JSI::JSONSchemaOrgDraft07.schema], schema)
+
+      # JSI::Schema
+      schema = JSI.new_schema({}, default_metaschema: JSI::JSONSchemaOrgDraft07.schema)
+      assert_schemas([JSI::JSONSchemaOrgDraft07.schema], schema)
+
+      # invalid: wrong type
+      e = assert_raises(TypeError) { JSI.new_schema({}, default_metaschema: 1) }
+      assert_match(/default_metaschema.* 1/, e.message)
+
+      # invalid: URI resolves but it's not a metaschema
+      JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#", "$id": "tag:l3bu"})
+      e = assert_raises(TypeError) { JSI.new_schema({}, default_metaschema: "tag:l3bu") }
+      assert_match(/default_metaschema URI.* "tag:l3bu"/, e.message)
     end
   end
   describe 'as an instance of metaschema' do

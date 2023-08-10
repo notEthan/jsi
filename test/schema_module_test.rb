@@ -12,22 +12,25 @@ describe 'JSI::SchemaModule' do
   let(:schema_module) { schema.jsi_schema_module }
   describe 'accessors and subscripts' do
     it 'returns schemas using accessors and subscripts' do
-      assert_equal(schema.properties, schema_module.properties.possibly_schema_node)
-      assert_equal(schema.properties['foo'], schema_module.properties['foo'].possibly_schema_node)
+      assert_is_a(JSI::SchemaModule::Connection, schema_module.properties)
+      assert_equal(schema.properties, schema_module.properties.jsi_node)
+      assert_equal(schema.properties['foo'], schema_module.properties['foo'].jsi_node)
       assert_equal(schema.properties['foo'].jsi_schema_module, schema_module.properties['foo'])
-      assert_equal(schema.properties['foo'].items, schema_module.properties['foo'].items.possibly_schema_node)
+      assert_equal(schema.properties['foo'].items, schema_module.properties['foo'].items.jsi_node)
       assert_equal(schema.properties['foo'].items.jsi_schema_module, schema_module.properties['foo'].items)
       assert_equal('string', schema_module.properties['foo'].items.type)
     end
     it 'accessors and subscripts with a metaschema' do
-      assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties, JSI::JSONSchemaOrgDraft06.properties.possibly_schema_node)
+      assert_is_a(JSI::SchemaModule::Connection, JSI::JSONSchemaOrgDraft06.properties)
+      assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties, JSI::JSONSchemaOrgDraft06.properties.jsi_node)
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties)
+      assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties.jsi_node)
     end
   end
   describe '.inspect, .to_s' do
     it 'shows the name relative to a named ancestor schema module' do
       assert_equal(
-        'SchemaModuleTestModule.properties (JSI wrapper for Schema Module)',
+        'SchemaModuleTestModule.properties (JSI::SchemaModule::Connection)',
         SchemaModuleTestModule.properties.inspect
       )
       assert_equal(SchemaModuleTestModule.properties.inspect, SchemaModuleTestModule.properties.to_s)
@@ -42,7 +45,7 @@ describe 'JSI::SchemaModule' do
         'title' => 'lhzm', 'properties' => {'foo' => {'items' => {'type' => 'string'}}}
       })
       assert_equal(
-        '(JSI wrapper for Schema Module: #/properties)',
+        '(JSI::SchemaModule::Connection: #/properties)',
         mod.properties.inspect
       )
       assert_equal(mod.properties.inspect, mod.properties.to_s)

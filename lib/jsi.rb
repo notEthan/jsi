@@ -66,9 +66,30 @@ module JSI
   # Instantiates the given schema content as a JSI Schema, passing all params to
   # {JSI.new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
-  # @return [Module + JSI::SchemaModule]
+  # @return (see JSI::Schema::DescribesSchema#new_schema_module)
   def self.new_schema_module(schema_content, **kw)
     JSI::Schema.new_schema(schema_content, **kw).jsi_schema_module
+  end
+
+  # Instantiates the given document as a JSI Metaschema.
+  #
+  # @param metaschema_document an object to be instantiated as a JSI Metaschema
+  # @param schema_implementation_modules (see MetaschemaNode#initialize)
+  # @return [JSI::MetaschemaNode + JSI::DescribesSchema + JSI::Schema]
+  def self.new_metaschema(metaschema_document,
+      schema_implementation_modules:
+  )
+    MetaschemaNode.new(metaschema_document,
+      schema_implementation_modules: schema_implementation_modules,
+    )
+  end
+
+  # Instantiates the given document as a JSI Metaschema, passing all params to
+  # {new_metaschema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
+  #
+  # @return [Module + JSI::SchemaModule::DescribesSchemaModule + JSI::SchemaModule]
+  def self.new_metaschema_module(metaschema_document, **kw)
+    new_metaschema(metaschema_document, **kw).jsi_schema_module
   end
 
   # `JSI.schema_registry` is the {JSI::SchemaRegistry} in which schemas are registered.

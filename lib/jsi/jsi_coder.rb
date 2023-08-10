@@ -29,12 +29,14 @@ module JSI
     #   will instantiate column data using the JSI schemas represented.
     # @param array [Boolean] whether the dumped data represent one instance of the schema,
     #   or an array of them. note that it may be preferable to simply use an array schema.
-    def initialize(schema, array: false)
+    # @param jsi_opt [Hash] keyword arguments to pass to {Schema#new_jsi} when loading
+    def initialize(schema, array: false, jsi_opt: {})
       unless schema.respond_to?(:new_jsi)
         raise(ArgumentError, "schema param does not respond to #new_jsi: #{schema.inspect}")
       end
       @schema = schema
       @array = array
+      @jsi_opt = jsi_opt
     end
 
     # loads the database column to JSI instances of our schema
@@ -78,7 +80,7 @@ module JSI
     # @param data [Object]
     # @return [JSI::Base]
     def load_object(data)
-      @schema.new_jsi(data)
+      @schema.new_jsi(data, **@jsi_opt)
     end
 
     # @param object [JSI::Base, Object]
