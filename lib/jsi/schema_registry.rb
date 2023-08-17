@@ -94,12 +94,13 @@ module JSI
     # @raise [JSI::SchemaRegistry::ResourceNotFound]
     def find(uri)
       uri = ensure_uri_absolute(uri)
-      if @autoload_uris.key?(uri) && !@resources.key?(uri)
+      if @autoload_uris.key?(uri)
         autoloaded = @autoload_uris[uri].call
         register(autoloaded)
+        @autoload_uris.delete(uri)
       end
       if !@resources.key?(uri)
-        if @autoload_uris.key?(uri)
+        if autoloaded
           msg = [
             "URI #{uri} was registered with autoload_uri but the result did not contain a resource with that URI.",
             "the resource resulting from autoload_uri was:",
