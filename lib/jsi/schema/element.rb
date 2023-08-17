@@ -13,6 +13,9 @@ module JSI
         freeze
       end
 
+      # @return [Hash<Symbol, Array<Proc>>]
+      attr_reader(:actions)
+
       # @param name [Symbol]
       # @yield perform the action
       # @return [void]
