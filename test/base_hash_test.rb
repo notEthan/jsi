@@ -334,6 +334,13 @@ describe 'JSI::Base hash' do
         JSI.new_metaschema({}, schema_implementation_modules: [Module.new {
           define_method(:internal_child_applicate_keywords) { |*| }
           define_method(:internal_inplace_applicate_keywords) { |*, &block| block.call self }
+
+          dialect = JSI::Schema::Dialect.new(vocabularies: [
+            JSI::Schema::Vocabulary.new(elements: [
+            ]),
+          ])
+
+          define_method(:dialect) { dialect }
         }]).new_schema({'propertyNames' => {}})
       end
 
