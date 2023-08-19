@@ -49,7 +49,7 @@ module JSI
           if schema_names.empty?
             "(JSI Schema Class for 0 schemas)"
           else
-            -"(JSI Schema Class: #{schema_names.join(', ')})"
+            -"(JSI Schema Class: #{schema_names.join(' + ')})"
           end
         end
       end
