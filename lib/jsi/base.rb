@@ -34,11 +34,11 @@ module JSI
           super
         else
           schema_names = jsi_class_schemas.map do |schema|
-            mod = schema.jsi_schema_module
-            if mod.name && schema.schema_uri
-              "#{mod.name} (#{schema.schema_uri})"
-            elsif mod.name
-              mod.name
+            mod_name = schema.jsi_schema_module.name_from_ancestor
+            if mod_name && schema.schema_absolute_uri
+              "#{mod_name} <#{schema.schema_absolute_uri}>"
+            elsif mod_name
+              mod_name
             elsif schema.schema_uri
               schema.schema_uri.to_s
             else
