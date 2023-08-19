@@ -106,6 +106,8 @@ module JSI
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
 
+            define_singleton_method(:jsi_class_includes) { includes }
+
             conflicting_modules = Set[JSI::Base] + includes + schemas.map(&:jsi_schema_module)
 
             reader_modules = schemas.map do |schema|

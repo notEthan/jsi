@@ -77,12 +77,14 @@ module JSI
             [alnum[schema.jsi_root_node.__id__], *schema.jsi_ptr.tokens].join('_')
           end
         end
+        includes_names = jsi_class_includes.map { |m| m.name.sub(/\AJSI::Base::/, '').gsub(Util::RUBY_REJECT_NAME_RE, '_') }
         if schema_names.any?
           parts = schema_names.compact.sort.map { |n| 'X' + n.to_s }
+          parts += includes_names
           const_name = Util.const_name_from_parts(parts, join: '__')
           const_name += "__" + alnum[__id__] if SchemaClasses.const_defined?(const_name)
         else
-          const_name = 'X' + alnum[__id__]
+          const_name = (['X' + alnum[__id__]] + includes_names).join('__')
         end
         # collisions are technically possible though vanishingly unlikely
         SchemaClasses.const_set(const_name, self) unless SchemaClasses.const_defined?(const_name)
