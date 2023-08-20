@@ -74,9 +74,18 @@ describe 'JSI Schema Class, JSI Schema Module' do
     let(:actual) do
       schemas = Examples.schema.definitions.values.map { |s| s.definitions.values }.inject([], &:+)
 
-      schemas.map do |schema|
+      actual_lines = []
+      actual = schemas.map do |schema|
         schema_module = schema.jsi_schema_module
         schema_instance_class = schema.new_jsi(nil).class
+
+        actual_lines << "{"
+        actual_lines << %Q(  "ptr": #{schema.jsi_ptr},)
+        actual_lines << %Q(  "module.name_from_ancestor": #{schema_module.name_from_ancestor ? "%q(#{schema_module.name_from_ancestor})" : "nil"},)
+        actual_lines << %Q(  "module.inspect": %q(#{schema_module.inspect}),)
+        actual_lines << %Q(  "class.name": #{schema_instance_class.name ? "%q(#{schema_instance_class.name})" : "nil"},)
+        actual_lines << %Q(  "class.inspect": %q(#{schema_instance_class.inspect}),)
+        actual_lines << "},"
 
         {
           "ptr": schema.jsi_ptr,
@@ -86,9 +95,22 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": schema_instance_class.inspect,
         }
       end
+
+      if ENV['JSI_TEST_REGEN']
+        test = File.read(__FILE__).split("\n", -1)
+        new_test = test[0...(line_a + 3)] + actual_lines.map { |l| ' ' * 8 + l } + test[(line_b - 3)..-1]
+        if new_test != test
+          File.write(__FILE__, new_test.join("\n"))
+          skip("regenerated examples")
+        end
+      end
+
+      actual
     end
 
+    let(:line_a) { __LINE__ }
     let(:examples) do
+      # GENERATED: run with env ENV['JSI_TEST_REGEN'] to regenerate
       [
         {
           "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_none"],
@@ -204,6 +226,7 @@ describe 'JSI Schema Class, JSI Schema Module' do
         },
       ]
     end
+    let(:line_b) { __LINE__ }
 
     it 'has expected name / inspect' do
       assert_equal(examples, actual)
