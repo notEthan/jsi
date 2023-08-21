@@ -63,5 +63,13 @@ module JSI
     NonNegativeIntegerDefault0 = definitions['nonNegativeIntegerDefault0']
     SimpleType                = definitions['simpleTypes']
     StringArray              = definitions['stringArray']
+
+    Example = Examples.items
+    PatternPropertyPattern = PatternProperties.propertyNames
+    Dependencies::Dependency = Dependencies.additionalProperties
+    Enum::Item = Enum.items
+    Type::Array = Type.anyOf[1]
+    NonNegativeIntegerDefault0::Default0 = NonNegativeIntegerDefault0.allOf[1]
+    StringItem = StringArray.items
   end
 end
