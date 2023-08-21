@@ -3,7 +3,8 @@ require_relative 'test_helper'
 SchemaModuleTestModule = JSI.new_schema_module({
   '$schema' => 'http://json-schema.org/draft-07/schema#',
   'title' => 'a9b7',
-  'properties' => {'foo' => {'items' => {'type' => 'string'}}}
+  'properties' => {'foo' => {'items' => {'type' => 'string'}}},
+  'additionalProperties' => {},
 })
 
 describe 'JSI::SchemaModule' do
@@ -110,6 +111,25 @@ describe 'JSI::SchemaModule' do
     it '#new_schema_module' do
       mod = JSI::JSONSchemaOrgDraft07.new_schema_module({})
       assert_equal(JSI::JSONSchemaOrgDraft07.new_schema({}).jsi_schema_module, mod)
+    end
+  end
+
+  describe 'block given to SchemaModule/Connection reader' do
+    it '`module_exec`s (Connection#[])' do
+      SchemaModuleTestModule.properties['foo'] do
+        def x
+          :x
+        end
+      end
+      assert_equal(:x, SchemaModuleTestModule.new_jsi({'foo' => {}}).foo.x)
+    end
+    it '`module_exec`s (SchemaModule#[])' do
+      SchemaModuleTestModule.additionalProperties do
+        def x
+          :x
+        end
+      end
+      assert_equal(:x, SchemaModuleTestModule.new_jsi({'qux' => {}})['qux'].x)
     end
   end
 end

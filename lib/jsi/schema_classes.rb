@@ -217,9 +217,9 @@ module JSI
             define_singleton_method(:jsi_property_readers) { readers }
 
             readers.each do |property_name|
-                define_method(property_name) do |**kw|
-                  self[property_name, **kw]
-                end
+              define_method(property_name) do |**kw, &block|
+                self[property_name, **kw, &block]
+              end
             end
           end
       end
@@ -292,12 +292,18 @@ module JSI
     # return a SchemaModule::Connection; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
+    # @yield If the token identifies a schema and a block is given,
+    #   it is evaluated in the context of the schema's JSI schema module
+    #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
     # @return [Module, SchemaModule::Connection, Object]
-    def [](token, **kw)
+    def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       sub = @jsi_node[token]
       if sub.is_a?(JSI::Schema)
+        sub.jsi_schema_module_exec(&block) if block
         sub.jsi_schema_module
+      elsif block
+        raise(ArgumentError, "block given but token #{token.inspect} does not identify a schema")
       elsif sub.is_a?(JSI::Base)
         SchemaModule::Connection.new(sub)
       else
