@@ -61,7 +61,7 @@ module JSI
     SchemaArray              = definitions['schemaArray']
     NonNegativeInteger        = definitions['nonNegativeInteger']
     NonNegativeIntegerDefault0 = definitions['nonNegativeIntegerDefault0']
-    SimpleTypes               = definitions['simpleTypes']
+    SimpleType                = definitions['simpleTypes']
     StringArray              = definitions['stringArray']
   end
 end
