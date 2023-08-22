@@ -101,7 +101,7 @@ bill.phone.map(&:location)
 # => ["home"]
 ```
 
-We also get validations, as you'd expect given that's largely what JSON Schema exists to do:
+We also get validations, as you'd expect given that's largely what JSON Schema was created to do:
 
 ```ruby
 bill.jsi_valid?
