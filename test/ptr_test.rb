@@ -124,10 +124,11 @@ describe JSI::Ptr do
       it 'fails to evaluate' do
         err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr['-'].evaluate([]) }
         assert_match(/nonexistent element/, err.message)
-        err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr['foo'].evaluate([]) }
-        assert_match(/not an integer/, err.message)
-        err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr[1].evaluate([]) }
-        assert_match(/not a valid index/, err.message)
+
+        ['foo', '0foo' 'foo0', '00', 1, -1, '1', '-1'].each do |token|
+          err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr[token].evaluate([]) }
+          assert_match(/is not a valid array index of \[\]/, err.message)
+        end
 
         err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr['a'].evaluate({}) }
         assert_match(/not a valid key/, err.message)
