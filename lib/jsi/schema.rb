@@ -194,7 +194,10 @@ module JSI
         super
         o.send(:jsi_schema_initialize)
       end
+    end
+  end
 
+  class << self
       # An application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
       # to instantiate schemas which do not specify their metaschema using a `$schema` property.
       #
@@ -237,11 +240,11 @@ module JSI
       #   ```
       #
       # - if no `default_metaschema` param is specified, the application-wide default
-      #   {JSI::Schema.default_metaschema JSI::Schema.default_metaschema} is used,
+      #   {JSI.default_metaschema JSI.default_metaschema} is used,
       #   if the application has set it. For example:
       #
       #   ```ruby
-      #   JSI::Schema.default_metaschema = JSI::JSONSchemaOrgDraft07
+      #   JSI.default_metaschema = JSI::JSONSchemaOrgDraft07
       #   JSI.new_schema({"properties" => ...})
       #   ```
       #
@@ -274,9 +277,9 @@ module JSI
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
-            ensure_describes_schema(default_metaschema, name: "default_metaschema")
-          elsif Schema.default_metaschema
-            Schema.default_metaschema
+            Schema.ensure_describes_schema(default_metaschema, name: "default_metaschema")
+          elsif self.default_metaschema
+            self.default_metaschema
           else
             raise(ArgumentError, [
               "When instantiating a schema with no `$schema` property, you must specify its metaschema by one of these methods:",
@@ -284,8 +287,8 @@ module JSI
               "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaOrgDraft07)",
               "- invoke `new_schema` on the appropriate metaschema or its schema module",
               "  e.g.: JSI::JSONSchemaOrgDraft07.new_schema(...)",
-              "- set JSI::Schema.default_metaschema to an application-wide default metaschema initially",
-              "  e.g.: JSI::Schema.default_metaschema = JSI::JSONSchemaOrgDraft07",
+              "- set JSI.default_metaschema to an application-wide default metaschema initially",
+              "  e.g.: JSI.default_metaschema = JSI::JSONSchemaOrgDraft07",
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
@@ -307,7 +310,7 @@ module JSI
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
-            metaschema = ensure_describes_schema(id, name: '$schema')
+            metaschema = Schema.ensure_describes_schema(id, name: '$schema')
             metaschema.new_schema(schema_content, **new_schema_params)
           else
             default_metaschema_new_schema.call
@@ -318,7 +321,12 @@ module JSI
           raise(TypeError, "cannot instantiate Schema from: #{schema_content.pretty_inspect.chomp}")
         end
       end
+  end
 
+  self.default_metaschema = nil
+
+  module Schema
+    class << self
       # ensure the given object is a JSI Schema
       #
       # @param schema [Object] the thing the caller wishes to ensure is a Schema
@@ -377,8 +385,6 @@ module JSI
         end
       end
     end
-
-    self.default_metaschema = nil
 
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       def initialize(*)
