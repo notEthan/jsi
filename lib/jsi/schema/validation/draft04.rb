@@ -4,8 +4,6 @@ module JSI
   module Schema::Validation::Draft04
     autoload :MinMax, 'jsi/schema/validation/draft04/minmax'
 
-    include Schema::Validation::Core
-
     include Schema::Validation::Ref
 
     include Schema::Validation::MultipleOf

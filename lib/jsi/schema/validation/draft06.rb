@@ -2,8 +2,6 @@
 
 module JSI
   module Schema::Validation::Draft06
-    include Schema::Validation::Core
-
     include Schema::Validation::Ref
     include Schema::Validation::AllOf
     include Schema::Validation::AnyOf
