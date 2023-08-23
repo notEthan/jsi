@@ -2,9 +2,6 @@
 
 module JSI
   simple_wrap_implementation = Module.new do
-    include Schema::Application::ChildApplication
-    include Schema::Application::InplaceApplication
-
     def internal_child_applicate_keywords(token, instance)
       yield self
     end
