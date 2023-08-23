@@ -606,6 +606,58 @@ module JSI
           )
     end
 
+    # a set of inplace applicator schemas of this schema (from $ref, allOf, etc.) which apply to the
+    # given instance.
+    #
+    # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
+    #
+    # @param instance [Object] the instance to check any applicators against
+    # @return [JSI::SchemaSet] matched applicator schemas
+    def inplace_applicator_schemas(instance)
+      SchemaSet.new(each_inplace_applicator_schema(instance))
+    end
+
+    # yields each inplace applicator schema which applies to the given instance.
+    #
+    # @param instance (see #inplace_applicator_schemas)
+    # @param visited_refs [Enumerable<JSI::Schema::Ref>]
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def each_inplace_applicator_schema(instance, visited_refs: [], &block)
+      return to_enum(__method__, instance, visited_refs: visited_refs) unless block
+
+      catch(:jsi_application_done) do
+        internal_inplace_applicate_keywords(instance, visited_refs, &block)
+      end
+
+      nil
+    end
+
+    # a set of child applicator subschemas of this schema which apply to the child of the given instance
+    # on the given token.
+    #
+    # @param token [Object] the array index or object property name for the child instance
+    # @param instance [Object] the instance to check any child applicators against
+    # @return [JSI::SchemaSet] child applicator subschemas of this schema for the given token
+    #   of the instance
+    def child_applicator_schemas(token, instance)
+      SchemaSet.new(each_child_applicator_schema(token, instance))
+    end
+
+    # yields each child applicator subschema (from properties, items, etc.) which applies to the child of
+    # the given instance on the given token.
+    #
+    # @param (see #child_applicator_schemas)
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def each_child_applicator_schema(token, instance, &block)
+      return to_enum(__method__, token, instance) unless block
+
+      internal_child_applicate_keywords(token, instance, &block)
+
+      nil
+    end
+
     # any object property names this schema indicates may be present on its instances.
     # this includes any keys of this schema's "properties" object and any entries of this schema's
     # array of "required" property keys.
@@ -648,6 +700,40 @@ module JSI
         instance = instance.jsi_node_content
       end
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?
+    end
+
+    # validates the given instance against this schema
+    #
+    # @private
+    # @param instance_ptr [JSI::Ptr] a pointer to the instance to validate against the schema, in the instance_document
+    # @param instance_document [#to_hash, #to_ary, Object] document containing the instance instance_ptr pointer points to
+    # @param validate_only [Boolean] whether to return a full schema validation result or a simple, validation-only result
+    # @param visited_refs [Enumerable<JSI::Schema::Ref>]
+    # @return [JSI::Validation::Result]
+    def internal_validate_instance(instance_ptr, instance_document, validate_only: false, visited_refs: [])
+      if validate_only
+        result = JSI::Validation::VALID
+      else
+        result = JSI::Validation::FullResult.new
+      end
+      result_builder = result.builder(self, instance_ptr, instance_document, validate_only, visited_refs)
+
+      catch(:jsi_validation_result) do
+        # note: true/false are not valid as schemas in draft 4; they are only values of
+        # additionalProperties / additionalItems. since their behavior is undefined, though,
+        # it's fine for them to behave the same as boolean schemas in later drafts.
+        # I don't care about draft 4 to implement a different structuring for that.
+        if schema_content == true
+          # noop
+        elsif schema_content == false
+          result_builder.validate(false, 'instance is not valid against `false` schema')
+        elsif schema_content.respond_to?(:to_hash)
+          internal_validate_keywords(result_builder)
+        else
+          result_builder.schema_error('schema is not a boolean or a JSON object')
+        end
+        result
+      end.freeze
     end
 
     # schema resources which are ancestors of any subschemas below this schema.
