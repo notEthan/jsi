@@ -325,7 +325,7 @@ module JSI
       end
     end
 
-    # an array of JSI instances above this one in the document.
+    # JSI nodes above this one in the document.
     #
     # @return [Array<JSI::Base>]
     def jsi_parent_nodes
