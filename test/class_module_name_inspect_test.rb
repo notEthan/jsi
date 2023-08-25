@@ -7,66 +7,211 @@ Examples = JSI.new_schema_module(YAML.load(<<~YAML
       definitions:
         with_none:
           title: with_none subschema without id or modname
+        with_none_multi:
+          title: with_none subschema without id or modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_none:with_none_multi:with_id"
+            - title: modname
         with_modname:
           title: with_none subschema with modname
+        with_modname_multi:
+          title: with_none subschema with modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_none:with_modname_multi:with_id"
+            - title: modname
         with_id:
           $id: tag:examples:with_none:with_id
           title: with_none subschema with id
+        with_id_multi:
+          $id: tag:examples:with_none:with_id_multi
+          title: with_none subschema with id with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_none:with_id_multi:with_id"
+            - title: modname
         with_id_and_modname:
           $id: tag:examples:with_none:with_id_and_modname
           title: with_none subschema with id and modname
+        with_id_and_modname_multi:
+          $id: tag:examples:with_none:with_id_and_modname_multi
+          title: with_none subschema with id and modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_none:with_id_and_modname_multi:with_id"
+            - title: modname
     with_modname:
       definitions:
         with_none:
           title: with_modname subschema without id or modname
+        with_none_multi:
+          title: with_modname subschema without id or modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_modname:with_none_multi:with_id"
+            - title: modname
         with_modname:
           title: with_modname subschema with modname
+        with_modname_multi:
+          title: with_modname subschema with modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_modname:with_modname_multi:with_id"
+            - title: modname
         with_id:
           $id: tag:examples:with_modname:with_id
           title: with_modname subschema with id
+        with_id_multi:
+          $id: tag:examples:with_modname:with_id_multi
+          title: with_modname subschema with id with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_modname:with_id_multi:with_id"
+            - title: modname
         with_id_and_modname:
           $id: tag:examples:with_modname:with_id_and_modname
           title: with_modname subschema with id and modname
+        with_id_and_modname_multi:
+          $id: tag:examples:with_modname:with_id_and_modname_multi
+          title: with_modname subschema with id and modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_modname:with_id_and_modname_multi:with_id"
+            - title: modname
     with_id:
       $id: tag:examples:with_id
       definitions:
         with_none:
           title: with_id subschema without id or modname
+        with_none_multi:
+          title: with_id subschema without id or modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_id:with_none_multi:with_id"
+            - title: modname
         with_modname:
           title: with_id subschema with modname
+        with_modname_multi:
+          title: with_id subschema with modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_id:with_modname_multi:with_id"
+            - title: modname
         with_id:
           $id: tag:examples:with_id:with_id
           title: with_id subschema with id
+        with_id_multi:
+          $id: tag:examples:with_id:with_id_multi
+          title: with_id subschema with id with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_id:with_id_multi:with_id"
+            - title: modname
         with_id_and_modname:
           $id: tag:examples:with_id:with_id_and_modname
           title: with_id subschema with id and modname
+        with_id_and_modname_multi:
+          $id: tag:examples:with_id:with_id_and_modname_multi
+          title: with_id subschema with id and modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_id:with_id_and_modname_multi:with_id"
+            - title: modname
     with_id_and_modname:
       $id: tag:examples:with_id_and_modname
       definitions:
         with_none:
           title: with_id_and_modname subschema without id or modname
+        with_none_multi:
+          title: with_id_and_modname subschema without id or modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_id_and_modname:with_none_multi:with_id"
+            - title: modname
         with_modname:
           title: with_id_and_modname subschema with modname
+        with_modname_multi:
+          title: with_id_and_modname subschema with modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_id_and_modname:with_modname_multi:with_id"
+            - title: modname
         with_id:
           $id: tag:examples:with_id_and_modname:with_id
           title: with_id_and_modname subschema with id
+        with_id_multi:
+          $id: tag:examples:with_id_and_modname:with_id_multi
+          title: with_id_and_modname subschema with id with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_id_and_modname:with_id_multi:with_id"
+            - title: modname
         with_id_and_modname:
           $id: tag:examples:with_id_and_modname:with_id_and_modname
           title: with_id_and_modname subschema with id and modname
+        with_id_and_modname_multi:
+          $id: tag:examples:with_id_and_modname:with_id_and_modname_multi
+          title: with_id_and_modname subschema with id and modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples:with_id_and_modname:with_id_and_modname_multi:with_id"
+            - title: modname
   YAML
 ))
 
 module Examples
   WithNone_WithModname = definitions['with_none'].definitions['with_modname']
+  WithNone_WithModnameMulti = definitions['with_none'].definitions['with_modname_multi']
   WithNone_WithIdAndModname = definitions['with_none'].definitions['with_id_and_modname']
+  WithNone_WithIdAndModnameMulti = definitions['with_none'].definitions['with_id_and_modname_multi']
   WithModname = definitions['with_modname']
   WithModname::WithModname = definitions['with_modname'].definitions['with_modname']
+  WithModname::WithModnameMulti = definitions['with_modname'].definitions['with_modname_multi']
   WithModname::WithIdAndModname = definitions['with_modname'].definitions['with_id_and_modname']
+  WithModname::WithIdAndModnameMulti = definitions['with_modname'].definitions['with_id_and_modname_multi']
   WithId_WithModname = definitions['with_id'].definitions['with_modname']
+  WithId_WithModnameMulti = definitions['with_id'].definitions['with_modname_multi']
   WithId_WithIdAndModname = definitions['with_id'].definitions['with_id_and_modname']
+  WithId_WithIdAndModnameMulti = definitions['with_id'].definitions['with_id_and_modname_multi']
   WithIdAndModname = definitions['with_id_and_modname']
   WithIdAndModname::WithModname = definitions['with_id_and_modname'].definitions['with_modname']
+  WithIdAndModname::WithModnameMulti = definitions['with_id_and_modname'].definitions['with_modname_multi']
   WithIdAndModname::WithIdAndModname = definitions['with_id_and_modname'].definitions['with_id_and_modname']
+  WithIdAndModname::WithIdAndModnameMulti = definitions['with_id_and_modname'].definitions['with_id_and_modname_multi']
+
+  WithNone_WithNoneMulti_allOfmodname = definitions['with_none'].definitions['with_none_multi'].allOf[2]
+  WithNone_WithModnameMulti::AllOfModname = definitions['with_none'].definitions['with_modname_multi'].allOf[2]
+  WithNone_WithIdMulti_allOfmodname = definitions['with_none'].definitions['with_id_multi'].allOf[2]
+  WithNone_WithIdAndModnameMulti::AllOfModname = definitions['with_none'].definitions['with_id_and_modname_multi'].allOf[2]
+  WithModname::WithNoneMulti_allOfModname = definitions['with_modname'].definitions['with_none_multi'].allOf[2]
+  WithModname::WithModnameMulti_allOfModname = definitions['with_modname'].definitions['with_modname_multi'].allOf[2]
+  WithModname::WithIdMulti_allOfModname = definitions['with_modname'].definitions['with_id_multi'].allOf[2]
+  WithModname::WithIdAndModnameMulti_allOfModname = definitions['with_modname'].definitions['with_id_and_modname_multi'].allOf[2]
+  WithId_WithNoneMulti_allOfModname = definitions['with_id'].definitions['with_none_multi'].allOf[2]
+  WithId_WithModnameMulti::AllOfModname = definitions['with_id'].definitions['with_modname_multi'].allOf[2]
+  WithId_WithIdMulti_allOfModname = definitions['with_id'].definitions['with_id_multi'].allOf[2]
+  WithId_WithIdAndModnameMulti::AllOfModname = definitions['with_id'].definitions['with_id_and_modname_multi'].allOf[2]
+  WithIdAndModname::WithNoneMulti_allOfModname = definitions['with_id_and_modname'].definitions['with_none_multi'].allOf[2]
+  WithIdAndModname::WithModnameMulti::AllOfModname = definitions['with_id_and_modname'].definitions['with_modname_multi'].allOf[2]
+  WithIdAndModname::WithIdMulti_allOfModname = definitions['with_id_and_modname'].definitions['with_id_multi'].allOf[2]
+  WithIdAndModname::WithIdAndModnameMulti::AllOfModname = definitions['with_id_and_modname'].definitions['with_id_and_modname_multi'].allOf[2]
 end
 
 describe 'JSI Schema Class, JSI Schema Module' do
@@ -131,11 +276,25 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": %q((JSI Schema Class: #/definitions/with_none/definitions/with_none)),
         },
         {
+          "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_none_multi"],
+          "module.name_from_ancestor": %q(Examples.definitions["with_none"].definitions["with_none_multi"]),
+          "module.inspect": %q(Examples.definitions["with_none"].definitions["with_none_multi"] (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithNone_WithNoneMulti_allOfmodnameXExamples_definitions_with_none_definitions_with_none_multiXExamples_definitions_with_none_definitions_with_none_multi_allOf_0XExamples_definitions_with_none_definitions_with_none_multi_allOf_1),
+          "class.inspect": %q((JSI Schema Class: #/definitions/with_none/definitions/with_none_multi, #/definitions/with_none/definitions/with_none_multi/allOf/0, tag:examples:with_none:with_none_multi:with_id, Examples::WithNone_WithNoneMulti_allOfmodname)),
+        },
+        {
           "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_modname"],
           "module.name_from_ancestor": %q(Examples::WithNone_WithModname),
           "module.inspect": %q(Examples::WithNone_WithModname (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithNone_WithModname),
           "class.inspect": %q((JSI Schema Class: Examples::WithNone_WithModname)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_modname_multi"],
+          "module.name_from_ancestor": %q(Examples::WithNone_WithModnameMulti),
+          "module.inspect": %q(Examples::WithNone_WithModnameMulti (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithNone_WithModnameMultiXExamples__WithNone_WithModnameMulti__AllOfModnameXExamples__WithNone_WithModnameMulti_allOf_0XExamples__WithNone_WithModnameMulti_allOf_1),
+          "class.inspect": %q((JSI Schema Class: Examples::WithNone_WithModnameMulti, #/definitions/with_none/definitions/with_modname_multi/allOf/0, tag:examples:with_none:with_modname_multi:with_id, Examples::WithNone_WithModnameMulti::AllOfModname)),
         },
         {
           "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_id"],
@@ -145,11 +304,25 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": %q((JSI Schema Class: tag:examples:with_none:with_id)),
         },
         {
+          "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_id_multi"],
+          "module.name_from_ancestor": %q(Examples.definitions["with_none"].definitions["with_id_multi"]),
+          "module.inspect": %q(Examples.definitions["with_none"].definitions["with_id_multi"] (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithNone_WithIdMulti_allOfmodnameXExamples_definitions_with_none_definitions_with_id_multiXExamples_definitions_with_none_definitions_with_id_multi_allOf_0XExamples_definitions_with_none_definitions_with_id_multi_allOf_1),
+          "class.inspect": %q((JSI Schema Class: tag:examples:with_none:with_id_multi, tag:examples:with_none:with_id_multi#/allOf/0, tag:examples:with_none:with_id_multi:with_id, Examples::WithNone_WithIdMulti_allOfmodname (tag:examples:with_none:with_id_multi#/allOf/2))),
+        },
+        {
           "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_id_and_modname"],
           "module.name_from_ancestor": %q(Examples::WithNone_WithIdAndModname),
           "module.inspect": %q(Examples::WithNone_WithIdAndModname (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithNone_WithIdAndModname),
           "class.inspect": %q((JSI Schema Class: Examples::WithNone_WithIdAndModname (tag:examples:with_none:with_id_and_modname))),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_id_and_modname_multi"],
+          "module.name_from_ancestor": %q(Examples::WithNone_WithIdAndModnameMulti),
+          "module.inspect": %q(Examples::WithNone_WithIdAndModnameMulti (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithNone_WithIdAndModnameMultiXExamples__WithNone_WithIdAndModnameMulti__AllOfModnameXExamples__WithNone_WithIdAndModnameMulti_allOf_0XExamples__WithNone_WithIdAndModnameMulti_allOf_1),
+          "class.inspect": %q((JSI Schema Class: Examples::WithNone_WithIdAndModnameMulti (tag:examples:with_none:with_id_and_modname_multi), tag:examples:with_none:with_id_and_modname_multi#/allOf/0, tag:examples:with_none:with_id_and_modname_multi:with_id, Examples::WithNone_WithIdAndModnameMulti::AllOfModname (tag:examples:with_none:with_id_and_modname_multi#/allOf/2))),
         },
         {
           "ptr": JSI::Ptr["definitions", "with_modname", "definitions", "with_none"],
@@ -159,11 +332,25 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": %q((JSI Schema Class: #/definitions/with_modname/definitions/with_none)),
         },
         {
+          "ptr": JSI::Ptr["definitions", "with_modname", "definitions", "with_none_multi"],
+          "module.name_from_ancestor": %q(Examples::WithModname.definitions["with_none_multi"]),
+          "module.inspect": %q(Examples::WithModname.definitions["with_none_multi"] (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithModname__WithNoneMulti_allOfModnameXExamples__WithModname_definitions_with_none_multiXExamples__WithModname_definitions_with_none_multi_allOf_0XExamples__WithModname_definitions_with_none_multi_allOf_1),
+          "class.inspect": %q((JSI Schema Class: #/definitions/with_modname/definitions/with_none_multi, #/definitions/with_modname/definitions/with_none_multi/allOf/0, tag:examples:with_modname:with_none_multi:with_id, Examples::WithModname::WithNoneMulti_allOfModname)),
+        },
+        {
           "ptr": JSI::Ptr["definitions", "with_modname", "definitions", "with_modname"],
           "module.name_from_ancestor": %q(Examples::WithModname::WithModname),
           "module.inspect": %q(Examples::WithModname::WithModname (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithModname__WithModname),
           "class.inspect": %q((JSI Schema Class: Examples::WithModname::WithModname)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_modname", "definitions", "with_modname_multi"],
+          "module.name_from_ancestor": %q(Examples::WithModname::WithModnameMulti),
+          "module.inspect": %q(Examples::WithModname::WithModnameMulti (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithModname__WithModnameMultiXExamples__WithModname__WithModnameMulti_allOfModnameXExamples__WithModname__WithModnameMulti_allOf_0XExamples__WithModname__WithModnameMulti_allOf_1),
+          "class.inspect": %q((JSI Schema Class: Examples::WithModname::WithModnameMulti, #/definitions/with_modname/definitions/with_modname_multi/allOf/0, tag:examples:with_modname:with_modname_multi:with_id, Examples::WithModname::WithModnameMulti_allOfModname)),
         },
         {
           "ptr": JSI::Ptr["definitions", "with_modname", "definitions", "with_id"],
@@ -173,11 +360,25 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": %q((JSI Schema Class: tag:examples:with_modname:with_id)),
         },
         {
+          "ptr": JSI::Ptr["definitions", "with_modname", "definitions", "with_id_multi"],
+          "module.name_from_ancestor": %q(Examples::WithModname.definitions["with_id_multi"]),
+          "module.inspect": %q(Examples::WithModname.definitions["with_id_multi"] (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithModname__WithIdMulti_allOfModnameXExamples__WithModname_definitions_with_id_multiXExamples__WithModname_definitions_with_id_multi_allOf_0XExamples__WithModname_definitions_with_id_multi_allOf_1),
+          "class.inspect": %q((JSI Schema Class: tag:examples:with_modname:with_id_multi, tag:examples:with_modname:with_id_multi#/allOf/0, tag:examples:with_modname:with_id_multi:with_id, Examples::WithModname::WithIdMulti_allOfModname (tag:examples:with_modname:with_id_multi#/allOf/2))),
+        },
+        {
           "ptr": JSI::Ptr["definitions", "with_modname", "definitions", "with_id_and_modname"],
           "module.name_from_ancestor": %q(Examples::WithModname::WithIdAndModname),
           "module.inspect": %q(Examples::WithModname::WithIdAndModname (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithModname__WithIdAndModname),
           "class.inspect": %q((JSI Schema Class: Examples::WithModname::WithIdAndModname (tag:examples:with_modname:with_id_and_modname))),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_modname", "definitions", "with_id_and_modname_multi"],
+          "module.name_from_ancestor": %q(Examples::WithModname::WithIdAndModnameMulti),
+          "module.inspect": %q(Examples::WithModname::WithIdAndModnameMulti (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithModname__WithIdAndModnameMultiXExamples__WithModname__WithIdAndModnameMulti_allOfModnameXExamples__WithModname__WithIdAndModnameMulti_allOf_0XExamples__WithModname__WithIdAndModnameMulti_allOf_1),
+          "class.inspect": %q((JSI Schema Class: Examples::WithModname::WithIdAndModnameMulti (tag:examples:with_modname:with_id_and_modname_multi), tag:examples:with_modname:with_id_and_modname_multi#/allOf/0, tag:examples:with_modname:with_id_and_modname_multi:with_id, Examples::WithModname::WithIdAndModnameMulti_allOfModname (tag:examples:with_modname:with_id_and_modname_multi#/allOf/2))),
         },
         {
           "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_none"],
@@ -187,11 +388,25 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": %q((JSI Schema Class: tag:examples:with_id#/definitions/with_none)),
         },
         {
+          "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_none_multi"],
+          "module.name_from_ancestor": %q(Examples.definitions["with_id"].definitions["with_none_multi"]),
+          "module.inspect": %q(Examples.definitions["with_id"].definitions["with_none_multi"] (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithId_WithNoneMulti_allOfModnameXExamples_definitions_with_id_definitions_with_none_multiXExamples_definitions_with_id_definitions_with_none_multi_allOf_0XExamples_definitions_with_id_definitions_with_none_multi_allOf_1),
+          "class.inspect": %q((JSI Schema Class: tag:examples:with_id#/definitions/with_none_multi, tag:examples:with_id#/definitions/with_none_multi/allOf/0, tag:examples:with_id:with_none_multi:with_id, Examples::WithId_WithNoneMulti_allOfModname (tag:examples:with_id#/definitions/with_none_multi/allOf/2))),
+        },
+        {
           "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_modname"],
           "module.name_from_ancestor": %q(Examples::WithId_WithModname),
           "module.inspect": %q(Examples::WithId_WithModname (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithId_WithModname),
           "class.inspect": %q((JSI Schema Class: Examples::WithId_WithModname (tag:examples:with_id#/definitions/with_modname))),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_modname_multi"],
+          "module.name_from_ancestor": %q(Examples::WithId_WithModnameMulti),
+          "module.inspect": %q(Examples::WithId_WithModnameMulti (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithId_WithModnameMultiXExamples__WithId_WithModnameMulti__AllOfModnameXExamples__WithId_WithModnameMulti_allOf_0XExamples__WithId_WithModnameMulti_allOf_1),
+          "class.inspect": %q((JSI Schema Class: Examples::WithId_WithModnameMulti (tag:examples:with_id#/definitions/with_modname_multi), tag:examples:with_id#/definitions/with_modname_multi/allOf/0, tag:examples:with_id:with_modname_multi:with_id, Examples::WithId_WithModnameMulti::AllOfModname (tag:examples:with_id#/definitions/with_modname_multi/allOf/2))),
         },
         {
           "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_id"],
@@ -201,11 +416,25 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": %q((JSI Schema Class: tag:examples:with_id:with_id)),
         },
         {
+          "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_id_multi"],
+          "module.name_from_ancestor": %q(Examples.definitions["with_id"].definitions["with_id_multi"]),
+          "module.inspect": %q(Examples.definitions["with_id"].definitions["with_id_multi"] (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithId_WithIdMulti_allOfModnameXExamples_definitions_with_id_definitions_with_id_multiXExamples_definitions_with_id_definitions_with_id_multi_allOf_0XExamples_definitions_with_id_definitions_with_id_multi_allOf_1),
+          "class.inspect": %q((JSI Schema Class: tag:examples:with_id:with_id_multi, tag:examples:with_id:with_id_multi#/allOf/0, tag:examples:with_id:with_id_multi:with_id, Examples::WithId_WithIdMulti_allOfModname (tag:examples:with_id:with_id_multi#/allOf/2))),
+        },
+        {
           "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_id_and_modname"],
           "module.name_from_ancestor": %q(Examples::WithId_WithIdAndModname),
           "module.inspect": %q(Examples::WithId_WithIdAndModname (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithId_WithIdAndModname),
           "class.inspect": %q((JSI Schema Class: Examples::WithId_WithIdAndModname (tag:examples:with_id:with_id_and_modname))),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_id_and_modname_multi"],
+          "module.name_from_ancestor": %q(Examples::WithId_WithIdAndModnameMulti),
+          "module.inspect": %q(Examples::WithId_WithIdAndModnameMulti (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithId_WithIdAndModnameMultiXExamples__WithId_WithIdAndModnameMulti__AllOfModnameXExamples__WithId_WithIdAndModnameMulti_allOf_0XExamples__WithId_WithIdAndModnameMulti_allOf_1),
+          "class.inspect": %q((JSI Schema Class: Examples::WithId_WithIdAndModnameMulti (tag:examples:with_id:with_id_and_modname_multi), tag:examples:with_id:with_id_and_modname_multi#/allOf/0, tag:examples:with_id:with_id_and_modname_multi:with_id, Examples::WithId_WithIdAndModnameMulti::AllOfModname (tag:examples:with_id:with_id_and_modname_multi#/allOf/2))),
         },
         {
           "ptr": JSI::Ptr["definitions", "with_id_and_modname", "definitions", "with_none"],
@@ -215,11 +444,25 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": %q((JSI Schema Class: tag:examples:with_id_and_modname#/definitions/with_none)),
         },
         {
+          "ptr": JSI::Ptr["definitions", "with_id_and_modname", "definitions", "with_none_multi"],
+          "module.name_from_ancestor": %q(Examples::WithIdAndModname.definitions["with_none_multi"]),
+          "module.inspect": %q(Examples::WithIdAndModname.definitions["with_none_multi"] (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithIdAndModname__WithNoneMulti_allOfModnameXExamples__WithIdAndModname_definitions_with_none_multiXExamples__WithIdAndModname_definitions_with_none_multi_allOf_0XExamples__WithIdAndModname_definitions_with_none_multi_allOf_1),
+          "class.inspect": %q((JSI Schema Class: tag:examples:with_id_and_modname#/definitions/with_none_multi, tag:examples:with_id_and_modname#/definitions/with_none_multi/allOf/0, tag:examples:with_id_and_modname:with_none_multi:with_id, Examples::WithIdAndModname::WithNoneMulti_allOfModname (tag:examples:with_id_and_modname#/definitions/with_none_multi/allOf/2))),
+        },
+        {
           "ptr": JSI::Ptr["definitions", "with_id_and_modname", "definitions", "with_modname"],
           "module.name_from_ancestor": %q(Examples::WithIdAndModname::WithModname),
           "module.inspect": %q(Examples::WithIdAndModname::WithModname (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithIdAndModname__WithModname),
           "class.inspect": %q((JSI Schema Class: Examples::WithIdAndModname::WithModname (tag:examples:with_id_and_modname#/definitions/with_modname))),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_id_and_modname", "definitions", "with_modname_multi"],
+          "module.name_from_ancestor": %q(Examples::WithIdAndModname::WithModnameMulti),
+          "module.inspect": %q(Examples::WithIdAndModname::WithModnameMulti (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithIdAndModname__WithModnameMultiXExamples__WithIdAndModname__WithModnameMulti__AllOfModnameXExamples__WithIdAndModname__WithModnameMulti_allOf_0XExamples__WithIdAndModname__WithModnameMulti_allOf_1),
+          "class.inspect": %q((JSI Schema Class: Examples::WithIdAndModname::WithModnameMulti (tag:examples:with_id_and_modname#/definitions/with_modname_multi), tag:examples:with_id_and_modname#/definitions/with_modname_multi/allOf/0, tag:examples:with_id_and_modname:with_modname_multi:with_id, Examples::WithIdAndModname::WithModnameMulti::AllOfModname (tag:examples:with_id_and_modname#/definitions/with_modname_multi/allOf/2))),
         },
         {
           "ptr": JSI::Ptr["definitions", "with_id_and_modname", "definitions", "with_id"],
@@ -229,11 +472,25 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "class.inspect": %q((JSI Schema Class: tag:examples:with_id_and_modname:with_id)),
         },
         {
+          "ptr": JSI::Ptr["definitions", "with_id_and_modname", "definitions", "with_id_multi"],
+          "module.name_from_ancestor": %q(Examples::WithIdAndModname.definitions["with_id_multi"]),
+          "module.inspect": %q(Examples::WithIdAndModname.definitions["with_id_multi"] (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithIdAndModname__WithIdMulti_allOfModnameXExamples__WithIdAndModname_definitions_with_id_multiXExamples__WithIdAndModname_definitions_with_id_multi_allOf_0XExamples__WithIdAndModname_definitions_with_id_multi_allOf_1),
+          "class.inspect": %q((JSI Schema Class: tag:examples:with_id_and_modname:with_id_multi, tag:examples:with_id_and_modname:with_id_multi#/allOf/0, tag:examples:with_id_and_modname:with_id_multi:with_id, Examples::WithIdAndModname::WithIdMulti_allOfModname (tag:examples:with_id_and_modname:with_id_multi#/allOf/2))),
+        },
+        {
           "ptr": JSI::Ptr["definitions", "with_id_and_modname", "definitions", "with_id_and_modname"],
           "module.name_from_ancestor": %q(Examples::WithIdAndModname::WithIdAndModname),
           "module.inspect": %q(Examples::WithIdAndModname::WithIdAndModname (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithIdAndModname__WithIdAndModname),
           "class.inspect": %q((JSI Schema Class: Examples::WithIdAndModname::WithIdAndModname (tag:examples:with_id_and_modname:with_id_and_modname))),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_id_and_modname", "definitions", "with_id_and_modname_multi"],
+          "module.name_from_ancestor": %q(Examples::WithIdAndModname::WithIdAndModnameMulti),
+          "module.inspect": %q(Examples::WithIdAndModname::WithIdAndModnameMulti (JSI Schema Module)),
+          "class.name": %q(JSI::SchemaClasses::XExamples__WithIdAndModname__WithIdAndModnameMultiXExamples__WithIdAndModname__WithIdAndModnameMulti__AllOfModnameXExamples__WithIdAndModname__WithIdAndModnameMulti_allOf_0XExamples__WithIdAndModname__WithIdAndModnameMulti_allOf_1),
+          "class.inspect": %q((JSI Schema Class: Examples::WithIdAndModname::WithIdAndModnameMulti (tag:examples:with_id_and_modname:with_id_and_modname_multi), tag:examples:with_id_and_modname:with_id_and_modname_multi#/allOf/0, tag:examples:with_id_and_modname:with_id_and_modname_multi:with_id, Examples::WithIdAndModname::WithIdAndModnameMulti::AllOfModname (tag:examples:with_id_and_modname:with_id_and_modname_multi#/allOf/2))),
         },
       ]
     end
