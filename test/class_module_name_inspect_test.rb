@@ -214,10 +214,57 @@ module Examples
   WithIdAndModname::WithIdAndModnameMulti::AllOfModname = definitions['with_id_and_modname'].definitions['with_id_and_modname_multi'].allOf[2]
 end
 
+$examples_anon = JSI.new_schema_module(YAML.load(<<~YAML
+  $schema: http://json-schema.org/draft-07/schema
+  definitions:
+    with_none:
+      definitions:
+        with_none:
+          title: with_none subschema without id or modname
+        with_none_multi:
+          title: with_none subschema without id or modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples_anon:with_none:with_none_multi:with_id"
+        with_id:
+          $id: tag:examples_anon:with_none:with_id
+          title: with_none subschema with id
+        with_id_multi:
+          $id: tag:examples_anon:with_none:with_id_multi
+          title: with_none subschema with id with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples_anon:with_none:with_id_multi:with_id"
+    with_id:
+      $id: tag:examples_anon:with_id
+      definitions:
+        with_none:
+          title: with_id subschema without id or modname
+        with_none_multi:
+          title: with_id subschema without id or modname with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples_anon:with_id:with_none_multi:with_id"
+        with_id:
+          $id: tag:examples_anon:with_id:with_id
+          title: with_id subschema with id
+        with_id_multi:
+          $id: tag:examples_anon:with_id:with_id_multi
+          title: with_id subschema with id with multiple schemas
+          allOf:
+            - title: no id
+            - title: id
+              $id: "tag:examples_anon:with_id:with_id_multi:with_id"
+  YAML
+))
+
 describe 'JSI Schema Class, JSI Schema Module' do
   describe '.name/.name_from_ancestor, .inspect' do
     let(:actual) do
-      schemas = Examples.schema.definitions.values.map { |s| s.definitions.values }.inject([], &:+)
+      schemas = (Examples.schema.definitions.values + $examples_anon.schema.definitions.values).map { |s| s.definitions.values }.inject([], &:+)
 
       instances = [
         {},
@@ -491,6 +538,62 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "module.inspect": %q(Examples::WithIdAndModname::WithIdAndModnameMulti (JSI Schema Module)),
           "class.name": %q(JSI::SchemaClasses::XExamples__WithIdAndModname__WithIdAndModnameMultiXExamples__WithIdAndModname__WithIdAndModnameMulti__AllOfModnameXExamples__WithIdAndModname__WithIdAndModnameMulti_allOf_0XExamples__WithIdAndModname__WithIdAndModnameMulti_allOf_1),
           "class.inspect": %q((JSI Schema Class: Examples::WithIdAndModname::WithIdAndModnameMulti (tag:examples:with_id_and_modname:with_id_and_modname_multi), tag:examples:with_id_and_modname:with_id_and_modname_multi#/allOf/0, tag:examples:with_id_and_modname:with_id_and_modname_multi:with_id, Examples::WithIdAndModname::WithIdAndModnameMulti::AllOfModname (tag:examples:with_id_and_modname:with_id_and_modname_multi#/allOf/2))),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_none"],
+          "module.name_from_ancestor": nil,
+          "module.inspect": %q((JSI Schema Module: #/definitions/with_none/definitions/with_none)),
+          "class.name": nil,
+          "class.inspect": %q((JSI Schema Class: #/definitions/with_none/definitions/with_none)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_none_multi"],
+          "module.name_from_ancestor": nil,
+          "module.inspect": %q((JSI Schema Module: #/definitions/with_none/definitions/with_none_multi)),
+          "class.name": nil,
+          "class.inspect": %q((JSI Schema Class: #/definitions/with_none/definitions/with_none_multi, #/definitions/with_none/definitions/with_none_multi/allOf/0, tag:examples_anon:with_none:with_none_multi:with_id)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_id"],
+          "module.name_from_ancestor": nil,
+          "module.inspect": %q((JSI Schema Module: tag:examples_anon:with_none:with_id)),
+          "class.name": %q(JSI::SchemaClasses::Xtag_examples_anon_with_none_with_id),
+          "class.inspect": %q((JSI Schema Class: tag:examples_anon:with_none:with_id)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_none", "definitions", "with_id_multi"],
+          "module.name_from_ancestor": nil,
+          "module.inspect": %q((JSI Schema Module: tag:examples_anon:with_none:with_id_multi)),
+          "class.name": %q(JSI::SchemaClasses::Xtag_examples_anon_with_none_with_id_multiXtag_examples_anon_with_none_with_id_multi__allOf_0Xtag_examples_anon_with_none_with_id_multi_with_id),
+          "class.inspect": %q((JSI Schema Class: tag:examples_anon:with_none:with_id_multi, tag:examples_anon:with_none:with_id_multi#/allOf/0, tag:examples_anon:with_none:with_id_multi:with_id)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_none"],
+          "module.name_from_ancestor": nil,
+          "module.inspect": %q((JSI Schema Module: tag:examples_anon:with_id#/definitions/with_none)),
+          "class.name": %q(JSI::SchemaClasses::Xtag_examples_anon_with_id__definitions_with_none),
+          "class.inspect": %q((JSI Schema Class: tag:examples_anon:with_id#/definitions/with_none)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_none_multi"],
+          "module.name_from_ancestor": nil,
+          "module.inspect": %q((JSI Schema Module: tag:examples_anon:with_id#/definitions/with_none_multi)),
+          "class.name": %q(JSI::SchemaClasses::Xtag_examples_anon_with_id__definitions_with_none_multiXtag_examples_anon_with_id__definitions_with_none_multi_allOf_0Xtag_examples_anon_with_id_with_none_multi_with_id),
+          "class.inspect": %q((JSI Schema Class: tag:examples_anon:with_id#/definitions/with_none_multi, tag:examples_anon:with_id#/definitions/with_none_multi/allOf/0, tag:examples_anon:with_id:with_none_multi:with_id)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_id"],
+          "module.name_from_ancestor": nil,
+          "module.inspect": %q((JSI Schema Module: tag:examples_anon:with_id:with_id)),
+          "class.name": %q(JSI::SchemaClasses::Xtag_examples_anon_with_id_with_id),
+          "class.inspect": %q((JSI Schema Class: tag:examples_anon:with_id:with_id)),
+        },
+        {
+          "ptr": JSI::Ptr["definitions", "with_id", "definitions", "with_id_multi"],
+          "module.name_from_ancestor": nil,
+          "module.inspect": %q((JSI Schema Module: tag:examples_anon:with_id:with_id_multi)),
+          "class.name": %q(JSI::SchemaClasses::Xtag_examples_anon_with_id_with_id_multiXtag_examples_anon_with_id_with_id_multi__allOf_0Xtag_examples_anon_with_id_with_id_multi_with_id),
+          "class.inspect": %q((JSI Schema Class: tag:examples_anon:with_id:with_id_multi, tag:examples_anon:with_id:with_id_multi#/allOf/0, tag:examples_anon:with_id:with_id_multi:with_id)),
         },
       ]
     end
