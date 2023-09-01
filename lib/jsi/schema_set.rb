@@ -121,7 +121,7 @@ module JSI
         jsi_schema_registry: schema_registry,
       )
 
-      if register
+      if register && schema_registry
         schema_registry.register(jsi)
       end
 
