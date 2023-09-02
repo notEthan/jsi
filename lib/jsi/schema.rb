@@ -154,6 +154,8 @@ module JSI
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [#to_str, Addressable::URI] The retrieval URI of the schema document.
+      #   If specified, the root schema will be identified by this URI, in addition
+      #   to any absolute URI declared with an id keyword, for resolution in the `schema_registry`.
       #
       #   It is rare that this needs to be specified. Most schemas, if they use absolute URIs, will
       #   use the `$id` keyword (`id` in draft 4) to specify this. A different retrieval URI is useful
@@ -163,7 +165,7 @@ module JSI
       #       ancestor schema - these will be resolved relative to this URI
       #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
       #       rather than an id declared in the schema - the schema is resolvable by this URI in the
-      #       {JSI::SchemaRegistry}.
+      #       `schema_registry`.
       # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
       #   will be registered in the schema registry indicated by param `schema_registry`.
       # @param schema_registry [SchemaRegistry, nil] The registry this schema will use.
