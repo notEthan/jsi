@@ -39,7 +39,8 @@ module JSI
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        jsi_schema_base_uri: nil
+        jsi_schema_base_uri: nil,
+        jsi_schema_registry: nil
     )
       raise(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
 
@@ -47,6 +48,7 @@ module JSI
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = Util::EMPTY_ARY
+      self.jsi_schema_registry = jsi_schema_registry
 
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
       #chkbug raise(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
@@ -68,6 +70,7 @@ module JSI
         jsi_document,
         jsi_ptr: jsi_ptr + subptr,
         jsi_schema_base_uri: jsi_resource_ancestor_uri,
+        jsi_schema_registry: jsi_schema_registry,
       )
     end
 
@@ -81,6 +84,7 @@ module JSI
         jsi_document,
         jsi_ptr: Ptr.ary_ptr(ptr),
         jsi_schema_base_uri: nil,
+        jsi_schema_registry: jsi_schema_registry,
       )
     end
 
@@ -123,6 +127,7 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
+        jsi_schema_registry: jsi_schema_registry,
       }.freeze
     end
 
