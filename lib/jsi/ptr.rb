@@ -163,7 +163,7 @@ module JSI
         if root?
           raise(Ptr::Error, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
         end
-        Ptr.new(tokens[0...-1].freeze)
+        tokens.size == 1 ? EMPTY : Ptr.new(tokens[0...-1].freeze)
       end
 
       # whether this pointer contains the other_ptr - that is, whether this pointer is an ancestor
@@ -180,7 +180,7 @@ module JSI
         unless ancestor_ptr.contains?(self)
           raise(Error, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
-        Ptr.new(tokens[ancestor_ptr.tokens.size..-1].freeze)
+        ancestor_ptr.tokens.size == tokens.size ? EMPTY : Ptr.new(tokens[ancestor_ptr.tokens.size..-1].freeze)
       end
 
       # a pointer with the tokens of this one plus the given `ptr`'s.
@@ -194,7 +194,7 @@ module JSI
         else
           raise(TypeError, "ptr must be a #{Ptr} or Array of tokens; got: #{ptr.inspect}")
         end
-        Ptr.new((tokens + ptr_tokens).freeze)
+        ptr_tokens.empty? ? self : Ptr.new((tokens + ptr_tokens).freeze)
       end
 
       # a pointer consisting of the first `n` of our tokens
@@ -205,7 +205,7 @@ module JSI
         unless n.is_a?(Integer) && n >= 0 && n <= tokens.size
           raise(ArgumentError, "n not in range (0..#{tokens.size}): #{n.inspect}")
         end
-        Ptr.new(tokens.take(n).freeze)
+        n == tokens.size ? self : Ptr.new(tokens.take(n).freeze)
       end
 
       # appends the given token to this pointer's tokens and returns the result
