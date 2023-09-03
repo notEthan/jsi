@@ -52,17 +52,15 @@ describe 'JSON Schema Test Suite' do
               end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
                 describe(tests_desc.description) do
-                  around do |test|
-                    registry_before = JSI.schema_registry.dup
-                    test.call
-                    JSI.send(:instance_variable_set, :@schema_registry, registry_before)
-                  end
+                  let(:schema_registry) { JSI.schema_registry.dup }
+
                   let(:schema) do
-                    metaschema.new_schema(tests_desc.jsi_instance['schema'])
+                    metaschema.new_schema(tests_desc.jsi_instance['schema'], schema_registry: schema_registry)
                   end
+
                   tests_desc.tests.each do |test|
                       it(test.description) do
-                        jsi = schema.new_jsi(test.jsi_instance['data'])
+                        jsi = schema.new_jsi(test.jsi_instance['data'], schema_registry: schema_registry)
                         result = jsi.jsi_validate
                         assert_equal(result.valid?, jsi.jsi_valid?)
                         if test.valid != result.valid?
