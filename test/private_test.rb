@@ -6,6 +6,8 @@ require_relative 'test_helper'
 # exist to support, some code paths for development or debugging are not.
 
 module TestSchemaImplModule
+  dialect = JSI::Schema::Dialect.new(vocabularies: [])
+  define_method(:dialect) { dialect }
 end
 
 describe(JSI::MetaSchemaNode::BootstrapSchema) do
