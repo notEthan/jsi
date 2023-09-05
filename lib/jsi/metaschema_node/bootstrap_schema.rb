@@ -89,6 +89,11 @@ module JSI
       )
     end
 
+    # @return [MetaschemaNode::BootstrapSchema, nil]
+    def schema_resource_root
+      jsi_subschema_resource_ancestors.last
+    end
+
     # @return [String]
     def inspect
       -"\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
