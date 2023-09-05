@@ -559,7 +559,7 @@ module JSI
     #
     # @return [JSI::Base] resource containing this schema
     def schema_resource_root
-      jsi_subschema_resource_ancestors.reverse_each.detect(&:schema_resource_root?) || jsi_root_node
+      jsi_subschema_resource_ancestors.last || jsi_root_node
     end
 
     # is this schema the root of a schema resource?
