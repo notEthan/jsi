@@ -185,3 +185,5 @@ describe JSI::Schema::Ref do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

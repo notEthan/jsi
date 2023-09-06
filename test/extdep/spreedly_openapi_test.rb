@@ -6,3 +6,5 @@ describe 'spreedly openapi' do
     SpreedlyOpenAPI::Document.inspect
   end
 end
+
+$test_report_file_loaded[__FILE__]

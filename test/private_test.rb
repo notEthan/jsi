@@ -48,3 +48,5 @@ describe JSI::MetaschemaNode::BootstrapSchema do
     assert_equal('JSI::MetaschemaNode::BootstrapSchema (TestSchemaImplModule)', bootstrap_schema_class.inspect)
   end
 end
+
+$test_report_file_loaded[__FILE__]

@@ -401,3 +401,5 @@ describe 'unsupported behavior' do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

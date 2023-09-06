@@ -247,3 +247,5 @@ describe 'JSI Schema child application' do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

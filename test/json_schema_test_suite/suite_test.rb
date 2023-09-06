@@ -1,6 +1,9 @@
 require_relative '../test_helper'
 
+$test_report_time["suite_test loading"]
+
 JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').open('r:UTF-8', &:read)))
+$test_report_time["JSONSchemaTestSchema set up"]
 
   Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
     Dir.glob('**/*.json').each do |subpath|
@@ -19,6 +22,7 @@ JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('
       end
     end
   end
+  $test_report_time["remotes set up"]
 
 describe 'JSON Schema Test Suite' do
     drafts = [
@@ -101,5 +105,8 @@ describe 'JSON Schema Test Suite' do
               end
             end
           end
+      $test_report_time["#{name} tests set up"]
     end
 end
+
+$test_report_file_loaded[__FILE__]
