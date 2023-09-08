@@ -634,7 +634,7 @@ module JSI
     # @param instance [Object] the instance to validate against this schema
     # @return [JSI::Validation::Result]
     def instance_validate(instance)
-      if instance.is_a?(Base)
+      if instance.is_a?(SchemaAncestorNode)
         instance_ptr = instance.jsi_ptr
         instance_document = instance.jsi_document
       else
@@ -648,7 +648,7 @@ module JSI
     # @param instance [Object] the instance to validate against this schema
     # @return [Boolean]
     def instance_valid?(instance)
-      if instance.is_a?(Base)
+      if instance.is_a?(SchemaAncestorNode)
         instance = instance.jsi_node_content
       end
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?
