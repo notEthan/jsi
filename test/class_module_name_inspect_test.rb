@@ -266,6 +266,12 @@ describe 'JSI Schema Class, JSI Schema Module' do
     let(:actual) do
       schemas = (Examples.schema.definitions.values + $examples_anon.schema.definitions.values).map { |s| s.definitions.values }.inject([], &:+)
 
+      ids = Hash.new do |h, id|
+        # kind of a silly thing to map unpredictable generated ids consistently to a unique replacement.
+        # this is only used for one generated id at the moment. still good to ensure.
+        h[id] = (h.size % 36**4).to_s(36).rjust(4, '0').upcase
+      end
+
       instances = [
         {},
         [],
@@ -281,12 +287,13 @@ describe 'JSI Schema Class, JSI Schema Module' do
         schema_module = schema.jsi_schema_module
         instance = instances[i % instances.size]
         schema_instance_class = schema.new_jsi(instance).class
+        schema_instance_class_name = schema_instance_class.name.gsub(/(_|:)X([0-9A-Z]{4})(_|:|$)/) { $1 + 'X' + ids[$2] + $3 }
 
         actual_lines << "{"
         actual_lines << %Q(  "ptr": #{schema.jsi_ptr},)
         actual_lines << %Q(  "module.name_from_ancestor": #{schema_module.name_from_ancestor ? "%q(#{schema_module.name_from_ancestor})" : "nil"},)
         actual_lines << %Q(  "module.inspect": %q(#{schema_module.inspect}),)
-        actual_lines << %Q(  "class.name": #{schema_instance_class.name ? "%q(#{schema_instance_class.name})" : "nil"},)
+        actual_lines << %Q(  "class.name": #{schema_instance_class_name ? "%q(#{schema_instance_class_name})" : "nil"},)
         actual_lines << %Q(  "class.inspect": %q(#{schema_instance_class.inspect}),)
         actual_lines << "},"
 
@@ -294,7 +301,7 @@ describe 'JSI Schema Class, JSI Schema Module' do
           "ptr": schema.jsi_ptr,
           "module.name_from_ancestor": schema_module.name_from_ancestor,
           "module.inspect": schema_module.inspect,
-          "class.name": schema_instance_class.name,
+          "class.name": schema_instance_class_name,
           "class.inspect": schema_instance_class.inspect,
         }
       end
