@@ -131,13 +131,13 @@ module JSI
       # the pointer string representation of this pointer
       # @return [String]
       def pointer
-        tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('')
+        tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('').freeze
       end
 
       # the fragment string representation of this pointer
       # @return [String]
       def fragment
-        Addressable::URI.escape(pointer)
+        Addressable::URI.escape(pointer).freeze
       end
 
       # a URI consisting of a fragment containing this pointer's fragment string representation
