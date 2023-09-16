@@ -17,6 +17,7 @@ module JSI
   class Base
     autoload :ArrayNode, 'jsi/base/node'
     autoload :HashNode, 'jsi/base/node'
+    autoload :StringNode, 'jsi/base/node'
 
     include Schema::SchemaAncestorNode
     include Util::Memoize
