@@ -43,9 +43,9 @@ module JSI
     )
       super(jsi_document,
         jsi_ptr: jsi_ptr,
-        jsi_root_node: jsi_root_node,
         jsi_indicated_schemas: SchemaSet[],
         jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_root_node: jsi_root_node,
       )
 
       @schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)

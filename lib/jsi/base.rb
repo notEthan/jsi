@@ -126,15 +126,15 @@ module JSI
     # @api private
     # @param jsi_document [Object] the document containing the instance
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
-    # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
+    # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     def initialize(jsi_document,
         jsi_ptr: Ptr[],
-        jsi_root_node: nil,
         jsi_indicated_schemas: ,
         jsi_schema_base_uri: nil,
-        jsi_schema_resource_ancestors: Util::EMPTY_ARY
+        jsi_schema_resource_ancestors: Util::EMPTY_ARY,
+        jsi_root_node: nil
     )
       raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
@@ -144,6 +144,9 @@ module JSI
 
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
+      self.jsi_indicated_schemas = jsi_indicated_schemas
+      self.jsi_schema_base_uri = jsi_schema_base_uri
+      self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       if @jsi_ptr.root?
         raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
@@ -152,9 +155,6 @@ module JSI
         raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
         @jsi_root_node = jsi_root_node
       end
-      self.jsi_indicated_schemas = jsi_indicated_schemas
-      self.jsi_schema_base_uri = jsi_schema_base_uri
-      self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
       jsi_memomaps_initialize
 
@@ -690,10 +690,10 @@ module JSI
         jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas, includes: includes)
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
-          jsi_root_node: @jsi_root_node,
           jsi_indicated_schemas: child_indicated_schemas,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
+          jsi_root_node: @jsi_root_node,
         )
       end
     end
