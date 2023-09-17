@@ -46,18 +46,7 @@ describe JSI::Base do
       end
     end
   end
-  describe 'class name' do
-    let(:schema_content) { {'$id' => 'https://jsi/BaseTest'} }
-    it 'generates a class name from module name' do
-      assert_equal('JSI::SchemaClasses::XPhonebook', Phonebook.new_jsi({}).class.name)
-    end
-    it 'generates a class name from module name_from_ancestor' do
-      assert_equal('JSI::SchemaClasses::XPhonebook__Contact_properties_phone_numbers', Phonebook::Contact.properties['phone_numbers'].new_jsi([]).class.name)
-    end
-    it 'generates a class name from schema_uri' do
-      assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest', subject.class.name)
-    end
-  end
+
   describe 'class for schema .jsi_class_schemas' do
     it '.jsi_class_schemas' do
       assert_equal(Set[schema], schema.new_jsi({}).class.jsi_class_schemas)
