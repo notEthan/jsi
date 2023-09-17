@@ -74,10 +74,21 @@ describe 'JSI Schema Class, JSI Schema Module' do
     let(:actual) do
       schemas = Examples.schema.definitions.values.map { |s| s.definitions.values }.inject([], &:+)
 
+      instances = [
+        {},
+        [],
+        "",
+        1,
+        1.1,
+        true,
+        nil,
+      ]
+
       actual_lines = []
-      actual = schemas.map do |schema|
+      actual = schemas.each_with_index.map do |schema, i|
         schema_module = schema.jsi_schema_module
-        schema_instance_class = schema.new_jsi(nil).class
+        instance = instances[i % instances.size]
+        schema_instance_class = schema.new_jsi(instance).class
 
         actual_lines << "{"
         actual_lines << %Q(  "ptr": #{schema.jsi_ptr},)
