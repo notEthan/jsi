@@ -5,9 +5,11 @@ require_relative 'test_helper'
 # tests of private APIs. although private methods are usually tested indirectly, called by public APIs they
 # exist to support, some code paths for development or debugging are not.
 
+module TestSchemaImplModule
+end
+
 describe JSI::MetaschemaNode::BootstrapSchema do
-  let(:schema_implementation_modules) { [JSI::Schema] }
-  let(:bootstrap_schema_class) { JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules) }
+  let(:bootstrap_schema_class) { JSI::SchemaClasses.bootstrap_schema_class([TestSchemaImplModule]) }
   let(:document) do
     {
       "properties" => {
@@ -25,13 +27,13 @@ describe JSI::MetaschemaNode::BootstrapSchema do
   it 'is pretty' do
     schema = bootstrap_schema_class.new(document)
 
-    inspect = %q(#<JSI::MetaschemaNode::BootstrapSchema (JSI::Schema) # {"properties"=>{"properties"=>{"additionalProperties"=>{"$ref"=>"#"}}, "additionalProperties"=>{"$ref"=>"#"}, "$ref"=>{}}}>)
+    inspect = %q(#<JSI::MetaschemaNode::BootstrapSchema (TestSchemaImplModule) # {"properties"=>{"properties"=>{"additionalProperties"=>{"$ref"=>"#"}}, "additionalProperties"=>{"$ref"=>"#"}, "$ref"=>{}}}>)
     assert_equal(inspect, schema.inspect)
 
     assert_equal(schema.inspect, schema.to_s)
 
     pp = <<~PP
-      #<JSI::MetaschemaNode::BootstrapSchema (JSI::Schema) #
+      #<JSI::MetaschemaNode::BootstrapSchema (TestSchemaImplModule) #
         {"properties"=>
           {"properties"=>{"additionalProperties"=>{"$ref"=>"#"}},
            "additionalProperties"=>{"$ref"=>"#"},
@@ -43,6 +45,6 @@ describe JSI::MetaschemaNode::BootstrapSchema do
 
   it 'has a named class' do
     assert_equal('JSI::MetaschemaNode::BootstrapSchema', JSI::MetaschemaNode::BootstrapSchema.inspect)
-    assert_equal('JSI::MetaschemaNode::BootstrapSchema (JSI::Schema)', bootstrap_schema_class.inspect)
+    assert_equal('JSI::MetaschemaNode::BootstrapSchema (TestSchemaImplModule)', bootstrap_schema_class.inspect)
   end
 end

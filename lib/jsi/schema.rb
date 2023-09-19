@@ -194,7 +194,10 @@ module JSI
         super
         o.send(:jsi_schema_initialize)
       end
+    end
+  end
 
+  class << self
       # An application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
       # to instantiate schemas which do not specify their metaschema using a `$schema` property.
       #
@@ -237,11 +240,11 @@ module JSI
       #   ```
       #
       # - if no `default_metaschema` param is specified, the application-wide default
-      #   {JSI::Schema.default_metaschema JSI::Schema.default_metaschema} is used,
+      #   {JSI.default_metaschema JSI.default_metaschema} is used,
       #   if the application has set it. For example:
       #
       #   ```ruby
-      #   JSI::Schema.default_metaschema = JSI::JSONSchemaOrgDraft07
+      #   JSI.default_metaschema = JSI::JSONSchemaOrgDraft07
       #   JSI.new_schema({"properties" => ...})
       #   ```
       #
@@ -274,9 +277,9 @@ module JSI
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
-            ensure_describes_schema(default_metaschema, name: "default_metaschema")
-          elsif Schema.default_metaschema
-            Schema.default_metaschema
+            Schema.ensure_describes_schema(default_metaschema, name: "default_metaschema")
+          elsif self.default_metaschema
+            self.default_metaschema
           else
             raise(ArgumentError, [
               "When instantiating a schema with no `$schema` property, you must specify its metaschema by one of these methods:",
@@ -284,8 +287,8 @@ module JSI
               "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaOrgDraft07)",
               "- invoke `new_schema` on the appropriate metaschema or its schema module",
               "  e.g.: JSI::JSONSchemaOrgDraft07.new_schema(...)",
-              "- set JSI::Schema.default_metaschema to an application-wide default metaschema initially",
-              "  e.g.: JSI::Schema.default_metaschema = JSI::JSONSchemaOrgDraft07",
+              "- set JSI.default_metaschema to an application-wide default metaschema initially",
+              "  e.g.: JSI.default_metaschema = JSI::JSONSchemaOrgDraft07",
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
@@ -307,18 +310,21 @@ module JSI
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
-            metaschema = ensure_describes_schema(id, name: '$schema')
+            metaschema = Schema.ensure_describes_schema(id, name: '$schema')
             metaschema.new_schema(schema_content, **new_schema_params)
           else
             default_metaschema_new_schema.call
           end
-        elsif [true, false].include?(schema_content)
-          default_metaschema_new_schema.call
         else
-          raise(TypeError, "cannot instantiate Schema from: #{schema_content.pretty_inspect.chomp}")
+          default_metaschema_new_schema.call
         end
       end
+  end
 
+  self.default_metaschema = nil
+
+  module Schema
+    class << self
       # ensure the given object is a JSI Schema
       #
       # @param schema [Object] the thing the caller wishes to ensure is a Schema
@@ -341,10 +347,10 @@ module JSI
 
             result_schema_class.new(schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,
-              jsi_root_node: schema.jsi_ptr.root? ? nil : schema.jsi_root_node, # bad
               jsi_indicated_schemas: schema.jsi_indicated_schemas,
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
+              jsi_root_node: schema.jsi_ptr.root? ? nil : schema.jsi_root_node, # bad
             )
           else
             raise(NotASchemaError, [
@@ -377,8 +383,6 @@ module JSI
         end
       end
     end
-
-    self.default_metaschema = nil
 
     if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
       def initialize(*)
@@ -561,7 +565,7 @@ module JSI
     #
     # @return [JSI::Base] resource containing this schema
     def schema_resource_root
-      jsi_subschema_resource_ancestors.reverse_each.detect(&:schema_resource_root?) || jsi_root_node
+      jsi_subschema_resource_ancestors.last || jsi_root_node
     end
 
     # is this schema the root of a schema resource?
@@ -626,7 +630,7 @@ module JSI
     # @param instance [Object] the instance to validate against this schema
     # @return [JSI::Validation::Result]
     def instance_validate(instance)
-      if instance.is_a?(Base)
+      if instance.is_a?(SchemaAncestorNode)
         instance_ptr = instance.jsi_ptr
         instance_document = instance.jsi_document
       else
@@ -640,7 +644,7 @@ module JSI
     # @param instance [Object] the instance to validate against this schema
     # @return [Boolean]
     def instance_valid?(instance)
-      if instance.is_a?(Base)
+      if instance.is_a?(SchemaAncestorNode)
         instance = instance.jsi_node_content
       end
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?

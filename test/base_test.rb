@@ -1,17 +1,5 @@
 require_relative 'test_helper'
 
-NamedSchemaInstance = JSI.new_schema({
-  '$schema' => 'http://json-schema.org/draft-07/schema#',
-  '$id' => 'http://jsi/base/named_schema',
-}).new_jsi({}).class
-
-# hitting .tap(&:name) causes JSI to assign a constant name from the ID,
-# meaning the name NamedSchemaInstanceTwo is not known.
-NamedSchemaInstanceTwo = JSI.new_schema({
-  '$schema' => 'http://json-schema.org/draft-07/schema#',
-  '$id' => 'http://jsi/base/named_schema_two',
-}).new_jsi({}).class.tap(&:name)
-
 Phonebook = JSI.new_schema_module(YAML.load(<<~YAML
   $schema: http://json-schema.org/draft-07/schema
   title: Phone Book
@@ -57,29 +45,8 @@ describe JSI::Base do
         assert_equal("(JSI Schema Class: https://jsi/foo)", subject.class.inspect)
       end
     end
-    it 'is the constant name plus id for a class assigned to a constant' do
-      assert_equal(%q(NamedSchemaInstance (http://jsi/base/named_schema)), NamedSchemaInstance.inspect)
-    end
-    it 'is not the constant name when the constant name has been generated from the schema_uri' do
-      assert_equal("JSI::SchemaClasses::Xhttp___jsi_base_named_schema_two", NamedSchemaInstanceTwo.name)
-      assert_equal("(JSI Schema Class: http://jsi/base/named_schema_two)", NamedSchemaInstanceTwo.inspect)
-    end
   end
-  describe 'class name' do
-    let(:schema_content) { {'$id' => 'https://jsi/BaseTest'} }
-    it 'generates a class name from module name' do
-      assert_equal('JSI::SchemaClasses::XPhonebook', Phonebook.new_jsi({}).class.name)
-    end
-    it 'generates a class name from module name_from_ancestor' do
-      assert_equal('JSI::SchemaClasses::XPhonebook__Contact_properties_phone_numbers', Phonebook::Contact.properties['phone_numbers'].new_jsi([]).class.name)
-    end
-    it 'generates a class name from schema_uri' do
-      assert_equal('JSI::SchemaClasses::Xhttps___jsi_BaseTest', subject.class.name)
-    end
-    it 'uses an existing name' do
-      assert_equal('NamedSchemaInstance', NamedSchemaInstance.name)
-    end
-  end
+
   describe 'class for schema .jsi_class_schemas' do
     it '.jsi_class_schemas' do
       assert_equal(Set[schema], schema.new_jsi({}).class.jsi_class_schemas)
@@ -256,6 +223,7 @@ describe JSI::Base do
           'foo' => {'items' => {'title' => 'foo items'}},
         },
         'additionalProperties' => {'title' => 'addtl'},
+        'propertyNames' => {'title' => 'propNames'},
       }
     end
 
@@ -271,6 +239,20 @@ describe JSI::Base do
           JSI::Ptr["bar"] => Set[schema.additionalProperties],
           JSI::Ptr["bar", 0] => Set[],
         }, descendent_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
+      end
+
+      it "yields descendent JSIs and propertyNames" do
+        expected_nodes = Set[
+          subject,
+          schema.propertyNames.new_jsi('foo'),
+          schema.propertyNames.new_jsi('bar'),
+          subject / ["foo"],
+          subject / ["foo", 0],
+          subject / ["foo", 1],
+          subject / ["bar"],
+          subject / ["bar", 0],
+        ]
+        assert_equal(expected_nodes, subject.jsi_each_descendent_node(propertyNames: true).to_set)
       end
 
       it 'greps' do
@@ -661,9 +643,10 @@ describe JSI::Base do
         end
         it 'does not define readers' do
           assert_equal('bar', subject.foo) # this one is defined
+          assert_respond_to(subject.method(:foo).owner, :jsi_property_readers)
           assert_equal('not ary', subject.to_ary) # this one is defined but would not be for an Array instance
 
-          assert_equal(JSI::Base, subject.method(:initialize).owner)
+          refute_respond_to(subject.method(:initialize).owner, :jsi_property_readers)
           assert_equal('hi', subject['initialize'])
           assert_equal(%q(#{<JSI> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])

@@ -8,7 +8,7 @@ module JSI
   # Schema#subschema and Schema#resource_root_subschema are the intended mechanisms to instantiate subschemas
   # and resolve references. #[] and #jsi_root_node are not implemented.
   #
-  # schema implementation modules are attached to generated subclasses of BootstrapSchema by
+  # schema implementation modules are included on generated subclasses of BootstrapSchema by
   # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
   #
@@ -23,7 +23,7 @@ module JSI
         if self == MetaschemaNode::BootstrapSchema
           name
         else
-          "#{name || MetaschemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
+          -"#{name || MetaschemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
         end
       end
 
@@ -81,7 +81,7 @@ module JSI
 
     # @return [String]
     def inspect
-      "\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
+      -"\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
     end
 
     alias_method :to_s, :inspect
@@ -118,6 +118,7 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
+        jsi_schema_base_uri: jsi_schema_base_uri,
         schema_implementation_modules: schema_implementation_modules,
       }
     end

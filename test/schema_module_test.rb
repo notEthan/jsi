@@ -26,6 +26,39 @@ describe 'JSI::SchemaModule' do
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties)
       assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties.jsi_node)
     end
+
+    describe 'named properties of a schema module connection' do
+      # the json schema metaschemas don't describe any named properties of any objects that aren't schemas.
+      # we need a metaschema that does.
+      let(:metaschema) do
+        document = YAML.load(<<~YAML
+          properties:
+            properties:
+              additionalProperties:
+                "$ref": "#"
+            additionalProperties:
+              "$ref": "#"
+            bar:
+              properties:
+                baz: {}
+                sch:
+                  "$ref": "#"
+          bar:
+            baz: {}
+            sch: {}
+          YAML
+        )
+        JSI.new_metaschema(document, schema_implementation_modules: [JSI::Schema::Application::Draft06])
+      end
+
+      it 'defines accessors for the connection' do
+        assert_equal(metaschema.bar.baz, metaschema.jsi_schema_module.bar.baz.jsi_node)
+        assert_equal(metaschema.bar.sch.jsi_schema_module, metaschema.jsi_schema_module.bar.sch)
+        schema = metaschema.new_schema({'bar' => {'baz' => {}, 'sch' => {}}})
+        assert_equal(schema.bar.baz, schema.jsi_schema_module.bar.baz.jsi_node)
+        assert_equal(schema.bar.sch.jsi_schema_module, schema.jsi_schema_module.bar.sch)
+      end
+    end
   end
   describe '.inspect, .to_s' do
     it 'shows the name relative to a named ancestor schema module' do

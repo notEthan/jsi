@@ -87,7 +87,7 @@ module JSI
 
       # @return [String]
       def inspect
-        "\#<#{self.class.name}#{@attributes.map { |k, v| " #{k}: #{v.inspect}" }.join(',')}>"
+        -"\#<#{self.class.name}#{@attributes.map { |k, v| " #{k}: #{v.inspect}" }.join(',')}>"
       end
 
       alias_method :to_s, :inspect

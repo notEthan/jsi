@@ -16,6 +16,9 @@ module JSI
       class ResolutionError < Error
       end
 
+      POS_INT_RE = /\A[1-9]\d*\z/
+      private_constant :POS_INT_RE
+
       # instantiates a pointer or returns the given pointer
       # @param ary_ptr [#to_ary, JSI::Ptr] an array of tokens, or a pointer
       # @return [JSI::Ptr]
@@ -42,7 +45,7 @@ module JSI
       # @param tokens any number of tokens
       # @return [JSI::Ptr]
       def self.[](*tokens)
-        tokens.empty? ? EMPTY : new(tokens)
+        tokens.empty? ? EMPTY : new(tokens.freeze)
       end
 
       # parse a URI-escaped fragment and instantiate as a JSI::Ptr
@@ -84,10 +87,12 @@ module JSI
         pointer_string = pointer_string.to_str
         if pointer_string[0] == ?/
           tokens = pointer_string.split('/', -1).map! do |piece|
-            piece.gsub('~1', '/').gsub('~0', '~')
+            piece.gsub!('~1', '/')
+            piece.gsub!('~0', '~')
+            piece.freeze
           end
           tokens.shift
-          new(tokens)
+          new(tokens.freeze)
         elsif pointer_string.empty?
           EMPTY
         else
@@ -102,10 +107,9 @@ module JSI
         unless tokens.respond_to?(:to_ary)
           raise(TypeError, "tokens must be an array. got: #{tokens.inspect}")
         end
-        @tokens = tokens.to_ary.map(&:freeze).freeze
+        @tokens = Util.deep_to_frozen(tokens.to_ary, not_implemented: proc { |o| o })
+        @jsi_fingerprint_hash = jsi_fingerprint.hash # TODO rm; workaround for https://github.com/jruby/jruby/issues/7866
       end
-
-      EMPTY = new(Util::EMPTY_ARY)
 
       attr_reader :tokens
 
@@ -127,13 +131,13 @@ module JSI
       # the pointer string representation of this pointer
       # @return [String]
       def pointer
-        tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('')
+        tokens.map { |t| '/' + t.to_s.gsub('~', '~0').gsub('/', '~1') }.join('').freeze
       end
 
       # the fragment string representation of this pointer
       # @return [String]
       def fragment
-        Addressable::URI.escape(pointer)
+        Addressable::URI.escape(pointer).freeze
       end
 
       # a URI consisting of a fragment containing this pointer's fragment string representation
@@ -159,7 +163,7 @@ module JSI
         if root?
           raise(Ptr::Error, "cannot access parent of root pointer: #{pretty_inspect.chomp}")
         end
-        Ptr.new(tokens[0...-1])
+        tokens.size == 1 ? EMPTY : Ptr.new(tokens[0...-1].freeze)
       end
 
       # whether this pointer contains the other_ptr - that is, whether this pointer is an ancestor
@@ -176,7 +180,7 @@ module JSI
         unless ancestor_ptr.contains?(self)
           raise(Error, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
-        Ptr.new(tokens[ancestor_ptr.tokens.size..-1])
+        ancestor_ptr.tokens.size == tokens.size ? EMPTY : Ptr.new(tokens[ancestor_ptr.tokens.size..-1].freeze)
       end
 
       # a pointer with the tokens of this one plus the given `ptr`'s.
@@ -190,7 +194,7 @@ module JSI
         else
           raise(TypeError, "ptr must be a #{Ptr} or Array of tokens; got: #{ptr.inspect}")
         end
-        Ptr.new(tokens + ptr_tokens)
+        ptr_tokens.empty? ? self : Ptr.new((tokens + ptr_tokens).freeze)
       end
 
       # a pointer consisting of the first `n` of our tokens
@@ -201,7 +205,7 @@ module JSI
         unless n.is_a?(Integer) && n >= 0 && n <= tokens.size
           raise(ArgumentError, "n not in range (0..#{tokens.size}): #{n.inspect}")
         end
-        Ptr.new(tokens.take(n))
+        n == tokens.size ? self : Ptr.new(tokens.take(n).freeze)
       end
 
       # appends the given token to this pointer's tokens and returns the result
@@ -209,7 +213,7 @@ module JSI
       # @param token [Object]
       # @return [JSI::Ptr] pointer to a child node of this pointer with the given token
       def [](token)
-        Ptr.new(tokens.dup.push(token))
+        Ptr.new(tokens.dup.push(token).freeze)
       end
 
       # takes a document and a block. the block is yielded the content of the given document at this
@@ -234,7 +238,7 @@ module JSI
           Util.modified_copy(document, &block)
         else
           car = tokens[0]
-          cdr = Ptr.new(tokens[1..-1])
+          cdr = Ptr.new(tokens[1..-1].freeze)
           token, document_child = node_subscript_token_child(document, car)
           modified_document_child = cdr.modified_document_copy(document_child, &block)
           if modified_document_child.object_id == document_child.object_id
@@ -253,7 +257,7 @@ module JSI
       # a string representation of this pointer
       # @return [String]
       def inspect
-        "#{self.class.name}[#{tokens.map(&:inspect).join(", ")}]"
+        -"#{self.class.name}[#{tokens.map(&:inspect).join(", ")}]"
       end
 
       alias_method :to_s, :inspect
@@ -263,24 +267,24 @@ module JSI
       def jsi_fingerprint
         {class: Ptr, tokens: tokens}
       end
-      include Util::FingerprintHash
+      include Util::FingerprintHash::Immutable
+
+      EMPTY = new(Util::EMPTY_ARY)
 
       private
 
       def node_subscript_token_child(value, token, *a, **kw)
         if value.respond_to?(:to_ary)
-          if token.is_a?(String) && token =~ /\A\d|[1-9]\d+\z/
+          if token.is_a?(String) && (token == '0' || token =~ POS_INT_RE)
             token = token.to_i
           elsif token == '-'
             # per rfc6901, - refers "to the (nonexistent) member after the last array element" and is
             # expected to raise an error condition.
             raise(ResolutionError, "Invalid resolution: #{token.inspect} refers to a nonexistent element in array #{value.inspect}")
           end
-          unless token.is_a?(Integer)
-            raise(ResolutionError, "Invalid resolution: #{token.inspect} is not an integer and cannot be resolved in array #{value.inspect}")
-          end
-          unless (0...(value.respond_to?(:size) ? value : value.to_ary).size).include?(token)
-            raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid index of #{value.inspect}")
+          size = (value.respond_to?(:size) ? value : value.to_ary).size
+          unless token.is_a?(Integer) && token >= 0 && token < size
+            raise(ResolutionError, "Invalid resolution: #{token.inspect} is not a valid array index of #{value.inspect}")
           end
 
           ary = (value.respond_to?(:[]) ? value : value.to_ary)

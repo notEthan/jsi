@@ -44,7 +44,7 @@ module JSI
       127..159, # C1 control chars
     ].inject(Set[], &:merge).freeze
 
-    RUBY_REJECT_NAME_RE = Regexp.new('[' + Regexp.escape(RUBY_REJECT_NAME_CODEPOINTS.to_a.pack('U*')) + ']').freeze
+    RUBY_REJECT_NAME_RE = Regexp.new('[' + Regexp.escape(RUBY_REJECT_NAME_CODEPOINTS.to_a.pack('U*')) + ']+').freeze
 
     # is the given name ok to use as a ruby method name?
     def ok_ruby_method_name?(name)
@@ -58,7 +58,7 @@ module JSI
       return true
     end
 
-    def const_name_from_parts(parts)
+    def const_name_from_parts(parts, join: '')
       parts = parts.map do |part|
         part = part.dup
         part[/\A[^a-zA-Z]*/] = ''
@@ -67,7 +67,7 @@ module JSI
         part
       end
       if !parts.all?(&:empty?)
-        parts.join.freeze
+        parts.reject(&:empty?).join(join).freeze
       else
         nil
       end

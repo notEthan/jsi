@@ -48,7 +48,7 @@ module Minitest
       super unless quiet
     end
 
-    # @param sigfig [Integer] minimum number of digits to include (not including leading 0s if duration < 1s)
+    # @param sigfig [Integer] minimum number of digits to include (not including leading 0s) if duration < 1s
     def format_duration(duration, sigfig: 3)
       return('[negative duration]') if duration < 0 # duration should be positive, but nonmonotonic clock is possible
 
@@ -183,6 +183,11 @@ class JSISpec < Minitest::Spec
     msg = message(msg) { "Expected object not to be an instance of #{mod.inspect}. received #{obj.class}: #{mu_pp(obj)}" }
 
     assert !obj.is_a?(mod), msg
+  end
+
+  def assert_raises_msg(errclass, msg, &block)
+    e = assert_raises(errclass, &block)
+    assert_equal(msg, e.message)
   end
 
   def assert_frozen(object)

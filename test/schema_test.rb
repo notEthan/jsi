@@ -18,11 +18,6 @@ describe JSI::Schema do
       assert_equal(%q($schema URI indicates a schema which does not describe schemas: "tag:guqh"), e.message)
     end
 
-    it 'cannot instantiate from some unknown object' do
-      err = assert_raises(TypeError) { JSI.new_schema(Object.new, default_metaschema: JSI::JSONSchemaOrgDraft07) }
-      assert_match(/\Acannot instantiate Schema from: #<Object:.*>\z/m, err.message)
-    end
-
     it 'cannot instantiate from a JSI Schema' do
       err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
       assert_equal("Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}", err.message)
@@ -608,7 +603,7 @@ describe JSI::Schema do
         end
         msg = <<~MSG
           subschema is not a schema at pointer: /properties
-          \#{<JSI (JSI::JSONSchemaOrgDraft07.properties["properties"])>}
+          \#{<JSI (JSI::JSONSchemaOrgDraft07::Properties)>}
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -705,22 +700,210 @@ describe JSI::Schema do
   end
   describe 'stringification' do
     let(:schema) do
-      JSI::JSONSchemaOrgDraft06.new_schema({'$id' => 'http://jsi/schema/stringification', type: 'object'})
+      JSI.new_schema({
+        "$schema": "http://json-schema.org/draft-06/schema",
+        "$id": "http://jsi/schema/stringification",
+        "type": ["object", "array"],
+        "properties": {
+          "foo": {
+            "items": {"$ref": "#/definitions/no"}
+          },
+        },
+        "items": [
+          {"dependencies": {"a": ["b"]}},
+          {"dependencies": {"a": {}}},
+        ],
+        "definitions": {
+          "no": {"enum": []}
+        }
+      })
     end
 
     it '#inspect' do
-      assert_equal("\#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> \"$id\" => \"http://jsi/schema/stringification\", \"type\" => \"object\"}", schema.inspect)
+      assert_equal(%q(#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaOrgDraft06::Type, JSI::JSONSchemaOrgDraft06::Type::Array)> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaOrgDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06::SchemaArray)> #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06::StringArray)> "b"]}}, #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaOrgDraft06::Enum)>]}}}), schema.inspect)
     end
     it '#pretty_print' do
       pp = <<~PP
         \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+          "$schema" => "http://json-schema.org/draft-06/schema",
           "$id" => "http://jsi/schema/stringification",
-          "type" => "object"
+          "type" => #[<JSI (JSI::JSONSchemaOrgDraft06::Type, JSI::JSONSchemaOrgDraft06::Type::Array)>
+            "object",
+            "array"
+          ],
+          "properties" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Properties)>
+            "foo" => \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+              "items" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06) Schema>
+                "$ref" => "#/definitions/no"
+              }
+            }
+          },
+          "items" => #[<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06::SchemaArray)>
+            \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+              "dependencies" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)>
+                "a" => #[<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06::StringArray)>
+                  "b"
+                ]
+              }
+            },
+            \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+              "dependencies" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)>
+                "a" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06) Schema>}
+              }
+            }
+          ],
+          "definitions" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Definitions)>
+            "no" => \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+              "enum" => #[<JSI (JSI::JSONSchemaOrgDraft06::Enum)>]
+            }
+          }
         }
         PP
       assert_equal(pp, schema.pretty_inspect)
     end
   end
+
+  describe 'stringification, thorough for draft 7' do
+    let(:recursive_default_child_as_jsi_true) do
+      schema = JSI::SimpleWrap::METASCHEMA.new_schema(:recursive_default_child_as_jsi_true)
+      schema.jsi_schema_module_exec { redef_method(:jsi_child_as_jsi_default) { true } }
+      schema
+    end
+
+    let(:schema) do
+      JSI::SchemaSet[JSI::JSONSchemaOrgDraft07.schema, recursive_default_child_as_jsi_true].new_jsi(YAML.load(<<~YAML
+        $schema: "http://json-schema.org/draft-07/schema#"
+        description:
+          A schema containing each keyword of the metaschema with valid and invalid type / structure of the keyword value
+        definitions:
+          "true": true
+          "false": false
+          empty: {}
+          invalid-int: 0
+          invalid-array: []
+          id: {$id: "tag:test"}
+          id-int: {$id: 0}
+          schema: {$schema: "tag:test"}
+          schema-int: {$schema: 0}
+          ref: {$ref: "#"}
+          ref-int: {$ref: 0}
+          comment: {$comment: "comment"}
+          comment-int: {$comment: 0}
+          title: {title: "title"}
+          title-int: {title: 0}
+          description: {description: "description"}
+          description-int: {description: 0}
+          default: {default: [default]}
+          readOnly: {readOnly: true}
+          readOnly-int: {readOnly: 0}
+          examples: {examples: [{}, x]}
+          examples-dict: {examples: {x: 0}}
+          multipleOf: {multipleOf: 1}
+          multipleOf-ary: {multipleOf: []}
+          maximum: {maximum: 0}
+          maximum-ary: {maximum: [0]}
+          exclusiveMaximum: {exclusiveMaximum: 0}
+          exclusiveMaximum-ary: {exclusiveMaximum: [0]}
+          minimum: {minimum: 0}
+          minimum-ary: {minimum: [0]}
+          exclusiveMinimum: {exclusiveMinimum: 0}
+          exclusiveMinimum-ary: {exclusiveMinimum: [0]}
+          maxLength: {maxLength: 0}
+          maxLength-ary: {maxLength: []}
+          minLength: {minLength: 0}
+          minLength-ary: {minLength: []}
+          maxItems: {maxItems: 0}
+          maxItems-ary: {maxItems: []}
+          minItems: {minItems: 0}
+          minItems-ary: {minItems: []}
+          maxProperties: {maxProperties: 0}
+          maxProperties-ary: {maxProperties: []}
+          minProperties: {minProperties: 0}
+          minProperties-ary: {minProperties: []}
+          pattern: {pattern: "pattern"}
+          pattern-int: {pattern: 0}
+          additionalItems: {additionalItems: {}}
+          additionalItems-int: {additionalItems: 0}
+          items: {items: {}}
+          items-ary: {items: [{}]}
+          items-ary-int: {items: [0]}
+          items-int: {items: 0}
+          uniqueItems: {uniqueItems: true}
+          uniqueItems-int: {uniqueItems: 0}
+          contains: {contains: {}}
+          contains-int: {contains: 0}
+          required: {required: [a]}
+          required-ary-int: {required: [0]}
+          required-int: {required: 0}
+          additionalProperties: {additionalProperties: {}}
+          additionalProperties-int: {additionalProperties: 0}
+          definitions: {definitions: {definition: {}}}
+          definitions-schema-int: {definitions: {definition: 0}}
+          definitions-ary: {definitions: [{}]}
+          definitions-int: {definitions: 0}
+          properties: {properties: {property: {}}}
+          properties-schema-int: {properties: {property: 0}}
+          properties-ary: {properties: [{}]}
+          properties-int: {properties: 0}
+          patternProperties: {patternProperties: {patternProperty: {}}}
+          patternProperties-schema-int: {patternProperties: {patternProperty: 0}}
+          patternProperties-ary: {patternProperties: [{}]}
+          patternProperties-int: {patternProperties: 0}
+          dependencies: {dependencies: {}}
+          dependencies-dep-schema: {dependencies: {s: {}}}
+          dependencies-dep-strary: {dependencies: {a: [b]}}
+          dependencies-dep-schema+strary: {dependencies: {a: [b], s: {}}}
+          dependencies-dep-int: {dependencies: {i: 0}}
+          dependencies-dep-schema+strary+int: {dependencies: {s: {}, a: [b], i: 0}}
+          dependencies-ary: {dependencies: [{a: {}}]}
+          dependencies-int: {dependencies: 0}
+          propertyNames: {propertyNames: {}}
+          propertyNames-int: {propertyNames: 0}
+          const: {const: {}}
+          enum: {enum: [{}]}
+          enum-int: {enum: 0}
+          type: {type: string}
+          type-badstr: {type: a}
+          type-ary: {type: [string]}
+          type-ary-badstr: {type: [a]}
+          type-ary-int: {type: [0]}
+          type-int: {type: 0}
+          format: {format: "format"}
+          format-int: {format: 0}
+          contentMediaType: {contentMediaType: "contentMediaType"}
+          contentMediaType-int: {contentMediaType: 0}
+          contentEncoding: {contentEncoding: "contentEncoding"}
+          contentEncoding-int: {contentEncoding: 0}
+          if: {if: {}}
+          if-int: {if: 0}
+          then: {then: {}}
+          then-int: {then: 0}
+          else: {else: {}}
+          else-int: {else: 0}
+          allOf: {allOf: [{}]}
+          allOf-ary-int: {allOf: [0]}
+          allOf-int: {allOf: 0}
+          anyOf: {anyOf: [{}]}
+          anyOf-ary-int: {anyOf: [0]}
+          anyOf-int: {anyOf: 0}
+          oneOf: {oneOf: [{}]}
+          oneOf-ary-int: {oneOf: [0]}
+          oneOf-int: {oneOf: 0}
+          not: {not: {}}
+          not-int: {not: 0}
+        YAML
+      ))
+    end
+
+    it '#pretty_print' do
+      pppath = JSI::TEST_RESOURCES_PATH.join('schema.thorough.pretty_print')
+      if ENV['JSI_TEST_REGEN']
+        pppath.write(schema.pretty_inspect)
+      end
+      assert_equal(pppath.read, schema.pretty_inspect)
+    end
+  end
+
   describe 'validation' do
     let(:schema) { JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/validation', type: 'object'}) }
     describe 'without errors' do

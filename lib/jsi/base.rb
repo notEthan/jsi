@@ -11,11 +11,13 @@ module JSI
   # they serve is to include modules relevant to the instance. The modules these classes include are:
   #
   # - the {Schema#jsi_schema_module} of each schema which describes the instance
-  # - {Base::HashNode} or {Base::ArrayNode}, if the instance is a hash/object or array
+  # - {Base::HashNode}, {Base::ArrayNode}, or {Base::StringNode} if the instance is
+  #   a hash/object, array, or string
   # - Modules defining accessor methods for property names described by the schemas
   class Base
     autoload :ArrayNode, 'jsi/base/node'
     autoload :HashNode, 'jsi/base/node'
+    autoload :StringNode, 'jsi/base/node'
 
     include Schema::SchemaAncestorNode
 
@@ -25,16 +27,7 @@ module JSI
     end
 
     class << self
-      # @private
-      # is the constant JSI::SchemaClasses::<self.schema_classes_const_name> defined?
-      # (if so, we will prefer to use something more human-readable than that ugly mess.)
-      def in_schema_classes
-        # #name sets @in_schema_classes
-        name
-        @in_schema_classes
-      end
-
-      # a string indicating a class name if one is defined, as well as the schema module name
+      # A string indicating the schema module name
       # and/or schema URI of each schema the class represents.
       # @return [String]
       def inspect
@@ -42,11 +35,11 @@ module JSI
           super
         else
           schema_names = jsi_class_schemas.map do |schema|
-            mod = schema.jsi_schema_module
-            if mod.name && schema.schema_uri
-              "#{mod.name} (#{schema.schema_uri})"
-            elsif mod.name
-              mod.name
+            mod_name = schema.jsi_schema_module.name_from_ancestor
+            if mod_name && schema.schema_absolute_uri
+              "#{mod_name} <#{schema.schema_absolute_uri}>"
+            elsif mod_name
+              mod_name
             elsif schema.schema_uri
               schema.schema_uri.to_s
             else
@@ -54,61 +47,48 @@ module JSI
             end
           end
 
-          if name && !in_schema_classes
-            if jsi_class_schemas.empty?
-              "#{name} (0 schemas)"
-            else
-              "#{name} (#{schema_names.join(', ')})"
-            end
+          if schema_names.empty?
+            "(JSI Schema Class for 0 schemas)"
           else
-            if schema_names.empty?
-              "(JSI Schema Class for 0 schemas)"
-            else
-              "(JSI Schema Class: #{schema_names.join(', ')})"
-            end
+            -"(JSI Schema Class: #{schema_names.join(' + ')})"
           end
         end
       end
 
       alias_method :to_s, :inspect
-
-      # @private
-      # see {.name}
-      def schema_classes_const_name
-        if respond_to?(:jsi_class_schemas)
-          schema_names = jsi_class_schemas.map do |schema|
-            named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
-            if named_ancestor_schema
-              [named_ancestor_schema.jsi_schema_module.name, *tokens].join('_')
-            elsif schema.schema_uri
-              schema.schema_uri.to_s
-            else
-              nil
-            end
-          end
-          if !schema_names.any?(&:nil?) && !schema_names.empty?
-            Util.const_name_from_parts(schema_names.sort.map { |part| 'X' + part })
-          end
-        end
-      end
-
-      # a constant name of this class. this is generated from the schema module name or URI of each schema
-      # this class represents. nil if any represented schema has no schema module name or schema URI.
+      # A constant name of this class. This is generated from any schema module name or URI of each schema
+      # this class represents, or random characters.
       #
       # this generated name is not too pretty but can be more helpful than an anonymous class, especially
       # in error messages.
       #
       # @return [String]
       def name
-        unless instance_variable_defined?(:@in_schema_classes)
-          const_name = schema_classes_const_name
-          if super || !const_name || SchemaClasses.const_defined?(const_name)
-            @in_schema_classes = false
+        return super if instance_variable_defined?(:@tried_to_name)
+        @tried_to_name = true
+        return super unless respond_to?(:jsi_class_schemas)
+        alnum = proc { |id| (id % 36**4).to_s(36).rjust(4, '0').upcase }
+        schema_names = jsi_class_schemas.map do |schema|
+          named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
+          if named_ancestor_schema
+            [named_ancestor_schema.jsi_schema_module.name, *tokens].join('_')
+          elsif schema.schema_uri
+            schema.schema_uri.to_s
           else
-            SchemaClasses.const_set(const_name, self)
-            @in_schema_classes = true
+            [alnum[schema.jsi_root_node.__id__], *schema.jsi_ptr.tokens].join('_')
           end
         end
+        includes_names = jsi_class_includes.map { |m| m.name.sub(/\AJSI::Base::/, '').gsub(Util::RUBY_REJECT_NAME_RE, '_') }
+        if schema_names.any?
+          parts = schema_names.compact.sort.map { |n| 'X' + n.to_s }
+          parts += includes_names
+          const_name = Util.const_name_from_parts(parts, join: '__')
+          const_name += "__" + alnum[__id__] if SchemaClasses.const_defined?(const_name)
+        else
+          const_name = (['X' + alnum[__id__]] + includes_names).join('__')
+        end
+        # collisions are technically possible though vanishingly unlikely
+        SchemaClasses.const_set(const_name, self) unless SchemaClasses.const_defined?(const_name)
         super
       end
     end
@@ -123,15 +103,15 @@ module JSI
     # @api private
     # @param jsi_document [Object] the document containing the instance
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
-    # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
-    # @param jsi_schema_resource_ancestors [Array<JSI::Base<JSI::Schema>>]
+    # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
+    # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     def initialize(jsi_document,
         jsi_ptr: Ptr[],
-        jsi_root_node: nil,
         jsi_indicated_schemas: ,
         jsi_schema_base_uri: nil,
-        jsi_schema_resource_ancestors: Util::EMPTY_ARY
+        jsi_schema_resource_ancestors: Util::EMPTY_ARY,
+        jsi_root_node: nil
     )
       raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
@@ -139,6 +119,9 @@ module JSI
 
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
+      self.jsi_indicated_schemas = jsi_indicated_schemas
+      self.jsi_schema_base_uri = jsi_schema_base_uri
+      self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       if @jsi_ptr.root?
         raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
@@ -147,9 +130,6 @@ module JSI
         raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
         @jsi_root_node = jsi_root_node
       end
-      self.jsi_indicated_schemas = jsi_indicated_schemas
-      self.jsi_schema_base_uri = jsi_schema_base_uri
-      self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
 
       jsi_memomaps_initialize
 
@@ -202,15 +182,26 @@ module JSI
 
     # yields a JSI of each node at or below this one in this JSI's document.
     #
+    # @param propertyNames [Boolean] Whether to also yield each object property
+    #   name (Hash key) of any descendent which is a hash/object.
+    #   These are described by `propertyNames` subshemas of that object's schemas.
+    #   They are not actual descendents of this node.
+    #   See {HashNode#jsi_each_propertyName}.
     # @yield [JSI::Base] each descendent node, starting with self
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def jsi_each_descendent_node(&block)
-      return to_enum(__method__) unless block
+    def jsi_each_descendent_node(propertyNames: false, &block)
+      return to_enum(__method__, propertyNames: propertyNames) unless block
 
       yield self
 
+      if propertyNames && is_a?(HashNode)
+        jsi_each_propertyName do |propertyName|
+          propertyName.jsi_each_descendent_node(propertyNames: propertyNames, &block)
+        end
+      end
+
       jsi_each_child_token do |token|
-        self[token, as_jsi: true].jsi_each_descendent_node(&block)
+        self[token, as_jsi: true].jsi_each_descendent_node(propertyNames: propertyNames, &block)
       end
 
       nil
@@ -425,8 +416,9 @@ module JSI
       if defaults.size == 1
         # use the default value
         jsi_child_as_jsi(defaults.first, child_applied_schemas, as_jsi) do
-          # we are using #dup so that we get a modified copy of self, in which we set dup[token]=default.
-          dup.tap { |o| o[token] = defaults.first }[token, as_jsi: true]
+          jsi_modified_copy do |i|
+            i.dup.tap { |i_dup| i_dup[token] = defaults.first }
+          end[token, as_jsi: true]
         end
       else
         child_content
@@ -603,7 +595,7 @@ module JSI
     # a string representing this JSI, indicating any named schemas and inspecting its instance
     # @return [String]
     def inspect
-      "\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
+      -"\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
     alias_method :to_s, :inspect
@@ -630,7 +622,7 @@ module JSI
       if schema_names.empty?
         class_txt = "JSI"
       else
-        class_txt = "JSI (#{schema_names.join(', ')})"
+        class_txt = -"JSI (#{schema_names.join(', ')})"
       end
 
       if (is_a?(ArrayNode) || is_a?(HashNode)) && ![Array, Hash].include?(jsi_node_content.class)
@@ -686,10 +678,10 @@ module JSI
         jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas, includes: includes)
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
-          jsi_root_node: @jsi_root_node,
           jsi_indicated_schemas: child_indicated_schemas,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
+          jsi_root_node: @jsi_root_node,
         )
     end
 

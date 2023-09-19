@@ -323,7 +323,6 @@ describe 'JSI::Base hash' do
     describe "when a schema's `propertyNames` is not a schema" do
       let(:schema) do
         JSI.new_metaschema({}, schema_implementation_modules: [Module.new {
-          include JSI::Schema
           include JSI::Schema::Application::ChildApplication
           include JSI::Schema::Application::InplaceApplication
           define_method(:internal_child_applicate_keywords) { |*| }
@@ -445,6 +444,13 @@ describe 'JSI::Base hash' do
   describe 'modified copy methods' do
     it('#merge') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge({'a' => ['b']})) }
     it('#merge Base') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge(schema.new_jsi({'a' => ['b']}))) }
+    it('#merge applied schemas') do
+      schema = JSI::JSONSchemaOrgDraft07.new_schema({anyOf: [{required: ["a"]}, {required: ["b"]}]})
+      subject = schema.new_jsi({"a" => 0})
+      assert_schemas([schema, schema.anyOf[0]], subject)
+      merged = subject.merge({"b" => 1})
+      assert_schemas([schema, schema.anyOf[0], schema.anyOf[1]], merged)
+    end
     it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
     it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
     describe '#select' do

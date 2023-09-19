@@ -60,6 +60,14 @@ namespace 'test' do
     pattern: "test/extdep/*_test.rb",
     env: {'JSI_TEST_EXTDEP' => 'y'},
   )
+
+  JSITestTask.new(
+    name: 'aio',
+    title: 'all-in-one',
+    description: 'all tests in one run',
+    pattern: "test/**/*_test.rb",
+    env: {'JSI_TEST_EXTDEP' => 'y'},
+  )
 end
 
 desc 'run all tests'
@@ -78,6 +86,7 @@ ignore_files = %w(
   .gitignore
   .gitmodules
   bin/c
+  bin/chkbug.rb
   Gemfile
   Rakefile.rb
   test/**/*

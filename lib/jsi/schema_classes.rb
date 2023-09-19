@@ -18,7 +18,11 @@ module JSI
     # @return [String]
     def inspect
       if name_from_ancestor
-        "#{name_from_ancestor} (JSI Schema Module)"
+        if schema.schema_absolute_uri
+          -"#{name_from_ancestor} <#{schema.schema_absolute_uri}> (JSI Schema Module)"
+        else
+          -"#{name_from_ancestor} (JSI Schema Module)"
+        end
       else
         "(JSI Schema Module: #{schema.schema_uri || schema.jsi_ptr.uri})"
       end
@@ -51,7 +55,7 @@ module JSI
     end
   end
 
-  # a module to extend the JSI Schema Module of a schema which describes other schemas
+  # A module to extend the {SchemaModule} of a schema which describes other schemas (a {Schema::DescribesSchema})
   module SchemaModule::DescribesSchemaModule
     # @!parse include SchemaModule
 
@@ -106,6 +110,8 @@ module JSI
           Class.new(Base) do
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
+
+            define_singleton_method(:jsi_class_includes) { includes }
 
             conflicting_modules = Set[JSI::Base] + includes + schemas.map(&:jsi_schema_module)
 
@@ -338,9 +344,9 @@ module JSI
     # @return [String]
     def inspect
       if name_from_ancestor
-        "#{name_from_ancestor} (#{self.class})"
+        -"#{name_from_ancestor} (#{self.class})"
       else
-        "(#{self.class}: #{@jsi_node.jsi_ptr.uri})"
+        -"(#{self.class}: #{@jsi_node.jsi_ptr.uri})"
       end
     end
 

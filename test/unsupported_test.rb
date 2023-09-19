@@ -177,6 +177,93 @@ describe 'unsupported behavior' do
         end
       end
     end
+
+    describe '#jsi_each_descendent_node(propertyNames: true)' do
+      DescPropNamesTest = JSI::JSONSchemaOrgDraft07.new_schema_module({
+        'patternProperties' => {
+          '^n' => {'title' => 'no'}, # 'no' properties don't recurse
+        },
+        'additionalProperties' => {'$ref' => '#'}, # other properties do
+        'propertyNames' => {
+          'items' => [{}], # first item doesn't recurse
+          'additionalItems' => {'$ref' => '#'}, # rest of items do
+        }
+      })
+
+      let(:schema) do
+        DescPropNamesTest.schema
+      end
+
+      let(:yesno_object) { {'y' => {'a' => 0}, 'n' => {'a' => 0}} }
+      let(:ary01) { [yesno_object, yesno_object] }
+      let(:instance) do
+        {
+          ary01 => yesno_object,
+          'no' => ary01,
+        }
+      end
+
+      it "yields descendent JSIs and propertyNames" do
+        expected_nodes = Set[]
+        expected_nodes << subject
+        subject_key_ary01 = schema.propertyNames.new_jsi(ary01)
+        expected_nodes += [ # recursing the the first propertyName
+          subject_key_ary01,
+          subject_key_ary01 / [0],
+          JSI::SchemaSet[].new_jsi('y'), # (subject key ary01) / [0] key 'y'
+          JSI::SchemaSet[].new_jsi('n'), # (subject key ary01) / [0] key 'n'
+          subject_key_ary01 / [0, 'y'],
+          JSI::SchemaSet[].new_jsi('a'), # (subject key ary01) / [0, 'y'] key 'a'
+          subject_key_ary01 / [0, 'y', 'a'],
+          subject_key_ary01 / [0, 'n'],
+          JSI::SchemaSet[].new_jsi('a'), # (subject key ary01) / [0, 'n'] key 'a'
+          subject_key_ary01 / [0, 'n', 'a'],
+          subject_key_ary01 / [1],
+          schema.propertyNames.new_jsi('y'), # (subject key ary01) / [1] key 'y'
+          schema.propertyNames.new_jsi('n'), # (subject key ary01) / [1] key 'n'
+          subject_key_ary01 / [1, 'y'],
+          schema.propertyNames.new_jsi('a'), # (subject key ary01) / [1, 'y'] key 'a'
+          subject_key_ary01 / [1, 'y', 'a'],
+          subject_key_ary01 / [1, 'n'],
+          JSI::SchemaSet[].new_jsi('a'), # (subject key ary01) / [1, 'n'] key 'a'
+          subject_key_ary01 / [1, 'n', 'a'],
+        ]
+        expected_nodes << schema.propertyNames.new_jsi('no') # second propertyName (nothing to recurse)
+        expected_nodes += [ # recursing the the first property value
+          subject / [ary01],
+          schema.propertyNames.new_jsi('y'), # subject / [ary01] key 'y'
+          schema.propertyNames.new_jsi('n'), # subject / [ary01] key 'n'
+          subject / [ary01, 'y'],
+          schema.propertyNames.new_jsi('a'), # subject / [ary01, 'y'] key 'a'
+          subject / [ary01, 'y', 'a'],
+          subject / [ary01, 'n'],
+          JSI::SchemaSet[].new_jsi('a'), # subject / [ary01, 'n'] key 'a'
+          subject / [ary01, 'n', 'a'],
+        ]
+        expected_nodes += [ # recursing the the second property value
+          subject / ['no'],
+          subject / ['no', 0],
+          JSI::SchemaSet[].new_jsi('y'), # subject / ['no', 0] key 'y'
+          JSI::SchemaSet[].new_jsi('n'), # subject / ['no', 0] key 'n'
+          subject / ['no', 0, 'y'],
+          JSI::SchemaSet[].new_jsi('a'), # subject / ['no', 0, 'y'] key 'a'
+          subject / ['no', 0, 'y', 'a'],
+          subject / ['no', 0, 'n'],
+          JSI::SchemaSet[].new_jsi('a'), # subject / ['no', 0, 'n'] key 'a'
+          subject / ['no', 0, 'n', 'a'],
+          subject / ['no', 1],
+          JSI::SchemaSet[].new_jsi('y'), # subject / ['no', 1] key 'y'
+          JSI::SchemaSet[].new_jsi('n'), # subject / ['no', 1] key 'n'
+          subject / ['no', 1, 'y'],
+          JSI::SchemaSet[].new_jsi('a'), # subject / ['no', 1, 'y'] key 'a'
+          subject / ['no', 1, 'y', 'a'],
+          subject / ['no', 1, 'n'],
+          JSI::SchemaSet[].new_jsi('a'), # subject / ['no', 1, 'n'] key 'a'
+          subject / ['no', 1, 'n', 'a'],
+        ]
+        assert_equal(expected_nodes, subject.jsi_each_descendent_node(propertyNames: true).to_set)
+      end
+    end
   end
 
   describe 'an instance that responds to to_hash and to_ary' do

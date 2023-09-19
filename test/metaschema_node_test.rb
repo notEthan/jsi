@@ -6,6 +6,10 @@ describe JSI::MetaschemaNode do
       JSI::Schema::Application::Draft06,
     ]
   end
+
+  let(:metaschema_root_ptr) { JSI::Ptr[] }
+  let(:root_schema_ptr) { JSI::Ptr[] }
+
   let(:root_node) do
     JSI::MetaschemaNode.new(jsi_document,
       schema_implementation_modules: schema_implementation_modules,
@@ -58,8 +62,7 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:metaschema_root_ptr) { JSI::Ptr[] }
-    let(:root_schema_ptr) { JSI::Ptr[] }
+
     it 'acts like a metaschema' do
       assert_metaschema_behaves
     end
@@ -102,8 +105,6 @@ describe JSI::MetaschemaNode do
         YAML
       )
     end
-    let(:metaschema_root_ptr) { JSI::Ptr[] }
-    let(:root_schema_ptr) { JSI::Ptr[] }
 
     it 'does not insert a default value' do
       metaschema.jsi_schema_module_exec { define_method(:jsi_child_use_default_default) { true } }
@@ -235,8 +236,6 @@ describe JSI::MetaschemaNode do
   describe 'a metaschema fails to validate itself' do
     let(:schema_implementation_modules) { [JSI::Schema::Draft06] }
     let(:jsi_document) { JSI::JSONSchemaOrgDraft06.schema.schema_content.merge({'title' => []}) }
-    let(:metaschema_root_ptr) { JSI::Ptr[] }
-    let(:root_schema_ptr) { JSI::Ptr[] }
 
     it 'has validation error for `title`' do
       results = [
@@ -252,6 +251,25 @@ describe JSI::MetaschemaNode do
       end
       results.each do |result|
         assert_includes(result.validation_errors.map(&:keyword), 'type')
+      end
+    end
+  end
+
+  describe 'metaschema subschema modules' do
+    # sanity check that metaschemas' named subschema modules are actually subschemas of the metaschema
+    def check_consts(metaschema, mod)
+      assert_is_a(JSI::SchemaModule, mod)
+      assert_equal(metaschema, mod.schema.jsi_root_node)
+      mod.constants.each do |const_name|
+        const = mod.const_get(const_name)
+        next if !const.name.start_with?(mod.name)
+        check_consts(metaschema, const)
+      end
+    end
+
+    it 'named constants are subschema modules' do
+      [JSI::JSONSchemaOrgDraft04, JSI::JSONSchemaOrgDraft06, JSI::JSONSchemaOrgDraft07].each do |metaschema_module|
+        check_consts(metaschema_module.schema, metaschema_module)
       end
     end
   end
