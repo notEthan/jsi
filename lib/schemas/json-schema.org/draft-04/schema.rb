@@ -62,11 +62,102 @@ module JSI
     SimpleType             = definitions['simpleTypes']
     StringArray           = definitions['stringArray']
 
+    module Id
+    end
+    module Xschema
+    end
+    module Title
+    end
+    module Description
+    end
+    module Default
+    end
+    module MultipleOf
+    end
+    module Maximum
+    end
+    module ExclusiveMaximum
+    end
+    module Minimum
+    end
+    module ExclusiveMinimum
+    end
+    module MaxLength
+    end
+    module MinLength
+    end
+    module Pattern
+    end
+    module AdditionalItems
+    end
+    module Items
+    end
+    module MaxItems
+    end
+    module MinItems
+    end
+    module UniqueItems
+    end
+    module MaxProperties
+    end
+    module MinProperties
+    end
+    module Required
+    end
+    module AdditionalProperties
+    end
+    module Definitions
+    end
+    module Properties
+    end
+    module PatternProperties
+    end
+    module Dependencies
+    end
+    module Enum
+    end
+    module Type
+    end
+    module Format
+    end
+    module AllOf
+    end
+    module AnyOf
+    end
+    module OneOf
+    end
+    module Not
+    end
+
+    module SchemaArray
+    end
+    module PositiveInteger
+    end
+    module PositiveIntegerDefault0
+    end
+    module SimpleType
+    end
+    module StringArray
+    end
+
     AdditionalItems::Boolean = AdditionalItems.anyOf[0]
     AdditionalProperties::Boolean = AdditionalProperties.anyOf[0]
     Dependencies::Dependency = Dependencies.additionalProperties
     Type::Array = Type.anyOf[1]
     PositiveIntegerDefault0::Default0 = PositiveIntegerDefault0.allOf[1]
     StringItem = StringArray.items
+
+    module AdditionalItems::Boolean
+    end
+    module AdditionalProperties::Boolean
+    end
+    module Dependencies::Dependency
+    end
+    module Type::Array
+    end
+    module PositiveIntegerDefault0::Default0
+    end
+    module StringItem
+    end
   end
 end
