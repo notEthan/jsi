@@ -6,7 +6,10 @@ module JSI
   class Schema::Ref
     # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
     # @param ref_schema [JSI::Schema] A schema from which the reference originated.
-    #   Optional if the ref is to be resolved only from the schema registry.
+    #
+    #   If the ref URI consists of only a fragment, it is resolved from the `ref_schema`'s
+    #   {Schema#schema_resource_root}. Otherwise the resource is found in the `ref_schema`'s
+    #   {SchemaAncestorNode#jsi_schema_registry #jsi_schema_registry} (and any fragment is resolved from there).
     # @param schema_registry [SchemaRegistry] The registry in which the resource this ref refers to will be found.
     #   This should only be specified in the absence of a `ref_schema`.
     #   If neither is specified, {JSI.schema_registry} is used.
