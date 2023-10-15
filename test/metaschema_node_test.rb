@@ -1,5 +1,20 @@
 require_relative 'test_helper'
 
+BasicMetaschema = JSI.new_metaschema_module(
+  YAML.load(<<~YAML
+    "$id": "tag:named-basic-metaschema"
+    properties:
+      properties:
+        additionalProperties:
+          "$ref": "#"
+      additionalProperties:
+        "$ref": "#"
+      "$ref": {}
+    YAML
+  ),
+  schema_implementation_modules: [JSI::Schema::Application::Draft06],
+)
+
 describe JSI::MetaschemaNode do
   let(:schema_implementation_modules) do
     [
@@ -85,6 +100,27 @@ describe JSI::MetaschemaNode do
         }
         PP
       assert_equal(pp, metaschema.pretty_inspect)
+    end
+  end
+
+  describe 'basic, named' do
+    it 'is pretty' do
+      pretty = <<~str
+      \#{<JSI::MetaschemaNode (#) Metaschema>
+        "$id" => "tag:named-basic-metaschema",
+        "properties" => \#{<JSI::MetaschemaNode (#/properties/properties)>
+          "properties" => \#{<JSI::MetaschemaNode (#) Schema>
+            "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema>
+              "$ref" => "#"
+            }
+          },
+          "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"
+          },
+          "$ref" => \#{<JSI::MetaschemaNode (#) Schema>}
+        }
+      }
+      str
+      assert_equal(pretty, BasicMetaschema.schema.pretty_inspect)
     end
   end
 
