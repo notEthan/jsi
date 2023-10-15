@@ -210,6 +210,16 @@ describe 'JSI::SchemaRegistry' do
       assert_equal(msg.chomp, err.message)
     end
 
+    it '#inspect' do
+      inspect = <<~str
+      #<JSI::SchemaRegistry
+        autoload (0)
+        resources (0)
+      >
+      str
+      assert_equal(inspect.chomp, JSI::SchemaRegistry.new.inspect)
+    end
+
     it 'dups' do
       register_uri = 'http://jsi/schema_registry/p4z7'
       register_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => register_uri})
