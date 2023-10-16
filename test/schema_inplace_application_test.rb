@@ -4,9 +4,9 @@ describe 'JSI Schema inplace application' do
   let(:schema) { metaschema.new_schema(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
   {
-    draft04: JSI::JSONSchemaOrgDraft04,
-    draft06: JSI::JSONSchemaOrgDraft06,
-    draft07: JSI::JSONSchemaOrgDraft07,
+    draft04: JSI::JSONSchemaDraft04,
+    draft06: JSI::JSONSchemaDraft06,
+    draft07: JSI::JSONSchemaDraft07,
   }.each do |name, metaschema|
     describe "#{name} inplace $ref application" do
       let(:metaschema) { metaschema }
@@ -91,9 +91,9 @@ describe 'JSI Schema inplace application' do
     end
   end
   {
-    draft04: JSI::JSONSchemaOrgDraft04,
-    draft06: JSI::JSONSchemaOrgDraft06,
-    draft07: JSI::JSONSchemaOrgDraft07,
+    draft04: JSI::JSONSchemaDraft04,
+    draft06: JSI::JSONSchemaDraft06,
+    draft07: JSI::JSONSchemaDraft07,
   }.each do |name, metaschema|
     describe "#{name} inplace allOf, anyOf, oneOf application" do
       let(:metaschema) { metaschema }
@@ -306,9 +306,9 @@ describe 'JSI Schema inplace application' do
     end
   end
   {
-    draft04: JSI::JSONSchemaOrgDraft04,
-    draft06: JSI::JSONSchemaOrgDraft06,
-    draft07: JSI::JSONSchemaOrgDraft07,
+    draft04: JSI::JSONSchemaDraft04,
+    draft06: JSI::JSONSchemaDraft06,
+    draft07: JSI::JSONSchemaDraft07,
   }.each do |name, metaschema|
     describe "#{name} inplace dependencies application" do
       let(:metaschema) { metaschema }
@@ -393,7 +393,7 @@ describe 'JSI Schema inplace application' do
     end
   end
   {
-    draft07: JSI::JSONSchemaOrgDraft07,
+    draft07: JSI::JSONSchemaDraft07,
   }.each do |name, metaschema|
     describe "#{name} inplace if/then/else application" do
       let(:metaschema) { metaschema }
@@ -512,3 +512,5 @@ describe 'JSI Schema inplace application' do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

@@ -114,6 +114,23 @@ module JSI
       @resources[uri]
     end
 
+    def inspect
+      [
+        '#<JSI::SchemaRegistry',
+        *[['autoload', @autoload_uris.keys], ['resources', @resources.keys]].map do |label, uris|
+          [
+            "  #{label} (#{uris.size})#{uris.empty? ? "" : ":"}",
+            *uris.map do |uri|
+              "    #{uri}"
+            end,
+          ]
+        end.inject([], &:+),
+        '>',
+      ].join("\n").freeze
+    end
+
+    alias_method :to_s, :inspect
+
     def dup
       self.class.new.tap do |reg|
         @resources.each do |uri, resource|

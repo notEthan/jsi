@@ -22,7 +22,7 @@ module JSI
                 keyword: 'pattern',
               )
             rescue RegexpError => e
-              result_builder.schema_error("`pattern` is not a valid regular expression: #{e.message}", 'pattern')
+              result_builder.schema_error(-"`pattern` is not a valid regular expression: #{e.message}", 'pattern')
             end
           end
         else

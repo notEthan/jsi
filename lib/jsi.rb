@@ -42,6 +42,9 @@ module JSI
   autoload :Validation, 'jsi/validation'
   autoload :JSICoder, 'jsi/jsi_coder'
 
+  autoload :JSONSchemaDraft04, 'schemas/json-schema.org/draft-04/schema'
+  autoload :JSONSchemaDraft06, 'schemas/json-schema.org/draft-06/schema'
+  autoload :JSONSchemaDraft07, 'schemas/json-schema.org/draft-07/schema'
   autoload :JSONSchemaOrgDraft04, 'schemas/json-schema.org/draft-04/schema'
   autoload :JSONSchemaOrgDraft06, 'schemas/json-schema.org/draft-06/schema'
   autoload :JSONSchemaOrgDraft07, 'schemas/json-schema.org/draft-07/schema'
@@ -52,8 +55,8 @@ module JSI
   # {JSI.new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
   # @return (see JSI::Schema::DescribesSchema#new_schema_module)
-  def self.new_schema_module(schema_content, **kw)
-    new_schema(schema_content, **kw).jsi_schema_module
+  def self.new_schema_module(schema_content, **kw, &block)
+    new_schema(schema_content, **kw, &block).jsi_schema_module
   end
 
   # Instantiates the given document as a JSI Metaschema.
@@ -90,9 +93,9 @@ module JSI
   end
 
   DEFAULT_SCHEMA_REGISTRY = SchemaRegistry.new.tap do |schema_registry|
-    schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaOrgDraft04.schema }
-    schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaOrgDraft06.schema }
-    schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaOrgDraft07.schema }
+    schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaDraft04.schema }
+    schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaDraft06.schema }
+    schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaDraft07.schema }
   end.freeze
 
   self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup

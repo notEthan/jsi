@@ -3,7 +3,7 @@ require_relative 'test_helper'
 describe JSI::Schema do
   describe 'new_schema' do
     it 'initializes from a hash' do
-      schema = JSI.new_schema({'type' => 'object'}, default_metaschema: JSI::JSONSchemaOrgDraft07)
+      schema = JSI.new_schema({'type' => 'object'}, default_metaschema: JSI::JSONSchemaDraft07)
       assert_equal({'type' => 'object'}, schema.jsi_instance)
     end
 
@@ -19,23 +19,23 @@ describe JSI::Schema do
     end
 
     it 'cannot instantiate from a JSI Schema' do
-      err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
-      assert_equal("Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema>}", err.message)
+      err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaDraft07.new_schema({}), default_metaschema: JSI::JSONSchemaDraft07) }
+      assert_equal("Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI (JSI::JSONSchemaDraft07) Schema>}", err.message)
     end
 
     it 'cannot instantiate from a JSI' do
-      err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}), default_metaschema: JSI::JSONSchemaOrgDraft07) }
+      err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}), default_metaschema: JSI::JSONSchemaDraft07) }
       assert_equal("Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI>}", err.message)
     end
 
     it 'instantiates using default_metaschema' do
       # URI
       schema = JSI.new_schema({}, default_metaschema: "http://json-schema.org/draft-07/schema#")
-      assert_schemas([JSI::JSONSchemaOrgDraft07.schema], schema)
+      assert_schemas([JSI::JSONSchemaDraft07.schema], schema)
 
       # JSI::Schema
-      schema = JSI.new_schema({}, default_metaschema: JSI::JSONSchemaOrgDraft07.schema)
-      assert_schemas([JSI::JSONSchemaOrgDraft07.schema], schema)
+      schema = JSI.new_schema({}, default_metaschema: JSI::JSONSchemaDraft07.schema)
+      assert_schemas([JSI::JSONSchemaDraft07.schema], schema)
 
       # invalid: wrong type
       e = assert_raises(TypeError) { JSI.new_schema({}, default_metaschema: 1) }
@@ -48,7 +48,7 @@ describe JSI::Schema do
     end
   end
   describe 'as an instance of metaschema' do
-    let(:metaschema_jsi_module) { JSI::JSONSchemaOrgDraft04 }
+    let(:metaschema_jsi_module) { JSI::JSONSchemaDraft04 }
     let(:schema_content) { {'type' => 'array', 'items' => {'description' => 'items!'}} }
     let(:schema) { metaschema_jsi_module.new_jsi(schema_content) }
     it '#[]' do
@@ -59,18 +59,18 @@ describe JSI::Schema do
   end
   describe '#schema_uri' do
     it "hasn't got one" do
-      assert_nil(JSI::JSONSchemaOrgDraft07.new_schema({}).schema_uri)
+      assert_nil(JSI::JSONSchemaDraft07.new_schema({}).schema_uri)
     end
     it 'uses a given id ignoring an empty fragment' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/given_id_with_fragment#'})
+      schema = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/given_id_with_fragment#'})
       assert_uri('http://jsi/schema/given_id_with_fragment', schema.schema_uri)
     end
     it 'uses a given id with no fragment' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/given_id'})
+      schema = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/given_id'})
       assert_uri('http://jsi/schema/given_id', schema.schema_uri)
     end
     it 'uses a pointer in the fragment' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({
+      schema = JSI::JSONSchemaDraft07.new_schema({
         '$id' => 'http://jsi/schema/uses_pointer_in_fragment#',
         'properties' => {'foo' => {'type' => 'object'}},
       })
@@ -78,7 +78,7 @@ describe JSI::Schema do
       assert_uri('http://jsi/schema/uses_pointer_in_fragment#/properties/foo', subschema.schema_uri)
     end
     it 'uses a pointer in the fragment, ignoring a pointer in the fragment of the root id' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({
+      schema = JSI::JSONSchemaDraft07.new_schema({
         '$id' => 'http://jsi/schema/id_has_pointer#/notroot',
         'properties' => {'foo' => {'type' => 'object'}},
       })
@@ -87,7 +87,7 @@ describe JSI::Schema do
     end
   end
   describe '#schema_uris' do
-    let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
+    let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
     describe 'two ids' do
       let(:schema_content) do
         {
@@ -108,7 +108,7 @@ describe JSI::Schema do
     end
     describe 'conflicting anchors' do
       let(:schema) do
-        JSI::JSONSchemaOrgDraft06.new_schema(JSON.parse(%q({
+        JSI::JSONSchemaDraft06.new_schema(JSON.parse(%q({
           "$id": "http://jsi/schema_uris/q0wo",
           "definitions": {
             "sibling1": {"$id": "#collide"},
@@ -171,7 +171,7 @@ describe JSI::Schema do
       let(:schema) do
         # adapted from https://datatracker.ietf.org/doc/html/draft-zyp-json-schema-04#section-7.2.2
         # but changed so only schemas use ids
-        JSI::JSONSchemaOrgDraft04.new_schema(JSON.parse(%q({
+        JSI::JSONSchemaDraft04.new_schema(JSON.parse(%q({
           "id": "http://x.y.z/rootschema.json#",
           "definitions": {
             "schema1": {
@@ -242,7 +242,7 @@ describe JSI::Schema do
     describe 'draft6 example' do
       let(:schema) do
         # from https://datatracker.ietf.org/doc/html/draft-wright-json-schema-01#section-9.2
-        JSI::JSONSchemaOrgDraft06.new_schema(JSON.parse(%q({
+        JSI::JSONSchemaDraft06.new_schema(JSON.parse(%q({
           "$id": "http://example.com/root.json",
           "definitions": {
             "A": { "$id": "#foo" },
@@ -303,7 +303,7 @@ describe JSI::Schema do
   end
   describe '#schema_absolute_uri, #anchor' do
     describe 'draft 4' do
-      let(:metaschema) { JSI::JSONSchemaOrgDraft04 }
+      let(:metaschema) { JSI::JSONSchemaDraft04 }
       it "hasn't got one" do
         schema = metaschema.new_schema({})
         assert_nil(schema.schema_absolute_uri)
@@ -425,7 +425,7 @@ describe JSI::Schema do
       end
     end
     describe 'draft 6' do
-      let(:metaschema) { JSI::JSONSchemaOrgDraft06 }
+      let(:metaschema) { JSI::JSONSchemaDraft06 }
       it "hasn't got one" do
         schema = metaschema.new_schema({})
         assert_nil(schema.schema_absolute_uri)
@@ -558,21 +558,21 @@ describe JSI::Schema do
   end
   describe '#jsi_schema_module' do
     it 'returns the module for the schema' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module'})
+      schema = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module'})
       assert_is_a(JSI::SchemaModule, schema.jsi_schema_module)
       assert_equal(schema, schema.jsi_schema_module.schema)
     end
 
     it 'returns the same module for equal schemas' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
-      schema_again = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
+      schema = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
+      schema_again = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
       assert_equal(schema.jsi_schema_module, schema_again.jsi_schema_module)
     end
   end
 
   describe '#jsi_schema_module_exec' do
     it 'evaluates the block on the schema module' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module_exec'})
+      schema = JSI::JSONSchemaDraft07.new_schema({'id' => 'https://schemas.jsi.unth.net/test/jsi_schema_module_exec'})
       schema.jsi_schema_module_exec(foo: 'foo') { |foo: | define_method(:foo) { foo } }
       assert_equal('foo', schema.new_jsi({}).foo)
     end
@@ -581,7 +581,7 @@ describe JSI::Schema do
   describe '#subschema error conditions' do
     describe 'the subschema is not a schema' do
       it 'errors with a Base - subschema key is not described' do
-        schema = JSI::JSONSchemaOrgDraft07.new_schema({
+        schema = JSI::JSONSchemaDraft07.new_schema({
           'foo' => {},
         })
         err = assert_raises(JSI::Schema::NotASchemaError) do
@@ -595,7 +595,7 @@ describe JSI::Schema do
       end
 
       it 'errors with a Base - subschema key is described, not a schema' do
-        schema = JSI::JSONSchemaOrgDraft07.new_schema({
+        schema = JSI::JSONSchemaDraft07.new_schema({
           'properties' => {},
         })
         err = assert_raises(JSI::Schema::NotASchemaError) do
@@ -603,7 +603,7 @@ describe JSI::Schema do
         end
         msg = <<~MSG
           subschema is not a schema at pointer: /properties
-          \#{<JSI (JSI::JSONSchemaOrgDraft07::Properties)>}
+          \#{<JSI (JSI::JSONSchemaDraft07::Properties)>}
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -612,7 +612,7 @@ describe JSI::Schema do
 
   describe '#child_applicator_schemas with an object' do
     let(:schema) do
-      JSI::JSONSchemaOrgDraft07.new_schema({
+      JSI::JSONSchemaDraft07.new_schema({
         properties: {
           foo: {description: 'foo'},
           baz: {description: 'baz'},
@@ -624,77 +624,77 @@ describe JSI::Schema do
       })
     end
     it 'has no subschemas' do
-      assert_empty(JSI::JSONSchemaOrgDraft07.new_schema({}).child_applicator_schemas('no', {}))
+      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).child_applicator_schemas('no', {}))
     end
     it 'has a subschema by property' do
       subschemas = schema.child_applicator_schemas('foo', {}).to_a
       assert_equal(1, subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('foo', subschemas[0].description)
     end
     it 'has subschemas by patternProperties' do
       subschemas = schema.child_applicator_schemas('bar', {}).to_a
       assert_equal(1, subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('b*', subschemas[0].description)
     end
     it 'has subschemas by properties, patternProperties' do
       subschemas = schema.child_applicator_schemas('baz', {}).to_a
       assert_equal(2, subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('baz', subschemas[0].description)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, subschemas[1])
+      assert_is_a(JSI::JSONSchemaDraft07, subschemas[1])
       assert_equal('b*', subschemas[1].description)
     end
     it 'has subschemas by additional properties' do
       subschemas = schema.child_applicator_schemas('anything', {}).to_a
       assert_equal(1, subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('whatever', subschemas[0].description)
     end
   end
   describe '#child_applicator_schemas with an array instance' do
     it 'has no subschemas' do
-      assert_empty(JSI::JSONSchemaOrgDraft07.new_schema({}).child_applicator_schemas(0, []))
+      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).child_applicator_schemas(0, []))
     end
     it 'has a subschema for items' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({
+      schema = JSI::JSONSchemaDraft07.new_schema({
         items: {description: 'items!'}
       })
       first_subschemas = schema.child_applicator_schemas(0, []).to_a
       assert_equal(1, first_subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, first_subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('items!', first_subschemas[0].description)
       last_subschemas = schema.child_applicator_schemas(1, []).to_a
       assert_equal(1, last_subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, last_subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal('items!', last_subschemas[0].description)
     end
     it 'has a subschema for each item by index' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({
+      schema = JSI::JSONSchemaDraft07.new_schema({
         items: [{description: 'item one'}, {description: 'item two'}]
       })
       first_subschemas = schema.child_applicator_schemas(0, []).to_a
       assert_equal(1, first_subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, first_subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('item one', first_subschemas[0].description)
       last_subschemas = schema.child_applicator_schemas(1, []).to_a
       assert_equal(1, last_subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, last_subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal('item two', last_subschemas[0].description)
     end
     it 'has a subschema by additional items' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({
+      schema = JSI::JSONSchemaDraft07.new_schema({
         items: [{description: 'item one'}],
         additionalItems: {description: "mo' crap"},
       })
       first_subschemas = schema.child_applicator_schemas(0, []).to_a
       assert_equal(1, first_subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, first_subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('item one', first_subschemas[0].description)
       last_subschemas = schema.child_applicator_schemas(1, []).to_a
       assert_equal(1, last_subschemas.size)
-      assert_is_a(JSI::JSONSchemaOrgDraft07, last_subschemas[0])
+      assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal("mo' crap", last_subschemas[0].description)
     end
   end
@@ -720,41 +720,41 @@ describe JSI::Schema do
     end
 
     it '#inspect' do
-      assert_equal(%q(#{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaOrgDraft06::Type, JSI::JSONSchemaOrgDraft06::Type::Array)> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaOrgDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06::SchemaArray)> #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06::StringArray)> "b"]}}, #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaOrgDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaOrgDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaOrgDraft06::Enum)>]}}}), schema.inspect)
+      assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaDraft06::Type, JSI::JSONSchemaDraft06::Type::Array)> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaDraft06::Items, JSI::JSONSchemaDraft06) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaDraft06::Items, JSI::JSONSchemaDraft06::SchemaArray)> #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency, JSI::JSONSchemaDraft06::StringArray)> "b"]}}, #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency, JSI::JSONSchemaDraft06) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaDraft06::Enum)>]}}}), schema.inspect)
     end
     it '#pretty_print' do
       pp = <<~PP
-        \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
+        \#{<JSI (JSI::JSONSchemaDraft06) Schema>
           "$schema" => "http://json-schema.org/draft-06/schema",
           "$id" => "http://jsi/schema/stringification",
-          "type" => #[<JSI (JSI::JSONSchemaOrgDraft06::Type, JSI::JSONSchemaOrgDraft06::Type::Array)>
+          "type" => #[<JSI (JSI::JSONSchemaDraft06::Type, JSI::JSONSchemaDraft06::Type::Array)>
             "object",
             "array"
           ],
-          "properties" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Properties)>
-            "foo" => \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
-              "items" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06) Schema>
+          "properties" => \#{<JSI (JSI::JSONSchemaDraft06::Properties)>
+            "foo" => \#{<JSI (JSI::JSONSchemaDraft06) Schema>
+              "items" => \#{<JSI (JSI::JSONSchemaDraft06::Items, JSI::JSONSchemaDraft06) Schema>
                 "$ref" => "#/definitions/no"
               }
             }
           },
-          "items" => #[<JSI (JSI::JSONSchemaOrgDraft06::Items, JSI::JSONSchemaOrgDraft06::SchemaArray)>
-            \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
-              "dependencies" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)>
-                "a" => #[<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06::StringArray)>
+          "items" => #[<JSI (JSI::JSONSchemaDraft06::Items, JSI::JSONSchemaDraft06::SchemaArray)>
+            \#{<JSI (JSI::JSONSchemaDraft06) Schema>
+              "dependencies" => \#{<JSI (JSI::JSONSchemaDraft06::Dependencies)>
+                "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency, JSI::JSONSchemaDraft06::StringArray)>
                   "b"
                 ]
               }
             },
-            \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
-              "dependencies" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies)>
-                "a" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Dependencies::Dependency, JSI::JSONSchemaOrgDraft06) Schema>}
+            \#{<JSI (JSI::JSONSchemaDraft06) Schema>
+              "dependencies" => \#{<JSI (JSI::JSONSchemaDraft06::Dependencies)>
+                "a" => \#{<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency, JSI::JSONSchemaDraft06) Schema>}
               }
             }
           ],
-          "definitions" => \#{<JSI (JSI::JSONSchemaOrgDraft06::Definitions)>
-            "no" => \#{<JSI (JSI::JSONSchemaOrgDraft06) Schema>
-              "enum" => #[<JSI (JSI::JSONSchemaOrgDraft06::Enum)>]
+          "definitions" => \#{<JSI (JSI::JSONSchemaDraft06::Definitions)>
+            "no" => \#{<JSI (JSI::JSONSchemaDraft06) Schema>
+              "enum" => #[<JSI (JSI::JSONSchemaDraft06::Enum)>]
             }
           }
         }
@@ -771,7 +771,7 @@ describe JSI::Schema do
     end
 
     let(:schema) do
-      JSI::SchemaSet[JSI::JSONSchemaOrgDraft07.schema, recursive_default_child_as_jsi_true].new_jsi(YAML.load(<<~YAML
+      JSI::SchemaSet[JSI::JSONSchemaDraft07.schema, recursive_default_child_as_jsi_true].new_jsi(YAML.load(<<~YAML
         $schema: "http://json-schema.org/draft-07/schema#"
         description:
           A schema containing each keyword of the metaschema with valid and invalid type / structure of the keyword value
@@ -905,7 +905,7 @@ describe JSI::Schema do
   end
 
   describe 'validation' do
-    let(:schema) { JSI::JSONSchemaOrgDraft07.new_schema({'$id' => 'http://jsi/schema/validation', type: 'object'}) }
+    let(:schema) { JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/validation', type: 'object'}) }
     describe 'without errors' do
       let(:instance) { {'foo' => 'bar'} }
       it '#instance_validate' do
@@ -939,3 +939,5 @@ describe JSI::Schema do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

@@ -13,7 +13,7 @@ describe 'JSI::Base hash' do
       },
     }
   end
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
   let(:subject) { schema.new_jsi(instance) }
 
   describe '#[] with a schema default that is a basic type' do
@@ -176,7 +176,7 @@ describe 'JSI::Base hash' do
       end
 
       describe 'with a long module name' do
-        HashSchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaOrgDraft07.new_schema_module({"$id": "jsi:2be2"})
+        HashSchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines = JSI::JSONSchemaDraft07.new_schema_module({"$id": "jsi:2be2"})
         it 'does not break empty hash' do
           subject = HashSchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines.new_jsi({})
           pp = %Q(\#{<JSI (HashSchemaWithAModuleNameLongEnoughForPrettyPrintToBreakOverMultipleLines)>}\n)
@@ -323,8 +323,6 @@ describe 'JSI::Base hash' do
     describe "when a schema's `propertyNames` is not a schema" do
       let(:schema) do
         JSI.new_metaschema({}, schema_implementation_modules: [Module.new {
-          include JSI::Schema::Application::ChildApplication
-          include JSI::Schema::Application::InplaceApplication
           define_method(:internal_child_applicate_keywords) { |*| }
           define_method(:internal_inplace_applicate_keywords) { |*, &block| block.call self }
         }]).new_schema({'propertyNames' => {}})
@@ -445,7 +443,7 @@ describe 'JSI::Base hash' do
     it('#merge') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge({'a' => ['b']})) }
     it('#merge Base') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge(schema.new_jsi({'a' => ['b']}))) }
     it('#merge applied schemas') do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({anyOf: [{required: ["a"]}, {required: ["b"]}]})
+      schema = JSI::JSONSchemaDraft07.new_schema({anyOf: [{required: ["a"]}, {required: ["b"]}]})
       subject = schema.new_jsi({"a" => 0})
       assert_schemas([schema, schema.anyOf[0]], subject)
       merged = subject.merge({"b" => 1})
@@ -478,3 +476,5 @@ describe 'JSI::Base hash' do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

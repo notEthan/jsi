@@ -58,3 +58,5 @@ other_instantiations.each do |inst|
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

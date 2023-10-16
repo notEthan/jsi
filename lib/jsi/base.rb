@@ -201,7 +201,7 @@ module JSI
       end
 
       jsi_each_child_token do |token|
-        self[token, as_jsi: true].jsi_each_descendent_node(propertyNames: propertyNames, &block)
+        jsi_child(token, as_jsi: true).jsi_each_descendent_node(propertyNames: propertyNames, &block)
       end
 
       nil
@@ -220,7 +220,7 @@ module JSI
         if jsi_array? || jsi_hash?
           res = instance.class.new
           jsi_each_child_token do |token|
-            v = self[token, as_jsi: true]
+            v = jsi_child(token, as_jsi: true)
             if yield(v)
               res_v = v.jsi_select_descendents_node_first(&block).jsi_node_content
               if jsi_array?
@@ -250,7 +250,7 @@ module JSI
         if jsi_array? || jsi_hash?
           res = instance.class.new
           jsi_each_child_token do |token|
-            v = self[token, as_jsi: true].jsi_select_descendents_leaf_first(&block)
+            v = jsi_child(token, as_jsi: true).jsi_select_descendents_leaf_first(&block)
             if yield(v)
               res_v = v.jsi_node_content
               if jsi_array?
@@ -675,7 +675,9 @@ module JSI
     end
 
     def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )
-        jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas, includes: includes)
+        jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas,
+          includes: includes,
+        )
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_indicated_schemas: child_indicated_schemas,

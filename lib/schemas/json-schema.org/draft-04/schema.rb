@@ -2,7 +2,7 @@
 
 module JSI
   metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read)
-  JSONSchemaOrgDraft04 = JSI.new_metaschema_module(metaschema_document,
+  JSONSchemaDraft04 = JSI.new_metaschema_module(metaschema_document,
     schema_implementation_modules: [JSI::Schema::Draft04],
   )
 
@@ -10,14 +10,14 @@ module JSI
   # properties/additionalProperties and properties/additionalItems.
   # these still describe schemas, despite not being described by the metaschema.
   also_describe_schemas =
-    JSONSchemaOrgDraft04.schema["properties"]["additionalProperties"]["anyOf"] +
-    JSONSchemaOrgDraft04.schema["properties"]["additionalItems"]["anyOf"]
+    JSONSchemaDraft04.schema["properties"]["additionalProperties"]["anyOf"] +
+    JSONSchemaDraft04.schema["properties"]["additionalItems"]["anyOf"]
   also_describe_schemas.each do |schema|
     schema.describes_schema!([JSI::Schema::Draft04])
   end
 
   # the JSI schema module for `http://json-schema.org/draft-04/schema`
-  module JSONSchemaOrgDraft04
+  module JSONSchemaDraft04
     # @!parse extend JSI::SchemaModule::DescribesSchemaModule
     # @!parse include JSI::Schema::Draft04
 
@@ -62,11 +62,108 @@ module JSI
     SimpleType             = definitions['simpleTypes']
     StringArray           = definitions['stringArray']
 
+    module Id
+    end
+    module Xschema
+    end
+    module Title
+    end
+    module Description
+    end
+    module Default
+    end
+    module MultipleOf
+    end
+    module Maximum
+    end
+    module ExclusiveMaximum
+    end
+    module Minimum
+    end
+    module ExclusiveMinimum
+    end
+    module MaxLength
+    end
+    module MinLength
+    end
+    module Pattern
+    end
+    module AdditionalItems
+    end
+    module Items
+    end
+    module MaxItems
+    end
+    module MinItems
+    end
+    module UniqueItems
+    end
+    module MaxProperties
+    end
+    module MinProperties
+    end
+    module Required
+    end
+    module AdditionalProperties
+    end
+    module Definitions
+    end
+    module Properties
+    end
+    module PatternProperties
+    end
+    module Dependencies
+    end
+    module Enum
+    end
+    module Type
+    end
+    module Format
+    end
+    module AllOf
+    end
+    module AnyOf
+    end
+    module OneOf
+    end
+    module Not
+    end
+
+    module SchemaArray
+    end
+    module PositiveInteger
+    end
+    module PositiveIntegerDefault0
+    end
+    module SimpleType
+    end
+    module StringArray
+    end
+
     AdditionalItems::Boolean = AdditionalItems.anyOf[0]
     AdditionalProperties::Boolean = AdditionalProperties.anyOf[0]
     Dependencies::Dependency = Dependencies.additionalProperties
     Type::Array = Type.anyOf[1]
     PositiveIntegerDefault0::Default0 = PositiveIntegerDefault0.allOf[1]
     StringItem = StringArray.items
+
+    module AdditionalItems::Boolean
+    end
+    module AdditionalProperties::Boolean
+    end
+    module Dependencies::Dependency
+    end
+    module Type::Array
+    end
+    module PositiveIntegerDefault0::Default0
+    end
+    module StringItem
+    end
+  end
+
+  JSONSchemaOrgDraft04 = JSONSchemaDraft04
+
+  # @deprecated after v0.7.0, alias of {JSONSchemaDraft04}
+  module JSONSchemaOrgDraft04
   end
 end

@@ -6,7 +6,7 @@ require_relative 'test_helper'
 # behaviors are tested so I know if any of it breaks, but unsupported behavior may change at any time.
 
 describe 'unsupported behavior' do
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
   let(:instance) { {} }
   let(:subject) { schema.new_jsi(instance) }
 
@@ -50,7 +50,7 @@ describe 'unsupported behavior' do
       end
       describe 'below nonschema root' do
         it "instantiates" do
-          schema_doc_schema = JSI::JSONSchemaOrgDraft04.new_schema({
+          schema_doc_schema = JSI::JSONSchemaDraft04.new_schema({
             'properties' => {'schema' => {'$ref' => 'http://json-schema.org/draft-04/schema'}}
           })
           schema_doc = schema_doc_schema.new_jsi({
@@ -179,7 +179,7 @@ describe 'unsupported behavior' do
     end
 
     describe '#jsi_each_descendent_node(propertyNames: true)' do
-      DescPropNamesTest = JSI::JSONSchemaOrgDraft07.new_schema_module({
+      DescPropNamesTest = JSI::JSONSchemaDraft07.new_schema_module({
         'patternProperties' => {
           '^n' => {'title' => 'no'}, # 'no' properties don't recurse
         },
@@ -401,3 +401,5 @@ describe 'unsupported behavior' do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

@@ -4,7 +4,7 @@ describe JSI::JSICoder do
   let(:schema_content) do
     {properties: {foo: {}, bar: {}}}
   end
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft07) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
   let(:options) { {} }
   let(:jsi_opt) { {} }
   let(:coder) { JSI::JSICoder.new(schema, jsi_opt: jsi_opt, **options) }
@@ -91,3 +91,5 @@ describe JSI::JSICoder do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

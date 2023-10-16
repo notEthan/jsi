@@ -32,7 +32,7 @@ describe JSI::Util do
       assert_equal('json object (hash) cannot be keyed with: nil', err.message)
 
       # schema
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({'type' => 'array'})
+      schema = JSI::JSONSchemaDraft07.new_schema({'type' => 'array'})
       assert_equal({'type' => 'array'}, JSI::Util.as_json(schema))
 
       # JSI
@@ -48,3 +48,5 @@ describe JSI::Util do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

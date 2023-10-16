@@ -166,17 +166,23 @@ module JSI
       # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
+      # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
+      #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this schema's inplace applicators.
       def new_schema(schema_content,
           uri: nil,
-          stringify_symbol_keys: true
+          stringify_symbol_keys: true,
+          &block
       )
         schema_jsi = new_jsi(schema_content,
           uri: uri,
           stringify_symbol_keys: stringify_symbol_keys,
         )
         JSI.schema_registry.register(schema_jsi)
+        if block
+          schema_jsi.jsi_schema_module_exec(&block)
+        end
         schema_jsi
       end
 
@@ -184,8 +190,8 @@ module JSI
       # {Schema::DescribesSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
       #
       # @return [Module + JSI::SchemaModule] the JSI Schema Module of the instantiated schema
-      def new_schema_module(schema_content, **kw)
-        new_schema(schema_content, **kw).jsi_schema_module
+      def new_schema_module(schema_content, **kw, &block)
+        new_schema(schema_content, **kw, &block).jsi_schema_module
       end
     end
 
@@ -210,7 +216,7 @@ module JSI
       #
       # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str, nil]
       #   Indicates the default metaschema.
-      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`),
+      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
       #
       #   `nil` to unset.
@@ -236,7 +242,7 @@ module JSI
       #   specifies it. For example:
       #
       #   ```ruby
-      #   JSI.new_schema({"properties" => ...}, default_metaschema: JSI::JSONSchemaOrgDraft07)
+      #   JSI.new_schema({"properties" => ...}, default_metaschema: JSI::JSONSchemaDraft07)
       #   ```
       #
       # - if no `default_metaschema` param is specified, the application-wide default
@@ -244,7 +250,7 @@ module JSI
       #   if the application has set it. For example:
       #
       #   ```ruby
-      #   JSI.default_metaschema = JSI::JSONSchemaOrgDraft07
+      #   JSI.default_metaschema = JSI::JSONSchemaDraft07
       #   JSI.new_schema({"properties" => ...})
       #   ```
       #
@@ -253,15 +259,16 @@ module JSI
       # Note that if you are instantiating a schema known to have no `$schema` property, an alternative to
       # specifying a `default_metaschema` is to call `new_schema` on the metaschema or its module
       # ({Schema::DescribesSchema#new_schema} / {SchemaModule::DescribesSchemaModule#new_schema}), e.g.
-      # `JSI::JSONSchemaOrgDraft07.new_schema(my_schema_content)`
+      # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`
       #
       # @param schema_content (see Schema::DescribesSchema#new_schema)
       # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str]
       #   Indicates the metaschema to use if the given schema_content does not have a `$schema` property.
-      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaOrgDraft07`),
+      #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::DescribesSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
+      # @yield (see Schema::DescribesSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
       #   the given `schema_content` and whose schemas are inplace applicators of the indicated metaschema
       def new_schema(schema_content,
@@ -269,7 +276,8 @@ module JSI
           # params of DescribesSchema#new_schema have their default values repeated here. delegating in a splat
           # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
-          stringify_symbol_keys: true
+          stringify_symbol_keys: true,
+          &block
       )
         new_schema_params = {
           uri: uri,
@@ -284,15 +292,15 @@ module JSI
             raise(ArgumentError, [
               "When instantiating a schema with no `$schema` property, you must specify its metaschema by one of these methods:",
               "- pass the `default_metaschema` param to this method",
-              "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaOrgDraft07)",
+              "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaDraft07)",
               "- invoke `new_schema` on the appropriate metaschema or its schema module",
-              "  e.g.: JSI::JSONSchemaOrgDraft07.new_schema(...)",
+              "  e.g.: JSI::JSONSchemaDraft07.new_schema(...)",
               "- set JSI.default_metaschema to an application-wide default metaschema initially",
-              "  e.g.: JSI.default_metaschema = JSI::JSONSchemaOrgDraft07",
+              "  e.g.: JSI.default_metaschema = JSI::JSONSchemaDraft07",
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
-          default_metaschema.new_schema(schema_content, **new_schema_params)
+          default_metaschema.new_schema(schema_content, **new_schema_params, &block)
         }
         if schema_content.is_a?(Schema)
           raise(TypeError, [
@@ -311,7 +319,7 @@ module JSI
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
             metaschema = Schema.ensure_describes_schema(id, name: '$schema')
-            metaschema.new_schema(schema_content, **new_schema_params)
+            metaschema.new_schema(schema_content, **new_schema_params, &block)
           else
             default_metaschema_new_schema.call
           end
@@ -606,6 +614,58 @@ module JSI
           )
     end
 
+    # a set of inplace applicator schemas of this schema (from $ref, allOf, etc.) which apply to the
+    # given instance.
+    #
+    # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
+    #
+    # @param instance [Object] the instance to check any applicators against
+    # @return [JSI::SchemaSet] matched applicator schemas
+    def inplace_applicator_schemas(instance)
+      SchemaSet.new(each_inplace_applicator_schema(instance))
+    end
+
+    # yields each inplace applicator schema which applies to the given instance.
+    #
+    # @param instance (see #inplace_applicator_schemas)
+    # @param visited_refs [Enumerable<JSI::Schema::Ref>]
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def each_inplace_applicator_schema(instance, visited_refs: [], &block)
+      return to_enum(__method__, instance, visited_refs: visited_refs) unless block
+
+      catch(:jsi_application_done) do
+        internal_inplace_applicate_keywords(instance, visited_refs, &block)
+      end
+
+      nil
+    end
+
+    # a set of child applicator subschemas of this schema which apply to the child of the given instance
+    # on the given token.
+    #
+    # @param token [Object] the array index or object property name for the child instance
+    # @param instance [Object] the instance to check any child applicators against
+    # @return [JSI::SchemaSet] child applicator subschemas of this schema for the given token
+    #   of the instance
+    def child_applicator_schemas(token, instance)
+      SchemaSet.new(each_child_applicator_schema(token, instance))
+    end
+
+    # yields each child applicator subschema (from properties, items, etc.) which applies to the child of
+    # the given instance on the given token.
+    #
+    # @param (see #child_applicator_schemas)
+    # @yield [JSI::Schema]
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def each_child_applicator_schema(token, instance, &block)
+      return to_enum(__method__, token, instance) unless block
+
+      internal_child_applicate_keywords(token, instance, &block)
+
+      nil
+    end
+
     # any object property names this schema indicates may be present on its instances.
     # this includes any keys of this schema's "properties" object and any entries of this schema's
     # array of "required" property keys.
@@ -648,6 +708,40 @@ module JSI
         instance = instance.jsi_node_content
       end
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?
+    end
+
+    # validates the given instance against this schema
+    #
+    # @private
+    # @param instance_ptr [JSI::Ptr] a pointer to the instance to validate against the schema, in the instance_document
+    # @param instance_document [#to_hash, #to_ary, Object] document containing the instance instance_ptr pointer points to
+    # @param validate_only [Boolean] whether to return a full schema validation result or a simple, validation-only result
+    # @param visited_refs [Enumerable<JSI::Schema::Ref>]
+    # @return [JSI::Validation::Result]
+    def internal_validate_instance(instance_ptr, instance_document, validate_only: false, visited_refs: [])
+      if validate_only
+        result = JSI::Validation::VALID
+      else
+        result = JSI::Validation::FullResult.new
+      end
+      result_builder = result.builder(self, instance_ptr, instance_document, validate_only, visited_refs)
+
+      catch(:jsi_validation_result) do
+        # note: true/false are not valid as schemas in draft 4; they are only values of
+        # additionalProperties / additionalItems. since their behavior is undefined, though,
+        # it's fine for them to behave the same as boolean schemas in later drafts.
+        # I don't care about draft 4 to implement a different structuring for that.
+        if schema_content == true
+          # noop
+        elsif schema_content == false
+          result_builder.validate(false, 'instance is not valid against `false` schema')
+        elsif schema_content.respond_to?(:to_hash)
+          internal_validate_keywords(result_builder)
+        else
+          result_builder.schema_error('schema is not a boolean or a JSON object')
+        end
+        result
+      end.freeze
     end
 
     # schema resources which are ancestors of any subschemas below this schema.

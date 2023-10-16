@@ -35,7 +35,7 @@ module JSI
           -"#{name_from_ancestor} (JSI Schema Module)"
         end
       else
-        "(JSI Schema Module: #{schema.schema_uri || schema.jsi_ptr.uri})"
+        -"(JSI Schema Module: #{schema.schema_uri || schema.jsi_ptr.uri})"
       end
     end
 
@@ -73,15 +73,16 @@ module JSI
     # see {JSI::Schema::DescribesSchema#new_schema}
     #
     # @param (see JSI::Schema::DescribesSchema#new_schema)
+    # @yield (see JSI::Schema::DescribesSchema#new_schema)
     # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
     #   the given `schema_content` and whose schemas are inplace applicators of this module's schema
-    def new_schema(schema_content, **kw)
-      schema.new_schema(schema_content, **kw)
+    def new_schema(schema_content, **kw, &block)
+      schema.new_schema(schema_content, **kw, &block)
     end
 
     # (see Schema::DescribesSchema#new_schema_module)
-    def new_schema_module(schema_content, **kw)
-      schema.new_schema(schema_content, **kw).jsi_schema_module
+    def new_schema_module(schema_content, **kw, &block)
+      schema.new_schema(schema_content, **kw, &block).jsi_schema_module
     end
 
     # @return [Set<Module>]
@@ -108,10 +109,10 @@ module JSI
       # @param includes [Enumerable<Module>] modules which will be included on the class
       # @return [Class subclassing JSI::Base]
       def class_for_schemas(schemas, includes: )
-        schemas = SchemaSet.ensure_schema_set(schemas)
-        includes = Util.ensure_module_set(includes)
-
-        @class_for_schemas_map[schemas: schemas, includes: includes]
+        @class_for_schemas_map[
+          schemas: SchemaSet.ensure_schema_set(schemas),
+          includes: Util.ensure_module_set(includes),
+        ]
       end
 
       private def class_for_schemas_compute(schemas: , includes: )
@@ -150,8 +151,9 @@ module JSI
       # @param modules [Set<Module>] schema implementation modules
       # @return [Class]
       def bootstrap_schema_class(modules)
-        modules = Util.ensure_module_set(modules)
-        @bootstrap_schema_class_map[modules: modules]
+        @bootstrap_schema_class_map[
+          modules: Util.ensure_module_set(modules),
+        ]
       end
 
       private def bootstrap_schema_class_compute(modules: )
@@ -210,9 +212,9 @@ module JSI
             define_singleton_method(:jsi_property_readers) { readers }
 
             readers.each do |property_name|
-                define_method(property_name) do |**kw|
-                  self[property_name, **kw]
-                end
+              define_method(property_name) do |**kw, &block|
+                self[property_name, **kw, &block]
+              end
             end
           end
       end
@@ -257,7 +259,7 @@ module JSI
     attr_reader :jsi_node
 
     # a name relative to a named schema module of an ancestor schema.
-    # for example, if `Foos = JSI::JSONSchemaOrgDraft07.new_schema_module({'items' => {}})`
+    # for example, if `Foos = JSI::JSONSchemaDraft07.new_schema_module({'items' => {}})`
     # then the module `Foos.items` will have a name_from_ancestor of `"Foos.items"`
     # @api private
     # @return [String, nil]
@@ -285,12 +287,18 @@ module JSI
     # return a SchemaModule::Connection; or if it is another value (a basic type), return that value.
     #
     # @param token [Object]
+    # @yield If the token identifies a schema and a block is given,
+    #   it is evaluated in the context of the schema's JSI schema module
+    #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
     # @return [Module, SchemaModule::Connection, Object]
-    def [](token, **kw)
+    def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       sub = @jsi_node[token]
       if sub.is_a?(JSI::Schema)
+        sub.jsi_schema_module_exec(&block) if block
         sub.jsi_schema_module
+      elsif block
+        raise(ArgumentError, "block given but token #{token.inspect} does not identify a schema")
       elsif sub.is_a?(JSI::Base)
         SchemaModule::Connection.new(sub)
       else

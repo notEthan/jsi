@@ -115,7 +115,7 @@ bad.phone.jsi_validate
 #   #<Set: {#<JSI::Validation::Error
 #      message: "instance type does not match `type` value",
 #      keyword: "type",
-#      schema: #{<JSI (JSI::JSONSchemaOrgDraft07) Schema> "type" => "string"},
+#      schema: #{<JSI (JSI::JSONSchemaDraft07) Schema> "type" => "string"},
 #      instance_ptr: JSI::Ptr["phone", 0, "number"],
 #      instance_document: {"phone"=>[{"number"=>[5, 5, 5]}]}
 #   >,
@@ -154,9 +154,9 @@ JSI supports these JSON Schema specification versions:
 
 | Version | `$schema` URI                             | JSI Schema Module |
 | ---     | ---                                       | ---               |
-| Draft 4 | `http://json-schema.org/draft-04/schema#` | {JSI::JSONSchemaOrgDraft04} |
-| Draft 6 | `http://json-schema.org/draft-06/schema#` | {JSI::JSONSchemaOrgDraft06} |
-| Draft 7 | `http://json-schema.org/draft-07/schema#` | {JSI::JSONSchemaOrgDraft07} |
+| Draft 4 | `http://json-schema.org/draft-04/schema#` | {JSI::JSONSchemaDraft04} |
+| Draft 6 | `http://json-schema.org/draft-06/schema#` | {JSI::JSONSchemaDraft06} |
+| Draft 7 | `http://json-schema.org/draft-07/schema#` | {JSI::JSONSchemaDraft07} |
 
 ## JSI and Object Oriented Programming
 

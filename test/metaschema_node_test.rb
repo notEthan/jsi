@@ -1,5 +1,20 @@
 require_relative 'test_helper'
 
+BasicMetaschema = JSI.new_metaschema_module(
+  YAML.load(<<~YAML
+    "$id": "tag:named-basic-metaschema"
+    properties:
+      properties:
+        additionalProperties:
+          "$ref": "#"
+      additionalProperties:
+        "$ref": "#"
+      "$ref": {}
+    YAML
+  ),
+  schema_implementation_modules: [JSI::Schema::Application::Draft06],
+)
+
 describe JSI::MetaschemaNode do
   let(:schema_implementation_modules) do
     [
@@ -88,6 +103,28 @@ describe JSI::MetaschemaNode do
     end
   end
 
+  describe 'basic, named' do
+    it 'is pretty' do
+      pretty = <<~str
+      \#{<JSI::MetaschemaNode (BasicMetaschema) Metaschema>
+        "$id" => "tag:named-basic-metaschema",
+        "properties" => \#{<JSI::MetaschemaNode (BasicMetaschema.properties["properties"])>
+          "properties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+            "additionalProperties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+              "$ref" => "#"
+            }
+          },
+          "additionalProperties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+            "$ref" => "#"
+          },
+          "$ref" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>}
+        }
+      }
+      str
+      assert_equal(pretty, BasicMetaschema.schema.pretty_inspect)
+    end
+  end
+
   describe 'with schema default' do
     let(:jsi_document) do
       YAML.load(<<~YAML
@@ -117,10 +154,10 @@ describe JSI::MetaschemaNode do
 
   describe 'json schema draft' do
     it 'type has a schema' do
-      assert(JSI::JSONSchemaOrgDraft06.schema.type.jsi_schemas.any?)
+      assert(JSI::JSONSchemaDraft06.schema.type.jsi_schemas.any?)
     end
     describe '#jsi_schemas' do
-      let(:metaschema) { JSI::JSONSchemaOrgDraft06.schema }
+      let(:metaschema) { JSI::JSONSchemaDraft06.schema }
       it 'has jsi_schemas' do
         assert_schemas([metaschema], metaschema)
         assert_schemas([metaschema.properties['properties']], metaschema.properties)
@@ -217,9 +254,9 @@ describe JSI::MetaschemaNode do
   end
 
   metaschema_modules = [
-    JSI::JSONSchemaOrgDraft04,
-    JSI::JSONSchemaOrgDraft06,
-    JSI::JSONSchemaOrgDraft07,
+    JSI::JSONSchemaDraft04,
+    JSI::JSONSchemaDraft06,
+    JSI::JSONSchemaDraft07,
   ]
   metaschema_modules.each do |metaschema_module|
     describe(metaschema_module.name) do
@@ -235,7 +272,7 @@ describe JSI::MetaschemaNode do
 
   describe 'a metaschema fails to validate itself' do
     let(:schema_implementation_modules) { [JSI::Schema::Draft06] }
-    let(:jsi_document) { JSI::JSONSchemaOrgDraft06.schema.schema_content.merge({'title' => []}) }
+    let(:jsi_document) { JSI::JSONSchemaDraft06.schema.schema_content.merge({'title' => []}) }
 
     it 'has validation error for `title`' do
       results = [
@@ -268,9 +305,11 @@ describe JSI::MetaschemaNode do
     end
 
     it 'named constants are subschema modules' do
-      [JSI::JSONSchemaOrgDraft04, JSI::JSONSchemaOrgDraft06, JSI::JSONSchemaOrgDraft07].each do |metaschema_module|
+      [JSI::JSONSchemaDraft04, JSI::JSONSchemaDraft06, JSI::JSONSchemaDraft07].each do |metaschema_module|
         check_consts(metaschema_module.schema, metaschema_module)
       end
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

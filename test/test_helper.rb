@@ -1,3 +1,12 @@
+test_t0 = Time.now
+$test_report_time = proc do |msg|
+  STDERR.puts "time %.4f: %s" % [Time.now - test_t0, msg] if ENV['COV']
+end
+$test_report_file_loaded = proc do |filename|
+  $test_report_time["#{filename.sub(Regexp.new("\\A#{Regexp.escape(JSI::ROOT_PATH.to_s)}/"), "")} loaded"]
+end
+$test_report_time["starting"]
+
 if ENV['CI'] || ENV['COV']
   require 'simplecov'
   SimpleCov.start do
@@ -68,6 +77,11 @@ module Minitest
       end
     end
 
+    def start
+      $test_report_time["starting run"]
+      super
+    end
+
     def report
       @quiet = true
       super
@@ -91,6 +105,8 @@ module Minitest
         puts
         puts("  #{result.source_location.join(' :')}")
       end
+
+      $test_report_time["finished run"]
     end
   end
 
@@ -245,6 +261,8 @@ end
 Minitest::Spec.register_spec_type(//, JSISpec)
 
 Minitest.after_run do
+  $test_report_time["Minitest.after_run"]
+
   if Object.const_defined?(:SimpleCov)
     counts = {}
     resultset = SimpleCov::ResultMerger.respond_to?(:read_resultset) ? SimpleCov::ResultMerger.read_resultset : SimpleCov::ResultMerger.resultset
@@ -267,3 +285,5 @@ Minitest.after_run do
     nil
   end
 end
+
+$test_report_file_loaded[__FILE__]

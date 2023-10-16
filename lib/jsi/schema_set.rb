@@ -114,9 +114,9 @@ module JSI
     end
 
     # a set of inplace applicator schemas of each schema in this set which apply to the given instance.
-    # (see {Schema::Application::InplaceApplication#inplace_applicator_schemas})
+    # (see {Schema#inplace_applicator_schemas})
     #
-    # @param instance (see Schema::Application::InplaceApplication#inplace_applicator_schemas)
+    # @param instance (see Schema#inplace_applicator_schemas)
     # @return [JSI::SchemaSet]
     def inplace_applicator_schemas(instance)
       SchemaSet.new(each_inplace_applicator_schema(instance))
@@ -124,7 +124,7 @@ module JSI
 
     # yields each inplace applicator schema which applies to the given instance.
     #
-    # @param instance (see Schema::Application::InplaceApplication#inplace_applicator_schemas)
+    # @param instance (see Schema#inplace_applicator_schemas)
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_inplace_applicator_schema(instance, &block)
@@ -139,9 +139,9 @@ module JSI
 
     # a set of child applicator subschemas of each schema in this set which apply to the child
     # of the given instance on the given token.
-    # (see {Schema::Application::ChildApplication#child_applicator_schemas})
+    # (see {Schema#child_applicator_schemas})
     #
-    # @param instance (see Schema::Application::ChildApplication#child_applicator_schemas)
+    # @param instance (see Schema#child_applicator_schemas)
     # @return [JSI::SchemaSet]
     def child_applicator_schemas(token, instance)
       SchemaSet.new(each_child_applicator_schema(token, instance))
@@ -150,7 +150,7 @@ module JSI
     # yields each child applicator schema which applies to the child of
     # the given instance on the given token.
     #
-    # @param (see Schema::Application::ChildApplication#child_applicator_schemas)
+    # @param (see Schema#child_applicator_schemas)
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_child_applicator_schema(token, instance, &block)

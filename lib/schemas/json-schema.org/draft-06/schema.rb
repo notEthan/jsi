@@ -2,12 +2,12 @@
 
 module JSI
   metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-06/schema.json').read)
-  JSONSchemaOrgDraft06 = JSI.new_metaschema_module(metaschema_document,
+  JSONSchemaDraft06 = JSI.new_metaschema_module(metaschema_document,
     schema_implementation_modules: [JSI::Schema::Draft06],
   )
 
   # the JSI schema module for `http://json-schema.org/draft-06/schema`
-  module JSONSchemaOrgDraft06
+  module JSONSchemaDraft06
     # @!parse extend JSI::SchemaModule::DescribesSchemaModule
     # @!parse include JSI::Schema::Draft06
 
@@ -57,10 +57,115 @@ module JSI
     SimpleType                = definitions['simpleTypes']
     StringArray              = definitions['stringArray']
 
+    module Id
+    end
+    module Xschema
+    end
+    module Ref
+    end
+    module Title
+    end
+    module Description
+    end
+    module Default
+    end
+    module Examples
+    end
+    module MultipleOf
+    end
+    module Maximum
+    end
+    module ExclusiveMaximum
+    end
+    module Minimum
+    end
+    module ExclusiveMinimum
+    end
+    module MaxLength
+    end
+    module MinLength
+    end
+    module Pattern
+    end
+    module AdditionalItems
+    end
+    module Items
+    end
+    module MaxItems
+    end
+    module MinItems
+    end
+    module UniqueItems
+    end
+    module Contains
+    end
+    module MaxProperties
+    end
+    module MinProperties
+    end
+    module Required
+    end
+    module AdditionalProperties
+    end
+    module Definitions
+    end
+    module Properties
+    end
+    module PatternProperties
+    end
+    module Dependencies
+    end
+    module PropertyNames
+    end
+    module Const
+    end
+    module Enum
+    end
+    module Type
+    end
+    module Format
+    end
+    module AllOf
+    end
+    module AnyOf
+    end
+    module OneOf
+    end
+    module Not
+    end
+
+    module SchemaArray
+    end
+    module NonNegativeInteger
+    end
+    module NonNegativeIntegerDefault0
+    end
+    module SimpleType
+    end
+    module StringArray
+    end
+
     Example = Examples.items
     Dependencies::Dependency = Dependencies.additionalProperties
     Type::Array = Type.anyOf[1]
     NonNegativeIntegerDefault0::Default0 = NonNegativeIntegerDefault0.allOf[1]
     StringItem = StringArray.items
+
+    module Example
+    end
+    module Dependencies::Dependency
+    end
+    module Type::Array
+    end
+    module NonNegativeIntegerDefault0::Default0
+    end
+    module StringItem
+    end
+  end
+
+  JSONSchemaOrgDraft06 = JSONSchemaDraft06
+
+  # @deprecated after v0.7.0, alias of {JSONSchemaDraft06}
+  module JSONSchemaOrgDraft06
   end
 end

@@ -22,19 +22,19 @@ describe 'JSI::SchemaRegistry' do
 
     it 'registers a nonschema and finds it' do
       uri = 'http://jsi/schema_registry/d7eu'
-      resource = JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}, uri: uri)
+      resource = JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, uri: uri)
       schema_registry.register(resource)
       assert_equal(resource, schema_registry.find(uri))
     end
 
     it 'registers a nonschema with no resource URIs' do
-      resource = JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({})
+      resource = JSI::JSONSchemaDraft07.new_schema({}).new_jsi({})
       schema_registry.register(resource)
     end
 
     it "registers something that's not a schema below document root with a URI" do
       uri = 'http://jsi/schema_registry/skw7'
-      resource = JSI::JSONSchemaOrgDraft07.new_schema({'items' => {}}).new_jsi([{}], uri: uri)
+      resource = JSI::JSONSchemaDraft07.new_schema({'items' => {}}).new_jsi([{}], uri: uri)
       err = assert_raises(ArgumentError) do
         schema_registry.register(resource[0])
       end
@@ -42,7 +42,7 @@ describe 'JSI::SchemaRegistry' do
     end
 
     it "registers something that's not a schema below document root without a URI" do
-      resource = JSI::JSONSchemaOrgDraft07.new_schema({'items' => {}}).new_jsi([{}])
+      resource = JSI::JSONSchemaDraft07.new_schema({'items' => {}}).new_jsi([{}])
       err = assert_raises(ArgumentError) do
         schema_registry.register(resource[0])
       end
@@ -51,7 +51,7 @@ describe 'JSI::SchemaRegistry' do
 
     it "registers something that's not a schema below a schema" do
       uri = 'http://jsi/schema_registry/3ij1'
-      resource = JSI::JSONSchemaOrgDraft07.new_schema({'$id' => uri, 'properties' => {}})
+      resource = JSI::JSONSchemaDraft07.new_schema({'$id' => uri, 'properties' => {}})
       err = assert_raises(ArgumentError) do
         schema_registry.register(resource.properties)
       end
@@ -60,16 +60,16 @@ describe 'JSI::SchemaRegistry' do
 
     it "registers the same schema twice" do
       uri = 'http://jsi/schema_registry/r3fh'
-      schema_registry.register(JSI::JSONSchemaOrgDraft07.new_schema({'$id' => uri}))
-      schema_registry.register(JSI::JSONSchemaOrgDraft07.new_schema({'$id' => uri}))
-      assert_equal(JSI::JSONSchemaOrgDraft07.new_schema({'$id' => uri}), schema_registry.find(uri))
+      schema_registry.register(JSI::JSONSchemaDraft07.new_schema({'$id' => uri}))
+      schema_registry.register(JSI::JSONSchemaDraft07.new_schema({'$id' => uri}))
+      assert_equal(JSI::JSONSchemaDraft07.new_schema({'$id' => uri}), schema_registry.find(uri))
     end
 
     it "registers two different things with the same URI" do
       uri = 'http://jsi/schema_registry/y7xu'
       # use new_jsi instead of new_schema to skip auto registration
-      res1 = JSI::JSONSchemaOrgDraft07.new_jsi({'$id' => uri, 'title' => 'res1'})
-      res2 = JSI::JSONSchemaOrgDraft07.new_jsi({'$id' => uri, 'title' => 'res2'})
+      res1 = JSI::JSONSchemaDraft07.new_jsi({'$id' => uri, 'title' => 'res1'})
+      res2 = JSI::JSONSchemaDraft07.new_jsi({'$id' => uri, 'title' => 'res2'})
       schema_registry.register(res1)
       err = assert_raises(JSI::SchemaRegistry::Collision) do
         schema_registry.register(res2)
@@ -77,12 +77,12 @@ describe 'JSI::SchemaRegistry' do
       msg = <<~MSG
         URI collision on http://jsi/schema_registry/y7xu.
         existing:
-        \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
+        \#{<JSI (JSI::JSONSchemaDraft07) Schema>
           "$id" => "http://jsi/schema_registry/y7xu",
           "title" => "res1"
         }
         new:
-        \#{<JSI (JSI::JSONSchemaOrgDraft07) Schema>
+        \#{<JSI (JSI::JSONSchemaDraft07) Schema>
           "$id" => "http://jsi/schema_registry/y7xu",
           "title" => "res2"
         }
@@ -140,7 +140,7 @@ describe 'JSI::SchemaRegistry' do
     it 'autoloads a nonschema uri and finds it' do
       uri = 'http://jsi/schema_registry/0vsi'
       schema_registry.autoload_uri(uri) do
-        JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({}, uri: uri)
+        JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, uri: uri)
       end
       assert_uri(uri, schema_registry.find(uri).jsi_resource_ancestor_uri)
     end
@@ -148,7 +148,7 @@ describe 'JSI::SchemaRegistry' do
     it 'autoloads a uri but the resource is not in the JSI from the block' do
       uri = 'http://jsi/schema_registry/6d86'
       schema_registry.autoload_uri(uri) do
-        JSI::JSONSchemaOrgDraft07.new_schema({}).new_jsi({})
+        JSI::JSONSchemaDraft07.new_schema({}).new_jsi({})
       end
       err = assert_raises(JSI::SchemaRegistry::ResourceNotFound) do
         schema_registry.find(uri)
@@ -208,6 +208,16 @@ describe 'JSI::SchemaRegistry' do
         URI: http://jsi/schema_registry/j0s5
         MSG
       assert_equal(msg.chomp, err.message)
+    end
+
+    it '#inspect' do
+      inspect = <<~str
+      #<JSI::SchemaRegistry
+        autoload (0)
+        resources (0)
+      >
+      str
+      assert_equal(inspect.chomp, JSI::SchemaRegistry.new.inspect)
     end
 
     it 'dups' do
@@ -274,3 +284,5 @@ describe 'JSI::SchemaRegistry' do
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]

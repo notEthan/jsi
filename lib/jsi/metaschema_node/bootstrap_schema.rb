@@ -106,7 +106,7 @@ module JSI
     def jsi_object_group_text
       [
         self.class.name || MetaschemaNode::BootstrapSchema.name,
-        "(#{schema_implementation_modules.map(&:inspect).join(', ')})",
+        -"(#{schema_implementation_modules.map(&:inspect).join(', ')})",
         jsi_ptr.uri,
       ]
     end

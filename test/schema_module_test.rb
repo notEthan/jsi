@@ -3,12 +3,13 @@ require_relative 'test_helper'
 SchemaModuleTestModule = JSI.new_schema_module({
   '$schema' => 'http://json-schema.org/draft-07/schema#',
   'title' => 'a9b7',
-  'properties' => {'foo' => {'items' => {'type' => 'string'}}}
+  'properties' => {'foo' => {'items' => {'type' => 'string'}}},
+  'additionalProperties' => {},
 })
 
 describe 'JSI::SchemaModule' do
   let(:schema_content) { {'properties' => {'foo' => {'items' => {'type' => 'string'}}}} }
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaOrgDraft06) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft06) }
   let(:schema_module) { schema.jsi_schema_module }
   describe 'accessors and subscripts' do
     it 'returns schemas using accessors and subscripts' do
@@ -21,10 +22,10 @@ describe 'JSI::SchemaModule' do
       assert_equal('string', schema_module.properties['foo'].items.type)
     end
     it 'accessors and subscripts with a metaschema' do
-      assert_is_a(JSI::SchemaModule::Connection, JSI::JSONSchemaOrgDraft06.properties)
-      assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties, JSI::JSONSchemaOrgDraft06.properties.jsi_node)
-      assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties)
-      assert_equal(JSI::JSONSchemaOrgDraft06.schema.properties['properties'].additionalProperties, JSI::JSONSchemaOrgDraft06.properties['properties'].additionalProperties.jsi_node)
+      assert_is_a(JSI::SchemaModule::Connection, JSI::JSONSchemaDraft06.properties)
+      assert_equal(JSI::JSONSchemaDraft06.schema.properties, JSI::JSONSchemaDraft06.properties.jsi_node)
+      assert_equal(JSI::JSONSchemaDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaDraft06.properties['properties'].additionalProperties)
+      assert_equal(JSI::JSONSchemaDraft06.schema.properties['properties'].additionalProperties, JSI::JSONSchemaDraft06.properties['properties'].additionalProperties.jsi_node)
     end
 
     describe 'named properties of a schema module connection' do
@@ -74,7 +75,7 @@ describe 'JSI::SchemaModule' do
       assert_equal(SchemaModuleTestModule.properties["foo"].items.inspect, SchemaModuleTestModule.properties["foo"].items.to_s)
     end
     it 'shows a pointer fragment uri with no named ancestor schema module' do
-      mod = JSI::JSONSchemaOrgDraft07.new_schema_module({
+      mod = JSI::JSONSchemaDraft07.new_schema_module({
         'title' => 'lhzm', 'properties' => {'foo' => {'items' => {'type' => 'string'}}}
       })
       assert_equal(
@@ -98,18 +99,40 @@ describe 'JSI::SchemaModule' do
 
   describe 'DescribesSchemaModule' do
     it 'extends a module which describes a schema' do
-      assert(JSI::JSONSchemaOrgDraft07.is_a?(JSI::SchemaModule::DescribesSchemaModule))
+      assert(JSI::JSONSchemaDraft07.is_a?(JSI::SchemaModule::DescribesSchemaModule))
     end
 
     it '#new_schema' do
-      schema = JSI::JSONSchemaOrgDraft07.new_schema({})
-      assert_is_a(JSI::JSONSchemaOrgDraft07, schema)
-      assert_equal(JSI::JSONSchemaOrgDraft07.schema.new_schema({}), schema)
+      schema = JSI::JSONSchemaDraft07.new_schema({})
+      assert_is_a(JSI::JSONSchemaDraft07, schema)
+      assert_equal(JSI::JSONSchemaDraft07.schema.new_schema({}), schema)
     end
 
     it '#new_schema_module' do
-      mod = JSI::JSONSchemaOrgDraft07.new_schema_module({})
-      assert_equal(JSI::JSONSchemaOrgDraft07.new_schema({}).jsi_schema_module, mod)
+      mod = JSI::JSONSchemaDraft07.new_schema_module({})
+      assert_equal(JSI::JSONSchemaDraft07.new_schema({}).jsi_schema_module, mod)
+    end
+  end
+
+  describe 'block given to SchemaModule/Connection reader' do
+    it '`module_exec`s (Connection#[])' do
+      # TODO drop support for ancient ruby versions and fix invocation to properties['foo'] do ... end
+      SchemaModuleTestModule.properties.[]('foo') do
+        def x
+          :x
+        end
+      end
+      assert_equal(:x, SchemaModuleTestModule.new_jsi({'foo' => {}}).foo.x)
+    end
+    it '`module_exec`s (SchemaModule#[])' do
+      SchemaModuleTestModule.additionalProperties do
+        def x
+          :x
+        end
+      end
+      assert_equal(:x, SchemaModuleTestModule.new_jsi({'qux' => {}})['qux'].x)
     end
   end
 end
+
+$test_report_file_loaded[__FILE__]
