@@ -49,7 +49,7 @@ describe 'JSI::SchemaModule' do
             sch: {}
           YAML
         )
-        JSI.new_metaschema(document, schema_implementation_modules: [JSI::Schema::Application::Draft06])
+        JSI.new_metaschema(document, schema_implementation_modules: [JSI::Schema::Draft06])
       end
 
       it 'defines accessors for the connection' do
