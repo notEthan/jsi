@@ -316,7 +316,7 @@ describe JSI::MetaschemaNode do
       assert_equal(metaschema, mod.schema.jsi_root_node)
       mod.constants.each do |const_name|
         const = mod.const_get(const_name)
-        next if !const.name.start_with?(mod.name)
+        next unless const.is_a?(Module) && const.name.start_with?(mod.name)
         check_consts(metaschema, const)
       end
     end
