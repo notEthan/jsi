@@ -4,6 +4,7 @@ module JSI
   module Schema::Application::ChildApplication::Contains
     # @private
     def internal_applicate_contains(idx, instance, &block)
+    if instance.respond_to?(:to_ary)
       if keyword?('contains')
         contains_schema = subschema(['contains'])
 
@@ -20,6 +21,7 @@ module JSI
           end
         end
       end
+    end # if instance.respond_to?(:to_ary)
     end
   end
 end

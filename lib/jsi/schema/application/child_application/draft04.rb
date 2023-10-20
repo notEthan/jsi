@@ -7,15 +7,11 @@ module JSI
 
     # @private
     def internal_child_applicate_keywords(token, instance, &block)
-      if instance.respond_to?(:to_ary)
         # 5.3.1.  additionalItems and items
-        internal_applicate_items(token, &block)
-      end
+        internal_applicate_items(token, instance, &block)
 
-      if instance.respond_to?(:to_hash)
         # 5.4.4.  additionalProperties, properties and patternProperties
-        internal_applicate_properties(token, &block)
-      end
+        internal_applicate_properties(token, instance, &block)
     end
   end
 end

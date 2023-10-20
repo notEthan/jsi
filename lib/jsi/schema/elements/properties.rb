@@ -3,7 +3,8 @@
 module JSI
   module Schema::Application::ChildApplication::Properties
     # @private
-    def internal_applicate_properties(property_name, &block)
+    def internal_applicate_properties(property_name, instance, &block)
+    if instance.respond_to?(:to_hash)
       apply_additional = true
       if keyword?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(property_name)
         apply_additional = false
@@ -20,6 +21,7 @@ module JSI
       if apply_additional && keyword?('additionalProperties')
         yield subschema(['additionalProperties'])
       end
+    end # if instance.respond_to?(:to_hash)
     end
   end
 end
