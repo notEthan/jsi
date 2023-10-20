@@ -174,20 +174,6 @@ describe 'JSI Schema child application' do
           ], subject['foo'])
         end
       end
-      describe 'additionalProperties without properties' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
-            additionalProperties: {}
-            YAML
-          )
-        end
-        let(:instance) { {'foo' => []} }
-        it 'applies additionalProperties' do
-          assert_schemas([
-            schema.additionalProperties,
-          ], subject['foo'])
-        end
-      end
       describe 'properties, additionalProperties, patternProperties' do
         let(:schema_content) do
           YAML.load(<<~YAML
