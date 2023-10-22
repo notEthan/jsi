@@ -64,13 +64,7 @@ describe JSI::Base do
       assert_operator(class_for_schema, :<, JSI::Base)
     end
   end
-  describe 'JSI::SchemaClasses.module_for_schema' do
-    it 'returns a module from a schema' do
-      module_for_schema = JSI::SchemaClasses.module_for_schema(schema)
-      # same module every time
-      assert_equal(JSI::SchemaClasses.module_for_schema(schema), module_for_schema)
-    end
-  end
+
   describe 'initialization' do
     describe 'nil' do
       let(:instance) { nil }
