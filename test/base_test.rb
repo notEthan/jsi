@@ -53,15 +53,12 @@ describe JSI::Base do
     end
   end
 
-  describe '.class_for_schemas' do
-    it 'returns a class from a schema' do
-      class_for_schema = JSI::SchemaClasses.class_for_schemas([schema], includes: [])
-      # same class every time
-      assert_equal(JSI::SchemaClasses.class_for_schemas([schema], includes: []), class_for_schema)
-      # schema_again same as `schema` but different instantiation; class_for_schemas returns same class
-      schema_again = JSI::JSONSchemaDraft07.new_schema({})
-      assert_equal(JSI::SchemaClasses.class_for_schemas([schema_again], includes: []), class_for_schema)
-      assert_operator(class_for_schema, :<, JSI::Base)
+  describe('#class') do
+    it('uses the same class for the same schemas') do
+      schema1 = JSI::JSONSchemaDraft07.new_schema({'$id' => 'tag:codt'})
+      schema2 = JSI::JSONSchemaDraft07.new_schema({'$id' => 'tag:codt'}) # same schema, different object
+      assert_equal(schema1.new_jsi([]).class, schema2.new_jsi([]).class) # same class
+      assert_equal(schema1.new_jsi([]).class, schema2.new_jsi([0]).class) # same class, different instance
     end
   end
 
