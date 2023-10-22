@@ -257,8 +257,9 @@ module JSI
       # an ArgumentError is raised if none of these indicate a metaschema to use.
       #
       # Note that if you are instantiating a schema known to have no `$schema` property, an alternative to
-      # specifying a `default_metaschema` is to call `new_schema` on the metaschema or its module
-      # ({Schema::DescribesSchema#new_schema} / {SchemaModule::DescribesSchemaModule#new_schema}), e.g.
+      # specifying a `default_metaschema` is to call `new_schema` on the
+      # {Schema::DescribesSchema#new_schema metaschema} or its
+      # {SchemaModule::DescribesSchemaModule#new_schema schema module}, e.g.
       # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`
       #
       # @param schema_content (see Schema::DescribesSchema#new_schema)
