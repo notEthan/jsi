@@ -289,8 +289,7 @@ describe JSI::MetaschemaNode do
   end
 
   describe 'a metaschema fails to validate itself' do
-    let(:schema_implementation_modules) { [JSI::Schema::Draft06] }
-    let(:jsi_document) { JSI::JSONSchemaDraft06.schema.schema_content.merge({'title' => []}) }
+    let(:metaschema) { JSI::JSONSchemaDraft06.schema.merge({'title' => []}) }
 
     it 'has validation error for `title`' do
       results = [
