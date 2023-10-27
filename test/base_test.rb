@@ -836,6 +836,11 @@ describe JSI::Base do
         assert_equal([%q(#{<JSI (tag:3576#/items)> "a" => "b"})], schema.new_jsi([{'a' => 'b'}]).as_json)
       end
     end
+
+    it('HashNode keys') do
+      assert_equal({'a' => 'b'}, schema.new_jsi({SortOfString.new('a') => 'b'}).as_json)
+      assert_raises(TypeError) { schema.new_jsi({SortOfString.new(0) => 'b'}).as_json }
+    end
   end
 
   describe 'overriding HashNode methods' do
