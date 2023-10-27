@@ -52,6 +52,19 @@ class SortOfArray
   end
 end
 
+class SortOfString
+  def initialize(str)
+    @str = str
+  end
+  def to_str
+    @str
+  end
+  include JSI::Util::FingerprintHash
+  def jsi_fingerprint
+    {class: self.class, str: @str}
+  end
+end
+
 class Module
   def redef_method(method_name, method = nil, &block)
     begin
