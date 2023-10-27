@@ -72,6 +72,9 @@ describe JSI::Util do
       # symbol keys to string
       assert_equal({'a' => 'b'}, JSI::Util.as_json({a: 'b'}))
       assert_equal(%q({"a":"b"}), JSI::Util.to_json({a: 'b'}))
+      # to_str key
+      assert_equal({'a' => 'b'}, JSI::Util.as_json({SortOfString.new('a') => 'b'}))
+      assert_equal(%q({"a":"b"}), JSI::Util.to_json({SortOfString.new('a') => 'b'}))
       # non string/symbol key
       err = assert_raises(TypeError) { JSI::Util.as_json({nil => 0}) }
       assert_equal('json object (hash) cannot be keyed with: nil', err.message)
