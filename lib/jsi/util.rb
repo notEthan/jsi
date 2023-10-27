@@ -54,10 +54,11 @@ module JSI
       elsif object.respond_to?(:to_hash) && (object_to_hash = object.to_hash).is_a?(Hash)
         result = {}
         object_to_hash.each_pair do |k, v|
-          unless k.is_a?(Symbol) || k.respond_to?(:to_str)
+          ks = k.is_a?(String) ? k :
+            k.is_a?(Symbol) ? k.to_s :
+            k.respond_to?(:to_str) && (kstr = k.to_str).is_a?(String) ? kstr :
             raise(TypeError, "json object (hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
-          end
-          result[k.to_s] = as_json(v, **options)
+          result[ks] = as_json(v, **options)
         end
         result
       elsif object.respond_to?(:to_ary) && (object_to_ary = object.to_ary).is_a?(Array)
