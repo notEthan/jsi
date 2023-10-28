@@ -529,7 +529,7 @@ module JSI
     # does this schema itself describe a schema?
     # @return [Boolean]
     def describes_schema?
-      jsi_schema_module <= JSI::Schema
+      jsi_schema_module <= JSI::Schema || false
     end
 
     # indicates that this schema describes a schema.
