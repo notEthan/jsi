@@ -30,43 +30,65 @@ module JSI
       end
     end
 
-    # recursive method to express the given argument object in json-compatible
-    # types of Hash, Array, and basic types of String/boolean/numeric/nil. this
-    # will raise TypeError if an object is given that is not a type that seems
-    # to be expressable as json.
+    # A structure like the given `object`, recursively coerced to JSON-compatible types.
     #
-    # similar effect could be achieved by requiring 'json/add/core' and using #as_json,
-    # but I don't much care for how it represents classes that are
-    # not naturally expressable in JSON, and prefer not to load its
-    # monkey-patching.
+    # - Structures of Hash, Array, and basic types of String/number/boolean/nil are returned as-is.
+    # - If the object responds to `#as_json`, that method is used, passing any given options.
+    # - If the object supports [implicit conversion](https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html)
+    #   with `#to_hash`, `#to_ary`, `#to_str`, or `#to_int`, that is used.
+    # - Set becomes Array; Symbol becomes String.
+    # - Types with no known coersion to JSON-compatible raise TypeError.
     #
-    # @param object [Object] the object to be converted to jsonifiability
-    # @return [Array, Hash, String, Boolean, NilClass, Numeric] jsonifiable
-    #   expression of param object
-    # @raise [TypeError] when the object (or an object nested with a hash or
-    #   array of object) cannot be expressed as json
-    def as_json(object, *opt)
-      if object.is_a?(JSI::Base)
-        as_json(object.jsi_node_content, *opt)
-      elsif object.respond_to?(:to_hash)
-        (object.respond_to?(:map) ? object : object.to_hash).map do |k, v|
-          unless k.is_a?(Symbol) || k.respond_to?(:to_str)
+    # @param object [Object]
+    # @return [Array, Hash, String, Integer, Float, Boolean, NilClass] a JSON-compatible structure like the given `object`
+    # @raise [TypeError] If the object cannot be coerced to a JSON-compatible structure
+    def as_json(object, options = {})
+      type_err = proc { raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}") }
+      if object.respond_to?(:as_json)
+        options.empty? ? object.as_json : object.as_json(**options) # TODO remove eventually (keyword argument compatibility)
+      elsif object.is_a?(Addressable::URI)
+        object.to_s
+      elsif object.respond_to?(:to_hash) && (object_to_hash = object.to_hash).is_a?(Hash)
+        result = {}
+        object_to_hash.each_pair do |k, v|
+          ks = k.is_a?(String) ? k :
+            k.is_a?(Symbol) ? k.to_s :
+            k.respond_to?(:to_str) && (kstr = k.to_str).is_a?(String) ? kstr :
             raise(TypeError, "json object (hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
-          end
-          {k.to_s => as_json(v, *opt)}
-        end.inject({}, &:update)
-      elsif object.respond_to?(:to_ary)
-        (object.respond_to?(:map) ? object : object.to_ary).map { |e| as_json(e, *opt) }
-      elsif [String, TrueClass, FalseClass, NilClass, Numeric].any? { |c| object.is_a?(c) }
+          result[ks] = as_json(v, **options)
+        end
+        result
+      elsif object.respond_to?(:to_ary) && (object_to_ary = object.to_ary).is_a?(Array)
+        object_to_ary.map { |e| as_json(e, **options) }
+      elsif [String, Integer, TrueClass, FalseClass, NilClass].any? { |c| object.is_a?(c) }
+        object
+      elsif object.is_a?(Float)
+        type_err.call unless object.finite?
         object
       elsif object.is_a?(Symbol)
         object.to_s
       elsif object.is_a?(Set)
-        as_json(object.to_a, *opt)
-      elsif object.respond_to?(:as_json)
-        as_json(object.as_json(*opt), *opt)
+        as_json(object.to_a, **options)
+      elsif object.respond_to?(:to_str) && (object_to_str = object.to_str).is_a?(String)
+        object_to_str
+      elsif object.respond_to?(:to_int) && (object_to_int = object.to_int).is_a?(Integer)
+        object_to_int
       else
-        raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}")
+        type_err.call
+      end
+    end
+
+    # A JSON encoded string of the given object.
+    #
+    # - If the object has a `#to_json` method that isn't defined by the stdlib `json` gem,
+    #   that method is used, passing any given options.
+    # - Otherwise, JSON is generated using {as_json} to coerce to compatible types.
+    # @return [String]
+    def to_json(object, options = {})
+      if USE_TO_JSON_METHOD[object.class]
+        options.empty? ? object.to_json : object.to_json(**options) # TODO remove eventually (keyword argument compatibility)
+      else
+        JSON.generate(as_json(object, **options))
       end
     end
 

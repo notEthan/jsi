@@ -18,10 +18,18 @@ describe 'JSI Schema child application' do
           )
         end
         let(:instance) { [{}] }
-        it 'applies items' do
+        it('array instance: applies items') do
           assert_schemas([
             schema.items,
           ], subject[0])
+        end
+        describe('hash/object instance') do
+          let(:instance) { {0 => {}, '0' => {}, 'x' => {}} }
+          it('does not apply items') do
+            refute_schema(schema.items, subject[0])   # not officially supported, integer key not in JSON data model
+            refute_schema(schema.items, subject['0'])
+            refute_schema(schema.items, subject['x'])
+          end
         end
       end
       describe 'items array' do
@@ -32,11 +40,19 @@ describe 'JSI Schema child application' do
           )
         end
         let(:instance) { [{}, {}] }
-        it 'applies corresponding items' do
+        it('array instance: applies corresponding items') do
           assert_schemas([
             schema.items[0],
           ], subject[0])
           refute_is_a(schema.items[0].jsi_schema_module, subject[1])
+        end
+        describe('hash/object instance') do
+          let(:instance) { {0 => {}, '0' => {}, 'x' => {}} }
+          it('does not apply items') do
+            refute_schema(schema.items[0], subject[0])
+            refute_schema(schema.items[0], subject['0'])
+            refute_schema(schema.items[0], subject['x'])
+          end
         end
       end
       describe 'additionalItems' do
@@ -48,13 +64,24 @@ describe 'JSI Schema child application' do
           )
         end
         let(:instance) { [{}, {}] }
-        it 'applies items, additionalItems' do
+        it('array instance: applies items, additionalItems') do
           assert_schemas([
             schema.items[0],
           ], subject[0])
           assert_schemas([
             schema.additionalItems,
           ], subject[1])
+        end
+        describe('hash/object instance') do
+          let(:instance) { {0 => {}, '0' => {}, 'x' => {}} }
+          it('does not apply items or additionalItems') do
+            refute_schema(schema.items[0], subject[0])
+            refute_schema(schema.items[0], subject['0'])
+            refute_schema(schema.items[0], subject['x'])
+            refute_schema(schema.additionalItems, subject[0])
+            refute_schema(schema.additionalItems, subject['0'])
+            refute_schema(schema.additionalItems, subject['x'])
+          end
         end
       end
       describe 'additionalItems without items' do
@@ -65,8 +92,15 @@ describe 'JSI Schema child application' do
           )
         end
         let(:instance) { [{}] }
-        it 'applies none' do
+        it('array instance: applies none') do
           refute_is_a(schema.additionalItems.jsi_schema_module, subject[0])
+        end
+        describe('hash/object instance') do
+          let(:instance) { {0 => {}, '0' => {}} }
+          it('does not apply') do
+            refute_schema(schema.additionalItems, subject[0])
+            refute_schema(schema.additionalItems, subject['0'])
+          end
         end
       end
     end
@@ -86,7 +120,7 @@ describe 'JSI Schema child application' do
           )
         end
         let(:instance) { [{}, [], [], {}] }
-        it 'applies' do
+        it('array instance: applies') do
           assert_schemas([], subject[0])
           assert_schemas([
             schema.contains,
@@ -97,6 +131,15 @@ describe 'JSI Schema child application' do
           assert_schemas([], subject[3])
           refute_is_a(schema.contains.jsi_schema_module, subject[0])
           refute_is_a(schema.contains.jsi_schema_module, subject[3])
+        end
+        describe('hash/object instance') do
+          let(:instance) { {0 => {}, '0' => {}, 1 => [], '1' => []} }
+          it('does not apply contains') do
+            refute_schema(schema.contains, subject[0])
+            refute_schema(schema.contains, subject['0'])
+            refute_schema(schema.contains, subject[1])
+            refute_schema(schema.contains, subject['1'])
+          end
         end
       end
       describe 'contains invalid' do
@@ -135,10 +178,23 @@ describe 'JSI Schema child application' do
           )
         end
         let(:instance) { {'foo' => []} }
-        it 'applies properties' do
+        it('hash/object instance: applies properties') do
           assert_schemas([
             schema.properties['foo'],
           ], subject['foo'])
+        end
+        describe('array instance') do
+          let(:schema_content) do
+            YAML.load(<<~YAML
+              properties:
+                0: {}
+              YAML
+            )
+          end
+          let(:instance) { [{}] }
+          it('does not apply properties') do
+            refute_schema(schema.properties[0], subject[0])
+          end
         end
       end
       describe 'additionalProperties' do
@@ -151,7 +207,7 @@ describe 'JSI Schema child application' do
           )
         end
         let(:instance) { {'foo' => [], 'bar' => []} }
-        it 'applies properties, additionalProperties' do
+        it('hash/object instance: applies properties, additionalProperties') do
           assert_schemas([
             schema.properties['foo'],
           ], subject['foo'])
@@ -159,6 +215,22 @@ describe 'JSI Schema child application' do
             schema.additionalProperties,
           ], subject['bar'])
         end
+        describe('array instance') do
+          let(:schema_content) do
+            YAML.load(<<~YAML
+              properties:
+                0: {}
+              additionalProperties: {}
+              YAML
+            )
+          end
+          let(:instance) { [{}, {}] }
+          it('does not apply properties or additionalProperties') do
+            refute_schema(schema.properties[0], subject[0])
+            refute_schema(schema.additionalProperties, subject[0])
+            refute_schema(schema.additionalProperties, subject[1])
+          end
+        end
       end
       describe 'additionalProperties without properties' do
         let(:schema_content) do
@@ -168,24 +240,22 @@ describe 'JSI Schema child application' do
           )
         end
         let(:instance) { {'foo' => []} }
-        it 'applies additionalProperties' do
+        it('hash/object instance: applies additionalProperties') do
           assert_schemas([
             schema.additionalProperties,
           ], subject['foo'])
         end
-      end
-      describe 'additionalProperties without properties' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
-            additionalProperties: {}
-            YAML
-          )
-        end
-        let(:instance) { {'foo' => []} }
-        it 'applies additionalProperties' do
-          assert_schemas([
-            schema.additionalProperties,
-          ], subject['foo'])
+        describe('array instance') do
+          let(:schema_content) do
+            YAML.load(<<~YAML
+              additionalProperties: {}
+              YAML
+            )
+          end
+          let(:instance) { [{}] }
+          it('does not apply additionalProperties') do
+            refute_schema(schema.additionalProperties, subject[0])
+          end
         end
       end
       describe 'properties, additionalProperties, patternProperties' do
@@ -213,7 +283,7 @@ describe 'JSI Schema child application' do
             YAML
           )
         end
-        it 'applies those applicable' do
+        it('hash/object instance: applies those applicable') do
           assert_schemas([
             schema.properties['foo'],
           ], subject['foo'])
@@ -242,6 +312,42 @@ describe 'JSI Schema child application' do
           refute_is_a(schema.properties['foo'].jsi_schema_module, subject['qux'])
           refute_is_a(schema.properties['baz'].jsi_schema_module, subject['qux'])
           refute_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['qux'])
+        end
+        describe('array instance') do
+          let(:schema_content) do
+            YAML.load(<<~YAML
+              properties:
+                0:
+                  title: 0
+                2:
+                  title: 2
+              patternProperties:
+                "[12]":
+                  title: '[12]'
+              additionalProperties:
+                title: additional
+              YAML
+            )
+          end
+          let(:instance) { [{}, {}, {}, {}] }
+          it('does not apply') do
+            refute_schema(schema.properties[0], subject[0])
+            refute_schema(schema.properties[2], subject[0])
+            refute_schema(schema.patternProperties['[12]'], subject[0])
+            refute_schema(schema.additionalProperties, subject[0])
+            refute_schema(schema.properties[0], subject[1])
+            refute_schema(schema.properties[2], subject[1])
+            refute_schema(schema.patternProperties['[12]'], subject[1])
+            refute_schema(schema.additionalProperties, subject[1])
+            refute_schema(schema.properties[0], subject[2])
+            refute_schema(schema.properties[2], subject[2])
+            refute_schema(schema.patternProperties['[12]'], subject[2])
+            refute_schema(schema.additionalProperties, subject[2])
+            refute_schema(schema.properties[0], subject[3])
+            refute_schema(schema.properties[2], subject[3])
+            refute_schema(schema.patternProperties['[12]'], subject[3])
+            refute_schema(schema.additionalProperties, subject[3])
+          end
         end
       end
     end

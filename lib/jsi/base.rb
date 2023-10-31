@@ -646,10 +646,17 @@ module JSI
       ].compact
     end
 
-    # a jsonifiable representation of the instance
-    # @return [Object]
-    def as_json(*opt)
-      Util.as_json(jsi_instance, *opt)
+    # A structure coerced to JSONifiable types from the instance content.
+    # Calls {Util.as_json} with the instance and any given options.
+    def as_json(options = {})
+      Util.as_json(jsi_instance, **options)
+    end
+
+    # A JSON encoded string of the instance content.
+    # Calls {Util.to_json} with the instance and any given options.
+    # @return [String]
+    def to_json(options = {})
+      Util.to_json(jsi_instance, **options)
     end
 
     # see {Util::Private::FingerprintHash}

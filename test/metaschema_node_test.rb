@@ -253,6 +253,24 @@ describe JSI::MetaschemaNode do
     end
   end
 
+  describe('#jsi_modified_copy') do
+    let(:metaschema) { BasicMetaschema.schema }
+    it('modifies a copy') do
+      # at the root
+      mc1 = metaschema.merge('title' => 'root modified')
+      assert_equal('root modified', mc1['title'])
+      refute_equal(metaschema, mc1)
+      assert_equal(metaschema.jsi_document.merge('title' => 'root modified'), mc1.jsi_document)
+      # below the root
+      mc2 = metaschema.properties.merge('foo' => [])
+      assert_equal([], mc2['foo', as_jsi: false])
+      mc2root = mc2.jsi_root_node
+      refute_equal(metaschema, mc2root)
+      expected_mc2_document = metaschema.jsi_document.merge('properties' => metaschema.jsi_document['properties'].merge('foo' => []))
+      assert_equal(expected_mc2_document, mc2.jsi_document)
+    end
+  end
+
   metaschema_modules = [
     JSI::JSONSchemaDraft04,
     JSI::JSONSchemaDraft06,
@@ -271,8 +289,7 @@ describe JSI::MetaschemaNode do
   end
 
   describe 'a metaschema fails to validate itself' do
-    let(:schema_implementation_modules) { [JSI::Schema::Draft06] }
-    let(:jsi_document) { JSI::JSONSchemaDraft06.schema.schema_content.merge({'title' => []}) }
+    let(:metaschema) { JSI::JSONSchemaDraft06.schema.merge({'title' => []}) }
 
     it 'has validation error for `title`' do
       results = [
@@ -299,7 +316,7 @@ describe JSI::MetaschemaNode do
       assert_equal(metaschema, mod.schema.jsi_root_node)
       mod.constants.each do |const_name|
         const = mod.const_get(const_name)
-        next if !const.name.start_with?(mod.name)
+        next unless const.is_a?(Module) && const.name.start_with?(mod.name)
         check_consts(metaschema, const)
       end
     end

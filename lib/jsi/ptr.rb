@@ -108,7 +108,6 @@ module JSI
           raise(TypeError, "tokens must be an array. got: #{tokens.inspect}")
         end
         @tokens = Util.deep_to_frozen(tokens.to_ary, not_implemented: proc { |o| o })
-        @jsi_fingerprint_hash = jsi_fingerprint.hash # TODO rm; workaround for https://github.com/jruby/jruby/issues/7866
       end
 
       attr_reader :tokens

@@ -36,9 +36,7 @@ describe JSI::JSICoder do
           assert_equal([], coder.load([]))
         end
         it 'loads a not an array' do
-          assert_raises(TypeError) do
-            coder.load(Object.new)
-          end
+          assert_raises(TypeError) { coder.load({"foo" => "bar"}) }
         end
       end
       describe 'array schema' do
@@ -51,8 +49,7 @@ describe JSI::JSICoder do
           assert_equal(schema.new_jsi([]), coder.load([]))
         end
         it 'loads a not an array' do
-          instance = Object.new
-          assert_equal(schema.new_jsi(instance), coder.load(instance))
+          assert_equal(schema.new_jsi({"foo" => "bar"}), coder.load({"foo" => "bar"}))
         end
       end
     end
@@ -71,7 +68,7 @@ describe JSI::JSICoder do
       it 'dumps some of the keys of a JSI after loading in a partial one' do
         jsi = coder.load({'foo' => 'who'})
         assert_equal({'foo' => 'who'}, coder.dump(jsi))
-        jsi.bar = 'whar'
+        jsi = jsi.merge('bar' => 'whar')
         assert_equal({'foo' => 'who', 'bar' => 'whar'}, coder.dump(jsi))
       end
       describe 'array' do
