@@ -385,7 +385,10 @@ module JSI
   # schema modules to refer to their subschemas' schema modules.
   #
   # A SchemaModule::Connection has readers for property names described by the node's schemas.
-  class SchemaModule::Connection
+  #
+  # This class subclasses Module only so that it can be named, to identify schemas descendent of its node.
+  # No object is ever expected to be an instance of a SchemaModule::Connection module.
+  class SchemaModule::Connection < Module
     include SchemaModule::Connects
 
     # @param node [JSI::Base]
