@@ -77,7 +77,7 @@ module JSI
     # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
-      uri = ensure_uri_absolute(uri)
+      uri = registration_uri(uri)
       mutating
       unless block
         raise(ArgumentError, ["#{SchemaRegistry}#autoload_uri must be invoked with a block", "URI: #{uri}"].join("\n"))
@@ -93,7 +93,7 @@ module JSI
     # @return [JSI::Base]
     # @raise [JSI::SchemaRegistry::ResourceNotFound]
     def find(uri)
-      uri = ensure_uri_absolute(uri)
+      uri = registration_uri(uri)
       if @autoload_uris.key?(uri)
         autoloaded = @autoload_uris[uri].call
         register(autoloaded)
@@ -156,7 +156,7 @@ module JSI
     def register_single(uri, resource)
       mutating
       @resources_mutex.synchronize do
-        ensure_uri_absolute(uri)
+        uri = registration_uri(uri)
         if @resources.key?(uri)
           if @resources[uri] != resource
             raise(Collision, "URI collision on #{uri}.\nexisting:\n#{@resources[uri].pretty_inspect.chomp}\nnew:\n#{resource.pretty_inspect.chomp}")
@@ -170,7 +170,15 @@ module JSI
 
     private
 
-    def ensure_uri_absolute(uri)
+    # registration URIs are
+    # - absolute
+    #   - without fragment
+    #   - not relative
+    # - normalized
+    # - frozen
+    # @param [#to_str]
+    # @return [Addressable::URI]
+    def registration_uri(uri)
       uri = Util.uri(uri)
       if uri.fragment
         raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access URI with fragment: #{uri}")
@@ -178,7 +186,7 @@ module JSI
       if uri.relative?
         raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access relative URI: #{uri}")
       end
-      uri
+      uri.normalize.freeze
     end
 
     def mutating
