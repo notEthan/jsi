@@ -1,3 +1,6 @@
 [submodule "{resources}/test/JSON-Schema-Test-Suite"]
 	path = {resources}/test/JSON-Schema-Test-Suite
 	url = https://github.com/json-schema-org/JSON-Schema-Test-Suite
+[submodule "{resources}/test/referencing-suite"]
+	path = {resources}/test/referencing-suite
+	url = https://github.com/python-jsonschema/referencing-suite.git
