@@ -1,31 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  module Base::Enumerable
-    include ::Enumerable
-
-    # an Array containing each item in this JSI.
-    #
-    # @param kw keyword arguments are passed to {Base#[]} - see its keyword params
-    # @return [Array]
-    def to_a(**kw)
-      # TODO remove eventually (keyword argument compatibility)
-      # discard when all supported ruby versions Enumerable#to_a delegate keywords to #each (3.0.1 breaks; 2.7.x warns)
-      # https://bugs.ruby-lang.org/issues/18289
-      ary = []
-      each(**kw) do |e|
-        ary << e
-      end
-      ary.freeze
-    end
-
-    alias_method :entries, :to_a
-  end
-
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
   # is a Hash (or responds to `#to_hash`)
   module Base::HashNode
-    include Base::Enumerable
+    include(Enumerable)
 
     # instantiates and yields each property name (hash key) as a JSI described by any `propertyNames` schemas.
     #
@@ -174,7 +153,7 @@ module JSI
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
   # is an Array (or responds to `#to_ary`)
   module Base::ArrayNode
-    include Base::Enumerable
+    include(Enumerable)
 
     # See {Base#jsi_array?}. Always true for ArrayNode.
     def jsi_array?
