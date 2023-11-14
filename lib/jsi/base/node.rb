@@ -4,8 +4,6 @@ module JSI
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
   # is a Hash (or responds to `#to_hash`)
   module Base::HashNode
-    include(Enumerable)
-
     # instantiates and yields each property name (hash key) as a JSI described by any `propertyNames` schemas.
     #
     # @yield [JSI::Base]
@@ -153,8 +151,6 @@ module JSI
   # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
   # is an Array (or responds to `#to_ary`)
   module Base::ArrayNode
-    include(Enumerable)
-
     # See {Base#jsi_array?}. Always true for ArrayNode.
     def jsi_array?
       true
