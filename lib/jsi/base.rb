@@ -631,6 +631,13 @@ module JSI
       JMESPath.search(expression, self, **runtime_options)
     end
 
+    # A JSI whose node content is a duplicate of this JSI's (using its #dup).
+    #
+    # Note that immutable JSIs are not made mutable with #dup.
+    # The content's #dup may return an unfrozen copy, but instantiating a modified
+    # copy of this JSI involves transforming the content to immutable again
+    # (using our {#jsi_content_to_immutable}).
+    # @return [Base]
     def dup
       jsi_modified_copy(&:dup)
     end
