@@ -114,7 +114,7 @@ module JSI
         jsi_schema_registry: ,
         jsi_root_node: nil
     )
-      raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
+      #chkbug raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
       super()
 
@@ -125,11 +125,11 @@ module JSI
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_registry = jsi_schema_registry
       if @jsi_ptr.root?
-        raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
+        #chkbug raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
       else
-        raise(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
-        raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
+        #chkbug raise(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
+        #chkbug raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
         @jsi_root_node = jsi_root_node
       end
 
