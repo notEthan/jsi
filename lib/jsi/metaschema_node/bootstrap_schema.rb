@@ -118,7 +118,6 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
-        schema_implementation_modules: schema_implementation_modules,
       }
     end
   end
