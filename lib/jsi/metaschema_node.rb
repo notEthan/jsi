@@ -50,7 +50,7 @@ module JSI
         jsi_root_node: jsi_root_node,
       )
 
-      @schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
+      @schema_implementation_modules = schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
 
