@@ -63,8 +63,6 @@ module JSI
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
       end
 
-      jsi_node_content = self.jsi_node_content
-
       #chkbug raise(Bug, 'MetaschemaNode instance must be frozen') unless jsi_node_content.frozen?
 
       extends = Set[]
