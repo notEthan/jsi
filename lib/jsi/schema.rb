@@ -202,7 +202,7 @@ module JSI
       # Instantiates the given schema content as a JSI Schema, passing all params to
       # {Schema::DescribesSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
       #
-      # @return [Module + JSI::SchemaModule] the JSI Schema Module of the instantiated schema
+      # @return [JSI::SchemaModule] the JSI Schema Module of the instantiated schema
       def new_schema_module(schema_content, **kw, &block)
         new_schema(schema_content, **kw, &block).jsi_schema_module
       end
@@ -513,7 +513,7 @@ module JSI
     #   as `schema.items.jsi_schema_module`.
     # - method .schema which returns this schema.
     #
-    # @return [Module + SchemaModule]
+    # @return [SchemaModule]
     def jsi_schema_module
       JSI::SchemaClasses.module_for_schema(self)
     end

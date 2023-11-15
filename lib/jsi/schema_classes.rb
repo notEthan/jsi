@@ -168,7 +168,7 @@ module JSI
 
       # see {Schema#jsi_schema_module}
       # @api private
-      # @return [Module + SchemaModule]
+      # @return [SchemaModule]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
         raise(Bug, "non-Base schema cannot have schema module: #{schema}") unless schema.is_a?(Base)
@@ -290,7 +290,7 @@ module JSI
     # @yield If the token identifies a schema and a block is given,
     #   it is evaluated in the context of the schema's JSI schema module
     #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
-    # @return [Module, SchemaModule::Connection, Object]
+    # @return [SchemaModule, SchemaModule::Connection, Object]
     def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       sub = @jsi_node[token]
