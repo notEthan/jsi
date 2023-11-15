@@ -453,8 +453,10 @@ module JSI
 
     # subscripts to return a child value identified by the given token.
     #
-    # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
-    #   of the instance identifying the child value
+    # @param token [String, Integer, Range, Object] Identifies the child or children to return.
+    #   Typically an array index or hash key (JSON object property name) of the instance.
+    #   For an array instance, this may also be a Range (in which case an Array of children is returned)
+    #   or a negative index; these behave as Array#[] does.
     # @param as_jsi [:auto, true, false] (default is `:auto`)
     #   Whether to return the child as a JSI. One of:
     #
@@ -486,7 +488,7 @@ module JSI
     #   defaults are specified across those schemas), nil is returned.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
-    # @return [JSI::Base, Object, nil] the child value identified by the subscript token
+    # @return [Base, Object, Array, nil] the child or children identified by `token`
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
