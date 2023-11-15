@@ -150,7 +150,7 @@ module JSI
     def jsi_child(token, as_jsi: )
       child_node = @root_descendent_node_map[ptr: jsi_ptr[token]]
 
-      jsi_child_as_jsi(jsi_node_content_child(token), child_node.jsi_schemas, as_jsi) do
+      jsi_child_as_jsi(child_node.jsi_node_content, child_node.jsi_schemas, as_jsi) do
         child_node
       end
     end
