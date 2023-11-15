@@ -117,7 +117,7 @@ module JSI
     def inspect
       [
         '#<JSI::SchemaRegistry',
-        *[['autoload', @autoload_uris.keys], ['resources', @resources.keys]].map do |label, uris|
+        *[['resources', @resources.keys], ['autoload', @autoload_uris.keys]].map do |label, uris|
           [
             "  #{label} (#{uris.size})#{uris.empty? ? "" : ":"}",
             *uris.map do |uri|
