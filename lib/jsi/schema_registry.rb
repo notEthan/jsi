@@ -176,7 +176,7 @@ module JSI
     #   - not relative
     # - normalized
     # - frozen
-    # @param [#to_str]
+    # @param uri [#to_str]
     # @return [Addressable::URI]
     def registration_uri(uri)
       uri = Util.uri(uri)
