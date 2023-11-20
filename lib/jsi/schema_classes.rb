@@ -112,7 +112,7 @@ module JSI
       # @api private
       # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
       # @param includes [Enumerable<Module>] modules which will be included on the class
-      # @return [Class subclassing JSI::Base]
+      # @return [Class subclass of JSI::Base]
       def class_for_schemas(schemas, includes: , mutable: )
         @class_for_schemas_map[
           schemas: SchemaSet.ensure_schema_set(schemas),
@@ -160,7 +160,7 @@ module JSI
       # a subclass of MetaSchemaNode::BootstrapSchema with the given modules included
       # @api private
       # @param modules [Set<Module>] schema implementation modules
-      # @return [Class]
+      # @return [Class subclass of JSI::MetaSchemaNode::BootstrapSchema]
       def bootstrap_schema_class(modules)
         @bootstrap_schema_class_map[
           modules: Util.ensure_module_set(modules),
