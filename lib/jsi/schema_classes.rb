@@ -157,7 +157,7 @@ module JSI
           end
       end
 
-      # a subclass of MetaschemaNode::BootstrapSchema with the given modules included
+      # a subclass of MetaSchemaNode::BootstrapSchema with the given modules included
       # @api private
       # @param modules [Set<Module>] schema implementation modules
       # @return [Class]
@@ -168,7 +168,7 @@ module JSI
       end
 
       private def bootstrap_schema_class_compute(modules: )
-          Class.new(MetaschemaNode::BootstrapSchema) do
+          Class.new(MetaSchemaNode::BootstrapSchema) do
             define_singleton_method(:schema_implementation_modules) { modules }
             define_method(:schema_implementation_modules) { modules }
             modules.each { |mod| include(mod) }

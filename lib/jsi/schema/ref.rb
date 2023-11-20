@@ -64,7 +64,7 @@ module JSI
         # the URI only consists of a fragment (or is empty).
         # for a fragment pointer, resolve using Schema#resource_root_subschema on the ref_schema.
         # for a fragment anchor, bootstrap does not support anchors; otherwise use the ref_schema's schema_resource_root.
-        schema_resource_root = ref_schema.is_a?(MetaschemaNode::BootstrapSchema) ? nil : ref_schema.schema_resource_root
+        schema_resource_root = ref_schema.is_a?(MetaSchemaNode::BootstrapSchema) ? nil : ref_schema.schema_resource_root
         resolve_fragment_ptr = ref_schema.method(:resource_root_subschema)
       else
         # find the schema_resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.

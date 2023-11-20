@@ -8,7 +8,7 @@ require_relative 'test_helper'
 module TestSchemaImplModule
 end
 
-describe JSI::MetaschemaNode::BootstrapSchema do
+describe(JSI::MetaSchemaNode::BootstrapSchema) do
   let(:bootstrap_schema_class) { JSI::SchemaClasses.bootstrap_schema_class([TestSchemaImplModule]) }
   let(:document) do
     JSI::DEFAULT_CONTENT_TO_IMMUTABLE[{
@@ -21,19 +21,19 @@ describe JSI::MetaschemaNode::BootstrapSchema do
   end
 
   it 'is not directly instantiable' do
-    assert_raises(JSI::Bug) { JSI::MetaschemaNode::BootstrapSchema.new({}) }
+    assert_raises(JSI::Bug) { JSI::MetaSchemaNode::BootstrapSchema.new({}) }
   end
 
   it 'is pretty' do
     schema = bootstrap_schema_class.new(document)
 
-    inspect = %q(#<JSI::MetaschemaNode::BootstrapSchema (TestSchemaImplModule) # {"properties"=>{"properties"=>{"additionalProperties"=>{"$ref"=>"#"}}, "additionalProperties"=>{"$ref"=>"#"}, "$ref"=>{}}}>)
+    inspect = %q(#<JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule) # {"properties"=>{"properties"=>{"additionalProperties"=>{"$ref"=>"#"}}, "additionalProperties"=>{"$ref"=>"#"}, "$ref"=>{}}}>)
     assert_equal(inspect, schema.inspect)
 
     assert_equal(schema.inspect, schema.to_s)
 
     pp = <<~PP
-      #<JSI::MetaschemaNode::BootstrapSchema (TestSchemaImplModule) #
+      #<JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule) #
         {"properties"=>
           {"properties"=>{"additionalProperties"=>{"$ref"=>"#"}},
            "additionalProperties"=>{"$ref"=>"#"},
@@ -44,8 +44,8 @@ describe JSI::MetaschemaNode::BootstrapSchema do
   end
 
   it 'has a named class' do
-    assert_equal('JSI::MetaschemaNode::BootstrapSchema', JSI::MetaschemaNode::BootstrapSchema.inspect)
-    assert_equal('JSI::MetaschemaNode::BootstrapSchema (TestSchemaImplModule)', bootstrap_schema_class.inspect)
+    assert_equal('JSI::MetaSchemaNode::BootstrapSchema', JSI::MetaSchemaNode::BootstrapSchema.inspect)
+    assert_equal('JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule)', bootstrap_schema_class.inspect)
   end
 end
 

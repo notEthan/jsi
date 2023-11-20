@@ -15,17 +15,17 @@ module JSI
   # BootstrapSchema does not support mutation; its document must be immutable.
   #
   # @api private
-  class MetaschemaNode::BootstrapSchema
+  class MetaSchemaNode::BootstrapSchema
     include Util::FingerprintHash
     include Schema::SchemaAncestorNode
     include Schema
 
     class << self
       def inspect
-        if self == MetaschemaNode::BootstrapSchema
+        if self == MetaSchemaNode::BootstrapSchema
           name.freeze
         else
-          -"#{name || MetaschemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
+          -"#{name || MetaSchemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
         end
       end
 
@@ -110,7 +110,7 @@ module JSI
     # @return [Array<String>]
     def jsi_object_group_text
       [
-        self.class.name || MetaschemaNode::BootstrapSchema.name,
+        self.class.name || MetaSchemaNode::BootstrapSchema.name,
         -"(#{schema_implementation_modules.map(&:inspect).join(', ')})",
         jsi_ptr.uri,
       ].freeze

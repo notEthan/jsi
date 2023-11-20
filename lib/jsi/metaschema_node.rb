@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  # a MetaschemaNode is a JSI instance representing a node in a document which contains a metaschema.
+  # a MetaSchemaNode is a JSI instance representing a node in a document which contains a metaschema.
   # the root of the metaschema is pointed to by metaschema_root_ptr.
   # the schema describing the root of the document is pointed to by root_schema_ptr.
   #
@@ -12,22 +12,22 @@ module JSI
   # unlike JSI::Base's normal subclasses, the schemas describing the instance are not part of the class.
   # since the metaschema describes itself, attempting to construct a class from the JSI Schema Module of a
   # schema which is itself an instance of that class results in a causality loop.
-  # instead, a MetaschemaNode calculates its {#jsi_schemas} and extends itself with their JSI Schema
+  # instead, a MetaSchemaNode calculates its {#jsi_schemas} and extends itself with their JSI Schema
   # modules during initialization.
-  # the MetaschemaNode of the metaschema is extended with its own JSI Schema Module.
+  # the MetaSchemaNode of the metaschema is extended with its own JSI Schema Module.
   #
-  # if the MetaschemaNode's schemas include its self, it is extended with JSI::Metaschema.
+  # if the MetaSchemaNode's schemas include its self, it is extended with JSI::Metaschema.
   #
-  # a MetaschemaNode is extended with JSI::Schema when it represents a schema - this is the case when
+  # a MetaSchemaNode is extended with JSI::Schema when it represents a schema - this is the case when
   # the metaschema is one of its schemas.
-  class MetaschemaNode < Base
+  class MetaSchemaNode < Base
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
 
     include(Base::Immutable)
 
     # @param jsi_document the document containing the metaschema.
-    #   this must be frozen recursively; MetaschemaNode does support mutation.
-    # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
+    #   this must be frozen recursively; MetaSchemaNode does support mutation.
+    # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality
     #   of the schema. these are included on the {Schema#jsi_schema_module} of the metaschema.
     #   they extend any schema described by the metaschema, including those in the document containing
@@ -63,7 +63,7 @@ module JSI
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
       end
 
-      #chkbug raise(Bug, 'MetaschemaNode instance must be frozen') unless jsi_node_content.frozen?
+      #chkbug raise(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
       extends = Set[]
 
@@ -141,7 +141,7 @@ module JSI
     # @return [JSI::Ptr]
     attr_reader :root_schema_ptr
 
-    # JSI Schemas describing this MetaschemaNode
+    # JSI Schemas describing this MetaSchemaNode
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
 
@@ -167,15 +167,15 @@ module JSI
     end
     private :jsi_default_child # internals for #[] but idk, could be public
 
-    # instantiates a new MetaschemaNode whose instance is a modified copy of this MetaschemaNode's instance
+    # instantiates a new MetaSchemaNode whose instance is a modified copy of this MetaSchemaNode's instance
     # @yield [Object] the node content of the instance. the block should result
     #   in a (nondestructively) modified copy of this.
-    # @return [MetaschemaNode] modified copy of self
+    # @return [MetaSchemaNode] modified copy of self
     def jsi_modified_copy(&block)
       if jsi_ptr.root?
         modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
         modified_document = jsi_content_to_immutable.call(modified_document) if jsi_content_to_immutable
-        MetaschemaNode.new(modified_document, **our_initialize_params)
+        MetaSchemaNode.new(modified_document, **our_initialize_params)
       else
         modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
           jsi_ptr.modified_document_copy(root, &block)
@@ -234,7 +234,7 @@ module JSI
 
     # note: not for root node
     def new_node(**params)
-      MetaschemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params, **params)
+      MetaSchemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params, **params)
     end
 
     def jsi_root_descendent_node_compute(ptr: )
@@ -250,7 +250,7 @@ module JSI
     end
 
     # @param bootstrap_schemas [Enumerable<BootstrapSchema>]
-    # @return [SchemaSet<MetaschemaNode>]
+    # @return [SchemaSet<MetaSchemaNode>]
     def bootstrap_schemas_to_msn(bootstrap_schemas)
       SchemaSet.new(bootstrap_schemas) do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == jsi_ptr

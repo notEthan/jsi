@@ -265,7 +265,7 @@ A metaschema is a schema which describes schemas. Likewise, a schema is an insta
 
 In JSI, a schema is generally a JSI::Base instance whose schemas include a metaschema.
 
-A self-descriptive metaschema - most commonly one of the JSON schema draft metaschemas - is an object whose schemas include itself. This is instantiated in JSI as a JSI::MetaschemaNode, a special subclass of JSI::Base.
+A self-descriptive metaschema - most commonly one of the JSON schema draft metaschemas - is an object whose schemas include itself. This is instantiated in JSI as a JSI::MetaSchemaNode, a special subclass of JSI::Base.
 
 ## ActiveRecord serialization
 

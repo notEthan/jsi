@@ -13,7 +13,7 @@ module JSI
     autoload :Hashlike, 'jsi/util/typelike'
 
     # yields the content of the given param `object`. for objects which have a #jsi_modified_copy
-    # method of their own (JSI::Base, JSI::MetaschemaNode) that method is invoked with the given
+    # method of their own (JSI::Base, JSI::MetaSchemaNode) that method is invoked with the given
     # block. otherwise the given object itself is yielded.
     #
     # the given block must result in a modified copy of its block parameter
