@@ -45,7 +45,6 @@ module JSI
   autoload :Schema, 'jsi/schema'
   autoload :SchemaSet, 'jsi/schema_set'
   autoload :Base, 'jsi/base'
-  autoload :Metaschema, 'jsi/metaschema'
   autoload(:MetaSchemaNode, 'jsi/metaschema_node')
   autoload :SchemaModule, 'jsi/schema_classes'
   autoload :SchemaClasses, 'jsi/schema_classes'

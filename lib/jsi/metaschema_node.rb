@@ -16,7 +16,7 @@ module JSI
   # modules during initialization.
   # the MetaSchemaNode of the metaschema is extended with its own JSI Schema Module.
   #
-  # if the MetaSchemaNode's schemas include its self, it is extended with JSI::Metaschema.
+  # if the MetaSchemaNode's schemas include its self, it is extended with {JSI::Schema::MetaSchema}.
   #
   # a MetaSchemaNode is extended with JSI::Schema when it represents a schema - this is the case when
   # the metaschema is one of its schemas.
@@ -83,6 +83,8 @@ module JSI
       @indicated_schemas_map = jsi_memomap { bootstrap_schemas_to_msn(our_bootstrap_indicated_schemas) }
 
       our_bootstrap_schemas = our_bootstrap_indicated_schemas.inplace_applicator_schemas(instance_for_schemas)
+
+      describes_self = false
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the metaschema, i.e. this is a schema
@@ -94,15 +96,14 @@ module JSI
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
           # this is the metaschema (it is described by itself)
-          extend Metaschema
-          extends << Metaschema
+          describes_self = true
         end
       end
 
       @jsi_schemas = bootstrap_schemas_to_msn(our_bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
-      if is_a?(Metaschema)
+      if describes_self
         describes_schema!(schema_implementation_modules)
       end
 
@@ -194,7 +195,7 @@ module JSI
       end
       [
         class_n_schemas,
-        is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
+        is_a?(Schema::MetaSchema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
         *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : nil),
       ].compact.freeze
     end

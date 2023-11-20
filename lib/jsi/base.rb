@@ -672,7 +672,7 @@ module JSI
 
       [
         class_txt,
-        is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
+        is_a?(Schema::MetaSchema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
         *content_txt,
       ].compact.freeze
     end
