@@ -93,7 +93,7 @@ module JSI
     #   guaranteed to be immutable, as well as any modified copies of the instance.
     # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
     #   The instance content will be transformed with `to_immutable` if the JSI will be immutable.
-    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   inplace applicators of the schemas in this set.
     def new_jsi(instance,
         uri: nil,

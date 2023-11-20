@@ -559,7 +559,7 @@ module JSI
     # applicators of this schema which apply to the given instance.
     #
     # @param (see SchemaSet#new_jsi)
-    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   inplace applicators of this schema.
     def new_jsi(instance, **kw)
       SchemaSet[self].new_jsi(instance, **kw)
