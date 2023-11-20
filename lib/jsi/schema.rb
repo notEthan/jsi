@@ -240,7 +240,7 @@ module JSI
       #
       #   `nil` to unset.
       def default_metaschema=(default_metaschema)
-        @default_metaschema = default_metaschema.nil? ? nil : ensure_describes_schema(default_metaschema)
+        @default_metaschema = default_metaschema.nil? ? nil : ensure_metaschema(default_metaschema)
       end
 
       # Instantiates the given schema content as a JSI Schema.
@@ -314,7 +314,7 @@ module JSI
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
-            Schema.ensure_describes_schema(default_metaschema, name: "default_metaschema")
+            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema")
           elsif self.default_metaschema
             self.default_metaschema
           else
@@ -347,7 +347,7 @@ module JSI
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
-            metaschema = Schema.ensure_describes_schema(id, name: '$schema', schema_registry: schema_registry)
+            metaschema = Schema.ensure_metaschema(id, name: '$schema', schema_registry: schema_registry)
             metaschema.new_schema(schema_content, **new_schema_params, &block)
           else
             default_metaschema_new_schema.call
@@ -404,22 +404,22 @@ module JSI
       # Ensures the given param identifies a JSI Schema which describes schemas, and returns that schema.
       #
       # @api private
-      # @param describes_schema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
+      # @param metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
       # @raise [TypeError] if the param does not indicate a schema which describes schemas
       # @return [Base + Schema + Schema::MetaSchema]
-      def ensure_describes_schema(describes_schema, name: nil, schema_registry: JSI.schema_registry)
-        if describes_schema.respond_to?(:to_str)
-          schema = Schema::Ref.new(describes_schema, schema_registry: schema_registry).deref_schema
+      def ensure_metaschema(metaschema, name: nil, schema_registry: JSI.schema_registry)
+        if metaschema.respond_to?(:to_str)
+          schema = Schema::Ref.new(metaschema, schema_registry: schema_registry).deref_schema
           if !schema.describes_schema?
-            raise(TypeError, [name, "URI indicates a schema which does not describe schemas: #{describes_schema.pretty_inspect.chomp}"].compact.join(" "))
+            raise(TypeError, [name, "URI indicates a schema which does not describe schemas: #{metaschema.pretty_inspect.chomp}"].compact.join(" "))
           end
           schema
-        elsif describes_schema.is_a?(SchemaModule::MetaSchemaModule)
-          describes_schema.schema
-        elsif describes_schema.is_a?(Schema::MetaSchema)
-          describes_schema
+        elsif metaschema.is_a?(SchemaModule::MetaSchemaModule)
+          metaschema.schema
+        elsif metaschema.is_a?(Schema::MetaSchema)
+          metaschema
         else
-          raise(TypeError, "#{name || "param"} does not indicate a schema which describes schemas: #{describes_schema.pretty_inspect.chomp}")
+          raise(TypeError, "#{name || "param"} does not indicate a schema which describes schemas: #{metaschema.pretty_inspect.chomp}")
         end
       end
     end
