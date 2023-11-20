@@ -56,20 +56,20 @@ describe 'new_jsi, new_schema' do
       assert_raises(JSI::SchemaRegistry::ResourceNotFound) { JSI.schema_registry.find(uri) }
     end
 
-    it('DescribesSchema#new_schema registers schemas by default') do
+    it('Schema::MetaSchema#new_schema registers schemas by default') do
       uri = 'http://jsi/schema_registry/4nqz'
       resource = JSI::JSONSchemaDraft07.new_schema({'$id' => uri})
       assert_equal(resource, JSI.schema_registry.find(uri))
     end
 
-    it('DescribesSchema#new_schema registers schemas by default in a specified registry') do
+    it('Schema::MetaSchema#new_schema registers schemas by default in a specified registry') do
       uri = 'http://jsi/schema_registry/bmfh'
       resource = JSI::JSONSchemaDraft07.new_schema({'$id' => uri}, schema_registry: other_schema_registry)
       assert_equal(resource, other_schema_registry.find(uri))
       assert_raises(JSI::SchemaRegistry::ResourceNotFound) { JSI.schema_registry.find(uri) }
     end
 
-    it('DescribesSchema#new_schema does not register with register: false') do
+    it('Schema::MetaSchema#new_schema does not register with register: false') do
       uri = 'http://jsi/schema_registry/mr2n'
       JSI::JSONSchemaDraft07.new_schema({'$id' => uri}, schema_registry: other_schema_registry, register: false)
       assert_raises(JSI::SchemaRegistry::ResourceNotFound) { other_schema_registry.find(uri) }

@@ -76,7 +76,7 @@ module JSI
     # @param uri [#to_str, Addressable::URI] The retrieval URI of the instance.
     #
     #   It is rare that this needs to be specified, and only useful for instances which contain schemas.
-    #   See {Schema::DescribesSchema#new_schema}'s `uri` param documentation.
+    #   See {Schema::MetaSchema#new_schema}'s `uri` param documentation.
     # @param register [Boolean] Whether schema resources in the instantiated JSI will be registered
     #   in the schema registry indicated by param `schema_registry`.
     #   This is only useful when the JSI is a schema or contains schemas.

@@ -68,21 +68,21 @@ module JSI
     end
   end
 
-  # A module to extend the {SchemaModule} of a schema which describes other schemas (a {Schema::DescribesSchema})
-  module SchemaModule::DescribesSchemaModule
+  # A module to extend the {SchemaModule} of a schema which describes other schemas (a {Schema::MetaSchema})
+  module SchemaModule::MetaSchemaModule
     # Instantiates the given schema content as a JSI Schema.
     #
-    # see {JSI::Schema::DescribesSchema#new_schema}
+    # see {JSI::Schema::MetaSchema#new_schema}
     #
-    # @param (see JSI::Schema::DescribesSchema#new_schema)
-    # @yield (see JSI::Schema::DescribesSchema#new_schema)
+    # @param (see Schema::MetaSchema#new_schema)
+    # @yield (see Schema::MetaSchema#new_schema)
     # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
     #   the given `schema_content` and whose schemas are inplace applicators of this module's schema
     def new_schema(schema_content, **kw, &block)
       schema.new_schema(schema_content, **kw, &block)
     end
 
-    # (see Schema::DescribesSchema#new_schema_module)
+    # (see Schema::MetaSchema#new_schema_module)
     def new_schema_module(schema_content, **kw, &block)
       schema.new_schema(schema_content, **kw, &block).jsi_schema_module
     end

@@ -65,7 +65,7 @@ module JSI
   # Instantiates the given schema content as a JSI Schema, passing all params to
   # {JSI.new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
-  # @return (see JSI::Schema::DescribesSchema#new_schema_module)
+  # @return (see JSI::Schema::MetaSchema#new_schema_module)
   def self.new_schema_module(schema_content, **kw, &block)
     new_schema(schema_content, **kw, &block).jsi_schema_module
   end
@@ -75,7 +75,7 @@ module JSI
   # @param metaschema_document an object to be instantiated as a JSI Metaschema
   # @param schema_implementation_modules (see MetaSchemaNode#initialize)
   # @param to_immutable (see SchemaSet#new_jsi)
-  # @return [JSI::MetaSchemaNode + JSI::DescribesSchema + JSI::Schema]
+  # @return [JSI::MetaSchemaNode + JSI::Schema::MetaSchema + JSI::Schema]
   def self.new_metaschema(metaschema_document,
       schema_implementation_modules: ,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE
@@ -91,7 +91,7 @@ module JSI
   # Instantiates the given document as a JSI Metaschema, passing all params to
   # {new_metaschema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
-  # @return [JSI::SchemaModule + JSI::SchemaModule::DescribesSchemaModule]
+  # @return [JSI::SchemaModule + JSI::SchemaModule::MetaSchemaModule]
   def self.new_metaschema_module(metaschema_document, **kw)
     new_metaschema(metaschema_document, **kw).jsi_schema_module
   end

@@ -4,8 +4,8 @@ module JSI
   # JSI::Schema is a module which extends {JSI::Base} instances which represent JSON schemas.
   #
   # This module is included on the {Schema#jsi_schema_module JSI Schema module} of any schema
-  # which describes other schemas, i.e. is a metaschema or other {Schema::DescribesSchema}.
-  # Therefore, any JSI instance described by a schema which is a {Schema::DescribesSchema} is
+  # which describes other schemas, i.e. is a metaschema or other {Schema::MetaSchema}.
+  # Therefore, any JSI instance described by a schema which is a {Schema::MetaSchema} is
   # a schema and is extended by this module.
   #
   # The content of an instance which is a JSI::Schema (referred to in this context as schema_content) is
@@ -140,10 +140,10 @@ module JSI
     #
     # Schemas which describes schemas include {JSI::Schema} in their
     # {Schema#jsi_schema_module JSI Schema module}, so for a schema which is an instance of
-    # DescribesSchema, instances of that schema are instances of {JSI::Schema} and are schemas.
+    # JSI::Schema::MetaSchema, instances of that schema are instances of {JSI::Schema} and are schemas.
     #
     # A schema is indicated as describing other schemas using the {Schema#describes_schema!} method.
-    module DescribesSchema
+    module MetaSchema
       # @return [Set<Module>]
       attr_reader(:schema_implementation_modules)
 
@@ -206,7 +206,7 @@ module JSI
       end
 
       # Instantiates the given schema content as a JSI Schema, passing all params to
-      # {Schema::DescribesSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
+      # {Schema::MetaSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
       #
       # @return [JSI::SchemaModule] the JSI Schema Module of the instantiated schema
       def new_schema_module(schema_content, **kw, &block)
@@ -226,14 +226,14 @@ module JSI
       # An application-wide default metaschema set by {default_metaschema=}, used by {JSI.new_schema}
       # to instantiate schemas which do not specify their metaschema using a `$schema` property.
       #
-      # @return [nil, Base + Schema + Schema::DescribesSchema]
+      # @return [nil, Base + Schema + Schema::MetaSchema]
       def default_metaschema
         @default_metaschema
       end
 
       # Sets {default_metaschema} to a schema indicated by the given param.
       #
-      # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str, nil]
+      # @param default_metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str, nil]
       #   Indicates the default metaschema.
       #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
@@ -277,26 +277,26 @@ module JSI
       #
       # Note that if you are instantiating a schema known to have no `$schema` property, an alternative to
       # specifying a `default_metaschema` is to call `new_schema` on the
-      # {Schema::DescribesSchema#new_schema metaschema} or its
-      # {SchemaModule::DescribesSchemaModule#new_schema schema module}, e.g.
+      # {Schema::MetaSchema#new_schema metaschema} or its
+      # {SchemaModule::MetaSchemaModule#new_schema schema module}, e.g.
       # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`
       #
-      # @param schema_content (see Schema::DescribesSchema#new_schema)
-      # @param default_metaschema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str]
+      # @param schema_content (see Schema::MetaSchema#new_schema)
+      # @param default_metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
       #   Indicates the metaschema to use if the given schema_content does not have a `$schema` property.
       #   This may be a metaschema or a metaschema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
-      # @param uri (see Schema::DescribesSchema#new_schema)
-      # @param register (see DescribesSchema#new_schema)
-      # @param schema_registry (see DescribesSchema#new_schema)
-      # @param stringify_symbol_keys (see Schema::DescribesSchema#new_schema)
+      # @param uri (see Schema::MetaSchema#new_schema)
+      # @param register (see Schema::MetaSchema#new_schema)
+      # @param schema_registry (see Schema::MetaSchema#new_schema)
+      # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
       # @param to_immutable (see Schema::DescribesSchema#new_schema)
-      # @yield (see Schema::DescribesSchema#new_schema)
+      # @yield (see Schema::MetaSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
       #   the given `schema_content` and whose schemas are inplace applicators of the indicated metaschema
       def new_schema(schema_content,
           default_metaschema: nil,
-          # params of DescribesSchema#new_schema have their default values repeated here. delegating in a splat
+          # params of Schema::MetaSchema#new_schema have their default values repeated here. delegating in a splat
           # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
           register: true,
@@ -404,9 +404,9 @@ module JSI
       # Ensures the given param identifies a JSI Schema which describes schemas, and returns that schema.
       #
       # @api private
-      # @param describes_schema [Schema::DescribesSchema, SchemaModule::DescribesSchemaModule, #to_str]
+      # @param describes_schema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
       # @raise [TypeError] if the param does not indicate a schema which describes schemas
-      # @return [Base + Schema + Schema::DescribesSchema]
+      # @return [Base + Schema + Schema::MetaSchema]
       def ensure_describes_schema(describes_schema, name: nil, schema_registry: JSI.schema_registry)
         if describes_schema.respond_to?(:to_str)
           schema = Schema::Ref.new(describes_schema, schema_registry: schema_registry).deref_schema
@@ -414,9 +414,9 @@ module JSI
             raise(TypeError, [name, "URI indicates a schema which does not describe schemas: #{describes_schema.pretty_inspect.chomp}"].compact.join(" "))
           end
           schema
-        elsif describes_schema.is_a?(SchemaModule::DescribesSchemaModule)
+        elsif describes_schema.is_a?(SchemaModule::MetaSchemaModule)
           describes_schema.schema
-        elsif describes_schema.is_a?(DescribesSchema)
+        elsif describes_schema.is_a?(Schema::MetaSchema)
           describes_schema
         else
           raise(TypeError, "#{name || "param"} does not indicate a schema which describes schemas: #{describes_schema.pretty_inspect.chomp}")
@@ -570,8 +570,8 @@ module JSI
     end
 
     # indicates that this schema describes a schema.
-    # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
-    # with {SchemaModule::DescribesSchemaModule}, and the JSI Schema Module will include
+    # this schema is extended with {Schema::MetaSchema} and its {#jsi_schema_module} is extended
+    # with {SchemaModule::MetaSchemaModule}, and the JSI Schema Module will include
     # JSI::Schema and the given modules.
     #
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality of
@@ -592,11 +592,11 @@ module JSI
         schema_implementation_modules.each do |mod|
           jsi_schema_module.include(mod)
         end
-        jsi_schema_module.extend(SchemaModule::DescribesSchemaModule)
+        jsi_schema_module.extend(SchemaModule::MetaSchemaModule)
       end
 
       @schema_implementation_modules = schema_implementation_modules
-      extend(DescribesSchema)
+      extend(Schema::MetaSchema)
 
       nil
     end

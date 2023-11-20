@@ -97,9 +97,9 @@ describe 'JSI::SchemaModule' do
     end
   end
 
-  describe 'DescribesSchemaModule' do
+  describe('SchemaModule::MetaSchemaModule') do
     it 'extends a module which describes a schema' do
-      assert(JSI::JSONSchemaDraft07.is_a?(JSI::SchemaModule::DescribesSchemaModule))
+      assert(JSI::JSONSchemaDraft07.is_a?(JSI::SchemaModule::MetaSchemaModule))
     end
 
     it '#new_schema' do
