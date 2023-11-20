@@ -26,7 +26,7 @@ describe JSI::Schema do
         assert_equal(JSI.new_schema(schema_content_from_json), schema)
 
         assert_equal("http://json-schema.org/draft-06/schema#", schema['$schema'])
-        # check that the metaschema id actually corresponds to $schema, particularly since checking
+        # check that the meta-schema id actually corresponds to $schema, particularly since checking
         # $schema is done before the schema content keys are stringified
         assert_equal(["http://json-schema.org/draft-06/schema#"], schema.jsi_schemas.map { |s| s['$id'] })
 
