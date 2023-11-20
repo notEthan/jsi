@@ -15,7 +15,7 @@ BasicMetaschema = JSI.new_metaschema_module(
   schema_implementation_modules: [JSI::Schema::Application::Draft06],
 )
 
-describe JSI::MetaschemaNode do
+describe JSI::MetaSchemaNode do
   let(:schema_implementation_modules) do
     [
       JSI::Schema::Application::Draft06,
@@ -26,7 +26,7 @@ describe JSI::MetaschemaNode do
   let(:root_schema_ptr) { JSI::Ptr[] }
 
   let(:root_node) do
-    JSI::MetaschemaNode.new(jsi_document,
+    JSI::MetaSchemaNode.new(jsi_document,
       schema_implementation_modules: schema_implementation_modules,
       metaschema_root_ptr: metaschema_root_ptr,
       root_schema_ptr: root_schema_ptr,
@@ -82,20 +82,20 @@ describe JSI::MetaschemaNode do
       assert_metaschema_behaves
     end
     it 'is pretty' do
-      inspect = %q(#{<JSI::MetaschemaNode (#) Metaschema> "properties" => #{<JSI::MetaschemaNode (#/properties/properties)> "properties" => #{<JSI::MetaschemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaschemaNode (#) Schema>}}})
+      inspect = %q(#{<JSI::MetaSchemaNode (#) Metaschema> "properties" => #{<JSI::MetaSchemaNode (#/properties/properties)> "properties" => #{<JSI::MetaSchemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaSchemaNode (#) Schema>}}})
       assert_equal(inspect, metaschema.inspect)
       assert_equal(inspect, metaschema.to_s)
       pp = <<~PP
-        \#{<JSI::MetaschemaNode (#) Metaschema>
-          "properties" => \#{<JSI::MetaschemaNode (#/properties/properties)>
-            "properties" => \#{<JSI::MetaschemaNode (#) Schema>
-              "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema>
+        \#{<JSI::MetaSchemaNode (#) Metaschema>
+          "properties" => \#{<JSI::MetaSchemaNode (#/properties/properties)>
+            "properties" => \#{<JSI::MetaSchemaNode (#) Schema>
+              "additionalProperties" => \#{<JSI::MetaSchemaNode (#) Schema>
                 "$ref" => "#"
               }
             },
-            "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"
+            "additionalProperties" => \#{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"
             },
-            "$ref" => \#{<JSI::MetaschemaNode (#) Schema>}
+            "$ref" => \#{<JSI::MetaSchemaNode (#) Schema>}
           }
         }
         PP
@@ -106,18 +106,18 @@ describe JSI::MetaschemaNode do
   describe 'basic, named' do
     it 'is pretty' do
       pretty = <<~str
-      \#{<JSI::MetaschemaNode (BasicMetaschema) Metaschema>
+      \#{<JSI::MetaSchemaNode (BasicMetaschema) Metaschema>
         "$id" => "tag:named-basic-metaschema",
-        "properties" => \#{<JSI::MetaschemaNode (BasicMetaschema.properties["properties"])>
-          "properties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
-            "additionalProperties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+        "properties" => \#{<JSI::MetaSchemaNode (BasicMetaschema.properties["properties"])>
+          "properties" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>
+            "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>
               "$ref" => "#"
             }
           },
-          "additionalProperties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+          "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>
             "$ref" => "#"
           },
-          "$ref" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>}
+          "$ref" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>}
         }
       }
       str

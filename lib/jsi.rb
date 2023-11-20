@@ -35,7 +35,7 @@ module JSI
   autoload :SchemaSet, 'jsi/schema_set'
   autoload :Base, 'jsi/base'
   autoload :Metaschema, 'jsi/metaschema'
-  autoload :MetaschemaNode, 'jsi/metaschema_node'
+  autoload :MetaSchemaNode, 'jsi/metaschema_node'
   autoload :SchemaModule, 'jsi/schema_classes'
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :SchemaRegistry, 'jsi/schema_registry'
@@ -62,12 +62,12 @@ module JSI
   # Instantiates the given document as a JSI Metaschema.
   #
   # @param metaschema_document an object to be instantiated as a JSI Metaschema
-  # @param schema_implementation_modules (see MetaschemaNode#initialize)
-  # @return [JSI::MetaschemaNode + JSI::DescribesSchema + JSI::Schema]
+  # @param schema_implementation_modules (see MetaSchemaNode#initialize)
+  # @return [JSI::MetaSchemaNode + JSI::DescribesSchema + JSI::Schema]
   def self.new_metaschema(metaschema_document,
       schema_implementation_modules:
   )
-    MetaschemaNode.new(metaschema_document,
+    MetaSchemaNode.new(metaschema_document,
       schema_implementation_modules: schema_implementation_modules,
     )
   end
