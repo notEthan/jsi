@@ -7,8 +7,8 @@ describe JSI::Util do
     end
     it 'stringifies JSI hash keys' do
       schema = JSI::JSONSchemaDraft07.new_schema({type: 'object'})
-      expected = JSI::Util.stringify_symbol_keys(schema.new_jsi({a: 'b', 'c' => 'd', nil => 3}))
-      actual = schema.new_jsi({'a' => 'b', 'c' => 'd', nil => 3})
+      actual = JSI::Util.stringify_symbol_keys(schema.new_jsi({a: 'b', 'c' => 'd', nil => 3}))
+      expected = schema.new_jsi({'a' => 'b', 'c' => 'd', nil => 3})
       assert_equal(expected, actual)
     end
     describe 'non-hash-like argument' do
