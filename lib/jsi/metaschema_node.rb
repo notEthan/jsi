@@ -266,4 +266,7 @@ module JSI
       end
     end
   end
+
+  # @deprecated after v0.7.0, alias of {MetaSchemaNode}
+  MetaschemaNode = MetaSchemaNode
 end
