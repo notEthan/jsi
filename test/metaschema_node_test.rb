@@ -86,11 +86,11 @@ describe(JSI::MetaSchemaNode) do
       assert_metaschema_behaves
     end
     it 'is pretty' do
-      inspect = %q(#{<JSI::MetaSchemaNode (#) Metaschema> "properties" => #{<JSI::MetaSchemaNode (#/properties/properties)> "properties" => #{<JSI::MetaSchemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaSchemaNode (#) Schema>}}})
+      inspect = %q(#{<JSI::MetaSchemaNode (#) Meta-Schema> "properties" => #{<JSI::MetaSchemaNode (#/properties/properties)> "properties" => #{<JSI::MetaSchemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaSchemaNode (#) Schema>}}})
       assert_equal(inspect, metaschema.inspect)
       assert_equal(inspect, metaschema.to_s)
       pp = <<~PP
-        \#{<JSI::MetaSchemaNode (#) Metaschema>
+        \#{<JSI::MetaSchemaNode (#) Meta-Schema>
           "properties" => \#{<JSI::MetaSchemaNode (#/properties/properties)>
             "properties" => \#{<JSI::MetaSchemaNode (#) Schema>
               "additionalProperties" => \#{<JSI::MetaSchemaNode (#) Schema>
@@ -110,7 +110,7 @@ describe(JSI::MetaSchemaNode) do
   describe 'basic, named' do
     it 'is pretty' do
       pretty = <<~str
-      \#{<JSI::MetaSchemaNode (BasicMetaschema) Metaschema>
+      \#{<JSI::MetaSchemaNode (BasicMetaschema) Meta-Schema>
         "$id" => "tag:named-basic-metaschema",
         "properties" => \#{<JSI::MetaSchemaNode (BasicMetaschema.properties["properties"])>
           "properties" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>

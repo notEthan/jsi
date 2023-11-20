@@ -195,7 +195,7 @@ module JSI
       end
       [
         class_n_schemas,
-        is_a?(Schema::MetaSchema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
+        is_a?(Schema::MetaSchema) ? "Meta-Schema" : is_a?(Schema) ? "Schema" : nil,
         *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : nil),
       ].compact.freeze
     end
