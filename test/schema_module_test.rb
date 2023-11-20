@@ -21,7 +21,7 @@ describe 'JSI::SchemaModule' do
       assert_equal(schema.properties['foo'].items.jsi_schema_module, schema_module.properties['foo'].items)
       assert_equal('string', schema_module.properties['foo'].items.type)
     end
-    it 'accessors and subscripts with a metaschema' do
+    it('accessors and subscripts with a meta-schema') do
       assert_is_a(JSI::SchemaModule::Connection, JSI::JSONSchemaDraft06.properties)
       assert_equal(JSI::JSONSchemaDraft06.schema.properties, JSI::JSONSchemaDraft06.properties.jsi_node)
       assert_equal(JSI::JSONSchemaDraft06.schema.properties['properties'].additionalProperties.jsi_schema_module, JSI::JSONSchemaDraft06.properties['properties'].additionalProperties)
@@ -29,8 +29,8 @@ describe 'JSI::SchemaModule' do
     end
 
     describe 'named properties of a schema module connection' do
-      # the json schema metaschemas don't describe any named properties of any objects that aren't schemas.
-      # we need a metaschema that does.
+      # the json schema meta-schemas don't describe any named properties of any objects that aren't schemas.
+      # we need a meta-schema that does.
       let(:metaschema) do
         document = YAML.load(<<~YAML
           properties:

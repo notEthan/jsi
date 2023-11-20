@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  # internal class to bootstrap a metaschema. represents a schema without the complexity of JSI::Base. the
+  # internal class to bootstrap a meta-schema. represents a schema without the complexity of JSI::Base. the
   # schema is represented but schemas describing the schema are not.
   #
   # this class is to only be instantiated on nodes in the document that are known to be schemas.

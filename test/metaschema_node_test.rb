@@ -82,7 +82,7 @@ describe(JSI::MetaSchemaNode) do
       )
     end
 
-    it 'acts like a metaschema' do
+    it('acts like a meta-schema') do
       assert_metaschema_behaves
     end
     it 'is pretty' do
@@ -168,7 +168,7 @@ describe(JSI::MetaSchemaNode) do
       end
     end
   end
-  describe 'metaschema outside the root, document is an instance of a schema in the document' do
+  describe('meta-schema outside the root, document is an instance of a schema in the document') do
     let(:jsi_document) do
       YAML.load(<<~YAML
         schemas:
@@ -193,7 +193,7 @@ describe(JSI::MetaSchemaNode) do
     end
     let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['schemas', 'Document'] }
-    it 'acts like a metaschema' do
+    it('acts like a meta-schema') do
       assert_schemas([root_node.schemas['Document']], root_node)
       assert_schemas([root_node.schemas['Document'].properties['schemas']], root_node.schemas)
       assert_schemas([metaschema], root_node.schemas['Document'])
@@ -203,7 +203,7 @@ describe(JSI::MetaSchemaNode) do
       assert_metaschema_behaves
     end
   end
-  describe 'metaschema outside the root, document is a schema' do
+  describe('meta-schema outside the root, document is a schema') do
     let(:jsi_document) do
       YAML.load(<<~YAML
         $defs:
@@ -222,14 +222,14 @@ describe(JSI::MetaSchemaNode) do
     end
     let(:metaschema_root_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
-    it 'acts like a metaschema' do
+    it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
       assert_schemas([metaschema.properties['$defs']], root_node['$defs'])
 
       assert_metaschema_behaves
     end
   end
-  describe 'metaschema outside the root on schemas, document is a schema' do
+  describe('meta-schema outside the root on schemas, document is a schema') do
     let(:jsi_document) do
       YAML.load(<<~YAML
         schemas:
@@ -249,7 +249,7 @@ describe(JSI::MetaSchemaNode) do
     end
     let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
-    it 'acts like a metaschema' do
+    it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
       assert_schemas([metaschema.properties['schemas']], root_node.schemas)
 
@@ -292,7 +292,7 @@ describe(JSI::MetaSchemaNode) do
     end
   end
 
-  describe 'a metaschema fails to validate itself' do
+  describe('a meta-schema fails to validate itself') do
     let(:metaschema) { JSI::JSONSchemaDraft06.schema.merge({'title' => []}) }
 
     it 'has validation error for `title`' do
@@ -313,8 +313,8 @@ describe(JSI::MetaSchemaNode) do
     end
   end
 
-  describe 'metaschema subschema modules' do
-    # sanity check that metaschemas' named subschema modules are actually subschemas of the metaschema
+  describe('meta-schema subschema modules') do
+    # sanity check that meta-schemas' named subschema modules are actually subschemas of the meta-schema
     def check_consts(metaschema, mod)
       assert_is_a(JSI::SchemaModule, mod)
       assert_equal(metaschema, mod.schema.jsi_root_node)

@@ -3,7 +3,7 @@
     "http://json-schema.org/draft-07/schema#"
   >,
   "description" => #<JSI (JSI::JSONSchemaDraft07::Description)
-    "A schema containing each keyword of the metaschema with valid and invalid type / structure of the keyword value"
+    "A schema containing each keyword of the meta-schema with valid and invalid type / structure of the keyword value"
   >,
   "definitions" => #{<JSI (JSI::JSONSchemaDraft07::Definitions)>
     "true" => #<JSI (JSI::JSONSchemaDraft07) Schema true>,

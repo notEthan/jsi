@@ -1,39 +1,39 @@
 # frozen_string_literal: true
 
 module JSI
-  # a MetaSchemaNode is a JSI instance representing a node in a document which contains a metaschema.
-  # the root of the metaschema is pointed to by metaschema_root_ptr.
+  # A MetaSchemaNode is a JSI instance representing a node in a document that contains a meta-schema.
+  # The root of the meta-schema is pointed to by metaschema_root_ptr.
   # the schema describing the root of the document is pointed to by root_schema_ptr.
   #
   # like JSI::Base's normal subclasses, this class represents an instance of a schema set, an instance
   # which may itself be a schema. unlike JSI::Base, the document containing the instance and its schemas
-  # is the same, and a schema (the metaschema) may be an instance of itself.
+  # is the same, and a schema (the meta-schema) may be an instance of itself.
   #
   # unlike JSI::Base's normal subclasses, the schemas describing the instance are not part of the class.
-  # since the metaschema describes itself, attempting to construct a class from the JSI Schema Module of a
+  # Since the meta-schema describes itself, attempting to construct a class from the JSI Schema Module of a
   # schema which is itself an instance of that class results in a causality loop.
   # instead, a MetaSchemaNode calculates its {#jsi_schemas} and extends itself with their JSI Schema
   # modules during initialization.
-  # the MetaSchemaNode of the metaschema is extended with its own JSI Schema Module.
+  # The MetaSchemaNode of the meta-schema is extended with its own JSI Schema Module.
   #
   # if the MetaSchemaNode's schemas include its self, it is extended with {JSI::Schema::MetaSchema}.
   #
   # a MetaSchemaNode is extended with JSI::Schema when it represents a schema - this is the case when
-  # the metaschema is one of its schemas.
+  # the meta-schema is one of its schemas.
   class MetaSchemaNode < Base
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
 
     include(Base::Immutable)
 
-    # @param jsi_document the document containing the metaschema.
+    # @param jsi_document the document containing the meta-schema.
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality
-    #   of the schema. these are included on the {Schema#jsi_schema_module} of the metaschema.
-    #   they extend any schema described by the metaschema, including those in the document containing
-    #   the metaschema, and the metaschema itself.
+    #   of the schema. These are included on the {Schema#jsi_schema_module} of the meta-schema.
+    #   They extend any schema described by the meta-schema, including those in the document containing
+    #   the meta-schema, and the meta-schema itself.
     #   see {Schema#describes_schema!} param `schema_implementation_modules`.
-    # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the metaschema in the jsi_document
+    # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the meta-schema in the jsi_document
     # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
     def initialize(
         jsi_document,
@@ -60,7 +60,7 @@ module JSI
       @root_schema_ptr = root_schema_ptr
 
       if jsi_ptr.root? && jsi_schema_base_uri
-        raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
+        raise(NotImplementedError, "unsupported jsi_schema_base_uri on meta-schema document root")
       end
 
       #chkbug raise(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
@@ -87,7 +87,7 @@ module JSI
       describes_self = false
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
-          # this is described by the metaschema, i.e. this is a schema
+          # this is described by the meta-schema, i.e. this is a schema
           extend Schema
           schema_implementation_modules.each do |schema_implementation_module|
             extend schema_implementation_module
@@ -95,7 +95,7 @@ module JSI
           extends += schema_implementation_modules
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
-          # this is the metaschema (it is described by itself)
+          # this is the meta-schema (it is described by itself)
           describes_self = true
         end
       end
@@ -130,11 +130,11 @@ module JSI
       end
     end
 
-    # Set of modules to apply to schemas which are instances of (described by) the metaschema
+    # Set of modules to apply to schemas that are instances of (described by) the meta-schema
     # @return [Set<Module>]
     attr_reader :schema_implementation_modules
 
-    # ptr to the root of the metaschema in the jsi_document
+    # ptr to the root of the meta-schema in the jsi_document
     # @return [JSI::Ptr]
     attr_reader :metaschema_root_ptr
 

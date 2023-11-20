@@ -15,7 +15,7 @@ describe JSI::Schema do
     it '$schema resolves but does not describe schemas' do
       JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#", "$id": "tag:guqh"})
       e = assert_raises(TypeError) { JSI.new_schema({"$schema": "tag:guqh"}) }
-      assert_equal(%q($schema URI indicates a schema which does not describe schemas: "tag:guqh"), e.message)
+      assert_equal(%q($schema URI indicates a schema that is not a meta-schema: "tag:guqh"), e.message)
     end
 
     it 'cannot instantiate from a JSI Schema' do
@@ -41,13 +41,13 @@ describe JSI::Schema do
       e = assert_raises(TypeError) { JSI.new_schema({}, default_metaschema: 1) }
       assert_match(/default_metaschema.* 1/, e.message)
 
-      # invalid: URI resolves but it's not a metaschema
+      # invalid: URI resolves but it's not a meta-schema
       JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#", "$id": "tag:l3bu"})
       e = assert_raises(TypeError) { JSI.new_schema({}, default_metaschema: "tag:l3bu") }
       assert_match(/default_metaschema URI.* "tag:l3bu"/, e.message)
     end
   end
-  describe 'as an instance of metaschema' do
+  describe('as an instance of meta-schema') do
     let(:metaschema_jsi_module) { JSI::JSONSchemaDraft04 }
     let(:schema_content) { {'type' => 'array', 'items' => {'description' => 'items!'}} }
     let(:schema) { metaschema_jsi_module.new_jsi(schema_content) }
@@ -774,7 +774,7 @@ describe JSI::Schema do
       JSI::SchemaSet[JSI::JSONSchemaDraft07.schema, recursive_default_child_as_jsi_true].new_jsi(YAML.load(<<~YAML
         $schema: "http://json-schema.org/draft-07/schema#"
         description:
-          A schema containing each keyword of the metaschema with valid and invalid type / structure of the keyword value
+          A schema containing each keyword of the meta-schema with valid and invalid type / structure of the keyword value
         definitions:
           "true": true
           "false": false
