@@ -1,8 +1,8 @@
 require_relative 'test_helper'
 
-BasicMetaschema = JSI.new_metaschema_module(
+BasicMetaSchema = JSI.new_metaschema_module(
   YAML.load(<<~YAML
-    "$id": "tag:named-basic-metaschema"
+    "$id": "tag:named-basic-meta-schema"
     properties:
       properties:
         additionalProperties:
@@ -106,22 +106,22 @@ describe JSI::MetaSchemaNode do
   describe 'basic, named' do
     it 'is pretty' do
       pretty = <<~str
-      \#{<JSI::MetaSchemaNode (BasicMetaschema) Meta-Schema>
-        "$id" => "tag:named-basic-metaschema",
-        "properties" => \#{<JSI::MetaSchemaNode (BasicMetaschema.properties["properties"])>
-          "properties" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>
-            "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>
+      \#{<JSI::MetaSchemaNode (BasicMetaSchema) Meta-Schema>
+        "$id" => "tag:named-basic-meta-schema",
+        "properties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema.properties["properties"])>
+          "properties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
+            "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
               "$ref" => "#"
             }
           },
-          "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>
+          "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
             "$ref" => "#"
           },
-          "$ref" => \#{<JSI::MetaSchemaNode (BasicMetaschema) Schema>}
+          "$ref" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>}
         }
       }
       str
-      assert_equal(pretty, BasicMetaschema.schema.pretty_inspect)
+      assert_equal(pretty, BasicMetaSchema.schema.pretty_inspect)
     end
   end
 
@@ -254,7 +254,7 @@ describe JSI::MetaSchemaNode do
   end
 
   describe('#jsi_modified_copy') do
-    let(:metaschema) { BasicMetaschema.schema }
+    let(:metaschema) { BasicMetaSchema.schema }
     it('modifies a copy') do
       # at the root
       mc1 = metaschema.merge('title' => 'root modified')
