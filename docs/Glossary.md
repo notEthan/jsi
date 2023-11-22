@@ -228,3 +228,52 @@ For a given node, its *resource root* is the nearest ancestor that is a resource
 Relative URIs and [pointer]s used by a schema (e.g. in `$ref` or `$id`) are resolved relative to its resource root and that resource's id.
 
 See {JSI::Schema#schema_resource_root}.
+
+
+### schema application
+
+[schema application]: #schema_application
+
+The computation of the [schema]s that apply describing a particular [node]. This involves resolving `$ref`s, choosing what conditional schemas apply (e.g. which subschema of a `oneOf` applies), and recursing down children applying child applicator schemas. The steps of this process:
+
+- **root indicated schemas**: Application begins with the schemas (usually just one schema) indicated as describing the [root]. `#new_jsi` is invoked on a {JSI::SchemaSet} of the indicated schemas, or more commonly on one schema or [schema module]. These are the root's {JSI::Base#jsi_indicated_schemas}.
+- **root applied schemas**: [in-place application] is performed on each of the root's indicated schemas to compute its applied schemas.
+- Descending from the root to the given node, for each [token] of the node's [pointer]:
+  - **child indicated schemas**: [child application] is performed on each applied schema of the parent on the current token. This results in the child's indicated schemas.
+  - **child applied schemas**: [in-place application] is performed on each of the child's indicated schemas to compute its applied schemas.
+
+The schemas that apply describing the node are the result of the final in-place application.
+
+
+### child application
+
+[child application]: #child_application
+
+The computation of subschemas of a given schema that describe a [child] of an instance on a given [token]. These come from subschemas defined on child applicator keywords such as `properties` and `items`. The result may be an empty schema set if no such keywords are present or none apply.
+
+
+### in-place application
+
+[in-place application]: #in_place_application
+
+The expansion of a schema to a set of **applied schemas** for a given instance. "In-place" means all the schemas apply to the same location in the instance, in contrast to [child application]. This is a recursive process.
+
+- If the schema contains a `$ref` keyword, *and* the specification for the schema is draft-07 or older:
+  - The reference is resolved.
+  - In-place application recurses on the resolved schema.
+  - The rest of the schema is ignored. The schema does not apply itself, and any other applicator keywords are ignored (none should be present).
+
+  The resulting applied schemas are the resolved schema's in-place applicator schemas.
+
+- Otherwise:
+  - The schema applies itself (it is added to the set of applied schemas).
+  - Any in-place applicator keywords (`anyOf`, `dependencies`, etc.) are evaluated for subschemas that apply to the instance. References are resolved from `$ref` or `$dynamicRef`, if present. For each such schema, in-place application recurses.
+
+  The resulting applied schemas consist of each recursively applied in-place applicator schema.
+
+
+### validation
+
+[validation]: #validation
+
+The process of determining whether a given [instance] is valid against the [schema]s that describe it, or collecting validation errors indicating why the instance is not valid. See {JSI::Base#jsi_valid?}, {JSI::Base#jsi_validate}, {JSI::Base#jsi_valid!}, {JSI::Schema#instance_valid?}, {JSI::Schema#instance_validate}, {JSI::Schema#instance_valid!}.
