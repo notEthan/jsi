@@ -579,7 +579,7 @@ module JSI
     # Does this schema itself describe a schema? I.e. is this schema a meta-schema?
     # @return [Boolean]
     def describes_schema?
-      jsi_schema_module <= JSI::Schema || false
+      is_a?(Schema::MetaSchema)
     end
 
     # Is this a JSI Schema?
@@ -599,7 +599,7 @@ module JSI
     def describes_schema!(schema_implementation_modules)
       schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
 
-      if describes_schema?
+      if jsi_schema_module <= Schema
         # this schema, or one equal to it, has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
         # it is a bug if it was called different times with different schema_implementation_modules, though.
