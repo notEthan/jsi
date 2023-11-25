@@ -807,6 +807,17 @@ describe JSI::Base do
       assert_equal(pp, phonebook.pretty_inspect)
     end
   end
+
+  it("indicates that a Base is a meta-schema") do
+    # hack together a meta-schema that is not a MetaSchemaNode to test Base
+    ms = JSI.new_schema({
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "tag:u20x",
+    })
+    ms.describes_schema!([])
+    assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft07) Meta-Schema> "$schema" => "http://json-schema.org/draft-07/schema#", "$id" => "tag:u20x"}), ms.inspect)
+  end
+
   describe '#as_json' do
     it '#as_json' do
       assert_equal({'a' => 'b'}, JSI::JSONSchemaDraft07.new_schema({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)
