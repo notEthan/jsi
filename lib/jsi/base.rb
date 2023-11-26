@@ -518,6 +518,12 @@ module JSI
       end
     end
 
+    # Is this a JSI Schema?
+    # @return [Boolean]
+    def jsi_is_schema?
+      is_a?(JSI::Schema)
+    end
+
     # yields the content of this JSI's instance. the block must result in
     # a modified copy of the yielded instance (not modified in place, which would alter this JSI
     # as well) which will be used to instantiate and return a new JSI with the modified content.
