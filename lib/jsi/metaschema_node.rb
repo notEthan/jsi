@@ -108,6 +108,8 @@ module JSI
         end
       end
 
+      @jsi_schemas = @bootstrap_schemas
+
       jsi_initialize_finish if initialize_finish
     end
 
