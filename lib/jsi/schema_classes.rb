@@ -115,21 +115,23 @@ module JSI
       # @return [Class subclass of JSI::Base]
       def class_for_schemas(schemas, includes: , mutable: )
         @class_for_schemas_map[
-          schemas: SchemaSet.ensure_schema_set(schemas),
+          schema_modules: schemas.map(&:jsi_schema_module).to_set.freeze,
           includes: Util.ensure_module_set(includes),
           mutable: mutable,
         ]
       end
 
-      private def class_for_schemas_compute(schemas: , includes: , mutable: )
+      private def class_for_schemas_compute(schema_modules: , includes: , mutable: )
           Class.new(Base) do
+            schemas = SchemaSet.new(schema_modules.map(&:schema))
+
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
 
             define_singleton_method(:jsi_class_includes) { includes }
 
             mutability_module = mutable ? Base::Mutable : Base::Immutable
-            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schemas.map(&:jsi_schema_module)
+            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schema_modules
 
             include(mutability_module)
 
@@ -149,7 +151,7 @@ module JSI
             end
 
             includes.each { |m| include(m) }
-            schemas.to_a.reverse_each { |schema| include(schema.jsi_schema_module) }
+            schema_modules.to_a.reverse_each { |m| include(m) }
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
 
