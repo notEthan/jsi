@@ -179,15 +179,6 @@ module JSI
           end
       end
 
-      # see {Schema#jsi_schema_module}
-      # @api private
-      # @return [SchemaModule]
-      def module_for_schema(schema)
-        Schema.ensure_schema(schema)
-        raise(Bug, "non-Base schema cannot have schema module: #{schema}") unless schema.is_a?(Base)
-        @schema_module_map[schema]
-      end
-
       # @private
       # @deprecated after v0.7
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
@@ -259,7 +250,6 @@ module JSI
 
     @class_for_schemas_map          = Hash.new { |h, k| h[k] = class_for_schemas_compute(**k) }
     @bootstrap_schema_class_map      = Hash.new { |h, k| h[k] = bootstrap_schema_class_compute(**k) }
-    @schema_module_map                = Hash.new { |h, schema| h[schema] = SchemaModule.new(schema) }
     @schema_property_reader_module_map = Hash.new { |h, k| h[k] = schema_property_reader_module_compute(**k) }
     @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(**k) }
   end

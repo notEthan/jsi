@@ -537,7 +537,8 @@ module JSI
     #
     # @return [SchemaModule]
     def jsi_schema_module
-      JSI::SchemaClasses.module_for_schema(self)
+      raise(TypeError, "non-Base schema may not have a schema module: #{self}") unless is_a?(Base)
+      @jsi_schema_module ||= SchemaModule.new(self)
     end
 
     # Evaluates the given block in the context of this schema's JSI schema module.
@@ -825,6 +826,7 @@ module JSI
     private
 
     def jsi_schema_initialize
+      @jsi_schema_module = nil
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end

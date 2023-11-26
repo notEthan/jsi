@@ -110,7 +110,7 @@ describe 'JSI::SchemaModule' do
 
     it '#new_schema_module' do
       mod = JSI::JSONSchemaDraft07.new_schema_module({})
-      assert_equal(JSI::JSONSchemaDraft07.new_schema({}).jsi_schema_module, mod)
+      assert_equal(mod.schema.jsi_schema_module, mod)
     end
   end
 

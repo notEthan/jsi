@@ -56,11 +56,15 @@ describe JSI::Base do
   end
 
   describe('#class') do
-    it('uses the same class for the same schemas') do
+    it("uses the same class for the same schema instance but not for equal schemas") do
       schema1 = JSI::JSONSchemaDraft07.new_schema({'title' => 'c0dt'})
-      schema2 = JSI::JSONSchemaDraft07.new_schema({'title' => 'c0dt'}) # same schema, different object
-      assert_equal(schema1.new_jsi([]).class, schema2.new_jsi([]).class) # same class
-      assert_equal(schema1.new_jsi([]).class, schema2.new_jsi([0]).class) # same class, different instance
+      schema2 = JSI::JSONSchemaDraft07.new_schema({'title' => 'c0dt'}) # equal schema, different instance
+      schemas1 = JSI::SchemaSet[schema1]
+      schemas2 = JSI::SchemaSet[schema2]
+      assert_equal(schema1.new_jsi([]).class, schema1.new_jsi([]).class)
+      refute_equal(schema1.new_jsi([]).class, schema2.new_jsi([]).class)
+      assert_equal(schemas1.new_jsi([]).class, schemas1.new_jsi([]).class)
+      refute_equal(schemas1.new_jsi([]).class, schemas2.new_jsi([]).class)
     end
   end
 
