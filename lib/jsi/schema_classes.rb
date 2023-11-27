@@ -94,9 +94,10 @@ module JSI
   end
 
   # this module is a namespace for building schema classes and schema modules.
+  # @api private
   module SchemaClasses
     class << self
-      # @api private
+      # @private
       # @return [Set<Module>]
       def includes_for(instance)
         includes = Set[]
@@ -179,6 +180,7 @@ module JSI
         @schema_module_map[schema]
       end
 
+      # @private
       # @deprecated after v0.7
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         Module.new do
@@ -189,7 +191,7 @@ module JSI
 
       # a module of readers for described property names of the given schema.
       #
-      # @api private
+      # @private
       # @param schema [JSI::Schema] a schema for which to define readers for any described property names
       # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
       #   may be used alongside the accessor module. methods defined by any conflicting_module
@@ -220,7 +222,7 @@ module JSI
       end
 
       # a module of writers for described property names of the given schema.
-      # @api private
+      # @private
       def schema_property_writer_module(schema, conflicting_modules: )
         Schema.ensure_schema(schema)
         @schema_property_writer_module_map[schema: schema, conflicting_modules: conflicting_modules]
