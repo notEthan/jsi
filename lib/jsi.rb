@@ -34,8 +34,7 @@ module JSI
   autoload :Schema, 'jsi/schema'
   autoload :SchemaSet, 'jsi/schema_set'
   autoload :Base, 'jsi/base'
-  autoload :Metaschema, 'jsi/metaschema'
-  autoload :MetaschemaNode, 'jsi/metaschema_node'
+  autoload :MetaSchemaNode, 'jsi/metaschema_node'
   autoload :SchemaModule, 'jsi/schema_classes'
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload :SchemaRegistry, 'jsi/schema_registry'
@@ -54,28 +53,28 @@ module JSI
   # Instantiates the given schema content as a JSI Schema, passing all params to
   # {JSI.new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
-  # @return (see JSI::Schema::DescribesSchema#new_schema_module)
+  # @return (see JSI::Schema::MetaSchema#new_schema_module)
   def self.new_schema_module(schema_content, **kw, &block)
     new_schema(schema_content, **kw, &block).jsi_schema_module
   end
 
-  # Instantiates the given document as a JSI Metaschema.
+  # Instantiates the given document as a JSI Meta-Schema.
   #
-  # @param metaschema_document an object to be instantiated as a JSI Metaschema
-  # @param schema_implementation_modules (see MetaschemaNode#initialize)
-  # @return [JSI::MetaschemaNode + JSI::DescribesSchema + JSI::Schema]
+  # @param metaschema_document an object to be instantiated as a JSI Meta-Schema
+  # @param schema_implementation_modules (see MetaSchemaNode#initialize)
+  # @return [JSI::MetaSchemaNode + JSI::Schema::MetaSchema + JSI::Schema]
   def self.new_metaschema(metaschema_document,
       schema_implementation_modules:
   )
-    MetaschemaNode.new(metaschema_document,
+    MetaSchemaNode.new(metaschema_document,
       schema_implementation_modules: schema_implementation_modules,
     )
   end
 
-  # Instantiates the given document as a JSI Metaschema, passing all params to
+  # Instantiates the given document as a JSI Meta-Schema, passing all params to
   # {new_metaschema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
-  # @return [Module + JSI::SchemaModule::DescribesSchemaModule + JSI::SchemaModule]
+  # @return [Module + JSI::SchemaModule::MetaSchemaModule + JSI::SchemaModule]
   def self.new_metaschema_module(metaschema_document, **kw)
     new_metaschema(metaschema_document, **kw).jsi_schema_module
   end

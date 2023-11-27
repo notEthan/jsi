@@ -1,8 +1,8 @@
 require_relative 'test_helper'
 
-BasicMetaschema = JSI.new_metaschema_module(
+BasicMetaSchema = JSI.new_metaschema_module(
   YAML.load(<<~YAML
-    "$id": "tag:named-basic-metaschema"
+    "$id": "tag:named-basic-meta-schema"
     properties:
       properties:
         additionalProperties:
@@ -15,7 +15,7 @@ BasicMetaschema = JSI.new_metaschema_module(
   schema_implementation_modules: [JSI::Schema::Application::Draft06],
 )
 
-describe JSI::MetaschemaNode do
+describe JSI::MetaSchemaNode do
   let(:schema_implementation_modules) do
     [
       JSI::Schema::Application::Draft06,
@@ -26,7 +26,7 @@ describe JSI::MetaschemaNode do
   let(:root_schema_ptr) { JSI::Ptr[] }
 
   let(:root_node) do
-    JSI::MetaschemaNode.new(jsi_document,
+    JSI::MetaSchemaNode.new(jsi_document,
       schema_implementation_modules: schema_implementation_modules,
       metaschema_root_ptr: metaschema_root_ptr,
       root_schema_ptr: root_schema_ptr,
@@ -78,24 +78,24 @@ describe JSI::MetaschemaNode do
       )
     end
 
-    it 'acts like a metaschema' do
+    it 'acts like a meta-schema' do
       assert_metaschema_behaves
     end
     it 'is pretty' do
-      inspect = %q(#{<JSI::MetaschemaNode (#) Metaschema> "properties" => #{<JSI::MetaschemaNode (#/properties/properties)> "properties" => #{<JSI::MetaschemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaschemaNode (#) Schema>}}})
+      inspect = %q(#{<JSI::MetaSchemaNode (#) Meta-Schema> "properties" => #{<JSI::MetaSchemaNode (#/properties/properties)> "properties" => #{<JSI::MetaSchemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaSchemaNode (#) Schema>}}})
       assert_equal(inspect, metaschema.inspect)
       assert_equal(inspect, metaschema.to_s)
       pp = <<~PP
-        \#{<JSI::MetaschemaNode (#) Metaschema>
-          "properties" => \#{<JSI::MetaschemaNode (#/properties/properties)>
-            "properties" => \#{<JSI::MetaschemaNode (#) Schema>
-              "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema>
+        \#{<JSI::MetaSchemaNode (#) Meta-Schema>
+          "properties" => \#{<JSI::MetaSchemaNode (#/properties/properties)>
+            "properties" => \#{<JSI::MetaSchemaNode (#) Schema>
+              "additionalProperties" => \#{<JSI::MetaSchemaNode (#) Schema>
                 "$ref" => "#"
               }
             },
-            "additionalProperties" => \#{<JSI::MetaschemaNode (#) Schema> "$ref" => "#"
+            "additionalProperties" => \#{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"
             },
-            "$ref" => \#{<JSI::MetaschemaNode (#) Schema>}
+            "$ref" => \#{<JSI::MetaSchemaNode (#) Schema>}
           }
         }
         PP
@@ -106,22 +106,22 @@ describe JSI::MetaschemaNode do
   describe 'basic, named' do
     it 'is pretty' do
       pretty = <<~str
-      \#{<JSI::MetaschemaNode (BasicMetaschema) Metaschema>
-        "$id" => "tag:named-basic-metaschema",
-        "properties" => \#{<JSI::MetaschemaNode (BasicMetaschema.properties["properties"])>
-          "properties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
-            "additionalProperties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+      \#{<JSI::MetaSchemaNode (BasicMetaSchema) Meta-Schema>
+        "$id" => "tag:named-basic-meta-schema",
+        "properties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema.properties["properties"])>
+          "properties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
+            "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
               "$ref" => "#"
             }
           },
-          "additionalProperties" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>
+          "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
             "$ref" => "#"
           },
-          "$ref" => \#{<JSI::MetaschemaNode (BasicMetaschema) Schema>}
+          "$ref" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>}
         }
       }
       str
-      assert_equal(pretty, BasicMetaschema.schema.pretty_inspect)
+      assert_equal(pretty, BasicMetaSchema.schema.pretty_inspect)
     end
   end
 
@@ -164,7 +164,7 @@ describe JSI::MetaschemaNode do
       end
     end
   end
-  describe 'metaschema outside the root, document is an instance of a schema in the document' do
+  describe 'meta-schema outside the root, document is an instance of a schema in the document' do
     let(:jsi_document) do
       YAML.load(<<~YAML
         schemas:
@@ -189,7 +189,7 @@ describe JSI::MetaschemaNode do
     end
     let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['schemas', 'Document'] }
-    it 'acts like a metaschema' do
+    it 'acts like a meta-schema' do
       assert_schemas([root_node.schemas['Document']], root_node)
       assert_schemas([root_node.schemas['Document'].properties['schemas']], root_node.schemas)
       assert_schemas([metaschema], root_node.schemas['Document'])
@@ -199,7 +199,7 @@ describe JSI::MetaschemaNode do
       assert_metaschema_behaves
     end
   end
-  describe 'metaschema outside the root, document is a schema' do
+  describe 'meta-schema outside the root, document is a schema' do
     let(:jsi_document) do
       YAML.load(<<~YAML
         $defs:
@@ -218,14 +218,14 @@ describe JSI::MetaschemaNode do
     end
     let(:metaschema_root_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
-    it 'acts like a metaschema' do
+    it 'acts like a meta-schema' do
       assert_schemas([metaschema], root_node)
       assert_schemas([metaschema.properties['$defs']], root_node['$defs'])
 
       assert_metaschema_behaves
     end
   end
-  describe 'metaschema outside the root on schemas, document is a schema' do
+  describe 'meta-schema outside the root on schemas, document is a schema' do
     let(:jsi_document) do
       YAML.load(<<~YAML
         schemas:
@@ -245,7 +245,7 @@ describe JSI::MetaschemaNode do
     end
     let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
     let(:root_schema_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
-    it 'acts like a metaschema' do
+    it 'acts like a meta-schema' do
       assert_schemas([metaschema], root_node)
       assert_schemas([metaschema.properties['schemas']], root_node.schemas)
 
@@ -254,7 +254,7 @@ describe JSI::MetaschemaNode do
   end
 
   describe('#jsi_modified_copy') do
-    let(:metaschema) { BasicMetaschema.schema }
+    let(:metaschema) { BasicMetaSchema.schema }
     it('modifies a copy') do
       # at the root
       mc1 = metaschema.merge('title' => 'root modified')
@@ -288,7 +288,7 @@ describe JSI::MetaschemaNode do
     end
   end
 
-  describe 'a metaschema fails to validate itself' do
+  describe 'a meta-schema fails to validate itself' do
     let(:metaschema) { JSI::JSONSchemaDraft06.schema.merge({'title' => []}) }
 
     it 'has validation error for `title`' do
@@ -309,8 +309,8 @@ describe JSI::MetaschemaNode do
     end
   end
 
-  describe 'metaschema subschema modules' do
-    # sanity check that metaschemas' named subschema modules are actually subschemas of the metaschema
+  describe 'meta-schema subschema modules' do
+    # sanity check that meta-schemas' named subschema modules are actually subschemas of the meta-schema
     def check_consts(metaschema, mod)
       assert_is_a(JSI::SchemaModule, mod)
       assert_equal(metaschema, mod.schema.jsi_root_node)

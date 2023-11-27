@@ -8,7 +8,7 @@ module JSI
 
   # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
   # properties/additionalProperties and properties/additionalItems.
-  # these still describe schemas, despite not being described by the metaschema.
+  # these still describe schemas, despite not being described by the meta-schema.
   also_describe_schemas =
     JSONSchemaDraft04.schema["properties"]["additionalProperties"]["anyOf"] +
     JSONSchemaDraft04.schema["properties"]["additionalItems"]["anyOf"]
@@ -18,7 +18,7 @@ module JSI
 
   # the JSI schema module for `http://json-schema.org/draft-04/schema`
   module JSONSchemaDraft04
-    # @!parse extend JSI::SchemaModule::DescribesSchemaModule
+    # @!parse extend JSI::SchemaModule::MetaSchemaModule
     # @!parse include JSI::Schema::Draft04
 
 

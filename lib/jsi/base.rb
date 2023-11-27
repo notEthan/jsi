@@ -97,7 +97,7 @@ module JSI
     #
     # this is a private api - users should look elsewhere to instantiate JSIs, in particular:
     #
-    # - {JSI.new_schema} and {Schema::DescribesSchema#new_schema} to instantiate schemas
+    # - {JSI.new_schema} and {Schema::MetaSchema#new_schema} to instantiate schemas
     # - {Schema#new_jsi} to instantiate schema instances
     #
     # @api private
@@ -641,7 +641,7 @@ module JSI
 
       [
         class_txt,
-        is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
+        is_a?(Schema::MetaSchema) ? "Meta-Schema" : is_a?(Schema) ? "Schema" : nil,
         *content_txt,
       ].compact
     end
