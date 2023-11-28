@@ -18,6 +18,8 @@ module JSI
     autoload :ArrayNode, 'jsi/base/node'
     autoload :HashNode, 'jsi/base/node'
     autoload :StringNode, 'jsi/base/node'
+    autoload(:Mutable, 'jsi/base/mutability')
+    autoload(:Immutable, 'jsi/base/mutability')
 
     include Schema::SchemaAncestorNode
 
@@ -112,6 +114,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_registry: ,
+        jsi_content_to_immutable: ,
         jsi_root_node: nil
     )
       raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
@@ -124,6 +127,7 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_registry = jsi_schema_registry
+      @jsi_content_to_immutable = jsi_content_to_immutable
       if @jsi_ptr.root?
         raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
@@ -134,6 +138,7 @@ module JSI
       end
 
       jsi_memomaps_initialize
+      jsi_mutability_initialize
 
       if jsi_instance.is_a?(JSI::Base)
         raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
@@ -155,18 +160,27 @@ module JSI
     # @return [JSI::Ptr]
     attr_reader :jsi_ptr
 
+    # Comes from the param `to_immutable` of {SchemaSet#new_jsi} (or other `new_jsi` /
+    # `new_schema` / `new_schema_module` method).
+    # Immutable JSIs use this when instantiating a modified copy so its instance is also immutable.
+    # @return [#call, nil]
+    attr_reader(:jsi_content_to_immutable)
+
     # the JSI at the root of this JSI's document
     # @return [JSI::Base]
     attr_reader :jsi_root_node
 
     # the content of this node in our {#jsi_document} at our {#jsi_ptr}. the same as {#jsi_instance}.
     def jsi_node_content
-      content = jsi_ptr.evaluate(jsi_document)
-      content
+      # stub method for doc, overridden by Mutable/Immutable
     end
 
-    # the JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI
-    alias_method :jsi_instance, :jsi_node_content
+    # The JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI.
+    # The same as {#jsi_node_content} - 'node content' is usually preferable terminology, to avoid
+    # ambiguity in the heavily overloaded term 'instance'.
+    def jsi_instance
+      jsi_node_content
+    end
 
     # the schemas indicated as describing this instance, prior to inplace application.
     #
@@ -534,6 +548,8 @@ module JSI
           uri: @jsi_root_node.jsi_schema_base_uri,
           register: false, # default is already false but this is a place to be explicit
           schema_registry: jsi_schema_registry,
+          mutable: jsi_mutable?,
+          to_immutable: jsi_content_to_immutable,
         )
         modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
     end
@@ -560,6 +576,12 @@ module JSI
     def jsi_hash?
       # note: overridden by Base::HashNode
       false
+    end
+
+    # Is this JSI mutable?
+    # @return [Boolean]
+    def jsi_mutable?
+      # note: overridden by Base::Mutable / Immutable
     end
 
     # validates this JSI's instance against its schemas
@@ -663,7 +685,8 @@ module JSI
     # @api private
     def jsi_fingerprint
       {
-        class: jsi_class,
+        class: JSI::Base,
+        jsi_schemas: jsi_schemas,
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
@@ -672,7 +695,6 @@ module JSI
         jsi_schema_registry: jsi_schema_registry,
       }
     end
-    include Util::FingerprintHash
 
     private
 
@@ -690,6 +712,7 @@ module JSI
     def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )
         jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas,
           includes: includes,
+          mutable: jsi_mutable?,
         )
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
@@ -697,6 +720,7 @@ module JSI
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
           jsi_schema_registry: jsi_schema_registry,
+          jsi_content_to_immutable: @jsi_content_to_immutable,
           jsi_root_node: @jsi_root_node,
         )
     end

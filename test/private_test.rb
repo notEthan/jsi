@@ -11,13 +11,13 @@ end
 describe JSI::MetaschemaNode::BootstrapSchema do
   let(:bootstrap_schema_class) { JSI::SchemaClasses.bootstrap_schema_class([TestSchemaImplModule]) }
   let(:document) do
-    {
+    JSI::DEFAULT_CONTENT_TO_IMMUTABLE[{
       "properties" => {
         "properties" => {"additionalProperties" => {"$ref" => "#"}},
         "additionalProperties" => {"$ref" => "#"},
         "$ref" => {}
       }
-    }
+    }]
   end
 
   it 'is not directly instantiable' do

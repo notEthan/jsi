@@ -23,7 +23,10 @@ module JSI
   class MetaschemaNode < Base
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
 
-    # @param jsi_document the document containing the metaschema
+    include(Base::Immutable)
+
+    # @param jsi_document the document containing the metaschema.
+    #   this must be frozen recursively; MetaschemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaschemaNode in jsi_document
     # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality
     #   of the schema. these are included on the {Schema#jsi_schema_module} of the metaschema.
@@ -40,6 +43,7 @@ module JSI
         root_schema_ptr: Ptr[],
         jsi_schema_base_uri: nil,
         jsi_schema_registry: nil,
+        jsi_content_to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         jsi_root_node: nil
     )
       super(jsi_document,
@@ -47,6 +51,7 @@ module JSI
         jsi_indicated_schemas: SchemaSet[],
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_registry: jsi_schema_registry,
+        jsi_content_to_immutable: jsi_content_to_immutable,
         jsi_root_node: jsi_root_node,
       )
 
@@ -58,7 +63,7 @@ module JSI
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on metaschema document root")
       end
 
-      jsi_node_content = self.jsi_node_content
+      #chkbug raise(Bug, 'MetaschemaNode instance must be frozen') unless jsi_node_content.frozen?
 
       extends = Set[]
 
@@ -169,6 +174,7 @@ module JSI
     def jsi_modified_copy(&block)
       if jsi_ptr.root?
         modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
+        modified_document = jsi_content_to_immutable.call(modified_document) if jsi_content_to_immutable
         MetaschemaNode.new(modified_document, **our_initialize_params)
       else
         modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
@@ -222,6 +228,7 @@ module JSI
         root_schema_ptr: root_schema_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_registry: jsi_schema_registry,
+        jsi_content_to_immutable: jsi_content_to_immutable,
       }
     end
 
