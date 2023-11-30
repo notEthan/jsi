@@ -62,6 +62,9 @@ describe JSI::JSICoder do
         assert_equal({"foo" => "x", "bar" => "y"}, coder.dump(schema.new_jsi({'foo' => 'x', 'bar' => 'y'})))
       end
       it 'dumps something else' do
+        if Object.method_defined?(:as_json) && ENV['JSI_TEST_EXTDEP']
+          skip("external dependency defines Object#as_json")
+        end
         assert_raises(TypeError) do
           coder.dump(Object.new)
         end
