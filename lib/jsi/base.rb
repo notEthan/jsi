@@ -521,7 +521,7 @@ module JSI
     # Is this a JSI Schema?
     # @return [Boolean]
     def jsi_is_schema?
-      is_a?(JSI::Schema)
+      false
     end
 
     # yields the content of this JSI's instance. the block must result in
