@@ -552,6 +552,12 @@ module JSI
       jsi_schema_module <= JSI::Schema || false
     end
 
+    # Is this a JSI Schema?
+    # @return [Boolean]
+    def jsi_is_schema?
+      true
+    end
+
     # indicates that this schema describes a schema.
     # this schema is extended with {DescribesSchema} and its {#jsi_schema_module} is extended
     # with {SchemaModule::DescribesSchemaModule}, and the JSI Schema Module will include
