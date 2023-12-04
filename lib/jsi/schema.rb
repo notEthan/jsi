@@ -544,7 +544,7 @@ module JSI
 
     # @param keyword schema keyword e.g. "$ref", "$schema"
     # @return [Schema::Ref]
-    def schema_ref(keyword: "$ref")
+    def schema_ref(keyword = "$ref")
       raise(ArgumentError, "keyword not present: #{keyword}") unless keyword?(keyword)
       @schema_ref_map[keyword: keyword, value: schema_content[keyword]]
     end
