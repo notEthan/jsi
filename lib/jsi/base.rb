@@ -226,6 +226,18 @@ module JSI
       nil
     end
 
+    # yields each descendent of this node that is a JSI Schema
+    # @yield [Base + Schema]
+    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    def jsi_each_descendent_schema(&block)
+      return(to_enum(__method__)) unless block_given?
+
+      # note: this never yields self; if self is a Schema, Schema#jsi_each_descendent_schema overrides this method
+      jsi_each_child_token do |token|
+        jsi_child(token, as_jsi: true).jsi_each_descendent_schema(&block)
+      end
+    end
+
     # recursively selects descendent nodes of this JSI, returning a modified copy of self containing only
     # descendent nodes for which the given block had a true-ish result.
     #

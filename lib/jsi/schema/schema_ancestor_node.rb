@@ -109,8 +109,8 @@ module JSI
     attr_writer(:jsi_schema_registry)
 
     def jsi_anchor_subschemas_compute(anchor: )
-        jsi_each_descendent_node.select do |node|
-          node.is_a?(Schema) && node.respond_to?(:anchor) && node.anchor == anchor
+        jsi_each_descendent_schema.select do |schema|
+          schema.anchor == anchor
         end.to_set.freeze
     end
 
