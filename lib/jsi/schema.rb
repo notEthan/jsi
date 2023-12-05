@@ -662,20 +662,14 @@ module JSI
         visited_refs: Util::EMPTY_ARY,
         &block
     )
-      return to_enum(__method__, instance, visited_refs: visited_refs) unless block
-
       catch(:jsi_application_done) do
-      cxt = Cxt::InplaceApplication.new(
-        schema: self,
+      dialect_invoke_each(:inplace_applicate,
+        Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
-        block: block,
+        &block
       )
-
-      dialect.invoke(:inplace_applicate, cxt)
       end
-
-      nil
     end
 
     # a set of child applicator subschemas of this schema which apply to the child of the given instance
@@ -696,18 +690,12 @@ module JSI
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_child_applicator_schema(token, instance, &block)
-      return to_enum(__method__, token, instance) unless block
-
-      cxt = Cxt::ChildApplication.new(
-        schema: self,
+      dialect_invoke_each(:child_applicate,
+        Cxt::ChildApplication,
         instance: instance,
         token: token,
-        block: block,
+        &block
       )
-
-      dialect.invoke(:child_applicate, cxt)
-
-      nil
     end
 
     # any object property names this schema indicates may be present on its instances.
