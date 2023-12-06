@@ -116,7 +116,7 @@ module JSI
 
     def inspect
       [
-        '#<JSI::SchemaRegistry',
+        "#<#{self.class}",
         *[['resources', @resources.keys], ['autoload', @autoload_uris.keys]].map do |label, uris|
           [
             "  #{label} (#{uris.size})#{uris.empty? ? "" : ":"}",
