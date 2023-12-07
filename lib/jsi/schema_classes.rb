@@ -86,7 +86,9 @@ module JSI
     end
 
     # @return [Set<Module>]
-    attr_reader :schema_implementation_modules
+    def schema_implementation_modules
+      schema.schema_implementation_modules
+    end
   end
 
   # this module is a namespace for building schema classes and schema modules.
