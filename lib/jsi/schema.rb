@@ -144,6 +144,9 @@ module JSI
     #
     # A schema is indicated as describing other schemas using the {Schema#describes_schema!} method.
     module DescribesSchema
+      # @return [Set<Module>]
+      attr_reader(:schema_implementation_modules)
+
       # Instantiates the given schema content as a JSI Schema.
       #
       # By default, the schema will be registered with the {JSI.schema_registry}.
@@ -582,9 +585,9 @@ module JSI
           jsi_schema_module.include(mod)
         end
         jsi_schema_module.extend(SchemaModule::DescribesSchemaModule)
-        jsi_schema_module.instance_variable_set(:@schema_implementation_modules, schema_implementation_modules)
       end
 
+      @schema_implementation_modules = schema_implementation_modules
       extend(DescribesSchema)
 
       nil
