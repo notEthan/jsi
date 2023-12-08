@@ -4,7 +4,8 @@ describe JSI::JSICoder do
   let(:schema_content) do
     {properties: {foo: {}, bar: {}}}
   end
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
+  let(:schema_block) { nil }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07, &schema_block) }
   let(:options) { {} }
   let(:jsi_opt) { {} }
   let(:coder) { JSI::JSICoder.new(schema, jsi_opt: jsi_opt, **options) }
@@ -83,6 +84,16 @@ describe JSI::JSICoder do
         it 'dumps a JSI array' do
           jsis = schema.new_jsi([{'foo' => 'x', 'bar' => 'y'}, {'foo' => 'z', 'bar' => 'q'}])
           assert_equal([{"foo" => "x", "bar" => "y"}, {"foo" => "z", "bar" => "q"}], coder.dump(jsis))
+        end
+      end
+
+      describe 'as_json options' do
+        let(:options) { {as_json_opt: {from: 'as_json'}} }
+        let(:schema_content) { {'$id': 'tag:uthb'} }
+        let(:schema_block) { proc { redef_method(:as_json) { |**kw| kw } } }
+
+        it 'passes options' do
+          assert_equal({from: 'as_json'}, coder.dump(schema.new_jsi({'foo' => 'x'})))
         end
       end
     end
