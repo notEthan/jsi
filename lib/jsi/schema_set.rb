@@ -96,9 +96,7 @@ module JSI
         schema_registry: JSI.schema_registry,
         stringify_symbol_keys: false
     )
-      if stringify_symbol_keys
-        instance = Util.deep_stringify_symbol_keys(instance)
-      end
+      instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
       applied_schemas = inplace_applicator_schemas(instance)
 
@@ -121,9 +119,7 @@ module JSI
         jsi_schema_registry: schema_registry,
       )
 
-      if register && schema_registry
-        schema_registry.register(jsi)
-      end
+      schema_registry.register(jsi) if register && schema_registry
 
       jsi
     end

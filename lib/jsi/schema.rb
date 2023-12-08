@@ -196,9 +196,9 @@ module JSI
           schema_registry: schema_registry,
           stringify_symbol_keys: stringify_symbol_keys,
         )
-        if block
-          schema_jsi.jsi_schema_module_exec(&block)
-        end
+
+        schema_jsi.jsi_schema_module_exec(&block) if block
+
         schema_jsi
       end
 
