@@ -201,6 +201,7 @@ module JSI
     # ensures the given param becomes a frozen Set of Modules.
     # returns the param if it is already that, otherwise initializes and freezes such a Set.
     #
+    # @api private
     # @param modules [Set, Enumerable] the object to ensure becomes a frozen Set of Modules
     # @return [Set] frozen Set containing the given modules
     # @raise [ArgumentError] when the modules param is not an Enumerable
