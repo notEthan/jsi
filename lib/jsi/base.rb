@@ -55,7 +55,10 @@ module JSI
         end
       end
 
-      alias_method :to_s, :inspect
+      def to_s
+        inspect
+      end
+
       # A constant name of this class. This is generated from any schema module name or URI of each schema
       # this class represents, or random characters.
       #
@@ -608,7 +611,9 @@ module JSI
       -"\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of this JSI to the given printer
     # @return [void]

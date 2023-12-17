@@ -259,7 +259,9 @@ module JSI
         -"#{self.class.name}[#{tokens.map(&:inspect).join(", ")}]"
       end
 
-      alias_method :to_s, :inspect
+      def to_s
+        inspect
+      end
 
       # see {Util::Private::FingerprintHash}
       # @api private

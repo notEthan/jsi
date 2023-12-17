@@ -39,7 +39,9 @@ module JSI
       end
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
     #
@@ -350,6 +352,8 @@ module JSI
       end
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
   end
 end

@@ -101,7 +101,9 @@ module JSI
       -"\#{<#{object_group_str}>#{map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of this hashlike to the given printer
     # @return [void]
@@ -207,7 +209,9 @@ module JSI
       -"\#[<#{object_group_str}>#{map { |e| ' ' + e.inspect }.join(',')}]"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of this arraylike to the given printer
     # @return [void]

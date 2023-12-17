@@ -161,7 +161,9 @@ module JSI
       -%Q(\#<#{self.class.name} #{ref}>)
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of self to the given printer
     # @return [void]
