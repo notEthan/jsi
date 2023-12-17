@@ -27,7 +27,9 @@ module JSI
         end
       end
 
-      alias_method :to_s, :inspect
+      def to_s
+        inspect
+      end
     end
 
     # @param jsi_ptr [JSI::Ptr] pointer to the schema in the document
@@ -84,7 +86,9 @@ module JSI
       -"\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of self to the given printer
     # @return [void]

@@ -129,7 +129,9 @@ module JSI
       ].join("\n").freeze
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     def dup
       self.class.new.tap do |reg|

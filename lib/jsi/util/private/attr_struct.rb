@@ -90,7 +90,9 @@ module JSI
         -"\#<#{self.class.name}#{@attributes.map { |k, v| " #{k}: #{v.inspect}" }.join(',')}>"
       end
 
-      alias_method :to_s, :inspect
+      def to_s
+        inspect
+      end
 
       # pretty-prints a representation of self to the given printer
       # @return [void]
