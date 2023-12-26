@@ -4,6 +4,22 @@ module JSI
   module Schema::Elements
     ITEMS_PREFIXED = element_map do
       Schema::Element.new(keywords: %w(items prefixItems)) do |element|
+        element.add_action(:subschema) do
+          # https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-prefixitems
+          #> The value of "prefixItems" MUST be a non-empty array of valid JSON Schemas.
+          if keyword_value_ary?('prefixItems')
+            schema_content['prefixItems'].each_index do |i|
+              cxt_yield(['prefixItems', i])
+            end
+          end
+
+          # https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-01#name-items
+          #> The value of "items" MUST be a valid JSON Schema.
+          if keyword?('items')
+            cxt_yield(['items'])
+          end
+        end
+
         element.add_action(:child_applicate) do
           next if !instance.respond_to?(:to_ary)
           if keyword_value_ary?('prefixItems') && schema_content['prefixItems'].size > token
