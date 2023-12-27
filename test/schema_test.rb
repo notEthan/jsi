@@ -135,12 +135,12 @@ describe JSI::Schema do
             "http://jsi/schema_uris/q0wo#",
           ],
           "#/definitions/sibling1" => [
+            "http://jsi/schema_uris/q0wo#collide",
             "http://jsi/schema_uris/q0wo#/definitions/sibling1",
-            # no #collide
           ],
           "#/definitions/sibling2" => [
+            "http://jsi/schema_uris/q0wo#collide",
             "http://jsi/schema_uris/q0wo#/definitions/sibling2",
-            # no #collide
           ],
           "#/definitions/child" => [
             "http://jsi/schema_uris/q0wo#X",

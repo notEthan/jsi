@@ -444,7 +444,7 @@ module JSI
       schema_absolute_uris.each(&block)
 
       if schema_resource_root
-        anchors.select { |anchor| schema_resource_root.jsi_anchor_subschema(anchor) == self }.each do |anchor|
+        anchors.each do |anchor|
           schema_resource_root.schema_absolute_uris.each do |uri|
             yield(uri.merge(fragment: anchor).freeze)
           end
