@@ -153,6 +153,13 @@ module JSI
     schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaDraft06.schema }
     schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaDraft07.schema }
     schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/schema") { JSI::JSONSchemaDraft202012.schema }
+    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/core")         { JSI::JSONSchemaDraft202012::Core.schema }
+    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/applicator")    { JSI::JSONSchemaDraft202012::Applicator.schema }
+    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/unevaluated")    { JSI::JSONSchemaDraft202012::Unevaluated.schema }
+    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/validation")      { JSI::JSONSchemaDraft202012::Validation.schema }
+    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/meta-data")        { JSI::JSONSchemaDraft202012::MetaData.schema }
+    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-annotation") { JSI::JSONSchemaDraft202012::FormatAnnotation.schema }
+    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/content")          { JSI::JSONSchemaDraft202012::Content.schema }
   end.freeze
 
   self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup
