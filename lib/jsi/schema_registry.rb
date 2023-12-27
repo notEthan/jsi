@@ -89,7 +89,18 @@ module JSI
     def find(uri)
       uri = registration_uri(uri)
       if @autoload_uris.key?(uri)
-        autoloaded = @autoload_uris[uri].call
+        autoload_param = {
+          schema_registry: self,
+          uri: uri,
+        }
+        # remove params the autoload proc does not accept
+        autoload_param.select! do |name, _|
+          @autoload_uris[uri].parameters.any? do |type, pname|
+            # dblsplat (**k) ||   required (k: )  || optional (k: nil)
+            type == :keyrest || ((type == :keyreq || type == :key) && pname == name)
+          end
+        end
+        autoloaded = @autoload_uris[uri].call(**autoload_param)
         register(autoloaded)
         @autoload_uris.delete(uri)
       end
