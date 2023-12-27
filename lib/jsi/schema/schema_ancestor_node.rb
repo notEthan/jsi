@@ -110,7 +110,7 @@ module JSI
 
     def jsi_anchor_subschemas_compute(anchor: )
         jsi_each_descendent_schema.select do |schema|
-          schema.anchor == anchor
+          schema.anchors.include?(anchor)
         end.to_set.freeze
     end
 
