@@ -443,15 +443,15 @@ module JSI
     private def schema_uris_compute(&block)
       schema_absolute_uris.each(&block)
 
-      anchors = Set.new(self.anchors)
-      jsi_subschema_resource_ancestors.reverse_each do |ancestor_schema|
-        anchors.keep_if { |anchor| ancestor_schema.jsi_anchor_subschema(anchor) == self }
-        anchors.each do |anchor|
-          ancestor_schema.schema_absolute_uris.each do |uri|
+      if schema_resource_root
+        anchors.select { |anchor| schema_resource_root.jsi_anchor_subschema(anchor) == self }.each do |anchor|
+          schema_resource_root.schema_absolute_uris.each do |uri|
             yield(uri.merge(fragment: anchor).freeze)
           end
         end
+      end
 
+      jsi_subschema_resource_ancestors.reverse_each do |ancestor_schema|
         relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
         ancestor_schema.schema_absolute_uris.each do |uri|
           yield(uri.merge(fragment: relative_ptr.fragment).freeze)
