@@ -238,6 +238,20 @@ module JSI
       end
     end
 
+    # yields each descendent of this node within the same resource that is a Schema
+    # @yield [Schema]
+    def jsi_each_descendent_schema_same_resource(&block)
+      return(to_enum(__method__)) unless block_given?
+
+      jsi_each_child_token do |token|
+        child = jsi_child_node(token)
+        if !child.is_a?(Schema) || !child.schema_resource_root?
+          # note: if child is a Schema, Schema#jsi_each_descendent_schema_same_resource overrides Base
+          child.jsi_each_descendent_schema_same_resource(&block)
+        end
+      end
+    end
+
     # recursively selects descendent nodes of this JSI, returning a modified copy of self containing only
     # descendent nodes for which the given block had a true-ish result.
     #

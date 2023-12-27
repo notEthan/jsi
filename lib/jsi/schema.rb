@@ -659,6 +659,20 @@ module JSI
       dialect_invoke_each(:subschema) { |ptr| subschema(ptr).jsi_each_descendent_schema(&block) }
     end
 
+    # yields each descendent of this node (including itself) within the same resource that is a Schema
+    # @yield [Schema]
+    def jsi_each_descendent_schema_same_resource(&block)
+      return(to_enum(__method__)) unless block_given?
+
+      yield(self)
+      dialect_invoke_each(:subschema) do |ptr|
+        desc = subschema(ptr)
+        if !desc.schema_resource_root?
+          desc.jsi_each_descendent_schema_same_resource(&block)
+        end
+      end
+    end
+
     # @yield [Ptr]
     def each_immediate_subschema_ptr
       return(to_enum(__method__)) unless block_given?
