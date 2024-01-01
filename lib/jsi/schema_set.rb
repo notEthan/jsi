@@ -202,13 +202,11 @@ module JSI
     def pretty_print(q)
       q.text self.class.to_s
       q.text '['
-      q.group_sub {
-        q.nest(2) {
+      q.group(2) {
           q.breakable('')
           q.seplist(self, nil, :each) { |e|
             q.pp e
           }
-        }
       }
       q.breakable ''
       q.text ']'

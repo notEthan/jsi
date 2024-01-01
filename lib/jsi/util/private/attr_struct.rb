@@ -99,8 +99,7 @@ module JSI
       def pretty_print(q)
         q.text '#<'
         q.text self.class.name
-        q.group_sub {
-          q.nest(2) {
+        q.group(2) {
             q.breakable(@attributes.empty? ? '' : ' ')
             q.seplist(@attributes, nil, :each_pair) { |k, v|
               q.group {
@@ -109,7 +108,6 @@ module JSI
                 q.pp v
               }
             }
-          }
         }
         q.breakable ''
         q.text '>'
