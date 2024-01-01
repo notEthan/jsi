@@ -620,11 +620,9 @@ module JSI
     def pretty_print(q)
       q.text '#<'
       q.text jsi_object_group_text.join(' ')
-      q.group_sub {
-        q.nest(2) {
+      q.group(2) {
           q.breakable ' '
           q.pp jsi_instance
-        }
       }
       q.breakable ''
       q.text '>'
