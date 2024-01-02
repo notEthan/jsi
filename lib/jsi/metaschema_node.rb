@@ -211,13 +211,14 @@ module JSI
       if equal?(jsi_root_node)
         modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
         modified_document = jsi_content_to_immutable.call(modified_document) if jsi_content_to_immutable
-        MetaSchemaNode.new(modified_document, **our_initialize_params)
+        modified_copy = MetaSchemaNode.new(modified_document, **our_initialize_params)
       else
         modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
           jsi_ptr.modified_document_copy(root, &block)
         end
-        modified_jsi_root_node.jsi_descendent_node(jsi_ptr)
+        modified_copy = modified_jsi_root_node.jsi_descendent_node(jsi_ptr)
       end
+      modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
     end
 
     # @private

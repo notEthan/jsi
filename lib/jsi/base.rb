@@ -598,7 +598,8 @@ module JSI
           mutable: jsi_mutable?,
           to_immutable: jsi_content_to_immutable,
         )
-        modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
+        modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
+        modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
     end
 
     # Is the instance an array?
