@@ -75,6 +75,7 @@ module JSI
         jsi_ptr: jsi_ptr + subptr,
         jsi_schema_base_uri: jsi_resource_ancestor_uri,
         jsi_schema_resource_ancestors: jsi_subschema_resource_ancestors,
+        jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map,
         jsi_schema_registry: jsi_schema_registry,
       )
     end
