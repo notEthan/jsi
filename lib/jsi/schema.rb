@@ -395,7 +395,10 @@ module JSI
 
     # @return [Enumerable<String>]
     def anchors
-      dialect_invoke_each(:anchor)
+      anchors = Set[]
+      anchors.merge(dialect_invoke_each(:anchor))
+      anchors.merge(dialect_invoke_each(:dynamicAnchor))
+      anchors.freeze
     end
 
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
