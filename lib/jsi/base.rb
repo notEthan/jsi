@@ -661,6 +661,27 @@ module JSI
       JMESPath.search(expression, self, **runtime_options)
     end
 
+    # @private
+    # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
+    # @return [Base]
+    def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
+      return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
+
+      # we instantiate a node the same as self but with the given dynamic_anchor_map,
+      # under the same root node - so this node is not a descendent of its root node,
+      # which is odd but does not cause problems at the moment.
+      self.class.new(jsi_document,
+        jsi_ptr: jsi_ptr,
+        jsi_indicated_schemas: jsi_indicated_schemas,
+        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
+        jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
+        jsi_schema_registry: jsi_schema_registry,
+        jsi_content_to_immutable: jsi_content_to_immutable,
+        jsi_root_node: jsi_root_node,
+      )
+    end
+
     # A JSI whose node content is a duplicate of this JSI's (using its #dup).
     #
     # Note that immutable JSIs are not made mutable with #dup.

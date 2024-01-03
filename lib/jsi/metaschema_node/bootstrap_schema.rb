@@ -118,6 +118,22 @@ module JSI
       jsi_subschema_resource_ancestors.last
     end
 
+    # @private
+    # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
+    # @return [MetaSchemaNode::BootstrapSchema]
+    def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
+      return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
+
+      self.class.new(
+        jsi_document,
+        jsi_ptr: jsi_ptr,
+        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
+        jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
+        jsi_schema_registry: jsi_schema_registry,
+      )
+    end
+
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)
