@@ -83,7 +83,7 @@ describe 'JSON Schema Test Suite' do
                             'contentEncoding',
                           ].select { |kw| schema.keyword?(kw) }
                           if unsupported_keywords.any?
-                            skip("unsupported keywords: #{unsupported_keywords.join(' ')}")
+                            skip("unsupported validation keywords: #{unsupported_keywords.join(' ')}")
                           end
 
                           regexs = schema.jsi_each_descendent_node.select do |node|
