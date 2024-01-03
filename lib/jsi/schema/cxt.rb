@@ -28,6 +28,15 @@ module JSI
     # @!attribute block
     #   @return [#call]
     class Cxt::Block
+      if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
+        def cxt_yield(*a)
+          block.call(*a)
+        end
+      else
+        def cxt_yield(*a, **kw)
+          block.call(*a, **kw)
+        end
+      end
     end
   end
 end
