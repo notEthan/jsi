@@ -408,6 +408,12 @@ module JSI
     end
     private :jsi_child # internals for #[] but idk, could be public
 
+    # @param token (see Base#[])
+    # @return [JSI::Base]
+    protected def jsi_child_node(token)
+      jsi_child(token, as_jsi: true)
+    end
+
     # A default value for a child of this node identified by the given token, if schemas describing
     # that child define a default value.
     #
