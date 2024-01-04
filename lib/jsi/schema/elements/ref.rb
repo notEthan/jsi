@@ -22,7 +22,7 @@ module JSI
         resolve_ref = proc do
           next if !keyword_value_str?('$ref')
           ref = schema.schema_ref('$ref')
-          resolved_schema = ref.deref_schema
+          resolved_schema = ref.deref_schema.jsi_with_schema_dynamic_anchor_map(schema.jsi_next_schema_dynamic_anchor_map)
           [resolved_schema, ref]
         end
 
