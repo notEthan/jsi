@@ -98,7 +98,7 @@ module JSI
           k.is_a?(Symbol) ? k.to_s :
           k.respond_to?(:to_str) && (kstr = k.to_str).is_a?(String) ? kstr :
           raise(TypeError, "JSON object (Hash) cannot be keyed with: #{k.pretty_inspect.chomp}")
-        hash[ks] = jsi_child(k, as_jsi: true).as_json(**options)
+        hash[ks] = jsi_child_node(k).as_json(**options)
       end
       hash
     end
@@ -263,7 +263,7 @@ module JSI
 
     # See {Base#as_json}
     def as_json(options = {})
-      each_index.map { |i| jsi_child(i, as_jsi: true).as_json(**options) }
+      each_index.map { |i| jsi_child_node(i).as_json(**options) }
     end
 
     include Util::Arraylike

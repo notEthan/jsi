@@ -220,7 +220,7 @@ module JSI
       end
 
       jsi_each_child_token do |token|
-        jsi_child(token, as_jsi: true).jsi_each_descendent_node(propertyNames: propertyNames, &block)
+        jsi_child_node(token).jsi_each_descendent_node(propertyNames: propertyNames, &block)
       end
 
       nil
@@ -239,7 +239,7 @@ module JSI
         if jsi_array? || jsi_hash?
           res = instance.class.new
           jsi_each_child_token do |token|
-            v = jsi_child(token, as_jsi: true)
+            v = jsi_child_node(token)
             if yield(v)
               res_v = v.jsi_select_descendents_node_first(&block).jsi_node_content
               if jsi_array?
@@ -269,7 +269,7 @@ module JSI
         if jsi_array? || jsi_hash?
           res = instance.class.new
           jsi_each_child_token do |token|
-            v = jsi_child(token, as_jsi: true).jsi_select_descendents_leaf_first(&block)
+            v = jsi_child_node(token).jsi_select_descendents_leaf_first(&block)
             if yield(v)
               res_v = v.jsi_node_content
               if jsi_array?
@@ -294,7 +294,7 @@ module JSI
 
       jsi_ptr.tokens.map do |token|
         parent.tap do
-          parent = parent[token, as_jsi: true]
+          parent = parent.jsi_child_node(token)
         end
       end.reverse!.freeze
     end
@@ -315,7 +315,7 @@ module JSI
       ancestors << ancestor
 
       jsi_ptr.tokens.each do |token|
-        ancestor = ancestor[token, as_jsi: true]
+        ancestor = ancestor.jsi_child_node(token)
         ancestors << ancestor
       end
       ancestors.reverse!.freeze
@@ -443,7 +443,7 @@ module JSI
         jsi_child_as_jsi(defaults.first, child_applied_schemas, as_jsi) do
           jsi_modified_copy do |i|
             i.dup.tap { |i_dup| i_dup[token] = defaults.first }
-          end[token, as_jsi: true]
+          end.jsi_child_node(token)
         end
       else
         child_content
