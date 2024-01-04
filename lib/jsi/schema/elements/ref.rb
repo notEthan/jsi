@@ -14,7 +14,8 @@ module JSI
       if keyword?('$ref') && schema_content['$ref'].respond_to?(:to_str)
         ref = schema.schema_ref('$ref')
         unless visited_refs.include?(ref)
-          inplace_schema_applicate(ref.deref_schema, ref: ref)
+          resolved_schema = ref.deref_schema
+          inplace_schema_applicate(resolved_schema, ref: ref)
 
           if exclusive
             self.abort = true
@@ -34,7 +35,8 @@ module JSI
                 next
               end
 
-                ref_result = schema_ref.deref_schema.internal_validate_instance(
+                resolved_schema = schema_ref.deref_schema
+                ref_result = resolved_schema.internal_validate_instance(
                   instance_ptr,
                   instance_document,
                   validate_only: validate_only,
