@@ -843,6 +843,42 @@ module JSI
 
     # @private
     def jsi_next_schema_dynamic_anchor_map
+      return(@next_schema_dynamic_anchor_map) if @next_schema_dynamic_anchor_map
+
+      @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+
+      anchor_root = schema_resource_root.is_a?(Schema) ? schema_resource_root : self
+      descendent_schemas = [[anchor_root, Util::EMPTY_ARY]]
+
+      while !descendent_schemas.empty?
+        descendent_schema, ptrs = *descendent_schemas.shift
+
+        descendent_schema.dialect_invoke_each(:dynamicAnchor) do |anchor|
+          next if @next_schema_dynamic_anchor_map.key?(anchor)
+          @next_schema_dynamic_anchor_map = @next_schema_dynamic_anchor_map.merge({
+            anchor => [anchor_root, ptrs].freeze,
+          }).freeze
+        end
+
+        descendent_schema.each_immediate_subschema_ptr do |subptr|
+          # we want a schema at subptr to
+          # - check if it is a schema resource root
+          # - check for $dynamicAnchor
+          # can't use #subschema here (it would need to pass this method's result to instantiate the subschema);
+          # a minimal bootstrap schema is used instead.
+          descendent_subschema = dialect.bootstrap_schema_class.new(
+            jsi_document,
+            jsi_ptr: descendent_schema.jsi_ptr + subptr,
+            # note: same as anchor_root.jsi_resource_ancestor_uri since we don't cross resource boundaries.
+            jsi_schema_base_uri: descendent_schema.jsi_resource_ancestor_uri,
+          )
+          if !descendent_subschema.schema_resource_root?
+            descendent_schemas.push([descendent_subschema, ptrs.dup.push(subptr).freeze])
+          end
+        end
+      end
+
+      @next_schema_dynamic_anchor_map
     end
 
     # Does application require collection of evaluated children?
@@ -866,6 +902,7 @@ module JSI
       @described_object_property_names_map = jsi_memomap do
         dialect_invoke_each(:described_object_property_names).to_set.freeze
       end
+      @next_schema_dynamic_anchor_map = nil
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
     end
   end
