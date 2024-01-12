@@ -202,26 +202,33 @@ module JSI
       @dialects.key?(uri) || @dialect_autoloaders.key?(uri)
     end
 
-    def inspect
-      [
-        "#<#{self.class}",
-        *[
+    def pretty_print(q)
+      jsi_pp_object_group(q) do
+        labels_uris = [
           ['resources', @resources.keys],
           ['resources autoload', @resource_autoloaders.keys],
           ['vocabularies', @vocabularies.keys],
           ['vocabularies autoload', @vocabulary_autoloaders.keys],
           ['dialects', @dialects.keys],
           ['dialects autoload', @dialect_autoloaders.keys],
-        ].map do |label, uris|
-          [
-            "  #{label} (#{uris.size})#{uris.empty? ? "" : ":"}",
-            *uris.map do |uri|
-              "    #{uri}"
-            end,
-          ]
-        end.inject([], &:+),
-        '>',
-      ].join("\n").freeze
+        ]
+        q.seplist(labels_uris, q.method(:breakable)) do |label, uris|
+          q.text("#{label} (#{uris.size})")
+          if !uris.empty?
+            q.text(": <")
+            q.group do
+              q.nest(2) do
+                q.breakable('')
+                q.seplist(uris) do |uri|
+                  q.text(uri.to_s.inspect)
+                end
+              end
+              q.breakable('')
+            end
+            q.text '>'
+          end
+        end
+      end
     end
 
     def dup

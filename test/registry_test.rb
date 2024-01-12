@@ -219,8 +219,8 @@ describe("JSI::Registry") do
       assert_equal(msg.chomp, err.message)
     end
 
-    it '#inspect' do
-      inspect = <<~str
+    it('#pretty_print') do
+      pp = <<~PP
       #<JSI::Registry
         resources (0)
         resources autoload (0)
@@ -229,8 +229,12 @@ describe("JSI::Registry") do
         dialects (0)
         dialects autoload (0)
       >
-      str
-      assert_equal(inspect.chomp, JSI::Registry.new.inspect)
+      PP
+      assert_equal(pp, JSI::Registry.new.pretty_inspect)
+    end
+
+    it('#inspect') do
+      assert_equal(%q(#<JSI::Registry resources (0) resources autoload (0) vocabularies (0) vocabularies autoload (0) dialects (0) dialects autoload (0)>), JSI::Registry.new.inspect)
     end
 
     it 'dups' do
