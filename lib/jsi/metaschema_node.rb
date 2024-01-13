@@ -207,7 +207,7 @@ module JSI
 
     def jsi_memomaps_initialize
       if jsi_ptr.root?
-        @root_descendent_node_map = jsi_memomap(key_by: proc { |i| i[:ptr] }, &method(:jsi_root_descendent_node_compute))
+        @root_descendent_node_map = jsi_memomap(&method(:jsi_root_descendent_node_compute))
       else
         @root_descendent_node_map = @jsi_root_node.root_descendent_node_map
       end
