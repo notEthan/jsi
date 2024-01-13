@@ -106,7 +106,7 @@ module JSI
       end
 
       @bootstrap_schemas = our_bootstrap_indicated_schemas.each_yield_set do |is, y|
-        is.each_inplace_applicator_schema(instance_for_schemas, &y)
+        is.each_inplace_applicator_schema(instance_for_schemas, &y) # note: instance_for_schemas == jsi_node_content now
       end
 
       @bootstrap_schemas.each do |bootstrap_schema|
