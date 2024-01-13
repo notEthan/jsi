@@ -27,19 +27,19 @@ BasicMetaSchema = JSI.new_metaschema_module(
 
 describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
-  let(:metaschema_root_ptr) { JSI::Ptr[] }
-  let(:root_schema_ptr) { JSI::Ptr[] }
+  let(:metaschema_root_ref) { '#' }
+  let(:root_schema_ref) { '#' }
   let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
     JSI::MetaSchemaNode.new(to_immutable[metaschema_document],
       msn_dialect: dialect,
-      metaschema_root_ptr: metaschema_root_ptr,
-      root_schema_ptr: root_schema_ptr,
+      metaschema_root_ref: metaschema_root_ref,
+      root_schema_ref: root_schema_ref,
       jsi_content_to_immutable: to_immutable,
     )
   end
-  let(:metaschema) { root_node.jsi_descendent_node(metaschema_root_ptr) }
+  let(:metaschema) { root_node.jsi_descendent_node(JSI::Ptr.from_fragment(JSI::Util.uri(metaschema_root_ref).fragment)) }
 
   def assert_metaschema_behaves
     assert_schemas([metaschema], metaschema)
@@ -195,8 +195,8 @@ describe(JSI::MetaSchemaNode) do
         YAML
       )
     end
-    let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
-    let(:root_schema_ptr) { JSI::Ptr['schemas', 'Document'] }
+    let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
+    let(:root_schema_ref) { '#/schemas/Document' }
     it('acts like a meta-schema') do
       assert_schemas([root_node.schemas['Document']], root_node)
       assert_schemas([root_node.schemas['Document'].properties['schemas']], root_node.schemas)
@@ -224,8 +224,8 @@ describe(JSI::MetaSchemaNode) do
         YAML
       )
     end
-    let(:metaschema_root_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
-    let(:root_schema_ptr) { JSI::Ptr['$defs', 'JsonSchema'] }
+    let(:metaschema_root_ref) { '#/$defs/JsonSchema' }
+    let(:root_schema_ref) { '#/$defs/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
       assert_schemas([metaschema.properties['$defs']], root_node['$defs'])
@@ -251,8 +251,8 @@ describe(JSI::MetaSchemaNode) do
         YAML
       )
     end
-    let(:metaschema_root_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
-    let(:root_schema_ptr) { JSI::Ptr['schemas', 'JsonSchema'] }
+    let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
+    let(:root_schema_ref) { '#/schemas/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
       assert_schemas([metaschema.properties['schemas']], root_node.schemas)

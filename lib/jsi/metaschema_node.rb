@@ -2,8 +2,8 @@
 
 module JSI
   # A MetaSchemaNode is a JSI instance representing a node in a document that contains a meta-schema.
-  # The root of the meta-schema is pointed to by metaschema_root_ptr.
-  # the schema describing the root of the document is pointed to by root_schema_ptr.
+  # The root of the meta-schema is referenced by metaschema_root_ref.
+  # The schema describing the root of the document is referenced by root_schema_ref.
   #
   # like JSI::Base's normal subclasses, this class represents an instance of a schema set, an instance
   # which may itself be a schema. unlike JSI::Base, the document containing the instance and its schemas
@@ -29,15 +29,17 @@ module JSI
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
     # @param msn_dialect [Schema::Dialect]
-    # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the meta-schema in the jsi_document
-    # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
+    # @param metaschema_root_ref [#to_str] URI reference to the root of the meta-schema.
+    #   The default resolves to the root of the given document.
+    # @param root_schema_ref [#to_str] URI reference to the schema describing the root of the jsi_document.
+    #   When schemas of the meta-schema are in multiple documents, this describes the roots of all instantiated documents.
     # @param bootstrap_schema_registry [SchemaRegistry, nil]
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
         msn_dialect: ,
-        metaschema_root_ptr: Ptr[],
-        root_schema_ptr: Ptr[],
+        metaschema_root_ref: '#',
+        root_schema_ref: '#',
         jsi_schema_base_uri: nil,
         jsi_schema_registry: nil,
         bootstrap_schema_registry: nil,
@@ -58,8 +60,8 @@ module JSI
       @to_initialize_finish = []
 
       @msn_dialect = msn_dialect
-      @metaschema_root_ptr = metaschema_root_ptr
-      @root_schema_ptr = root_schema_ptr
+      @metaschema_root_ref = metaschema_root_ref = Util.uri(metaschema_root_ref)
+      @root_schema_ref     = root_schema_ref     = Util.uri(root_schema_ref)
       @bootstrap_schema_registry = bootstrap_schema_registry
 
       if jsi_ptr.root? && jsi_schema_base_uri
@@ -68,14 +70,30 @@ module JSI
 
       #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
-      instance_for_schemas = jsi_document
       bootstrap_schema_class = msn_dialect.bootstrap_schema_class
-      root_bootstrap_schema = bootstrap_schema_class.new(
-        jsi_document,
-        jsi_ptr: root_schema_ptr,
-        jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
-        jsi_schema_registry: bootstrap_schema_registry,
-      )
+
+      bootstrap_schema_from_ref = proc do |ref_uri|
+        ref_uri_nofrag = ref_uri.merge(fragment: nil).freeze
+
+        if ref_uri_nofrag.empty?
+          ptr = Ptr.from_fragment(ref_uri.fragment) # anchor not supported
+          bootstrap_schema_class.new(
+            jsi_document,
+            jsi_ptr: ptr,
+            jsi_schema_base_uri: nil, # not supported
+            jsi_schema_registry: bootstrap_schema_registry,
+          )
+        else
+          # if not fragment-only, ref must be registered in the bootstrap_schema_registry
+          ref = Schema::Ref.new(ref_uri, schema_registry: bootstrap_schema_registry)
+          ref.deref_schema
+        end
+      end
+
+      @bootstrap_metaschema = bootstrap_schema_from_ref[metaschema_root_ref]
+
+      instance_for_schemas = jsi_document
+      root_bootstrap_schema = bootstrap_schema_from_ref[root_schema_ref]
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
         child_indicated_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
           is.each_inplace_child_applicator_schema(tok, instance_for_schemas, &y)
@@ -90,7 +108,7 @@ module JSI
       end
 
       @bootstrap_schemas.each do |bootstrap_schema|
-        if bootstrap_schema.jsi_ptr == metaschema_root_ptr
+        if bootstrap_schema == @bootstrap_metaschema
           # this is described by the meta-schema, i.e. this is a schema
           define_singleton_method(:dialect) { msn_dialect }
           extend(Schema)
@@ -108,7 +126,7 @@ module JSI
       @jsi_schemas = bootstrap_schemas_to_msn(@bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
-      if jsi_ptr == metaschema_root_ptr
+      if jsi_ptr == @bootstrap_metaschema.jsi_ptr && jsi_document == @bootstrap_metaschema.jsi_document
         describes_schema!(msn_dialect)
       end
 
@@ -142,13 +160,13 @@ module JSI
     # @return [Schema::Dialect]
     attr_reader(:msn_dialect)
 
-    # ptr to the root of the meta-schema in the jsi_document
-    # @return [JSI::Ptr]
-    attr_reader :metaschema_root_ptr
+    # URI reference to the root of the meta-schema
+    # @return [Addressable::URI]
+    attr_reader(:metaschema_root_ref)
 
-    # ptr to the schema of the root of the jsi_document
-    # @return [JSI::Ptr]
-    attr_reader :root_schema_ptr
+    # URI reference to the schema describing the root of the document
+    # @return [Addressable::URI]
+    attr_reader(:root_schema_ref)
 
     # @return [SchemaRegistry, nil]
     attr_reader(:bootstrap_schema_registry)
@@ -221,8 +239,8 @@ module JSI
       {
         jsi_ptr: jsi_ptr,
         msn_dialect: msn_dialect,
-        metaschema_root_ptr: metaschema_root_ptr,
-        root_schema_ptr: root_schema_ptr,
+        metaschema_root_ref: metaschema_root_ref,
+        root_schema_ref: root_schema_ref,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_registry: jsi_schema_registry,
         bootstrap_schema_registry: bootstrap_schema_registry,
