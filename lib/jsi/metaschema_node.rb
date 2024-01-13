@@ -44,6 +44,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_registry: nil,
         jsi_content_to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
+        initialize_finish: true,
         jsi_root_node: nil
     )
       super(jsi_document,
@@ -55,6 +56,9 @@ module JSI
         jsi_root_node: jsi_root_node,
       )
 
+      @initialize_finished = false
+      @to_initialize_finish = []
+
       @schema_implementation_modules = schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
@@ -65,7 +69,7 @@ module JSI
 
       #chkbug raise(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
-      extends = Set[]
+      @extends = Set[]
 
       instance_for_schemas = jsi_document
       bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules)
@@ -84,38 +88,45 @@ module JSI
       end
       @indicated_schemas_map = jsi_memomap { bootstrap_schemas_to_msn(our_bootstrap_indicated_schemas) }
 
-      our_bootstrap_schemas = our_bootstrap_indicated_schemas.each_yield_set do |is, y|
+      @bootstrap_schemas = our_bootstrap_indicated_schemas.each_yield_set do |is, y|
         is.each_inplace_applicator_schema(instance_for_schemas, &y)
       end
 
-      describes_self = false
-      our_bootstrap_schemas.each do |bootstrap_schema|
+      @describes_self = false
+      @bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the meta-schema, i.e. this is a schema
           schema_implementation_modules.each do |schema_implementation_module|
             extend schema_implementation_module
           end
           extend(Schema)
-          extends += schema_implementation_modules
+          @extends += schema_implementation_modules
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
           # this is the meta-schema (it is described by itself)
-          describes_self = true
+          @describes_self = true
         end
       end
 
-      @jsi_schemas = bootstrap_schemas_to_msn(our_bootstrap_schemas)
+      jsi_initialize_finish if initialize_finish
+    end
+
+    private def jsi_initialize_finish
+      return if @initialize_finished
+      @initialize_finished = true
+
+      @jsi_schemas = bootstrap_schemas_to_msn(@bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
-      if describes_self
+      if @describes_self
         describes_schema!(schema_implementation_modules)
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
-      extends.merge(extends_for_instance)
-      extends.freeze
+      @extends.merge(extends_for_instance)
+      @extends.freeze
 
-      conflicting_modules = Set[self.class] + extends + @jsi_schemas.map(&:jsi_schema_module)
+      conflicting_modules = Set[self.class] + @extends + @jsi_schemas.map(&:jsi_schema_module)
       reader_modules = @jsi_schemas.map do |schema|
         JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
       end
@@ -131,6 +142,11 @@ module JSI
 
       @jsi_schemas.each do |schema|
         extend schema.jsi_schema_module
+      end
+
+      while !@to_initialize_finish.empty?
+        node = @to_initialize_finish.shift
+        node.send(:jsi_initialize_finish)
       end
     end
 
