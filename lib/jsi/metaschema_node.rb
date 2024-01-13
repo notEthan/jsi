@@ -176,7 +176,7 @@ module JSI
 
     # see {Base#jsi_child}
     def jsi_child(token, as_jsi: )
-      child_node = @root_descendent_node_map[ptr: jsi_ptr[token]]
+      child_node = root_descendent_node(jsi_ptr[token])
 
       jsi_child_as_jsi(child_node.jsi_node_content, child_node.jsi_schemas, as_jsi) do
         child_node
@@ -240,37 +240,42 @@ module JSI
       }.freeze
     end
 
-    # note: not for root node
-    def new_node(**params)
-      MetaSchemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params, **params)
-    end
-
     def jsi_root_descendent_node_compute(ptr: )
       #chkbug raise(Bug) unless jsi_ptr.root?
       if ptr.root?
         self
       else
-        new_node(
+        MetaSchemaNode.new(jsi_document,
+          **our_initialize_params,
           jsi_ptr: ptr,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
+          jsi_root_node: jsi_root_node,
+          initialize_finish: false,
         )
       end
+    end
+
+    # @param ptr [Ptr]
+    # @return [MetaSchemaNode]
+    private def root_descendent_node(ptr)
+      node = @root_descendent_node_map[
+        ptr: ptr,
+      ]
+
+      if @initialize_finished
+        node.send(:jsi_initialize_finish)
+      else
+        @to_initialize_finish.push(node)
+      end
+
+      node
     end
 
     # @param bootstrap_schemas [Enumerable<BootstrapSchema>]
     # @return [SchemaSet<MetaSchemaNode>]
     def bootstrap_schemas_to_msn(bootstrap_schemas)
       SchemaSet.new(bootstrap_schemas) do |bootstrap_schema|
-        if bootstrap_schema.jsi_ptr == jsi_ptr
-          self
-        elsif bootstrap_schema.jsi_ptr.root?
-          @jsi_root_node
-        else
-          new_node(
-            jsi_ptr: bootstrap_schema.jsi_ptr,
-            jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
-          )
-        end
+        root_descendent_node(bootstrap_schema.jsi_ptr)
       end
     end
   end
