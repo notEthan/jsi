@@ -31,6 +31,7 @@ module JSI
     # @param msn_dialect [Schema::Dialect]
     # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the meta-schema in the jsi_document
     # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
+    # @param bootstrap_schema_registry [SchemaRegistry, nil]
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
@@ -39,6 +40,7 @@ module JSI
         root_schema_ptr: Ptr[],
         jsi_schema_base_uri: nil,
         jsi_schema_registry: nil,
+        bootstrap_schema_registry: nil,
         jsi_content_to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         initialize_finish: true,
         jsi_root_node: nil
@@ -58,6 +60,7 @@ module JSI
       @msn_dialect = msn_dialect
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
+      @bootstrap_schema_registry = bootstrap_schema_registry
 
       if jsi_ptr.root? && jsi_schema_base_uri
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on meta-schema document root")
@@ -71,7 +74,7 @@ module JSI
         jsi_document,
         jsi_ptr: root_schema_ptr,
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
-        jsi_schema_registry: nil,
+        jsi_schema_registry: bootstrap_schema_registry,
       )
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
         child_indicated_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
@@ -147,6 +150,9 @@ module JSI
     # @return [JSI::Ptr]
     attr_reader :root_schema_ptr
 
+    # @return [SchemaRegistry, nil]
+    attr_reader(:bootstrap_schema_registry)
+
     # JSI Schemas describing this MetaSchemaNode
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
@@ -219,6 +225,7 @@ module JSI
         root_schema_ptr: root_schema_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_registry: jsi_schema_registry,
+        bootstrap_schema_registry: bootstrap_schema_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
       }.freeze
     end
