@@ -41,19 +41,6 @@ module JSI
       (is_a?(Schema) && schema_absolute_uri) || jsi_schema_base_uri
     end
 
-    # The schema at or below this node with the given anchor.
-    # If no schema has that anchor (or multiple schemas do, incorrectly), nil.
-    #
-    # @return [JSI::Schema, nil]
-    def jsi_anchor_subschema(anchor)
-      subschemas = @anchor_subschemas_map[anchor: anchor]
-      if subschemas.size == 1
-        subschemas.first
-      else
-        nil
-      end
-    end
-
     # All schemas at or below this node with the given anchor.
     #
     # @return [Set<JSI::Schema>]
