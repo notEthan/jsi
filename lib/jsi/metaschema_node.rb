@@ -112,6 +112,10 @@ module JSI
           # this is described by the meta-schema, i.e. this is a schema
           define_singleton_method(:dialect) { msn_dialect }
           extend(Schema)
+
+          if jsi_schema_registry && schema_absolute_uris.any? { |uri| !jsi_schema_registry.registered?(uri) }
+            jsi_schema_registry.register_immediate(self)
+          end
         end
       end
 
