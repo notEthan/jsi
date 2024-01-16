@@ -119,6 +119,13 @@ module JSI
       @resources[uri]
     end
 
+    # @param uri [#to_str]
+    # @return [Boolean]
+    def registered?(uri)
+      uri = registration_uri(uri)
+      @resources.key?(uri) || @autoload_uris.key?(uri)
+    end
+
     def inspect
       [
         "#<#{self.class}",
