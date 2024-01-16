@@ -271,7 +271,7 @@ module JSI
 
     # @param ptr [Ptr]
     # @return [MetaSchemaNode]
-    private def root_descendent_node(ptr)
+    protected def root_descendent_node(ptr)
       node = @root_descendent_node_map[
         ptr: ptr,
       ]
@@ -288,7 +288,27 @@ module JSI
     # @param bootstrap_schema [MetaSchemaNode::BootstrapSchema]
     # @return [MetaSchemaNode]
     def bootstrap_schema_to_msn(bootstrap_schema)
+      if bootstrap_schema.jsi_document == jsi_document
         root_descendent_node(bootstrap_schema.jsi_ptr)
+      else
+        bootstrap_resource = bootstrap_schema.schema_resource_root
+        resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
+        if jsi_schema_registry.registered?(resource_uri)
+          resource = jsi_schema_registry.find(resource_uri)
+          resource.root_descendent_node(bootstrap_schema.jsi_ptr)
+        else
+          #chkbug fail if @initialize_finished
+          root = MetaSchemaNode.new(
+            bootstrap_schema.jsi_document,
+            **our_initialize_params,
+            jsi_ptr: Ptr[],
+            jsi_schema_base_uri: nil,
+            initialize_finish: false,
+          )
+          @to_initialize_finish.push(root)
+          root.root_descendent_node(bootstrap_schema.jsi_ptr)
+        end
+      end
     end
   end
 end
