@@ -19,6 +19,7 @@ module JSI
               # succssfully. Recall: regular expressions are not implicitly anchored.
               validate(
                 regexp.match(instance),
+                'validation.keyword.pattern.not_match',
                 'instance string does not match `pattern` regular expression value',
                 keyword: 'pattern',
               )

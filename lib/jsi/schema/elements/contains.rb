@@ -36,6 +36,7 @@ module JSI
               end
               validate(
                 results.each_value.any?(&:valid?),
+                'validation.keyword.contains.none',
                 "instance array does not contain any items valid against `contains` schema",
                 keyword: 'contains',
                 results: results.each_value,

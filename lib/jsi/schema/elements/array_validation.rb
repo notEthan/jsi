@@ -14,6 +14,7 @@ module JSI
             size = instance.to_ary.size
             validate(
               size <= value,
+              'validation.keyword.maxItems.size_greater',
               'instance array size is greater than `maxItems` value',
               keyword: 'maxItems',
               instance_size: size,
@@ -41,6 +42,7 @@ module JSI
             size = instance.to_ary.size
             validate(
               size >= value,
+              'validation.keyword.minItems.size_less',
               'instance array size is less than `minItems` value',
               keyword: 'minItems',
               instance_size: size,
@@ -72,6 +74,7 @@ module JSI
             duplicate_items = instance.group_by(&:itself).select { |_, v| v.size > 1 }.keys.freeze
             validate(
               duplicate_items.empty?,
+              'validation.keyword.uniqueItems.not_unique',
               "instance array items are not unique with `uniqueItems` = true",
               keyword: 'uniqueItems',
               duplicate_items: duplicate_items,

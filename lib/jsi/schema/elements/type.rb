@@ -37,6 +37,7 @@ module JSI
           end
           validate(
             matched_type,
+            'validation.keyword.type.not_match',
             'instance type does not match `type` value',
             keyword: 'type',
           )

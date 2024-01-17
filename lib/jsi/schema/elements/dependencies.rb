@@ -42,6 +42,7 @@ module JSI
                     missing_required = dependency.reject { |name| instance.key?(name) }.freeze
                     validate(
                       missing_required.empty?,
+                      'validation.keyword.dependencies.dependent_required.missing_property_names',
                       'instance object does not contain all dependent required property names specified by `dependencies` value',
                       keyword: 'dependencies',
                       property_name: property_name,
@@ -56,6 +57,7 @@ module JSI
                     dependency_result = inplace_subschema_validate(['dependencies', property_name])
                     validate(
                       dependency_result.valid?,
+                      'validation.keyword.dependencies.dependent_schema.invalid',
                       'instance object is not valid against the schema corresponding to a matched property name specified by `dependencies` value',
                       keyword: 'dependencies',
                       results: [dependency_result],

@@ -14,6 +14,7 @@ module JSI
             missing_required = value.reject { |property_name| instance.key?(property_name) }.freeze
             validate(
               missing_required.empty?,
+              'validation.keyword.required.missing_property_names',
               'instance object does not contain all property names specified by `required` value',
               keyword: 'required',
               missing_required_property_names: missing_required,

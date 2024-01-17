@@ -24,6 +24,7 @@ module JSI
               end
               validate(
                 allOf_results.all?(&:valid?),
+                'validation.keyword.allOf.not_all_valid',
                 "instance is not valid against all `allOf` schemas",
                 keyword: 'allOf',
                 results: allOf_results,
@@ -72,6 +73,7 @@ module JSI
               end
               validate(
                 anyOf_results.any?(&:valid?),
+                'validation.keyword.anyOf.not_any_valid',
                 "instance is not valid against any `anyOf` schema",
                 keyword: 'anyOf',
                 results: anyOf_results,
@@ -122,6 +124,7 @@ module JSI
               if oneOf_results.none?(&:valid?)
                 validate(
                   false,
+                  'validation.keyword.oneOf.not_any_valid',
                   "instance is not valid against any `oneOf` schema",
                   keyword: 'oneOf',
                   results: oneOf_results,
@@ -130,6 +133,7 @@ module JSI
               else
                 validate(
                   oneOf_results.select(&:valid?).size == 1,
+                  'validation.keyword.oneOf.multiple_valid',
                   "instance is valid against multiple `oneOf` schemas",
                   keyword: 'oneOf',
                   results: oneOf_results,

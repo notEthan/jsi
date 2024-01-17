@@ -14,6 +14,7 @@ module JSI
             size = instance.size
             validate(
               size <= value,
+              'validation.keyword.maxProperties.properties_count_greater',
               "instance object properties count is greater than `maxProperties` value",
               keyword: 'maxProperties',
               instance_properties_count: size,
@@ -41,6 +42,7 @@ module JSI
             size = instance.size
             validate(
               size >= value,
+              'validation.keyword.minProperties.properties_count_less',
               "instance object properties count is less than `minProperties` value",
               keyword: 'minProperties',
               instance_properties_count: size,

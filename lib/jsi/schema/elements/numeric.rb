@@ -23,6 +23,7 @@ module JSI
             end
             validate(
               valid,
+              'validation.keyword.multipleOf.not_multiple',
               'instance is not a multiple of `multipleOf` value',
               keyword: 'multipleOf',
             )
@@ -49,6 +50,7 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance <= value,
+              'validation.keyword.maximum.greater',
               "instance is greater than `maximum` value",
               keyword: 'maximum',
             )
@@ -75,6 +77,7 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance < value,
+              'validation.keyword.exclusiveMaximum.greater_or_equal',
               "instance is greater than or equal to `exclusiveMaximum` value",
               keyword: 'exclusiveMaximum',
             )
@@ -101,6 +104,7 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance >= value,
+              'validation.keyword.minimum.less',
               "instance is less than `minimum` value",
               keyword: 'minimum',
             )
@@ -127,6 +131,7 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance > value,
+              'validation.keyword.exclusiveMaximum.less_or_equal',
               "instance is less than or equal to `exclusiveMinimum` value",
               keyword: 'exclusiveMinimum',
             )

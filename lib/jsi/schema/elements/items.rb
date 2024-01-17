@@ -36,6 +36,7 @@ module JSI
                 end
                 validate(
                   items_results.each_value.all?(&:valid?),
+                  'validation.keyword.items.array.invalid',
                   "instance array items are not all valid against corresponding `items` schemas",
                   keyword: 'items',
                   results: items_results.each_value,
@@ -43,6 +44,7 @@ module JSI
                 )
                 validate(
                   additionalItems_results.each_value.all?(&:valid?),
+                  'validation.keyword.additionalItems.invalid',
                   "instance array items after `items` schemas are not all valid against `additionalItems` schema",
                   keyword: 'additionalItems',
                   results: additionalItems_results.each_value,
@@ -57,6 +59,7 @@ module JSI
                 end
                 validate(
                   items_results.each_value.all?(&:valid?),
+                  'validation.keyword.items.schema.invalid',
                   "instance array items are not all valid against `items` schema",
                   keyword: 'items',
                   results: items_results.each_value,
