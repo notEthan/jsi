@@ -129,5 +129,26 @@ module JSI
 
   self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup
 
+  # translation
+  # @param key [String]
+  # @param default [String]
+  # @return [String]
+  def self.t(key, default: , **options)
+    translator.call(key, default: default, **options)
+  end
+
+  # @return [#call]
+  def self.translator
+    @translator
+  end
+
+  # @param translator [#call]
+  def self.translator=(translator)
+    @translator = translator
+  end
+
+  DEFAULT_TRANSLATOR = proc { |_key, default: , **_| default }
+  self.translator = DEFAULT_TRANSLATOR
+
   Schema # trigger autoload, ensure JSI methods (new_schema etc) defined in schema.rb load
 end
