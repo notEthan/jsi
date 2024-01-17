@@ -39,12 +39,13 @@ module JSI
                   # a property in the instance, each of the items in the dependency value
                   # must be a property that exists in the instance.
                   if instance.respond_to?(:to_hash) && instance.key?(property_name)
-                    missing_required = dependency.reject { |name| instance.key?(name) }
-                    # TODO include property_name / missing dependent required property names in the validation error
+                    missing_required = dependency.reject { |name| instance.key?(name) }.freeze
                     validate(
                       missing_required.empty?,
                       'instance object does not contain all dependent required property names specified by `dependencies` value',
                       keyword: 'dependencies',
+                      property_name: property_name,
+                      missing_dependent_required_property_names: missing_required,
                     )
                   end
                 else
@@ -53,12 +54,12 @@ module JSI
                   # the dependency value.
                   if instance.respond_to?(:to_hash) && instance.key?(property_name)
                     dependency_result = inplace_subschema_validate(['dependencies', property_name])
-                    # TODO include property_name in the validation error
                     validate(
                       dependency_result.valid?,
                       'instance object is not valid against the schema corresponding to a matched property name specified by `dependencies` value',
                       keyword: 'dependencies',
                       results: [dependency_result],
+                      property_name: property_name,
                     )
                   end
                 end

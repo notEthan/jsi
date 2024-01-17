@@ -51,6 +51,7 @@ module JSI
                   "instance object properties are not all valid against corresponding `properties` schemas",
                   keyword: 'properties',
                   results: results.each_value,
+                  instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
                 )
               end
             else
@@ -90,6 +91,7 @@ module JSI
                   "instance object properties are not all valid against matching `patternProperties` schemas",
                   keyword: 'patternProperties',
                   results: results.each_value,
+                  instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
                 )
               end
             else
@@ -114,6 +116,7 @@ module JSI
                 "instance object additional properties are not all valid against `additionalProperties` schema",
                 keyword: 'additionalProperties',
                 results: results.each_value,
+                instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
               )
             end
           end

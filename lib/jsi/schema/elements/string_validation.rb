@@ -12,10 +12,12 @@ module JSI
           if instance.respond_to?(:to_str)
             # A string instance is valid against this keyword if its length is less than, or equal to, the
             # value of this keyword.
+            length = instance.to_str.length
             validate(
-              instance.to_str.length <= value,
+              length <= value,
               "instance string length is greater than `maxLength` value",
               keyword: 'maxLength',
+              instance_length: length,
             )
           end
         else
@@ -38,10 +40,12 @@ module JSI
           if instance.respond_to?(:to_str)
             # A string instance is valid against this keyword if its length is greater than, or equal to, the
             # value of this keyword.
+            length = instance.to_str.length
             validate(
-              instance.to_str.length >= value,
+              length >= value,
               "instance string length is less than `minLength` value",
               keyword: 'minLength',
+              instance_length: length,
             )
           end
         else

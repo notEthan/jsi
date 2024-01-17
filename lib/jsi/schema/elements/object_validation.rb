@@ -11,10 +11,12 @@ module JSI
         if internal_integer?(value) && value >= 0
           if instance.respond_to?(:to_hash)
             # An object instance is valid against "maxProperties" if its number of properties is less than, or equal to, the value of this keyword.
+            size = instance.size
             validate(
-              instance.size <= value,
+              size <= value,
               "instance object properties count is greater than `maxProperties` value",
               keyword: 'maxProperties',
+              instance_properties_count: size,
             )
           end
         else
@@ -36,10 +38,12 @@ module JSI
         if internal_integer?(value) && value >= 0
           if instance.respond_to?(:to_hash)
             # An object instance is valid against "minProperties" if its number of properties is greater than, or equal to, the value of this keyword.
+            size = instance.size
             validate(
-              instance.size >= value,
+              size >= value,
               "instance object properties count is less than `minProperties` value",
               keyword: 'minProperties',
+              instance_properties_count: size,
             )
           end
         else

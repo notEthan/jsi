@@ -39,12 +39,14 @@ module JSI
                   "instance array items are not all valid against corresponding `items` schemas",
                   keyword: 'items',
                   results: items_results.each_value,
+                  instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
                 validate(
                   additionalItems_results.each_value.all?(&:valid?),
                   "instance array items after `items` schemas are not all valid against `additionalItems` schema",
                   keyword: 'additionalItems',
                   results: additionalItems_results.each_value,
+                  instance_indexes_valid: additionalItems_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               else
                 #> If "items" is a schema, validation succeeds if all elements in the array successfully
@@ -58,6 +60,7 @@ module JSI
                   "instance array items are not all valid against `items` schema",
                   keyword: 'items',
                   results: items_results.each_value,
+                  instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               end
               if keyword?('additionalItems')

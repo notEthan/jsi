@@ -11,10 +11,12 @@ module JSI
         if internal_integer?(value) && value >= 0
           if instance.respond_to?(:to_ary)
             # An array instance is valid against "maxItems" if its size is less than, or equal to, the value of this keyword.
+            size = instance.to_ary.size
             validate(
-              instance.to_ary.size <= value,
+              size <= value,
               'instance array size is greater than `maxItems` value',
               keyword: 'maxItems',
+              instance_size: size,
             )
           end
         else
@@ -36,10 +38,12 @@ module JSI
         if internal_integer?(value) && value >= 0
           if instance.respond_to?(:to_ary)
             # An array instance is valid against "minItems" if its size is greater than, or equal to, the value of this keyword.
+            size = instance.to_ary.size
             validate(
-              instance.to_ary.size >= value,
+              size >= value,
               'instance array size is less than `minItems` value',
               keyword: 'minItems',
+              instance_size: size,
             )
           end
         else
@@ -64,10 +68,13 @@ module JSI
         elsif value == true
           if instance.respond_to?(:to_ary)
             # If it has boolean value true, the instance validates successfully if all of its elements are unique.
+            # TODO instance.tally.select { |_, count| count > 1 }.keys.freeze when all supported Hash.method_defined?(:tally)
+            duplicate_items = instance.group_by(&:itself).select { |_, v| v.size > 1 }.keys.freeze
             validate(
-              instance.uniq.size == instance.size,
+              duplicate_items.empty?,
               "instance array items are not unique with `uniqueItems` = true",
               keyword: 'uniqueItems',
+              duplicate_items: duplicate_items,
             )
           end
         else

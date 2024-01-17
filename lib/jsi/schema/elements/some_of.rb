@@ -27,6 +27,7 @@ module JSI
                 "instance is not valid against all `allOf` schemas",
                 keyword: 'allOf',
                 results: allOf_results,
+                allOf_indexes_valid: allOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
               )
             else
               schema_error('`allOf` is not an array', 'allOf')
@@ -74,6 +75,8 @@ module JSI
                 "instance is not valid against any `anyOf` schema",
                 keyword: 'anyOf',
                 results: anyOf_results,
+                # when invalid these are all false, but included for consistency with allOf/oneOf
+                anyOf_indexes_valid: anyOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
               )
             else
               schema_error('`anyOf` is not an array', 'anyOf')
@@ -122,14 +125,15 @@ module JSI
                   "instance is not valid against any `oneOf` schema",
                   keyword: 'oneOf',
                   results: oneOf_results,
+                  oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               else
-                # TODO better info on what schemas passed/failed validation
                 validate(
                   oneOf_results.select(&:valid?).size == 1,
                   "instance is valid against multiple `oneOf` schemas",
                   keyword: 'oneOf',
                   results: oneOf_results,
+                  oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               end
             else

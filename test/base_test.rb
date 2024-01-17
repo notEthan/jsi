@@ -537,7 +537,7 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance object properties are not all valid against corresponding `properties` schemas",
               keyword: "properties",
-              additional: {},
+              additional: {instance_properties_valid: {"foo" => false, "bar" => true, "baz" => false}},
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
               child_errors: Set[
@@ -562,7 +562,7 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance object additional properties are not all valid against `additionalProperties` schema",
               keyword: "additionalProperties",
-              additional: {},
+              additional: {instance_properties_valid: {"more" => false}},
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
               child_errors: Set[
