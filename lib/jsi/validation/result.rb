@@ -84,7 +84,8 @@ module JSI
       class Builder < Result::Builder
         def validate(
             valid,
-            message,
+            message_key,
+            message_default,
             keyword: nil,
             results: Util::EMPTY_ARY,
             **additional
@@ -92,7 +93,7 @@ module JSI
           results.each { |res| result.schema_issues.merge(res.schema_issues) }
           if !valid
             result.validation_errors << Validation::Error.new({
-              message: message,
+              message: JSI.t(message_key, default: message_default, **additional),
               keyword: keyword,
               additional: additional,
               schema: schema,
@@ -167,7 +168,8 @@ module JSI
       class Builder < Result::Builder
         def validate(
             valid,
-            message,
+            message_key,
+            message_default,
             keyword: nil,
             results: Util::EMPTY_ARY,
             **additional
