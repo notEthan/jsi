@@ -86,13 +86,15 @@ module JSI
             valid,
             message,
             keyword: nil,
-            results: Util::EMPTY_ARY
+            results: Util::EMPTY_ARY,
+            **additional
         )
           results.each { |res| result.schema_issues.merge(res.schema_issues) }
           if !valid
             result.validation_errors << Validation::Error.new({
               message: message,
               keyword: keyword,
+              additional: additional,
               schema: schema,
               instance_ptr: instance_ptr,
               instance_document: instance_document,
@@ -167,7 +169,8 @@ module JSI
             valid,
             message,
             keyword: nil,
-            results: Util::EMPTY_ARY
+            results: Util::EMPTY_ARY,
+            **additional
         )
           if !valid
             throw(:jsi_validation_result, INVALID)

@@ -460,6 +460,7 @@ describe JSI::Base do
           JSI::Validation::Error.new({
             message: "instance type does not match `type` value",
             keyword: "type",
+            additional: {},
             schema: schema,
             instance_ptr: JSI::Ptr[], instance_document: instance,
             child_errors: Set[],
@@ -505,6 +506,7 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance type does not match `type` value",
               keyword: "type",
+              additional: {},
               schema: schema["properties"]["foo"],
               instance_ptr: JSI::Ptr["foo"], instance_document: instance,
               child_errors: Set[],
@@ -515,6 +517,7 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance type does not match `type` value",
               keyword: "type",
+              additional: {},
               schema: schema["properties"]["baz"],
               instance_ptr: JSI::Ptr["baz"], instance_document: instance,
               child_errors: Set[],
@@ -524,6 +527,7 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance is valid against `not` schema",
               keyword: "not",
+              additional: {},
               schema: schema["additionalProperties"],
               instance_ptr: JSI::Ptr["more"], instance_document: instance,
               child_errors: Set[],
@@ -533,12 +537,14 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance object properties are not all valid against corresponding `properties` schemas",
               keyword: "properties",
+              additional: {},
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
               child_errors: Set[
                 JSI::Validation::Error.new({
                   message: "instance type does not match `type` value",
                   keyword: "type",
+                  additional: {},
                   schema: schema["properties"]["foo"],
                   instance_ptr: JSI::Ptr["foo"], instance_document: instance,
                   child_errors: Set[],
@@ -546,6 +552,7 @@ describe JSI::Base do
                 JSI::Validation::Error.new({
                   message: "instance type does not match `type` value",
                   keyword: "type",
+                  additional: {},
                   schema: schema["properties"]["baz"],
                   instance_ptr: JSI::Ptr["baz"], instance_document: instance,
                   child_errors: Set[],
@@ -555,12 +562,14 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance object additional properties are not all valid against `additionalProperties` schema",
               keyword: "additionalProperties",
+              additional: {},
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
               child_errors: Set[
                 JSI::Validation::Error.new({
                   message: "instance is valid against `not` schema",
                   keyword: "not",
+                  additional: {},
                   schema: schema["additionalProperties"],
                   instance_ptr: JSI::Ptr["more"], instance_document: instance,
                   child_errors: Set[],

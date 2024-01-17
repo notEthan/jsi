@@ -937,6 +937,7 @@ describe JSI::Schema do
           JSI::Validation::Error.new({
             :message => "instance type does not match `type` value",
             :keyword => "type",
+            :additional => {},
             :schema => schema,
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
             :child_errors => Set[],
