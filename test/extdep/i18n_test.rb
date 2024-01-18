@@ -9,6 +9,9 @@ I18n.backend.store_translations(I18n.default_locale,
         type: {
           not_match: "i18n type not_match",
         },
+        maxItems: {
+          size_greater: "i18n maxItems %{instance_size} is too many",
+        }
       },
     },
   },
@@ -33,6 +36,7 @@ describe("JSI.translator = I18n.method(:translate)") do
         "$schema": "http://json-schema.org/draft-07/schema#",
         'properties' => {
           'i18n msg' => {'type' => 'array'},
+          'i18n msg additional' => {'maxItems' => 0},
           'default msg' => false,
         },
       }
@@ -40,6 +44,7 @@ describe("JSI.translator = I18n.method(:translate)") do
     let(:instance) do
       {
         'i18n msg' => {},
+        'i18n msg additional' => [0],
         'default msg' => {},
       }
     end
@@ -49,7 +54,7 @@ describe("JSI.translator = I18n.method(:translate)") do
         JSI::Validation::Error.new({
           message: "instance object properties are not all valid against corresponding `properties` schemas",
           keyword: "properties",
-          additional: {instance_properties_valid: {"i18n msg" => false, "default msg" => false}},
+          additional: {instance_properties_valid: {"i18n msg" => false, "i18n msg additional" => false, "default msg" => false}},
           schema: schema,
           instance_ptr: JSI::Ptr[], instance_document: instance,
           child_errors: Set[
@@ -59,6 +64,14 @@ describe("JSI.translator = I18n.method(:translate)") do
               additional: {},
               schema: schema["properties"]["i18n msg"],
               instance_ptr: JSI::Ptr["i18n msg"], instance_document: instance,
+              child_errors: Set[],
+            }),
+            JSI::Validation::Error.new({
+              message: "i18n maxItems 1 is too many",
+              keyword: "maxItems",
+              additional: {instance_size: 1},
+              schema: schema["properties"]["i18n msg additional"],
+              instance_ptr: JSI::Ptr["i18n msg additional"], instance_document: instance,
               child_errors: Set[],
             }),
             JSI::Validation::Error.new({
