@@ -33,6 +33,7 @@ group(:extdep) do
   gem 'spreedly_openapi', github: 'notEthan/spreedly_openapi', tag: 'v0.2.0'
   gem 'activesupport'
   gem 'hashie'
+  gem('i18n')
 end
 
 group(:doc) do
