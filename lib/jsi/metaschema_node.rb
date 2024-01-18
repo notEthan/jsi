@@ -208,7 +208,7 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [MetaSchemaNode] modified copy of self
     def jsi_modified_copy(&block)
-      if jsi_ptr.root?
+      if equal?(jsi_root_node)
         modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
         modified_document = jsi_content_to_immutable.call(modified_document) if jsi_content_to_immutable
         MetaSchemaNode.new(modified_document, **our_initialize_params)
@@ -233,7 +233,7 @@ module JSI
     private
 
     def jsi_memomaps_initialize
-      if jsi_ptr.root?
+      if equal?(@jsi_root_node)
         @root_descendent_node_map = jsi_memomap(&method(:jsi_root_descendent_node_compute))
       else
         @root_descendent_node_map = @jsi_root_node.root_descendent_node_map
@@ -256,7 +256,7 @@ module JSI
     end
 
     def jsi_root_descendent_node_compute(ptr: )
-      #chkbug fail(Bug) unless jsi_ptr.root?
+      #chkbug fail(Bug) unless equal?(jsi_root_node)
       if ptr.root?
         self
       else

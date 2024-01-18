@@ -136,14 +136,7 @@ module JSI
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       self.jsi_schema_registry = jsi_schema_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
-      if @jsi_ptr.root?
-        #chkbug fail(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
-        @jsi_root_node = self
-      else
-        #chkbug fail(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
-        #chkbug fail(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
-        @jsi_root_node = jsi_root_node
-      end
+      @jsi_root_node = jsi_root_node || (@jsi_ptr.root? ? self : fail(Bug))
 
       jsi_memomaps_initialize
       jsi_mutability_initialize

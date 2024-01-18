@@ -323,7 +323,7 @@ module JSI
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
               jsi_schema_registry: schema.jsi_schema_registry,
               jsi_content_to_immutable: schema.jsi_content_to_immutable,
-              jsi_root_node: schema.jsi_ptr.root? ? nil : schema.jsi_root_node, # bad
+              jsi_root_node: schema.equal?(schema.jsi_root_node) ? nil : schema.jsi_root_node, # bad
             )
           else
             msg = []
