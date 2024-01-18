@@ -255,15 +255,16 @@ module JSI
       }.freeze
     end
 
-    def jsi_root_descendent_node_compute(ptr: )
+    def jsi_root_descendent_node_compute(ptr: , dynamic_anchor_map: )
       #chkbug fail(Bug) unless equal?(jsi_root_node)
-      if ptr.root?
+      if ptr.root? && dynamic_anchor_map == jsi_schema_dynamic_anchor_map
         self
       else
         MetaSchemaNode.new(jsi_document,
           **our_initialize_params,
           jsi_ptr: ptr,
-          jsi_schema_base_uri: jsi_resource_ancestor_uri,
+          jsi_schema_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
+          jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
           jsi_root_node: jsi_root_node,
           initialize_finish: false,
         )
@@ -272,9 +273,10 @@ module JSI
 
     # @param ptr [Ptr]
     # @return [MetaSchemaNode]
-    protected def root_descendent_node(ptr)
+    protected def root_descendent_node(ptr, dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY)
       node = @root_descendent_node_map[
         ptr: ptr,
+        dynamic_anchor_map: dynamic_anchor_map,
       ]
 
       if @initialize_finished
