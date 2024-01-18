@@ -50,7 +50,7 @@ module JSI
                 end
                 validate(
                   results.all?(&:valid?),
-                  'instance array items are not all valid against `items` schema value',
+                  "instance array items are not all valid against `items` schema",
                   keyword: 'items',
                   results: results,
                 )

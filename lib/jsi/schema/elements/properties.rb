@@ -48,7 +48,7 @@ module JSI
                 end
                 validate(
                   results.each_value.all?(&:valid?),
-                  'instance object properties are not all valid against corresponding `properties` schema values',
+                  "instance object properties are not all valid against corresponding `properties` schemas",
                   keyword: 'properties',
                   results: results.each_value,
                 )
@@ -87,7 +87,7 @@ module JSI
                 end
                 validate(
                   results.each_value.all?(&:valid?),
-                  'instance object properties are not all valid against corresponding `patternProperties` schema values',
+                  "instance object properties are not all valid against matching `patternProperties` schemas",
                   keyword: 'patternProperties',
                   results: results.each_value,
                 )
@@ -112,7 +112,7 @@ module JSI
               end
               validate(
                 results.each_value.all?(&:valid?),
-                'instance object additional properties are not all valid against `additionalProperties` schema value',
+                "instance object additional properties are not all valid against `additionalProperties` schema",
                 keyword: 'additionalProperties',
                 results: results.each_value,
               )

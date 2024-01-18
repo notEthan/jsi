@@ -66,7 +66,7 @@ module JSI
             # If it has boolean value true, the instance validates successfully if all of its elements are unique.
             validate(
               instance.uniq.size == instance.size,
-              "instance array items' uniqueness does not match `uniqueItems` value",
+              "instance array items are not unique with `uniqueItems` = true",
               keyword: 'uniqueItems',
             )
           end

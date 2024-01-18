@@ -35,7 +35,7 @@ module JSI
                 )
                 validate(
                   ref_result.valid?,
-                  'instance is not valid against the schema referenced by `$ref` value',
+                  "instance is not valid against the schema referenced by `$ref`",
                   keyword: '$ref',
                   results: [ref_result],
                 )

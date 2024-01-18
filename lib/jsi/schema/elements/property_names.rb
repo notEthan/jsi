@@ -22,7 +22,7 @@ module JSI
           end
           validate(
             results.each_value.all?(&:valid?),
-            'instance object property names are not all valid against `propertyNames` schema value',
+            "instance object property names are not all valid against `propertyNames` schema",
             keyword: 'propertyNames',
             results: results.each_value,
           )
