@@ -277,6 +277,13 @@ module JSI
       ],
     )
 
+    # Compatibility vocabulary: The specification doesn't specify these keywords,
+    # but the meta-schema describes them. The test suite considers them optional.
+    Vocab::COMPATIBILITY = Schema::Vocabulary.new(
+      elements: [
+      ],
+    )
+
     DIALECT = Schema::Dialect.new(
       id: "https://json-schema.org/draft/2020-12/schema",
       vocabularies: [
@@ -287,6 +294,7 @@ module JSI
         Vocab::FORMAT_ANNOTATION,
         Vocab::CONTENT,
         Vocab::METADATA,
+        Vocab::COMPATIBILITY,
       ],
     )
   end
