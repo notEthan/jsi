@@ -72,6 +72,7 @@ describe 'JSON Schema Test Suite' do
                 describe(tests_desc.description) do
                   let(:schema_registry) { desc_schema_registry }
                   let(:schema) { desc_schema }
+                  let(:optional) { subpath.split('/').include?('optional') }
 
                   tests_desc.tests.each do |test|
                       it(test.description) do
@@ -84,7 +85,7 @@ describe 'JSON Schema Test Suite' do
                             'contentMediaType',
                             'contentEncoding',
                           ].select { |kw| schema.keyword?(kw) }
-                          if unsupported_keywords.any?
+                          if unsupported_keywords.any? && optional
                             skip("unsupported validation keywords: #{unsupported_keywords.join(' ')}")
                           end
 
