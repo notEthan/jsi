@@ -65,8 +65,9 @@ describe 'JSON Schema Test Suite' do
                 # :nocov:
               end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
-                desc_schema = metaschema.new_schema(tests_desc.jsi_instance['schema'],
+                desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
                   schema_registry: desc_schema_registry,
+                  default_metaschema: metaschema,
                 )
 
                 describe(tests_desc.description) do
