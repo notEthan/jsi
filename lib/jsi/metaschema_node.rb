@@ -92,7 +92,6 @@ module JSI
         is.each_inplace_applicator_schema(instance_for_schemas, &y)
       end
 
-      @describes_self = false
       @bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the meta-schema, i.e. this is a schema
@@ -101,10 +100,6 @@ module JSI
           end
           extend(Schema)
           @extends += schema_implementation_modules
-        end
-        if bootstrap_schema.jsi_ptr == jsi_ptr
-          # this is the meta-schema (it is described by itself)
-          @describes_self = true
         end
       end
 
@@ -120,7 +115,7 @@ module JSI
       @jsi_schemas = bootstrap_schemas_to_msn(@bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
-      if @describes_self
+      if jsi_ptr == metaschema_root_ptr
         describes_schema!(schema_implementation_modules)
       end
 
