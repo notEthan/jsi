@@ -13,6 +13,7 @@ module JSI
     # The current URI for the corresponding meta-schema is:
     # https://json-schema.org/draft/2020-12/meta/core
     Vocab::CORE = Schema::Vocabulary.new(
+      id: "https://json-schema.org/draft/2020-12/vocab/core",
       elements: [
       ],
     )
@@ -25,6 +26,7 @@ module JSI
     # The current URI for the corresponding meta-schema is:
     # https://json-schema.org/draft/2020-12/meta/applicator
     Vocab::APPLICATOR = Schema::Vocabulary.new(
+      id: "https://json-schema.org/draft/2020-12/vocab/applicator",
       elements: [
       ],
     )
@@ -37,6 +39,7 @@ module JSI
     # The current URI for the corresponding meta-schema is:
     # https://json-schema.org/draft/2020-12/meta/unevaluated
     Vocab::UNEVALUATED = Schema::Vocabulary.new(
+      id: "https://json-schema.org/draft/2020-12/vocab/unevaluated",
       elements: [
       ],
     )
@@ -49,6 +52,7 @@ module JSI
     # The current URI for the corresponding meta-schema is:
     # https://json-schema.org/draft/2020-12/meta/validation
     Vocab::VALIDATION = Schema::Vocabulary.new(
+      id: "https://json-schema.org/draft/2020-12/vocab/validation",
       elements: [
       ],
     )
@@ -61,6 +65,7 @@ module JSI
     # The current URI for the corresponding meta-schema is:
     # https://json-schema.org/draft/2020-12/meta/format-annotation
     Vocab::FORMAT_ANNOTATION = Schema::Vocabulary.new(
+      id: "https://json-schema.org/draft/2020-12/vocab/format-annotation",
       elements: [
       ],
     )
@@ -84,6 +89,7 @@ module JSI
     # The current URI for the corresponding meta-schema is:
     # https://json-schema.org/draft/2020-12/meta/content
     Vocab::CONTENT = Schema::Vocabulary.new(
+      id: "https://json-schema.org/draft/2020-12/vocab/content",
       elements: [
       ],
     )
@@ -96,6 +102,7 @@ module JSI
     # The current URI for the corresponding meta-schema is:
     # https://json-schema.org/draft/2020-12/meta/meta-data
     Vocab::METADATA = Schema::Vocabulary.new(
+      id: "https://json-schema.org/draft/2020-12/vocab/meta-data",
       elements: [
       ],
     )
