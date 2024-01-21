@@ -73,7 +73,7 @@ module JSI
     #
     # the block would normally load JSON from the filesystem or similar.
     #
-    # @param uri [Addressable::URI]
+    # @param uri [#to_str]
     # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
