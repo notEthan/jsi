@@ -166,6 +166,13 @@ module JSI
     registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/meta-data")        { JSI::JSONSchemaDraft202012::MetaData.schema }
     registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-annotation") { JSI::JSONSchemaDraft202012::FormatAnnotation.schema }
     registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/content")          { JSI::JSONSchemaDraft202012::Content.schema }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/core")            { JSI::Schema::Draft202012::Vocab::CORE }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/unevaluated")      { JSI::Schema::Draft202012::Vocab::UNEVALUATED }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/format-annotation") { JSI::Schema::Draft202012::Vocab::FORMAT_ANNOTATION }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/validation")       { JSI::Schema::Draft202012::Vocab::VALIDATION }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/content")         { JSI::Schema::Draft202012::Vocab::CONTENT }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/applicator")     { JSI::Schema::Draft202012::Vocab::APPLICATOR }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/meta-data")     { JSI::Schema::Draft202012::Vocab::METADATA }
     registry.autoload_dialect_uri("http://json-schema.org/draft-04/schema") { Schema::Draft04::DIALECT }
     registry.autoload_dialect_uri("http://json-schema.org/draft-06/schema") { Schema::Draft06::DIALECT }
     registry.autoload_dialect_uri("http://json-schema.org/draft-07/schema") { Schema::Draft07::DIALECT }
