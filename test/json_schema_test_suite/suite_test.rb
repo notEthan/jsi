@@ -8,6 +8,19 @@ $test_report_time["JSONSchemaTestSchema set up"]
 
 all_vocabularies = Set[]
 all_vocabularies.merge(JSI::Schema::Draft202012::DIALECT.vocabularies)
+
+# this dummy vocabulary implementation is for the test:
+# "schema that uses custom metaschema with format-assertion: true"
+# using http://localhost:1234/draft2020-12/format-assertion-true.json
+# the test itself fails and is skipped because `format` is in unsupported_keywords,
+# this just lets the schema be instantiated.
+all_vocabularies.add(
+  # draft-bhutton-json-schema-validation-01 7.2.2.  Format-Assertion Vocabulary
+  JSI::Schema::Vocabulary.new(id: "https://json-schema.org/draft/2020-12/vocab/format-assertion", elements: [
+    JSI::Schema::Element.new(keyword: 'format') { },
+  ])
+)
+
 all_vocabularies.freeze
 
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
