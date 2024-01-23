@@ -9,7 +9,8 @@ module JSI
       if keyword?('$ref') && schema_content['$ref'].respond_to?(:to_str)
         ref = schema.schema_ref('$ref')
         unless visited_refs.include?(ref)
-          ref.deref_schema.each_inplace_applicator_schema(instance, visited_refs: visited_refs + [ref], &block)
+          inplace_schema_applicate(ref.deref_schema, ref: ref)
+
           if exclusive
             throw(:jsi_application_done)
           end
