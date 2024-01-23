@@ -52,7 +52,7 @@ module JSI
         end
 
         applicators.each do |applicator|
-          applicator.each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+          inplace_schema_applicate(applicator)
         end
       end
         end # element.add_action(:inplace_applicate)
@@ -101,7 +101,7 @@ module JSI
         end
 
         applicator_idxs.each do |i|
-          subschema(['oneOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+          inplace_subschema_applicate(['oneOf', i])
         end
       end
         end # element.add_action(:inplace_applicate)
