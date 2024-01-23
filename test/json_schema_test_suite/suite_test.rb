@@ -23,6 +23,11 @@ all_vocabularies.add(
 
 all_vocabularies.freeze
 
+JSI.schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-assertion") do
+  path = JSI::SCHEMAS_PATH.join('json-schema.org/draft/2020-12/meta/format-assertion.json')
+  JSI::JSONSchemaDraft202012.new_schema(JSON.parse(path.read, freeze: true), schema_registry: nil)
+end
+
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
   jsts_schema_registry = JSI.schema_registry.dup
 
