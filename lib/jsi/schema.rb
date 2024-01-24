@@ -376,16 +376,17 @@ module JSI
           if reinstantiate_as && schema.is_a?(JSI::Base)
             # TODO warn; behavior is undefined and I hate this implementation
 
-            result_schema_schemas = schema.jsi_schemas + reinstantiate_as
+            result_schema_indicated_schemas = SchemaSet.new(schema.jsi_indicated_schemas + reinstantiate_as)
+            result_schema_applied_schemas = result_schema_indicated_schemas.inplace_applicator_schemas(schema.jsi_node_content)
 
-            result_schema_class = JSI::SchemaClasses.class_for_schemas(result_schema_schemas,
+            result_schema_class = JSI::SchemaClasses.class_for_schemas(result_schema_applied_schemas,
               includes: SchemaClasses.includes_for(schema.jsi_node_content),
               mutable: schema.jsi_mutable?,
             )
 
             result_schema_class.new(schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,
-              jsi_indicated_schemas: schema.jsi_indicated_schemas,
+              jsi_indicated_schemas: result_schema_indicated_schemas,
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
               jsi_schema_registry: schema.jsi_schema_registry,
