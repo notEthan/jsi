@@ -679,6 +679,7 @@ module JSI
         instance: instance,
         token: token,
         collect_evaluated: false,
+        evaluated: false,
         &block
       )
     end
@@ -687,6 +688,8 @@ module JSI
     # @param instance [Object]
     # @param collect_evaluated [Boolean] collect successful child evaluation?
     # @yield [Schema]
+    # @return [Boolean] if `collect_evaluated` is true, whether the child was successfully evaluated
+    #   by a child applicator schema. if `collect_evaluated` is false, undefined/void.
     def each_inplace_child_applicator_schema(
         token,
         instance,
@@ -695,6 +698,7 @@ module JSI
         &block
     )
       collect_evaluated ||= dialect_invoke_each(:application_requires_evaluated).any?
+      inplace_child_evaluated = false
       applicate_self = false
 
       dialect_invoke_each(:inplace_applicate,
@@ -706,27 +710,31 @@ module JSI
         if schema.equal?(self) && !ref
           applicate_self = true
         else
-          schema.each_inplace_child_applicator_schema(
+          schema_evaluated = schema.each_inplace_child_applicator_schema(
             token,
             instance,
             visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
             collect_evaluated: collect_evaluated,
             &block
           )
+          inplace_child_evaluated ||= collect_evaluated && schema_evaluated && schema.instance_valid?(instance)
         end
       end
 
       if applicate_self
-        dialect.invoke(:child_applicate, Cxt::ChildApplication.new(
+        child_application = dialect.invoke(:child_applicate, Cxt::ChildApplication.new(
           schema: self,
           token: token,
           instance: instance,
           collect_evaluated: collect_evaluated,
+          evaluated: inplace_child_evaluated,
           block: block,
         ))
-      end
 
-      nil
+        child_application.evaluated
+      else
+        inplace_child_evaluated
+      end
     end
 
     # any object property names this schema indicates may be present on its instances.
