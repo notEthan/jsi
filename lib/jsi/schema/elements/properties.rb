@@ -9,18 +9,18 @@ module JSI
       apply_additional = true
       if keyword?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(token)
         apply_additional = false
-        cxt_yield(subschema(['properties', token]))
+        child_subschema_applicate(['properties', token])
       end
       if keyword?('patternProperties') && schema_content['patternProperties'].respond_to?(:to_hash)
         schema_content['patternProperties'].each_key do |pattern|
           if pattern.respond_to?(:to_str) && token.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
             apply_additional = false
-            cxt_yield(subschema(['patternProperties', pattern]))
+            child_subschema_applicate(['patternProperties', pattern])
           end
         end
       end
       if apply_additional && keyword?('additionalProperties')
-        cxt_yield(subschema(['additionalProperties']))
+        child_subschema_applicate(['additionalProperties'])
       end
     end # if instance.respond_to?(:to_hash)
         end # element.add_action(:child_applicate)

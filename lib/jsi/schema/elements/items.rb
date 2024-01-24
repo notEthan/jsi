@@ -8,12 +8,12 @@ module JSI
     if instance.respond_to?(:to_ary)
       if keyword?('items') && schema_content['items'].respond_to?(:to_ary)
         if schema_content['items'].each_index.to_a.include?(token)
-          cxt_yield(subschema(['items', token]))
+          child_subschema_applicate(['items', token])
         elsif keyword?('additionalItems')
-          cxt_yield(subschema(['additionalItems']))
+          child_subschema_applicate(['additionalItems'])
         end
       elsif keyword?('items')
-        cxt_yield(subschema(['items']))
+        child_subschema_applicate(['items'])
       end
     end # if instance.respond_to?(:to_ary)
         end # element.add_action(:child_applicate)
