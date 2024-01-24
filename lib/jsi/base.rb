@@ -821,7 +821,9 @@ module JSI
     end
 
     def jsi_child_indicated_schemas_compute(token: , content: )
-      jsi_schemas.child_applicator_schemas(token, content)
+      jsi_indicated_schemas.each_yield_set do |is, y|
+        is.each_inplace_child_applicator_schema(token, content, &y)
+      end
     end
 
     def jsi_child_applied_schemas_compute(token: , child_indicated_schemas: , child_content: )

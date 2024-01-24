@@ -79,10 +79,9 @@ module JSI
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
       )
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
-        bootstrap_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
-          is.each_inplace_applicator_schema(instance_for_schemas, &y)
+        child_indicated_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
+          is.each_inplace_child_applicator_schema(tok, instance_for_schemas, &y)
         end
-        child_indicated_schemas = bootstrap_schemas.child_applicator_schemas(tok, instance_for_schemas)
         instance_for_schemas = instance_for_schemas[tok]
         child_indicated_schemas
       end

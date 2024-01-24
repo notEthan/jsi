@@ -746,6 +746,44 @@ module JSI
       )
     end
 
+    # @param token [Object] array index or hash/object property name
+    # @param instance [Object]
+    # @yield [Schema]
+    def each_inplace_child_applicator_schema(
+        token,
+        instance,
+        &block
+    )
+      applicate_self = false
+
+      dialect_invoke_each(:inplace_applicate,
+        Cxt::InplaceApplication,
+        instance: instance,
+        visited_refs: Util::EMPTY_ARY,
+      ) do |schema|
+        if schema.equal?(self)
+          applicate_self = true
+        else
+          schema.each_inplace_child_applicator_schema(
+            token,
+            instance,
+            &block
+          )
+        end
+      end
+
+      if applicate_self
+        dialect.invoke(:child_applicate, Cxt::ChildApplication.new(
+          schema: self,
+          token: token,
+          instance: instance,
+          block: block,
+        ))
+      end
+
+      nil
+    end
+
     # any object property names this schema indicates may be present on its instances.
     # this includes any keys of this schema's "properties" object and any entries of this schema's
     # array of "required" property keys.
