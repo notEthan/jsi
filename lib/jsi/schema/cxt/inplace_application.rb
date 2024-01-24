@@ -15,11 +15,7 @@ module JSI
 
       # @param applicator_schema [Schema]
       def inplace_schema_applicate(applicator_schema)
-        applicator_schema.each_inplace_applicator_schema(
-          instance,
-          visited_refs: visited_refs,
-          &block
-        )
+        block.call(applicator_schema)
       end
     end
   end

@@ -656,7 +656,7 @@ module JSI
     # @param instance [Object] the instance to check any applicators against
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @yield [JSI::Schema]
-    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    # @return [nil]
     def each_inplace_applicator_schema(
         instance,
         visited_refs: Util::EMPTY_ARY,
@@ -667,8 +667,17 @@ module JSI
         Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
-        &block
-      )
+      ) do |schema|
+        if schema.equal?(self)
+          yield(self)
+        else
+          schema.each_inplace_applicator_schema(
+            instance,
+            visited_refs: visited_refs,
+            &block
+          )
+        end
+      end
       end
     end
 
