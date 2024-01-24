@@ -97,8 +97,25 @@ describe JSI::Base do
       assert_equal(ab.__id__, subject.ab(as_jsi: true).__id__)
     end
   end
+end
 
-  describe 'instance mutation affecting adjacent items' do
+describe("instance mutation affecting adjacent items") do
+  let(:schema) { JSI.new_schema(schema_content) }
+  let(:subject_opt) { {mutable: true} }
+  let(:subject) { schema.new_jsi(instance, **subject_opt) }
+
+  # this tests the behavior of a JSI in an edge case to be avoided.
+  # we keep a reference to a child whose indicated and/or applied schemas
+  # have changed due to instance mutation.
+  # such references should be discarded and their behavior is undefined,
+  # but this tests the currently-implemented behavior.
+
+  # there are now two subtly different behaviors depending on whether
+  # unevaluatedItems / unevaluatedProperties are present, requiring in-place
+  # application to collect successfully evaluated children to inform child application.
+
+  describe("without collecting evaluated children") do
+    # when we skip collecting evaluated children, child schemas are computed from the parent's applied schemas
     let(:schema_content) do
       YAML.load(<<~YAML
         $schema: "http://json-schema.org/draft-07/schema#"
@@ -164,6 +181,84 @@ describe JSI::Base do
       refute_schema(schema.definitions['b'], orig_abs[1])
       # but the underlying data are changed.
       assert_equal('b', orig_abs[0])
+    end
+  end
+
+  describe("with collecting evaluated children") do
+    # when we are collecting evaluated children, child schemas are computed from the parent's indicated schemas
+    let(:schema_content) do
+      YAML.load(<<~YAML
+        $schema: "https://json-schema.org/draft/2020-12/schema"
+        unevaluatedItems: true
+        definitions:
+          a:
+            {}
+          b:
+            {}
+          as:
+            type: array
+            prefixItems:
+              - const: a
+            items:
+              $ref: "#/definitions/a"
+          bs:
+            type: array
+            prefixItems:
+              - const: b
+            items:
+              $ref: "#/definitions/b"
+        oneOf:
+          - properties:
+              abs:
+                $ref: "#/definitions/as"
+          - properties:
+              abs:
+                $ref: "#/definitions/bs"
+        YAML
+      )
+    end
+
+    let(:instance) do
+      YAML.load(<<~YAML
+        abs:
+          - a
+          - {}
+        YAML
+      )
+    end
+
+    it("changes applied child schemas") do
+      orig_abs = subject.abs
+
+      assert(subject.jsi_valid?)
+      assert_schema(schema.definitions['as'], subject.abs)
+      refute_schema(schema.definitions['bs'], subject.abs)
+      assert_schema(schema.definitions['a'], subject.abs[1])
+      refute_schema(schema.definitions['b'], subject.abs[1])
+
+      # changing the first element (`prefixItems` schema) to "b" changes the array to an instance of schema `bs`
+      # and each element beyond the first (`items` schema) to `b`s
+      subject.abs[0] = 'b'
+      assert(subject.jsi_valid?)
+      refute_schema(schema.definitions['as'], subject.abs)
+      assert_schema(schema.definitions['bs'], subject.abs)
+      refute_schema(schema.definitions['a'], subject.abs[1])
+      assert_schema(schema.definitions['b'], subject.abs[1])
+
+      # the content of `orig_abs` has mutated, being the same instance as `subject.abs`
+      assert_equal('b', orig_abs[0])
+      # the schemas of orig_abs cannot change (it's already instantiated as a `as`).
+      # its items remain `a`s.
+      refute(orig_abs.jsi_valid?) # #jsi_valid? uses indicated schemas (schema.oneOf[0].properties['abs'])
+      refute(orig_abs.jsi_schemas.instance_valid?(orig_abs)) # validation using applied schemas (schema.definitions['as'])
+      assert_schema(schema.definitions['as'], orig_abs)
+      refute_schema(schema.definitions['bs'], orig_abs)
+      # note: orig_abs[1] would be recomputed as a `b` if `orig_abs`'s #jsi_indicated_schemas
+      # had the `oneOf` instead of `subject`,
+      # i.e.       {properties: {abs: {oneOf: [{"$ref": "#/definitions/as"}, {"$ref": "#/definitions/bs"}]}}}
+      # instead of {oneOf: [{properties: {abs: {"$ref": "#/definitions/as"}}}, {properties: {abs: {"$ref": "#/definitions/bs"}}}]}
+      assert_schema(schema.definitions['a'], orig_abs[1])
+      refute_schema(schema.definitions['b'], orig_abs[1])
     end
   end
 end
