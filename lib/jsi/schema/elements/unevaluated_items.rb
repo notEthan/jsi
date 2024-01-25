@@ -19,6 +19,16 @@ module JSI
           end
         end
 
+        element.add_action(:child_applicate) do
+          if instance.respond_to?(:to_ary)
+            if keyword?('unevaluatedItems')
+              if !evaluated
+                child_subschema_applicate(['unevaluatedItems'])
+              end
+            end
+          end
+        end
+
         element.add_action(:validate) do
           next if !keyword?('unevaluatedItems')
           next if !instance.respond_to?(:to_ary)

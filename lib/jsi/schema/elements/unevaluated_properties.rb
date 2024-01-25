@@ -19,6 +19,16 @@ module JSI
           end
         end
 
+        element.add_action(:child_applicate) do
+          if instance.respond_to?(:to_hash)
+            if keyword?('unevaluatedProperties')
+              if !evaluated
+                child_subschema_applicate(['unevaluatedProperties'])
+              end
+            end
+          end
+        end
+
         element.add_action(:validate) do
           next if !keyword?('unevaluatedProperties')
           next if !instance.respond_to?(:to_hash)
