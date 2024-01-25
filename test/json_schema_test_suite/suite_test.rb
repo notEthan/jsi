@@ -33,16 +33,6 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
       remote_content = JSON.parse(File.open(subpath, 'r:UTF-8', &:read), freeze: true)
       uri = File.join('http://localhost:1234/', subpath)
       jsts_registry.autoload_uri(uri) do |registry: |
-        if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
-          subSchemas_schema = JSI.new_schema({
-            '$schema' => 'http://json-schema.org/draft-07/schema',
-            'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
-          })
-          subSchemas_schema.new_jsi(remote_content,
-            root_uri: uri,
-            registry: registry,
-          )
-        else
           JSI.new_schema(remote_content,
             root_uri: uri,
             default_metaschema: metaschema,
@@ -53,7 +43,6 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
               end
             end,
           )
-        end
       end
     end
   end
