@@ -71,7 +71,9 @@ module JSI
           nil
         end
       end
+    end
 
+    class Result
       def builder(schema, instance_ptr, instance_document, validate_only, visited_refs)
         self.class::Builder.new(
           result: self,
@@ -126,7 +128,9 @@ module JSI
           })
         end
       end
+    end
 
+    class FullResult
       def initialize
         @validation_errors = Set.new
         @schema_issues = Set.new
@@ -190,7 +194,9 @@ module JSI
           # noop
         end
       end
+    end
 
+    class ValidityResult
       def initialize(valid)
         @valid = valid
       end
