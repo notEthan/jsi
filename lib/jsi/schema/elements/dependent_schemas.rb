@@ -4,6 +4,16 @@ module JSI
   module Schema::Elements
     DEPENDENT_SCHEMAS = element_map do
       Schema::Element.new(keyword: 'dependentSchemas') do |element|
+        element.add_action(:subschema) do
+          #> This keyword's value MUST be an object.
+          next if !keyword_value_hash?('dependentSchemas')
+
+          #> Each value in the object MUST be a valid JSON Schema.
+          schema_content['dependentSchemas'].each_key do |property_name|
+            cxt_yield(['dependentSchemas', property_name])
+          end
+        end
+
         element.add_action(:inplace_applicate) do
           #> This keyword's value MUST be an object.
           next if !keyword_value_hash?('dependentSchemas')
