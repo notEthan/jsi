@@ -26,6 +26,12 @@ module JSI
 
         nil
       end
+
+      # @param action_name [Symbol]
+      # @return [Boolean]
+      def invokes?(action_name)
+        !@actions[action_name].empty?
+      end
     end
   end
 end
