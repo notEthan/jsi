@@ -27,7 +27,7 @@ module JSI
         oneOf_idxs = schema_content['oneOf'].each_index
         subschema_idx_valid = Hash.new { |h, i| h[i] = subschema(['oneOf', i]).instance_valid?(instance) }
         # count up to 2 `oneOf` subschemas which `instance` validates against
-        nvalid = oneOf_idxs.inject(0) { |n, i| n > 1 ? n : subschema_idx_valid[i] ? n + 1 : n }
+        nvalid = oneOf_idxs.inject(0) { |n, i| n <= 1 && subschema_idx_valid[i] ? n + 1 : n }
         if nvalid == 1
           applicator_idxs = oneOf_idxs.select { |i| subschema_idx_valid[i] }
         else
