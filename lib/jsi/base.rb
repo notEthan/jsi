@@ -360,7 +360,7 @@ module JSI
       tokens.inject(self, &:jsi_child_node)
     end
 
-    # A shorthand alias for {#jsi_descendent_node}.
+    # The descendent node at the given {Ptr}, token array, or pointer string.
     #
     # Note that, though more convenient to type, using an operator whose meaning may not be intuitive
     # to a reader could impair readability of code.
@@ -369,13 +369,14 @@ module JSI
     #
     #     my_jsi / ['foo', 'bar']
     #     my_jsi / %w(foo bar)
+    #     my_jsi / '/foo/bar'
     #     my_schema / JSI::Ptr['additionalProperties']
     #     my_schema / %w(properties foo items additionalProperties)
     #
-    # @param (see #jsi_descendent_node)
+    # @param ptr [JSI::Ptr, #to_ary, #to_str]
     # @return (see #jsi_descendent_node)
     def /(ptr)
-      jsi_descendent_node(ptr)
+      jsi_descendent_node(ptr.respond_to?(:to_str) ? Ptr.from_pointer(ptr) : ptr)
     end
 
     # yields each token (array index or hash key) identifying a child node.

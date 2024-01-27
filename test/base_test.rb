@@ -208,6 +208,8 @@ describe JSI::Base do
       assert_equal(ptr, subject.jsi_descendent_node(ptr).jsi_ptr)
       assert_equal(ptr, (subject / tokens).jsi_ptr)
       assert_equal(ptr, (subject / ptr).jsi_ptr)
+      assert_equal(ptr, (subject / '/foo/a/b/0').jsi_ptr)
+      assert_equal(subject, subject / '')
     end
   end
 
