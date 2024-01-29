@@ -626,7 +626,7 @@ describe JSI::Schema do
     end
   end
 
-  describe '#child_applicator_schemas with an object' do
+  describe("#each_child_applicator_schema with an object") do
     let(:schema) do
       JSI::JSONSchemaDraft07.new_schema({
         properties: {
@@ -640,22 +640,22 @@ describe JSI::Schema do
       })
     end
     it 'has no subschemas' do
-      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).child_applicator_schemas('no', {}))
+      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).each_child_applicator_schema('no', {}).to_a)
     end
     it 'has a subschema by property' do
-      subschemas = schema.child_applicator_schemas('foo', {}).to_a
+      subschemas = schema.each_child_applicator_schema('foo', {}).to_a
       assert_equal(1, subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('foo', subschemas[0].description)
     end
     it 'has subschemas by patternProperties' do
-      subschemas = schema.child_applicator_schemas('bar', {}).to_a
+      subschemas = schema.each_child_applicator_schema('bar', {}).to_a
       assert_equal(1, subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('b*', subschemas[0].description)
     end
     it 'has subschemas by properties, patternProperties' do
-      subschemas = schema.child_applicator_schemas('baz', {}).to_a
+      subschemas = schema.each_child_applicator_schema('baz', {}).to_a
       assert_equal(2, subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('baz', subschemas[0].description)
@@ -663,25 +663,26 @@ describe JSI::Schema do
       assert_equal('b*', subschemas[1].description)
     end
     it 'has subschemas by additional properties' do
-      subschemas = schema.child_applicator_schemas('anything', {}).to_a
+      subschemas = schema.each_child_applicator_schema('anything', {}).to_a
       assert_equal(1, subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('whatever', subschemas[0].description)
     end
   end
-  describe '#child_applicator_schemas with an array instance' do
+
+  describe("#each_child_applicator_schema with an array instance") do
     it 'has no subschemas' do
-      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).child_applicator_schemas(0, []))
+      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).each_child_applicator_schema(0, []).to_a)
     end
     it 'has a subschema for items' do
       schema = JSI::JSONSchemaDraft07.new_schema({
         items: {description: 'items!'}
       })
-      first_subschemas = schema.child_applicator_schemas(0, []).to_a
+      first_subschemas = schema.each_child_applicator_schema(0, []).to_a
       assert_equal(1, first_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('items!', first_subschemas[0].description)
-      last_subschemas = schema.child_applicator_schemas(1, []).to_a
+      last_subschemas = schema.each_child_applicator_schema(1, []).to_a
       assert_equal(1, last_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal('items!', last_subschemas[0].description)
@@ -690,11 +691,11 @@ describe JSI::Schema do
       schema = JSI::JSONSchemaDraft07.new_schema({
         items: [{description: 'item one'}, {description: 'item two'}]
       })
-      first_subschemas = schema.child_applicator_schemas(0, []).to_a
+      first_subschemas = schema.each_child_applicator_schema(0, []).to_a
       assert_equal(1, first_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('item one', first_subschemas[0].description)
-      last_subschemas = schema.child_applicator_schemas(1, []).to_a
+      last_subschemas = schema.each_child_applicator_schema(1, []).to_a
       assert_equal(1, last_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal('item two', last_subschemas[0].description)
@@ -704,11 +705,11 @@ describe JSI::Schema do
         items: [{description: 'item one'}],
         additionalItems: {description: "mo' crap"},
       })
-      first_subschemas = schema.child_applicator_schemas(0, []).to_a
+      first_subschemas = schema.each_child_applicator_schema(0, []).to_a
       assert_equal(1, first_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('item one', first_subschemas[0].description)
-      last_subschemas = schema.child_applicator_schemas(1, []).to_a
+      last_subschemas = schema.each_child_applicator_schema(1, []).to_a
       assert_equal(1, last_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal("mo' crap", last_subschemas[0].description)

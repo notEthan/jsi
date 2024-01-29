@@ -720,21 +720,11 @@ module JSI
       end
     end
 
-    # a set of child applicator subschemas of this schema which apply to the child of the given instance
-    # on the given token.
-    #
-    # @param token [Object] the array index or object property name for the child instance
-    # @param instance [Object] the instance to check any child applicators against
-    # @return [JSI::SchemaSet] child applicator subschemas of this schema for the given token
-    #   of the instance
-    def child_applicator_schemas(token, instance)
-      SchemaSet.new(each_child_applicator_schema(token, instance))
-    end
-
     # yields each child applicator subschema (from properties, items, etc.) which applies to the child of
     # the given instance on the given token.
     #
-    # @param (see #child_applicator_schemas)
+    # @param token [Object] the array index or object property name for the child instance
+    # @param instance [Object] the instance to check any child applicators against
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_child_applicator_schema(token, instance, &block)

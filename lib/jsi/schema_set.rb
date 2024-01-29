@@ -130,32 +130,6 @@ module JSI
       jsi
     end
 
-    # a set of child applicator subschemas of each schema in this set which apply to the child
-    # of the given instance on the given token.
-    # (see {Schema#child_applicator_schemas})
-    #
-    # @param instance (see Schema#child_applicator_schemas)
-    # @return [JSI::SchemaSet]
-    def child_applicator_schemas(token, instance)
-      SchemaSet.new(each_child_applicator_schema(token, instance))
-    end
-
-    # yields each child applicator schema which applies to the child of
-    # the given instance on the given token.
-    #
-    # @param (see Schema#child_applicator_schemas)
-    # @yield [JSI::Schema]
-    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def each_child_applicator_schema(token, instance, &block)
-      return to_enum(__method__, token, instance) unless block
-
-      each do |schema|
-        schema.each_child_applicator_schema(token, instance, &block)
-      end
-
-      nil
-    end
-
     # validates the given instance against our schemas
     #
     # @param instance [Object] the instance to validate against our schemas
