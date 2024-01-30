@@ -678,26 +678,30 @@ module JSI
         Cxt::ChildApplication,
         instance: instance,
         token: token,
+        collect_evaluated: false,
         &block
       )
     end
 
     # @param token [Object] array index or hash/object property name
     # @param instance [Object]
+    # @param collect_evaluated [Boolean] collect successful child evaluation?
     # @yield [Schema]
     def each_inplace_child_applicator_schema(
         token,
         instance,
         visited_refs: Util::EMPTY_ARY,
+        collect_evaluated: false,
         &block
     )
+      collect_evaluated ||= dialect_invoke_each(:application_requires_evaluated).any?
       applicate_self = false
 
       dialect_invoke_each(:inplace_applicate,
         Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
-        collect_evaluated: true,
+        collect_evaluated: collect_evaluated,
       ) do |schema, ref: nil|
         if schema.equal?(self) && !ref
           applicate_self = true
@@ -706,6 +710,7 @@ module JSI
             token,
             instance,
             visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
+            collect_evaluated: collect_evaluated,
             &block
           )
         end
@@ -716,6 +721,7 @@ module JSI
           schema: self,
           token: token,
           instance: instance,
+          collect_evaluated: collect_evaluated,
           block: block,
         ))
       end

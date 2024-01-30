@@ -5,9 +5,13 @@ module JSI
     ChildApplication = Block.subclass(*%w(
       instance
       token
+      collect_evaluated
       evaluated
     ))
 
+    # @!attribute collect_evaluated
+    #   Does application need to collect successful child evaluation?
+    #   @return [Boolean]
     # @!attribute evaluated
     #   Was the child successfully evaluated by a child applicator?
     #   @return [Boolean]
