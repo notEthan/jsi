@@ -178,6 +178,7 @@ module JSI
       # @return [JSI::Ptr]
       # @raise [JSI::Ptr::Error] if the given ancestor_ptr is not an ancestor of this pointer
       def relative_to(ancestor_ptr)
+        return self if ancestor_ptr.empty?
         unless ancestor_ptr.contains?(self)
           raise(Error, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
