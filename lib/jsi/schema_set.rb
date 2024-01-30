@@ -4,7 +4,7 @@ module JSI
   # a Set of JSI Schemas. always frozen.
   #
   # any schema instance is described by a set of schemas.
-  class SchemaSet < ::Set
+  class SchemaSet < Set
     class << self
       # Builds a SchemaSet, yielding a yielder to be called with each schema of the SchemaSet.
       #
@@ -140,30 +140,6 @@ module JSI
         c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
         each { |schema| yield(schema, c) }
       end)
-    end
-
-    # @return [String]
-    def inspect
-      -"#{self.class}[#{map(&:inspect).join(", ")}]"
-    end
-
-    def to_s
-      inspect
-    end
-
-    def pretty_print(q)
-      q.text self.class.to_s
-      q.text '['
-      q.group {
-        q.nest(2) {
-          q.breakable('')
-          q.seplist(self, nil, :each) { |e|
-            q.pp e
-          }
-        }
-        q.breakable('')
-      }
-      q.text ']'
     end
   end
 end

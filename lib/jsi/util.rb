@@ -103,7 +103,7 @@ module JSI
         object
       elsif object.is_a?(Symbol)
         object.to_s
-      elsif object.is_a?(Set)
+      elsif object.is_a?(::Set)
         as_json(object.to_a, **options)
       elsif object.respond_to?(:to_str) && (object_to_str = object.to_str).is_a?(String)
         object_to_str

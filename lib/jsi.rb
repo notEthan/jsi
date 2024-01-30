@@ -73,6 +73,7 @@ module JSI
   end
 
   autoload :Util, 'jsi/util'
+  autoload(:Set, 'jsi/set')
   autoload :Ptr, 'jsi/ptr'
   autoload :Schema, 'jsi/schema'
   autoload :SchemaSet, 'jsi/schema_set'
