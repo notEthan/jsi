@@ -239,7 +239,7 @@ module JSI
           Util.modified_copy(document, &block)
         else
           car = tokens[0]
-          cdr = Ptr.new(tokens[1..-1].freeze)
+          cdr = tokens.size == 1 ? EMPTY : Ptr.new(tokens[1..-1].freeze)
           token, document_child = node_subscript_token_child(document, car)
           modified_document_child = cdr.modified_document_copy(document_child, &block)
           if modified_document_child.object_id == document_child.object_id
