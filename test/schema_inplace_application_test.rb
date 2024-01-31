@@ -131,10 +131,108 @@ describe("JSI Schema in-place application") do
       end
     end
   end
+
+  {
+    draft202012: JSI::JSONSchemaDraft202012,
+  }.each do |name, metaschema|
+    describe("#{name} in-place $ref application") do
+      let(:metaschema) { metaschema }
+
+      describe("$ref") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              A: {}
+            $ref: "#/definitions/A"
+            YAML
+          )
+        end
+        let(:instance) { {} }
+
+        it("applies $ref and the schema containing $ref") do
+          assert_schemas([
+            schema,
+            schema.definitions['A'],
+          ], subject)
+        end
+      end
+
+      describe("$ref nested") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              A:
+                $ref: "#/definitions/B"
+              B:
+                {}
+            $ref: "#/definitions/A"
+            YAML
+          )
+        end
+        let(:instance) { {} }
+
+        it("applies") do
+          assert_schemas([
+            schema,
+            schema.definitions['A'],
+            schema.definitions['B'],
+          ], subject)
+        end
+      end
+
+      describe("$ref sibling applicators") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              A: {}
+            $ref: "#/definitions/A"
+            allOf:
+              - {}
+            YAML
+          )
+        end
+        let(:instance) { {} }
+
+        it("applies") do
+          assert_schemas([
+            schema,
+            schema.definitions['A'],
+            schema.allOf[0],
+          ], subject)
+        end
+      end
+
+      describe("applicators through $ref target") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              A:
+                allOf:
+                  - {}
+            $ref: "#/definitions/A"
+            YAML
+          )
+        end
+        let(:instance) { {} }
+
+        it("applies") do
+          assert_schemas([
+            schema,
+            schema.definitions['A'],
+            schema.definitions['A'].allOf[0],
+          ], subject)
+        end
+      end
+    end
+  end
+
+  # note: $dynamicRef not tested here; I am considering the JSON Schema Test Suite sufficient
+
   {
     draft04: JSI::JSONSchemaDraft04,
     draft06: JSI::JSONSchemaDraft06,
     draft07: JSI::JSONSchemaDraft07,
+    draft202012: JSI::JSONSchemaDraft202012,
   }.each do |name, metaschema|
     describe("#{name} in-place allOf, anyOf, oneOf application") do
       let(:metaschema) { metaschema }
@@ -433,8 +531,102 @@ describe("JSI Schema in-place application") do
       end
     end
   end
+
+  {
+    draft202012: JSI::JSONSchemaDraft202012,
+  }.each do |name, metaschema|
+    describe("#{name} in-place dependentSchemas application") do
+      let(:metaschema) { metaschema }
+
+      describe("dependentSchemas") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            dependentSchemas:
+              foo: {}
+              bar: {}
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => [0], 'baz' => {}} }
+
+        it("applies the ones present") do
+          assert_schemas([
+            schema,
+            schema.dependentSchemas['foo'],
+          ], subject)
+          refute_is_a(schema.dependentSchemas['bar'].jsi_schema_module, subject)
+        end
+      end
+
+      describe("applicators through dependentSchemas") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            dependentSchemas:
+              foo:
+                allOf:
+                  - {}
+                  - dependentSchemas:
+                      foo: {}
+                      bar: {}
+              bar:
+                oneOf:
+                  - type: string
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => [0], 'baz' => {}} }
+
+        it("applies the ones present") do
+          assert_schemas([
+            schema,
+            schema.dependentSchemas['foo'],
+            schema.dependentSchemas['foo'].allOf[0],
+            schema.dependentSchemas['foo'].allOf[1],
+            schema.dependentSchemas['foo'].allOf[1].dependentSchemas['foo']
+          ], subject)
+          refute_is_a(schema.dependentSchemas['foo'].allOf[1].dependentSchemas['bar'].jsi_schema_module, subject)
+          refute_is_a(schema.dependentSchemas['bar'].jsi_schema_module, subject)
+          refute_is_a(schema.dependentSchemas['bar'].oneOf[0].jsi_schema_module, subject)
+        end
+      end
+
+      describe("dependentSchemas, all failing validation") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            dependentSchemas:
+              foo:
+                allOf:
+                  - {not: {}}
+                  - dependentSchemas:
+                      foo: {not: {}}
+                      bar: {}
+              bar:
+                oneOf:
+                  - type: string
+            YAML
+          )
+        end
+        let(:instance) { {'foo' => [0], 'baz' => {}} }
+
+        it("applies the ones present (regardless of validation)") do
+          assert_schemas([
+            schema,
+            schema.dependentSchemas['foo'],
+            schema.dependentSchemas['foo'].allOf[0],
+            schema.dependentSchemas['foo'].allOf[1],
+            schema.dependentSchemas['foo'].allOf[1].dependentSchemas['foo']
+          ], subject)
+          refute_is_a(schema.dependentSchemas['foo'].allOf[1].dependentSchemas['bar'].jsi_schema_module, subject)
+          refute_is_a(schema.dependentSchemas['bar'].jsi_schema_module, subject)
+          refute_is_a(schema.dependentSchemas['bar'].oneOf[0].jsi_schema_module, subject)
+        end
+      end
+    end
+  end
+
   {
     draft07: JSI::JSONSchemaDraft07,
+    draft202012: JSI::JSONSchemaDraft202012,
   }.each do |name, metaschema|
     describe("#{name} in-place if/then/else application") do
       let(:metaschema) { metaschema }
