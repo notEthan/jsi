@@ -176,6 +176,7 @@ describe 'JSI Schema child application' do
   {
     draft06: JSI::JSONSchemaDraft06,
     draft07: JSI::JSONSchemaDraft07,
+    draft202012: JSI::JSONSchemaDraft202012,
   }.each do |name, metaschema|
     describe "#{name} contains application" do
       let(:metaschema) { metaschema }
@@ -234,6 +235,7 @@ describe 'JSI Schema child application' do
     draft04: JSI::JSONSchemaDraft04,
     draft06: JSI::JSONSchemaDraft06,
     draft07: JSI::JSONSchemaDraft07,
+    draft202012: JSI::JSONSchemaDraft202012,
   }.each do |name, metaschema|
     describe "#{name} child properties, additionalProperties, patternProperties application" do
       let(:metaschema) { metaschema }
