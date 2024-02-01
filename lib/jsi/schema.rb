@@ -768,7 +768,14 @@ module JSI
       else
         result = JSI::Validation::FullResult.new
       end
-      result_builder = result.builder(self, instance_ptr, instance_document, validate_only, visited_refs)
+      result_builder = result.class::Builder.new(
+        result: result,
+        schema: self,
+        instance_ptr: instance_ptr,
+        instance_document: instance_document,
+        validate_only: validate_only,
+        visited_refs: visited_refs,
+      )
 
       catch(:jsi_validation_result) do
         # note: true/false are not valid as schemas in draft 4; they are only values of

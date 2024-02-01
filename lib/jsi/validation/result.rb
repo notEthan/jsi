@@ -74,17 +74,6 @@ module JSI
     end
 
     class Result
-      def builder(schema, instance_ptr, instance_document, validate_only, visited_refs)
-        self.class::Builder.new(
-          result: self,
-          schema: schema,
-          instance_ptr: instance_ptr,
-          instance_document: instance_document,
-          validate_only: validate_only,
-          visited_refs: visited_refs,
-        )
-      end
-
       # is the instance valid against its schemas?
       # @return [Boolean]
       def valid?
