@@ -25,6 +25,8 @@ module JSI
       def self.ary_ptr(ary_ptr)
         if ary_ptr.is_a?(Ptr)
           ary_ptr
+        elsif ary_ptr == Util::EMPTY_ARY
+          EMPTY
         else
           new(ary_ptr)
         end
