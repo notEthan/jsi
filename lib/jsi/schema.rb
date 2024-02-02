@@ -748,7 +748,12 @@ module JSI
     # @param validate_only [Boolean] whether to return a full schema validation result or a simple, validation-only result
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @return [JSI::Validation::Result]
-    def internal_validate_instance(instance_ptr, instance_document, validate_only: false, visited_refs: Util::EMPTY_ARY)
+    def internal_validate_instance(
+        instance_ptr,
+        instance_document,
+        visited_refs: Util::EMPTY_ARY,
+        validate_only: false
+    )
       if validate_only
         result = JSI::Validation::VALID
       else
