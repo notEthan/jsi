@@ -462,6 +462,7 @@ describe JSI::Base do
             keyword: "type",
             schema: schema,
             instance_ptr: JSI::Ptr[], instance_document: instance,
+            child_errors: Set[],
           }),
         ], result.validation_errors)
         assert_equal(Set[], result.schema_issues)
@@ -506,6 +507,7 @@ describe JSI::Base do
               keyword: "type",
               schema: schema["properties"]["foo"],
               instance_ptr: JSI::Ptr["foo"], instance_document: instance,
+              child_errors: Set[],
             }),
           ], subject.foo.jsi_validate.validation_errors)
           assert_equal(Set[], subject.bar.jsi_validate.validation_errors)
@@ -515,6 +517,7 @@ describe JSI::Base do
               keyword: "type",
               schema: schema["properties"]["baz"],
               instance_ptr: JSI::Ptr["baz"], instance_document: instance,
+              child_errors: Set[],
             }),
           ], subject.baz.jsi_validate.validation_errors)
           assert_equal(Set[
@@ -523,38 +526,46 @@ describe JSI::Base do
               keyword: "not",
               schema: schema["additionalProperties"],
               instance_ptr: JSI::Ptr["more"], instance_document: instance,
+              child_errors: Set[],
             }),
           ], subject['more'].jsi_validate.validation_errors)
           assert_equal(Set[
-            JSI::Validation::Error.new({
-              message: "instance type does not match `type` value",
-              keyword: "type",
-              schema: schema["properties"]["foo"],
-              instance_ptr: JSI::Ptr["foo"], instance_document: instance,
-            }),
-            JSI::Validation::Error.new({
-              message: "instance type does not match `type` value",
-              keyword: "type",
-              schema: schema["properties"]["baz"],
-              instance_ptr: JSI::Ptr["baz"], instance_document: instance,
-            }),
             JSI::Validation::Error.new({
               message: "instance object properties are not all valid against corresponding `properties` schema values",
               keyword: "properties",
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
-            }),
-            JSI::Validation::Error.new({
-              message: "instance is valid against the schema specified as `not` value",
-              keyword: "not",
-              schema: schema["additionalProperties"],
-              instance_ptr: JSI::Ptr["more"], instance_document: instance,
+              child_errors: Set[
+                JSI::Validation::Error.new({
+                  message: "instance type does not match `type` value",
+                  keyword: "type",
+                  schema: schema["properties"]["foo"],
+                  instance_ptr: JSI::Ptr["foo"], instance_document: instance,
+                  child_errors: Set[],
+                }),
+                JSI::Validation::Error.new({
+                  message: "instance type does not match `type` value",
+                  keyword: "type",
+                  schema: schema["properties"]["baz"],
+                  instance_ptr: JSI::Ptr["baz"], instance_document: instance,
+                  child_errors: Set[],
+                }),
+              ],
             }),
             JSI::Validation::Error.new({
               message: "instance object additional properties are not all valid against `additionalProperties` schema value",
               keyword: "additionalProperties",
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
+              child_errors: Set[
+                JSI::Validation::Error.new({
+                  message: "instance is valid against the schema specified as `not` value",
+                  keyword: "not",
+                  schema: schema["additionalProperties"],
+                  instance_ptr: JSI::Ptr["more"], instance_document: instance,
+                  child_errors: Set[],
+                }),
+              ],
             }),
           ], subject.jsi_validate.validation_errors)
         end

@@ -91,13 +91,13 @@ module JSI
         )
           results.each { |res| result.schema_issues.merge(res.schema_issues) }
           if !valid
-            results.each { |res| result.validation_errors.merge(res.validation_errors) }
             result.validation_errors << Validation::Error.new({
               message: message,
               keyword: keyword,
               schema: schema,
               instance_ptr: instance_ptr,
               instance_document: instance_document,
+              child_errors: results.map(&:validation_errors).inject(Set[], &:merge).freeze,
             })
           end
         end
@@ -121,6 +121,15 @@ module JSI
 
       attr_reader :validation_errors
       attr_reader :schema_issues
+
+      # @yield [Validation::Error]
+      def each_validation_error(&block)
+        return(to_enum(__method__)) if !block_given?
+        validation_errors.each do |validation_error|
+          validation_error.each_validation_error(&block)
+        end
+        nil
+      end
 
       def valid?
         validation_errors.empty?

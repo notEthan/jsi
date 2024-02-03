@@ -169,7 +169,7 @@ describe 'unsupported behavior' do
           assert_equal([
             "instance type does not match `type` value",
             "instance object property names are not all valid against `propertyNames` schema value",
-          ], subject.jsi_validate.validation_errors.map(&:message))
+          ], subject.jsi_validate.each_validation_error.map(&:message))
 
           subject.jsi_each_propertyName do |propertyName|
             assert_schemas([schema.propertyNames], propertyName)

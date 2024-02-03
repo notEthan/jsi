@@ -305,7 +305,7 @@ describe(JSI::MetaSchemaNode) do
         end
       end
       results.each do |result|
-        assert_includes(result.validation_errors.map(&:keyword), 'type')
+        assert_includes(result.each_validation_error.map(&:keyword), 'type')
       end
     end
   end

@@ -939,6 +939,7 @@ describe JSI::Schema do
             :keyword => "type",
             :schema => schema,
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
+            :child_errors => Set[],
           }),
         ], result.validation_errors)
         assert_equal(Set[], result.schema_issues)
