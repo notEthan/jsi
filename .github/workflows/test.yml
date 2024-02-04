@@ -34,6 +34,8 @@ jobs:
         ruby-version: ${{ matrix.ruby-version }}
         bundler-cache: true
 
+    - run: "if (( RANDOM % 2 )); then bin/chkbug.rb; fi"
+
     - run: bundle exec rake test
 
     - name: Report to Coveralls

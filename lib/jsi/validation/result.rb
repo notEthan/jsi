@@ -71,7 +71,9 @@ module JSI
           nil
         end
       end
+    end
 
+    class Result
       def builder(schema, instance_ptr, instance_document, validate_only, visited_refs)
         self.class::Builder.new(
           result: self,
@@ -102,7 +104,7 @@ module JSI
             valid,
             message,
             keyword: nil,
-            results: []
+            results: Util::EMPTY_ARY
         )
           results.each { |res| result.schema_issues.merge(res.schema_issues) }
           if !valid
@@ -126,7 +128,9 @@ module JSI
           })
         end
       end
+    end
 
+    class FullResult
       def initialize
         @validation_errors = Set.new
         @schema_issues = Set.new
@@ -167,7 +171,7 @@ module JSI
           class: self.class,
           validation_errors: validation_errors,
           schema_issues: schema_issues,
-        }
+        }.freeze
       end
     end
 
@@ -179,7 +183,7 @@ module JSI
             valid,
             message,
             keyword: nil,
-            results: []
+            results: Util::EMPTY_ARY
         )
           if !valid
             throw(:jsi_validation_result, INVALID)
@@ -190,7 +194,9 @@ module JSI
           # noop
         end
       end
+    end
 
+    class ValidityResult
       def initialize(valid)
         @valid = valid
       end
@@ -205,7 +211,7 @@ module JSI
         {
           class: self.class,
           valid: valid?,
-        }
+        }.freeze
       end
     end
   end

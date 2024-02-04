@@ -31,6 +31,13 @@ module JSI
     #   the schema that has an issue
     #   @return [JSI::Schema]
     class Issue
+      def warning?
+        level == :warning
+      end
+
+      def error?
+        level == :error
+      end
     end
   end
 end

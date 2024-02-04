@@ -30,13 +30,15 @@ module JSI
     # @param array [Boolean] whether the dumped data represent one instance of the schema,
     #   or an array of them. note that it may be preferable to simply use an array schema.
     # @param jsi_opt [Hash] keyword arguments to pass to {Schema#new_jsi} when loading
-    def initialize(schema, array: false, jsi_opt: {})
+    # @param as_json_opt [Hash] keyword arguments to pass to `#as_json` when dumping
+    def initialize(schema, array: false, jsi_opt: {}, as_json_opt: {})
       unless schema.respond_to?(:new_jsi)
         raise(ArgumentError, "schema param does not respond to #new_jsi: #{schema.inspect}")
       end
       @schema = schema
       @array = array
       @jsi_opt = jsi_opt
+      @as_json_opt = as_json_opt
     end
 
     # loads the database column to JSI instances of our schema
@@ -86,7 +88,7 @@ module JSI
     # @param object [JSI::Base, Object]
     # @return [Object]
     def dump_object(object)
-      JSI::Util.as_json(object)
+      JSI::Util.as_json(object, **@as_json_opt)
     end
   end
 end

@@ -75,7 +75,7 @@ module JSI
   # Instantiates the given document as a JSI Metaschema, passing all params to
   # {new_metaschema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
-  # @return [Module + JSI::SchemaModule::DescribesSchemaModule + JSI::SchemaModule]
+  # @return [JSI::SchemaModule + JSI::SchemaModule::DescribesSchemaModule]
   def self.new_metaschema_module(metaschema_document, **kw)
     new_metaschema(metaschema_document, **kw).jsi_schema_module
   end

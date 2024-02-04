@@ -213,8 +213,8 @@ describe 'JSI::SchemaRegistry' do
     it '#inspect' do
       inspect = <<~str
       #<JSI::SchemaRegistry
-        autoload (0)
         resources (0)
+        autoload (0)
       >
       str
       assert_equal(inspect.chomp, JSI::SchemaRegistry.new.inspect)

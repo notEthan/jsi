@@ -90,15 +90,16 @@ module JSI
         -"\#<#{self.class.name}#{@attributes.map { |k, v| " #{k}: #{v.inspect}" }.join(',')}>"
       end
 
-      alias_method :to_s, :inspect
+      def to_s
+        inspect
+      end
 
       # pretty-prints a representation of self to the given printer
       # @return [void]
       def pretty_print(q)
         q.text '#<'
         q.text self.class.name
-        q.group_sub {
-          q.nest(2) {
+        q.group(2) {
             q.breakable(@attributes.empty? ? '' : ' ')
             q.seplist(@attributes, nil, :each_pair) { |k, v|
               q.group {
@@ -107,7 +108,6 @@ module JSI
                 q.pp v
               }
             }
-          }
         }
         q.breakable ''
         q.text '>'
@@ -123,7 +123,7 @@ module JSI
       # see {Util::Private::FingerprintHash}
       # @api private
       def jsi_fingerprint
-        {class: self.class, attributes: @attributes}
+        {class: self.class, attributes: @attributes}.freeze
       end
     end
   end
