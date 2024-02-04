@@ -384,8 +384,6 @@ describe 'JSI::Base array' do
     it('#-')      { assert_equal([subject[1], subject[2], subject[3]], subject - ['foo']) }
     it('#<=>')     { assert_equal(1, subject <=> []) }
     it('#<=>')      { assert_equal(-1, [] <=> subject) }
-    require 'abbrev'
-    it('#abbrev')    { assert_equal({'a' => 'a'}, schema.new_jsi(['a']).abbrev) }
     it('#assoc')      { assert_equal(subject[2], subject.assoc('q')) }
     it('#at')          { assert_equal('foo', subject.at(0)) }
     it('#bsearch')      { assert_equal(nil, subject.bsearch { false }) }
