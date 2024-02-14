@@ -47,8 +47,6 @@ describe 'JSON Schema Test Suite' do
     drafts.each do |draft|
       name = draft[:name]
       metaschema = draft[:metaschema]
-      desc_schema_registry = JSTS_REGISTRIES[metaschema]
-
           base = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests')
           subpaths = Dir.chdir(base) { Dir.glob(File.join(name, '**/*.json')) }
           subpaths.each do |subpath|
@@ -66,6 +64,7 @@ describe 'JSON Schema Test Suite' do
                 # :nocov:
               end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
+                desc_schema_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
                   schema_registry: desc_schema_registry,
                   default_metaschema: metaschema,
