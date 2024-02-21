@@ -124,7 +124,7 @@ describe 'JSON Schema Test Suite' do
                           end
 
                           regexs = schema.jsi_each_descendent_node.select do |node|
-                            node.jsi_schemas.any? { |s| s['format'] == 'regex' }
+                            node.jsi_schemas.any? { |s| s.keyword?('format') && s['format'] == 'regex' }
                           end.map(&:jsi_node_content)
                           schema.jsi_each_descendent_node do |node|
                             if node.is_a?(JSI::Schema) && node.respond_to?(:to_hash) && node.key?('patternProperties')
