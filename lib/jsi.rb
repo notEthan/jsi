@@ -84,6 +84,7 @@ module JSI
   # @return [JSI::MetaSchemaNode + JSI::Schema::MetaSchema + JSI::Schema]
   def self.new_metaschema(metaschema_document,
       schema_implementation_modules: ,
+      schema_registry: JSI.schema_registry,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
       &block
   )
@@ -91,6 +92,7 @@ module JSI
 
     metaschema = MetaSchemaNode.new(metaschema_document,
       schema_implementation_modules: schema_implementation_modules,
+      jsi_schema_registry: schema_registry,
       jsi_content_to_immutable: to_immutable,
     )
 
