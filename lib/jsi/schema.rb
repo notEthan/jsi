@@ -324,7 +324,7 @@ module JSI
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
-            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema")
+            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", schema_registry: schema_registry)
           elsif self.default_metaschema
             self.default_metaschema
           else
