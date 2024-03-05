@@ -18,7 +18,7 @@ module JSI
 
     # the base URI used to resolve the ids of schemas at or below this JSI.
     # this is always an absolute URI (with no fragment).
-    # this may be the absolute schema URI of a parent schema or the URI from which the document was retrieved.
+    # This may be the absolute schema URI of an ancestor schema or the URI from which the document was retrieved.
     # @api private
     # @return [Addressable::URI, nil]
     attr_reader :jsi_schema_base_uri
@@ -34,7 +34,7 @@ module JSI
 
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
-    # if this node is a schema with an id, this is its absolute URI; otherwise a parent resource's URI,
+    # If this node is a schema with an id, this is its absolute URI; otherwise an ancestor resource's URI,
     # or nil if not contained by a resource with a URI.
     # @return [Addressable::URI, nil]
     def jsi_resource_ancestor_uri

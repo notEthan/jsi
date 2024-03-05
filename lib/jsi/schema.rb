@@ -467,7 +467,7 @@ module JSI
     end
 
     # a nonrelative URI which refers to this schema.
-    # nil if no parent of this schema defines an id.
+    # `nil` if no ancestor of this schema defines an id.
     # see {#schema_uris} for all URIs known to refer to this schema.
     # @return [Addressable::URI, nil]
     def schema_uri
@@ -492,22 +492,22 @@ module JSI
 
       yield schema_absolute_uri if schema_absolute_uri
 
-      parent_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
+      ancestor_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
         resource.schema_absolute_uri
       end
 
       anchored = respond_to?(:anchor) ? anchor : nil
-      parent_schemas.each do |parent_schema|
+      ancestor_schemas.each do |ancestor_schema|
         if anchored
-          if parent_schema.jsi_anchor_subschema(anchor) == self
-            yield parent_schema.schema_absolute_uri.merge(fragment: anchor).freeze
+          if ancestor_schema.jsi_anchor_subschema(anchor) == self
+            yield(ancestor_schema.schema_absolute_uri.merge(fragment: anchor).freeze)
           else
             anchored = false
           end
         end
 
-        relative_ptr = jsi_ptr.relative_to(parent_schema.jsi_ptr)
-        yield parent_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment).freeze
+        relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
+        yield(ancestor_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment).freeze)
       end
 
       nil
@@ -604,10 +604,10 @@ module JSI
 
     # a resource containing this schema.
     #
-    # if any parent, or this schema itself, is a schema with an absolute uri (see {#schema_absolute_uri}),
+    # If any ancestor, or this schema itself, is a schema with an absolute uri (see {#schema_absolute_uri}),
     # the resource root is the closest schema with an absolute uri.
     #
-    # If no parent schema has an absolute uri, the schema_resource_root is the {Base#jsi_root_node document's root node}.
+    # If no ancestor schema has an absolute uri, the schema_resource_root is the {Base#jsi_root_node document's root node}.
     # In this case, the resource root may or may not be a schema itself.
     #
     # @return [JSI::Base] resource containing this schema
