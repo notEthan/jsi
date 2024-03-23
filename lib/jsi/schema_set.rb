@@ -192,8 +192,9 @@ module JSI
     # @param instance [Object] the instance to validate against our schemas
     # @return [JSI::Validation::Result]
     def instance_validate(instance)
-      results = map { |schema| schema.instance_validate(instance) }
-      results.inject(Validation::FullResult.new, &:merge).freeze
+      inject(Validation::FullResult.new) do |result, schema|
+        result.merge(schema.instance_validate(instance))
+      end.freeze
     end
 
     # whether the given instance is valid against our schemas
