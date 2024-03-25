@@ -752,6 +752,7 @@ module JSI
     def each_inplace_child_applicator_schema(
         token,
         instance,
+        visited_refs: Util::EMPTY_ARY,
         &block
     )
       applicate_self = false
@@ -759,14 +760,15 @@ module JSI
       dialect_invoke_each(:inplace_applicate,
         Cxt::InplaceApplication,
         instance: instance,
-        visited_refs: Util::EMPTY_ARY,
-      ) do |schema|
-        if schema.equal?(self)
+        visited_refs: visited_refs,
+      ) do |schema, ref: nil|
+        if schema.equal?(self) && !ref
           applicate_self = true
         else
           schema.each_inplace_child_applicator_schema(
             token,
             instance,
+            visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
             &block
           )
         end
