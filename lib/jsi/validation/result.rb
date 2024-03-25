@@ -3,10 +3,7 @@
 module JSI
   module Validation
     # a result of validating an instance against schemas which describe it.
-    # virtual base class.
     class Result
-      include Util::Virtual
-
       Builder = Util::AttrStruct[*%w(
         result
         schema
@@ -24,7 +21,6 @@ module JSI
         end
 
         def schema_issue(*_)
-          virtual_method
         end
 
         def schema_error(message, keyword = nil)
@@ -77,9 +73,7 @@ module JSI
       # is the instance valid against its schemas?
       # @return [Boolean]
       def valid?
-        # :nocov:
-        virtual_method
-        # :nocov:
+        #chkbug raise(NotImplementedError)
       end
 
       include Util::FingerprintHash

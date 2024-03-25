@@ -181,24 +181,5 @@ module JSI
         super
       end
     end
-
-    module Virtual
-      class InstantiationError < StandardError
-      end
-
-      # this virtual class is not intended to be instantiated except by its subclasses, which override #initialize
-      def initialize
-        # :nocov:
-        raise(InstantiationError, "cannot instantiate virtual class #{self.class}")
-        # :nocov:
-      end
-
-      # virtual_method is used to indicate that the method calling it must be implemented on the (non-virtual) subclass
-      def virtual_method
-        # :nocov:
-        raise(Bug, "class #{self.class} must implement #{caller_locations.first.label}")
-        # :nocov:
-      end
-    end
   end
 end
