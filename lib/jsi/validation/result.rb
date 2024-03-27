@@ -127,7 +127,6 @@ module JSI
       end
 
       def freeze
-        @validation_errors.each(&:freeze)
         @schema_issues.each(&:freeze)
         @validation_errors.freeze
         @schema_issues.freeze
