@@ -26,19 +26,26 @@ module JSI
               # If "items" is an array of schemas, validation succeeds if each element of the instance validates
               # against the schema at the same position, if any.
               if instance.respond_to?(:to_ary)
-                results = {}
+                items_results = {}
+                additionalItems_results = {}
                 instance.each_index do |i|
                   if i < value.size
-                    results[i] = child_subschema_validate(i, ['items', i])
+                    items_results[i] = child_subschema_validate(i, ['items', i])
                   elsif keyword?('additionalItems')
-                    results[i] = child_subschema_validate(i, ['additionalItems'])
+                    additionalItems_results[i] = child_subschema_validate(i, ['additionalItems'])
                   end
                 end
                 validate(
-                  results.each_value.all?(&:valid?),
-                  'instance array items are not all valid against corresponding `items` or `additionalItems` schema values',
+                  items_results.each_value.all?(&:valid?),
+                  "instance array items are not all valid against corresponding `items` schemas",
                   keyword: 'items',
-                  results: results.each_value,
+                  results: items_results.each_value,
+                )
+                validate(
+                  additionalItems_results.each_value.all?(&:valid?),
+                  "instance array items after `items` schemas are not all valid against `additionalItems` schema",
+                  keyword: 'additionalItems',
+                  results: additionalItems_results.each_value,
                 )
               end
             else
