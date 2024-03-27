@@ -49,14 +49,15 @@ module JSI
               else
                 #> If "items" is a schema, validation succeeds if all elements in the array successfully
                 #> validate against that schema.
-                results = instance.each_index.map do |i|
-                  child_subschema_validate(i, ['items'])
+                items_results = {}
+                instance.each_index do |i|
+                  items_results[i] = child_subschema_validate(i, ['items'])
                 end
                 validate(
-                  results.all?(&:valid?),
+                  items_results.each_value.all?(&:valid?),
                   "instance array items are not all valid against `items` schema",
                   keyword: 'items',
-                  results: results,
+                  results: items_results.each_value,
                 )
               end
               if keyword?('additionalItems')
