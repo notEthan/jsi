@@ -40,7 +40,7 @@ module JSI
                   validate_only: validate_only,
                   visited_refs: visited_refs + [schema_ref],
                 )
-                validate(
+                inplace_results_validate(
                   ref_result.valid?,
                   'validation.keyword.$ref.invalid',
                   "instance is not valid against the schema referenced by `$ref`",

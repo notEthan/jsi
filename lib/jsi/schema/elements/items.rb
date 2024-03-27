@@ -52,20 +52,20 @@ module JSI
                     additionalItems_results[i] = child_subschema_validate(i, ['additionalItems'])
                   end
                 end
-                validate(
+                child_results_validate(
                   items_results.each_value.all?(&:valid?),
                   'validation.keyword.items.array.invalid',
                   "instance array items are not all valid against corresponding `items` schemas",
                   keyword: 'items',
-                  results: items_results.each_value,
+                  child_results: items_results,
                   instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
-                validate(
+                child_results_validate(
                   additionalItems_results.each_value.all?(&:valid?),
                   'validation.keyword.additionalItems.invalid',
                   "instance array items after `items` schemas are not all valid against `additionalItems` schema",
                   keyword: 'additionalItems',
-                  results: additionalItems_results.each_value,
+                  child_results: additionalItems_results,
                   instance_indexes_valid: additionalItems_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               else
@@ -75,12 +75,12 @@ module JSI
                 instance.each_index do |i|
                   items_results[i] = child_subschema_validate(i, ['items'])
                 end
-                validate(
+                child_results_validate(
                   items_results.each_value.all?(&:valid?),
                   'validation.keyword.items.schema.invalid',
                   "instance array items are not all valid against `items` schema",
                   keyword: 'items',
-                  results: items_results.each_value,
+                  child_results: items_results,
                   instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               end

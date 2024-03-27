@@ -42,6 +42,20 @@ module JSI
           )
           subresult
         end
+
+        # @param results [Enumerable<Validation::Result>]
+        def inplace_results_validate(*a, results: , **kw)
+          validate(*a, **kw,
+            results: results,
+          )
+        end
+
+        # @param child_results [Hash<Object, Validation::Result>] token => child result
+        def child_results_validate(*a, child_results: , **kw)
+          validate(*a, **kw,
+            results: child_results.each_value,
+          )
+        end
       end
     end
 

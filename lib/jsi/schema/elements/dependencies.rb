@@ -68,7 +68,7 @@ module JSI
                   # the dependency value.
                   if instance.respond_to?(:to_hash) && instance.key?(property_name)
                     dependency_result = inplace_subschema_validate(['dependencies', property_name])
-                    validate(
+                    inplace_results_validate(
                       dependency_result.valid?,
                       'validation.keyword.dependencies.dependent_schema.invalid',
                       'instance object is not valid against the schema corresponding to a matched property name specified by `dependencies` value',

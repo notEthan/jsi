@@ -32,7 +32,7 @@ module JSI
               allOf_results = value.each_index.map do |i|
                 inplace_subschema_validate(['allOf', i])
               end
-              validate(
+              inplace_results_validate(
                 allOf_results.all?(&:valid?),
                 'validation.keyword.allOf.not_all_valid',
                 "instance is not valid against all `allOf` schemas",
@@ -89,7 +89,7 @@ module JSI
               anyOf_results = value.each_index.map do |i|
                 inplace_subschema_validate(['anyOf', i])
               end
-              validate(
+              inplace_results_validate(
                 anyOf_results.any?(&:valid?),
                 'validation.keyword.anyOf.not_any_valid',
                 "instance is not valid against any `anyOf` schema",
@@ -148,7 +148,7 @@ module JSI
                 inplace_subschema_validate(['oneOf', i])
               end
               if oneOf_results.none?(&:valid?)
-                validate(
+                inplace_results_validate(
                   false,
                   'validation.keyword.oneOf.not_any_valid',
                   "instance is not valid against any `oneOf` schema",
@@ -157,7 +157,7 @@ module JSI
                   oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               else
-                validate(
+                inplace_results_validate(
                   oneOf_results.select(&:valid?).size == 1,
                   'validation.keyword.oneOf.multiple_valid',
                   "instance is valid against multiple `oneOf` schemas",

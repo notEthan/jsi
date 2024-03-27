@@ -41,12 +41,12 @@ module JSI
               instance.each_index do |i|
                 results[i] = child_subschema_validate(i, ['contains'])
               end
-              validate(
+              child_results_validate(
                 results.each_value.any?(&:valid?),
                 'validation.keyword.contains.none',
                 "instance array does not contain any items valid against `contains` schema",
                 keyword: 'contains',
-                results: results.each_value,
+                child_results: results,
                 # when invalid these are all false, but included for consistency with `contains` with min/max
                 instance_indexes_valid: results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
               )
