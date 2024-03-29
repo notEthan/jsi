@@ -30,6 +30,9 @@ module JSI
     class NotASchemaError < Error
     end
 
+    class NotAMetaSchemaError < TypeError
+    end
+
     # an exception raised when we are unable to resolve a schema reference
     class ReferenceError < StandardError
     end
@@ -419,7 +422,7 @@ module JSI
         if metaschema.respond_to?(:to_str)
           schema = Schema::Ref.new(metaschema, schema_registry: schema_registry).deref_schema
           if !schema.describes_schema?
-            raise(TypeError, [name, "URI indicates a schema that is not a meta-schema: #{metaschema.pretty_inspect.chomp}"].compact.join(" "))
+            raise(NotAMetaSchemaError, [name, "URI indicates a schema that is not a meta-schema: #{metaschema.pretty_inspect.chomp}"].compact.join(" "))
           end
           schema
         elsif metaschema.is_a?(SchemaModule::MetaSchemaModule)
@@ -427,7 +430,7 @@ module JSI
         elsif metaschema.is_a?(Schema::MetaSchema)
           metaschema
         else
-          raise(TypeError, "#{name || "param"} does not indicate a meta-schema: #{metaschema.pretty_inspect.chomp}")
+          raise(NotAMetaSchemaError, "#{name || "param"} does not indicate a meta-schema: #{metaschema.pretty_inspect.chomp}")
         end
       end
     end

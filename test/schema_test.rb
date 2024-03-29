@@ -14,7 +14,7 @@ describe JSI::Schema do
 
     it '$schema resolves but does not describe schemas' do
       JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#", "$id": "tag:guqh"})
-      e = assert_raises(TypeError) { JSI.new_schema({"$schema": "tag:guqh"}) }
+      e = assert_raises(JSI::Schema::NotAMetaSchemaError) { JSI.new_schema({"$schema": "tag:guqh"}) }
       assert_equal(%q($schema URI indicates a schema that is not a meta-schema: "tag:guqh"), e.message)
     end
 
