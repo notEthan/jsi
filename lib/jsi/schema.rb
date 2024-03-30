@@ -386,7 +386,9 @@ module JSI
             # TODO warn; behavior is undefined and I hate this implementation
 
             result_schema_indicated_schemas = SchemaSet.new(schema.jsi_indicated_schemas + reinstantiate_as)
-            result_schema_applied_schemas = result_schema_indicated_schemas.inplace_applicator_schemas(schema.jsi_node_content)
+            result_schema_applied_schemas = result_schema_indicated_schemas.each_yield_set do |is, y|
+              is.each_inplace_applicator_schema(schema.jsi_node_content, &y)
+            end
 
             result_schema_class = JSI::SchemaClasses.class_for_schemas(result_schema_applied_schemas,
               includes: SchemaClasses.includes_for(schema.jsi_node_content),
@@ -652,20 +654,9 @@ module JSI
           )
     end
 
-    # a set of inplace applicator schemas of this schema (from $ref, allOf, etc.) which apply to the
-    # given instance.
-    #
-    # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
-    #
-    # @param instance [Object] the instance to check any applicators against
-    # @return [JSI::SchemaSet] matched applicator schemas
-    def inplace_applicator_schemas(instance)
-      SchemaSet.new(each_inplace_applicator_schema(instance))
-    end
-
     # yields each inplace applicator schema which applies to the given instance.
     #
-    # @param instance (see #inplace_applicator_schemas)
+    # @param instance [Object] the instance to check any applicators against
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil

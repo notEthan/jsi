@@ -107,7 +107,10 @@ module JSI
 
       instance = to_immutable.call(instance) if !mutable && to_immutable
 
-      applied_schemas = inplace_applicator_schemas(instance)
+      applied_schemas = SchemaSet.build do |y|
+        c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
+        each { |is| is.each_inplace_applicator_schema(instance, &c) }
+      end
 
       if uri
         unless uri.respond_to?(:to_str)
@@ -133,30 +136,6 @@ module JSI
       schema_registry.register(jsi) if register && schema_registry
 
       jsi
-    end
-
-    # a set of inplace applicator schemas of each schema in this set which apply to the given instance.
-    # (see {Schema#inplace_applicator_schemas})
-    #
-    # @param instance (see Schema#inplace_applicator_schemas)
-    # @return [JSI::SchemaSet]
-    def inplace_applicator_schemas(instance)
-      SchemaSet.new(each_inplace_applicator_schema(instance))
-    end
-
-    # yields each inplace applicator schema which applies to the given instance.
-    #
-    # @param instance (see Schema#inplace_applicator_schemas)
-    # @yield [JSI::Schema]
-    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def each_inplace_applicator_schema(instance, &block)
-      return to_enum(__method__, instance) unless block
-
-      each do |schema|
-        schema.each_inplace_applicator_schema(instance, &block)
-      end
-
-      nil
     end
 
     # a set of child applicator subschemas of each schema in this set which apply to the child
