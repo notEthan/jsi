@@ -202,6 +202,16 @@ module JSI
       all? { |schema| schema.instance_valid?(instance) }
     end
 
+    # Builds a SchemaSet, yielding each schema and a callable to be called with each schema of the resulting SchemaSet.
+    # @yield [Schema, #to_proc]
+    # @return [SchemaSet]
+    def each_yield_set(&block)
+      self.class.new(Enumerator.new do |y|
+        c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
+        each { |schema| yield(schema, c) }
+      end)
+    end
+
     # @return [String]
     def inspect
       -"#{self.class}[#{map(&:inspect).join(", ")}]"
