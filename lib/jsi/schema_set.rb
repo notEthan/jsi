@@ -6,14 +6,12 @@ module JSI
   # any schema instance is described by a set of schemas.
   class SchemaSet < ::Set
     class << self
-      # builds a SchemaSet from a mutable Set which is added to by the given block
+      # Builds a SchemaSet, yielding a yielder to be called with each schema of the SchemaSet.
       #
-      # @yield [Set] a Set to which the block may add schemas
+      # @yield [Enumerator::Yielder]
       # @return [SchemaSet]
-      def build
-        mutable_set = Set.new
-        yield mutable_set
-        new(mutable_set)
+      def build(&block)
+        new(Enumerator.new(&block))
       end
 
       # ensures the given param becomes a SchemaSet. returns the param if it is already SchemaSet, otherwise
