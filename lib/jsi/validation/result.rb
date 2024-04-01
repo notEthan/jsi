@@ -142,10 +142,6 @@ module JSI
         self
       end
 
-      def +(result)
-        FullResult.new.merge(self).merge(result)
-      end
-
       # see {Util::Private::FingerprintHash}
       # @api private
       def jsi_fingerprint
