@@ -301,7 +301,7 @@ describe JSI::MetaschemaNode do
         metaschema.instance_validate(metaschema),
       ]
       metaschema.jsi_each_descendent_node do |node|
-        if node.jsi_ptr.contains?(JSI::Ptr['title'])
+        if node.jsi_ptr.ancestor_of?(JSI::Ptr['title'])
           results << node.jsi_validate
         else
           assert(node.jsi_valid?)

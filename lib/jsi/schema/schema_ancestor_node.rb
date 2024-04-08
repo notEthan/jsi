@@ -97,7 +97,7 @@ module JSI
       #chkbug   end
       #chkbug   if anc.jsi_ptr == jsi_ptr
       #chkbug     raise(Bug, "ancestor is self")
-      #chkbug   elsif !anc.jsi_ptr.contains?(jsi_ptr)
+      #chkbug   elsif !anc.jsi_ptr.ancestor_of?(jsi_ptr)
       #chkbug     raise(Bug, "ancestor does not contain self")
       #chkbug   end
       #chkbug   last_anc_ptr = anc.jsi_ptr
