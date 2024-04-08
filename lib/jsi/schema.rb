@@ -542,6 +542,12 @@ module JSI
       @jsi_schema_module ||= SchemaModule.new(self)
     end
 
+    # @private
+    # @return [Boolean]
+    def jsi_schema_module_defined?
+      !!@jsi_schema_module
+    end
+
     # Evaluates the given block in the context of this schema's JSI schema module.
     # Any arguments passed to this method will be passed to the block.
     # shortcut to invoke [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec)

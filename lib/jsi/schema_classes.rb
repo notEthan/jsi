@@ -311,7 +311,9 @@ module JSI
     # @return [Array<JSI::Schema, Array>, nil]
     def named_ancestor_schema_tokens
       schema_ancestors = @jsi_node.jsi_ancestor_nodes
-      named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
+      named_ancestor_schema = schema_ancestors.detect do |jsi|
+        jsi.is_a?(Schema) && jsi.jsi_schema_module_defined? && jsi.jsi_schema_module.name
+      end
       return nil unless named_ancestor_schema
       tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
       [named_ancestor_schema, tokens]
