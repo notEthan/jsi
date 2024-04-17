@@ -67,7 +67,7 @@ module JSI
         attributes.to_hash.each do |k, v|
           @attributes[self.class.convert_key(k)] = v
         end
-        bad = @attributes.keys.reject { |k| attribute_keys.include?(k) }
+        bad = @attributes.keys.reject { |k| class_attribute_keys.include?(k) }
         unless bad.empty?
           raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
         end
@@ -79,7 +79,7 @@ module JSI
 
       def []=(key, value)
         key = self.class.convert_key(key)
-        unless attribute_keys.include?(key)
+        unless class_attribute_keys.include?(key)
           raise UndefinedAttributeKey, "undefined attribute key: #{key.inspect}"
         end
         @attributes[key] = value
@@ -114,7 +114,7 @@ module JSI
       end
 
       # (see AttrStruct.attribute_keys)
-      def attribute_keys
+      def class_attribute_keys
         self.class.attribute_keys
       end
 
