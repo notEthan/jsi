@@ -10,7 +10,7 @@ module JSI
         value = schema_content['$ref']
 
         if value.respond_to?(:to_str)
-          schema_ref = self.schema_ref
+          schema_ref = self.schema_ref('$ref')
 
           if result_builder.visited_refs.include?(schema_ref)
             result_builder.schema_error('self-referential schema structure', '$ref')

@@ -144,6 +144,9 @@ module JSI
     #
     # A schema is indicated as describing other schemas using the {Schema#describes_schema!} method.
     module DescribesSchema
+      # @return [Set<Module>]
+      attr_reader(:schema_implementation_modules)
+
       # Instantiates the given schema content as a JSI Schema.
       #
       # By default, the schema will be registered with the {JSI.schema_registry}.
@@ -196,16 +199,16 @@ module JSI
           stringify_symbol_keys: stringify_symbol_keys,
           to_immutable: to_immutable,
         )
-        if block
-          schema_jsi.jsi_schema_module_exec(&block)
-        end
+
+        schema_jsi.jsi_schema_module_exec(&block) if block
+
         schema_jsi
       end
 
       # Instantiates the given schema content as a JSI Schema, passing all params to
       # {Schema::DescribesSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
       #
-      # @return [Module + JSI::SchemaModule] the JSI Schema Module of the instantiated schema
+      # @return [JSI::SchemaModule] the JSI Schema Module of the instantiated schema
       def new_schema_module(schema_content, **kw, &block)
         new_schema(schema_content, **kw, &block).jsi_schema_module
       end
@@ -521,7 +524,7 @@ module JSI
     #   as `schema.items.jsi_schema_module`.
     # - method .schema which returns this schema.
     #
-    # @return [Module + SchemaModule]
+    # @return [SchemaModule]
     def jsi_schema_module
       JSI::SchemaClasses.module_for_schema(self)
     end
@@ -549,7 +552,7 @@ module JSI
 
     # @param keyword schema keyword e.g. "$ref", "$schema"
     # @return [Schema::Ref]
-    def schema_ref(keyword: "$ref")
+    def schema_ref(keyword = "$ref")
       raise(ArgumentError, "keyword not present: #{keyword}") unless keyword?(keyword)
       @schema_ref_map[keyword: keyword, value: schema_content[keyword]]
     end
@@ -558,6 +561,12 @@ module JSI
     # @return [Boolean]
     def describes_schema?
       jsi_schema_module <= JSI::Schema || false
+    end
+
+    # Is this a JSI Schema?
+    # @return [Boolean]
+    def jsi_is_schema?
+      true
     end
 
     # indicates that this schema describes a schema.
@@ -584,9 +593,9 @@ module JSI
           jsi_schema_module.include(mod)
         end
         jsi_schema_module.extend(SchemaModule::DescribesSchemaModule)
-        jsi_schema_module.instance_variable_set(:@schema_implementation_modules, schema_implementation_modules)
       end
 
+      @schema_implementation_modules = schema_implementation_modules
       extend(DescribesSchema)
 
       nil
@@ -660,7 +669,7 @@ module JSI
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def each_inplace_applicator_schema(instance, visited_refs: [], &block)
+    def each_inplace_applicator_schema(instance, visited_refs: Util::EMPTY_ARY, &block)
       return to_enum(__method__, instance, visited_refs: visited_refs) unless block
 
       catch(:jsi_application_done) do
@@ -747,7 +756,12 @@ module JSI
     # @param validate_only [Boolean] whether to return a full schema validation result or a simple, validation-only result
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @return [JSI::Validation::Result]
-    def internal_validate_instance(instance_ptr, instance_document, validate_only: false, visited_refs: [])
+    def internal_validate_instance(
+        instance_ptr,
+        instance_document,
+        visited_refs: Util::EMPTY_ARY,
+        validate_only: false
+    )
       if validate_only
         result = JSI::Validation::VALID
       else

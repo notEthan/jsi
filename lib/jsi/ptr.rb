@@ -25,6 +25,8 @@ module JSI
       def self.ary_ptr(ary_ptr)
         if ary_ptr.is_a?(Ptr)
           ary_ptr
+        elsif ary_ptr == Util::EMPTY_ARY
+          EMPTY
         else
           new(ary_ptr)
         end
@@ -176,6 +178,7 @@ module JSI
       # @return [JSI::Ptr]
       # @raise [JSI::Ptr::Error] if the given ancestor_ptr is not an ancestor of this pointer
       def relative_to(ancestor_ptr)
+        return self if ancestor_ptr.empty?
         unless ancestor_ptr.contains?(self)
           raise(Error, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
@@ -237,7 +240,7 @@ module JSI
           Util.modified_copy(document, &block)
         else
           car = tokens[0]
-          cdr = Ptr.new(tokens[1..-1].freeze)
+          cdr = tokens.size == 1 ? EMPTY : Ptr.new(tokens[1..-1].freeze)
           token, document_child = node_subscript_token_child(document, car)
           modified_document_child = cdr.modified_document_copy(document_child, &block)
           if modified_document_child.object_id == document_child.object_id
@@ -259,12 +262,14 @@ module JSI
         -"#{self.class.name}[#{tokens.map(&:inspect).join(", ")}]"
       end
 
-      alias_method :to_s, :inspect
+      def to_s
+        inspect
+      end
 
       # see {Util::Private::FingerprintHash}
       # @api private
       def jsi_fingerprint
-        {class: Ptr, tokens: tokens}
+        {class: Ptr, tokens: tokens}.freeze
       end
       include Util::FingerprintHash::Immutable
 

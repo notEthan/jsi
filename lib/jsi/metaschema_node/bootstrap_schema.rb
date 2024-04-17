@@ -23,13 +23,15 @@ module JSI
     class << self
       def inspect
         if self == MetaschemaNode::BootstrapSchema
-          name
+          name.freeze
         else
           -"#{name || MetaschemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
         end
       end
 
-      alias_method :to_s, :inspect
+      def to_s
+        inspect
+      end
     end
 
     # @param jsi_ptr [JSI::Ptr] pointer to the schema in the document
@@ -87,18 +89,18 @@ module JSI
       -"\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)
       q.text '#<'
       q.text jsi_object_group_text.join(' ')
-      q.group_sub {
-        q.nest(2) {
+      q.group(2) {
           q.breakable ' '
           q.pp schema_content
-        }
       }
       q.breakable ''
       q.text '>'
@@ -111,7 +113,7 @@ module JSI
         self.class.name || MetaschemaNode::BootstrapSchema.name,
         -"(#{schema_implementation_modules.map(&:inspect).join(', ')})",
         jsi_ptr.uri,
-      ]
+      ].freeze
     end
 
     # see {Util::Private::FingerprintHash}
@@ -121,9 +123,7 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
-        jsi_schema_base_uri: jsi_schema_base_uri,
-        schema_implementation_modules: schema_implementation_modules,
-      }
+      }.freeze
     end
 
     private

@@ -50,14 +50,17 @@ module JSI
           end
 
           if schema_names.empty?
-            "(JSI Schema Class for 0 schemas)"
+            "(JSI Schema Class for 0 schemas#{jsi_class_includes.map { |n| " + #{n}" }})"
           else
-            -"(JSI Schema Class: #{schema_names.join(' + ')})"
+            -"(JSI Schema Class: #{(schema_names + jsi_class_includes.map(&:name)).join(' + ')})"
           end
         end
       end
 
-      alias_method :to_s, :inspect
+      def to_s
+        inspect
+      end
+
       # A constant name of this class. This is generated from any schema module name or URI of each schema
       # this class represents, or random characters.
       #
@@ -117,7 +120,7 @@ module JSI
         jsi_content_to_immutable: ,
         jsi_root_node: nil
     )
-      raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
+      #chkbug raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
       super()
 
@@ -129,11 +132,11 @@ module JSI
       self.jsi_schema_registry = jsi_schema_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
       if @jsi_ptr.root?
-        raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
+        #chkbug raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
       else
-        raise(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
-        raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
+        #chkbug raise(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
+        #chkbug raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
         @jsi_root_node = jsi_root_node
       end
 
@@ -532,6 +535,12 @@ module JSI
       end
     end
 
+    # Is this a JSI Schema?
+    # @return [Boolean]
+    def jsi_is_schema?
+      false
+    end
+
     # yields the content of this JSI's instance. the block must result in
     # a modified copy of the yielded instance (not modified in place, which would alter this JSI
     # as well) which will be used to instantiate and return a new JSI with the modified content.
@@ -624,18 +633,18 @@ module JSI
       -"\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of this JSI to the given printer
     # @return [void]
     def pretty_print(q)
       q.text '#<'
       q.text jsi_object_group_text.join(' ')
-      q.group_sub {
-        q.nest(2) {
+      q.group(2) {
           q.breakable ' '
           q.pp jsi_instance
-        }
       }
       q.breakable ''
       q.text '>'
@@ -665,7 +674,7 @@ module JSI
         class_txt,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
         *content_txt,
-      ].compact
+      ].compact.freeze
     end
 
     # A structure coerced to JSONifiable types from the instance content.
@@ -693,7 +702,7 @@ module JSI
         jsi_resource_ancestor_uri: jsi_resource_ancestor_uri,
         # different registries mean references may resolve to different resources so must not be equal
         jsi_schema_registry: jsi_schema_registry,
-      }
+      }.freeze
     end
 
     private

@@ -105,9 +105,7 @@ module JSI
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         mutable: true
     )
-      if stringify_symbol_keys
-        instance = Util.deep_stringify_symbol_keys(instance)
-      end
+      instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
       instance = to_immutable.call(instance) if !mutable && to_immutable
 
@@ -134,9 +132,7 @@ module JSI
         jsi_content_to_immutable: to_immutable,
       )
 
-      if register && schema_registry
-        schema_registry.register(jsi)
-      end
+      schema_registry.register(jsi) if register && schema_registry
 
       jsi
     end
@@ -212,18 +208,18 @@ module JSI
       -"#{self.class}[#{map(&:inspect).join(", ")}]"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     def pretty_print(q)
       q.text self.class.to_s
       q.text '['
-      q.group_sub {
-        q.nest(2) {
+      q.group(2) {
           q.breakable('')
           q.seplist(self, nil, :each) { |e|
             q.pp e
           }
-        }
       }
       q.breakable ''
       q.text ']'

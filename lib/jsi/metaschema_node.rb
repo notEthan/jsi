@@ -55,7 +55,7 @@ module JSI
         jsi_root_node: jsi_root_node,
       )
 
-      @schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
+      @schema_implementation_modules = schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
 
@@ -155,7 +155,7 @@ module JSI
     def jsi_child(token, as_jsi: )
       child_node = @root_descendent_node_map[ptr: jsi_ptr[token]]
 
-      jsi_child_as_jsi(jsi_node_content_child(token), child_node.jsi_schemas, as_jsi) do
+      jsi_child_as_jsi(child_node.jsi_node_content, child_node.jsi_schemas, as_jsi) do
         child_node
       end
     end
@@ -196,13 +196,13 @@ module JSI
         class_n_schemas,
         is_a?(Metaschema) ? "Metaschema" : is_a?(Schema) ? "Schema" : nil,
         *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : nil),
-      ].compact
+      ].compact.freeze
     end
 
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
-      {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params)
+      {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params).freeze
     end
 
     protected
@@ -213,7 +213,7 @@ module JSI
 
     def jsi_memomaps_initialize
       if jsi_ptr.root?
-        @root_descendent_node_map = jsi_memomap(key_by: proc { |i| i[:ptr] }, &method(:jsi_root_descendent_node_compute))
+        @root_descendent_node_map = jsi_memomap(&method(:jsi_root_descendent_node_compute))
       else
         @root_descendent_node_map = @jsi_root_node.root_descendent_node_map
       end

@@ -1,5 +1,9 @@
 require_relative 'test_helper'
 
+module BasicMetaSchemaImplementation
+  include JSI::Schema::Application::Draft06
+end
+
 BasicMetaschema = JSI.new_metaschema_module(
   YAML.load(<<~YAML
     "$id": "tag:named-basic-metaschema"
@@ -12,14 +16,12 @@ BasicMetaschema = JSI.new_metaschema_module(
       "$ref": {}
     YAML
   ),
-  schema_implementation_modules: [JSI::Schema::Application::Draft06],
+  schema_implementation_modules: [BasicMetaSchemaImplementation],
 )
 
 describe JSI::MetaschemaNode do
   let(:schema_implementation_modules) do
-    [
-      JSI::Schema::Application::Draft06,
-    ]
+    [BasicMetaSchemaImplementation]
   end
 
   let(:metaschema_root_ptr) { JSI::Ptr[] }

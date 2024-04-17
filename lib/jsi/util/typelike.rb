@@ -6,6 +6,8 @@ module JSI
   # this module is intended to be internal to JSI. no guarantees or API promises
   # are made for non-JSI classes including this module.
   module Util::Hashlike
+    include(Enumerable)
+
     # safe methods which can be delegated to #to_hash (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 
@@ -99,15 +101,16 @@ module JSI
       -"\#{<#{object_group_str}>#{map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of this hashlike to the given printer
     # @return [void]
     def pretty_print(q)
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#{<#{object_group_str}>"
-      q.group_sub {
-        q.nest(2) {
+      q.group(2) {
           q.breakable ' ' if !empty?
           q.seplist(self, nil, :each_pair) { |k, v|
             q.group {
@@ -116,7 +119,6 @@ module JSI
               q.pp v
             }
           }
-        }
       }
       q.breakable '' if !empty?
       q.text '}'
@@ -128,6 +130,8 @@ module JSI
   # this module is intended to be internal to JSI. no guarantees or API promises
   # are made for non-JSI classes including this module.
   module Util::Arraylike
+    include(Enumerable)
+
     # safe methods which can be delegated to #to_ary (which the includer is assumed to have defined).
     # 'safe' means, in this context, nondestructive - methods which do not modify the receiver.
 
@@ -203,20 +207,20 @@ module JSI
       -"\#[<#{object_group_str}>#{map { |e| ' ' + e.inspect }.join(',')}]"
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of this arraylike to the given printer
     # @return [void]
     def pretty_print(q)
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#[<#{object_group_str}>"
-      q.group_sub {
-        q.nest(2) {
+      q.group(2) {
           q.breakable ' ' if !empty?
           q.seplist(self, nil, :each) { |e|
             q.pp e
           }
-        }
       }
       q.breakable '' if !empty?
       q.text ']'

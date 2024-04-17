@@ -39,9 +39,11 @@ module JSI
       end
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
-    # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given instance.
+    # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given parameters.
     #
     # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
@@ -86,13 +88,16 @@ module JSI
     end
 
     # @return [Set<Module>]
-    attr_reader :schema_implementation_modules
+    def schema_implementation_modules
+      schema.schema_implementation_modules
+    end
   end
 
   # this module is a namespace for building schema classes and schema modules.
+  # @api private
   module SchemaClasses
     class << self
-      # @api private
+      # @private
       # @return [Set<Module>]
       def includes_for(instance)
         includes = Set[]
@@ -174,17 +179,14 @@ module JSI
 
       # see {Schema#jsi_schema_module}
       # @api private
-      # @return [Module + SchemaModule]
+      # @return [SchemaModule]
       def module_for_schema(schema)
         Schema.ensure_schema(schema)
         raise(Bug, "non-Base schema cannot have schema module: #{schema}") unless schema.is_a?(Base)
-        @schema_module_map[schema: schema]
+        @schema_module_map[schema]
       end
 
-      private def schema_module_compute(schema: )
-        SchemaModule.new(schema)
-      end
-
+      # @private
       # @deprecated after v0.7
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
         Module.new do
@@ -195,7 +197,7 @@ module JSI
 
       # a module of readers for described property names of the given schema.
       #
-      # @api private
+      # @private
       # @param schema [JSI::Schema] a schema for which to define readers for any described property names
       # @param conflicting_modules [Enumerable<Module>] an array of modules (or classes) which
       #   may be used alongside the accessor module. methods defined by any conflicting_module
@@ -226,7 +228,7 @@ module JSI
       end
 
       # a module of writers for described property names of the given schema.
-      # @api private
+      # @private
       def schema_property_writer_module(schema, conflicting_modules: )
         Schema.ensure_schema(schema)
         @schema_property_writer_module_map[schema: schema, conflicting_modules: conflicting_modules]
@@ -255,7 +257,7 @@ module JSI
 
     @class_for_schemas_map          = Hash.new { |h, k| h[k] = class_for_schemas_compute(**k) }
     @bootstrap_schema_class_map      = Hash.new { |h, k| h[k] = bootstrap_schema_class_compute(**k) }
-    @schema_module_map                = Hash.new { |h, k| h[k] = schema_module_compute(**k) }
+    @schema_module_map                = Hash.new { |h, schema| h[schema] = SchemaModule.new(schema) }
     @schema_property_reader_module_map = Hash.new { |h, k| h[k] = schema_property_reader_module_compute(**k) }
     @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(**k) }
   end
@@ -285,7 +287,7 @@ module JSI
         end
         ancestor = ancestor[token]
       end
-      name
+      name.freeze
     end
 
     # Subscripting a JSI schema module or a {SchemaModule::Connection} will subscript its node, and
@@ -296,7 +298,7 @@ module JSI
     # @yield If the token identifies a schema and a block is given,
     #   it is evaluated in the context of the schema's JSI schema module
     #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
-    # @return [Module, SchemaModule::Connection, Object]
+    # @return [SchemaModule, SchemaModule::Connection, Object]
     def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       sub = @jsi_node[token]
@@ -358,6 +360,8 @@ module JSI
       end
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
   end
 end

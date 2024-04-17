@@ -161,7 +161,9 @@ module JSI
       -%Q(\#<#{self.class.name} #{ref}>)
     end
 
-    alias_method :to_s, :inspect
+    def to_s
+      inspect
+    end
 
     # pretty-prints a representation of self to the given printer
     # @return [void]
@@ -176,7 +178,7 @@ module JSI
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
-      {class: self.class, ref: ref, ref_schema: ref_schema}
+      {class: self.class, ref: ref, ref_schema: ref_schema}.freeze
     end
     include Util::FingerprintHash
   end
