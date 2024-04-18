@@ -5,8 +5,12 @@ module JSI
     InplaceApplication = Block.subclass(*%w(
       instance
       visited_refs
+      collect_evaluated
     ))
 
+    # @!attribute collect_evaluated
+    #   Does application need to collect successful child evaluation?
+    #   @return [Boolean]
     class InplaceApplication
       # @param subschema_ptr [Ptr, #to_ary]
       def inplace_subschema_applicate(subschema_ptr)

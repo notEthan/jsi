@@ -652,6 +652,7 @@ module JSI
         Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
+        collect_evaluated: false, # child application is not invoked so no evaluated children to collect
       ) do |schema, ref: nil|
         if schema.equal?(self) && !ref
           yield(self)
@@ -696,6 +697,7 @@ module JSI
         Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
+        collect_evaluated: true,
       ) do |schema, ref: nil|
         if schema.equal?(self) && !ref
           applicate_self = true
