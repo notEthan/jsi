@@ -84,7 +84,7 @@ describe("JSI.translator = I18n.method(:translate)") do
             })
           ],
         }),
-      ], subject.jsi_validate.validation_errors)
+      ], subject.jsi_validate.immediate_validation_errors)
     end
   end
 end

@@ -430,7 +430,7 @@ describe JSI::Base do
       it '#jsi_validate' do
         result = subject.jsi_validate
         assert_equal(true, result.valid?)
-        assert_equal(Set[], result.validation_errors)
+        assert_equal(Set[], result.immediate_validation_errors)
       end
       it '#jsi_valid?' do
         assert_equal(true, subject.jsi_valid?)
@@ -468,7 +468,7 @@ describe JSI::Base do
             instance_ptr: JSI::Ptr[], instance_document: instance,
             child_errors: Set[],
           }),
-        ], result.validation_errors)
+        ], result.immediate_validation_errors)
       end
     end
     describe 'at a depth' do
@@ -491,9 +491,9 @@ describe JSI::Base do
 
         it '#jsi_validate' do
           assert_equal(true, subject.foo.jsi_validate.valid?)
-          assert_equal(Set[], subject.foo.jsi_validate.validation_errors)
+          assert_equal(Set[], subject.foo.jsi_validate.immediate_validation_errors)
           assert_equal(true, subject.bar.jsi_validate.valid?)
-          assert_equal(Set[], subject.bar.jsi_validate.validation_errors)
+          assert_equal(Set[], subject.bar.jsi_validate.immediate_validation_errors)
         end
         it '#jsi_valid?' do
           assert_equal(true, subject.foo.jsi_valid?)
@@ -513,8 +513,8 @@ describe JSI::Base do
               instance_ptr: JSI::Ptr["foo"], instance_document: instance,
               child_errors: Set[],
             }),
-          ], subject.foo.jsi_validate.validation_errors)
-          assert_equal(Set[], subject.bar.jsi_validate.validation_errors)
+          ], subject.foo.jsi_validate.immediate_validation_errors)
+          assert_equal(Set[], subject.bar.jsi_validate.immediate_validation_errors)
           assert_equal(Set[
             JSI::Validation::Error.new({
               message: "instance type does not match `type` value",
@@ -524,7 +524,7 @@ describe JSI::Base do
               instance_ptr: JSI::Ptr["baz"], instance_document: instance,
               child_errors: Set[],
             }),
-          ], subject.baz.jsi_validate.validation_errors)
+          ], subject.baz.jsi_validate.immediate_validation_errors)
           assert_equal(Set[
             JSI::Validation::Error.new({
               message: "instance is valid against `not` schema",
@@ -534,7 +534,7 @@ describe JSI::Base do
               instance_ptr: JSI::Ptr["more"], instance_document: instance,
               child_errors: Set[],
             }),
-          ], subject['more'].jsi_validate.validation_errors)
+          ], subject['more'].jsi_validate.immediate_validation_errors)
           assert_equal(Set[
             JSI::Validation::Error.new({
               message: "instance object properties are not all valid against corresponding `properties` schemas",
@@ -578,7 +578,7 @@ describe JSI::Base do
                 }),
               ],
             }),
-          ], subject.jsi_validate.validation_errors)
+          ], subject.jsi_validate.immediate_validation_errors)
         end
         it '#jsi_valid?' do
           assert_equal(false, subject.foo.jsi_valid?)
