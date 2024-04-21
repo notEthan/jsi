@@ -648,7 +648,6 @@ module JSI
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-          ptr = Ptr.ary_ptr(ptr)
           Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
             reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
