@@ -167,6 +167,7 @@ describe JSI::Schema::Ref do
         msg = <<~MSG
           object identified by uri http://jsi/ref_to_not_a_schema is not a schema:
           \#{<JSI>}
+          its schemas (which should include a Meta-Schema): JSI::SchemaSet[\#{<JSI (JSI::JSONSchemaDraft07) Schema>}]
           MSG
         assert_equal(msg.chomp, err.message)
       end

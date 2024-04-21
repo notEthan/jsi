@@ -590,6 +590,7 @@ describe JSI::Schema do
         msg = <<~MSG
           subschema is not a schema at pointer: /foo
           \#{<JSI>}
+          its schemas (which should include a Meta-Schema): JSI::SchemaSet[]
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -604,6 +605,15 @@ describe JSI::Schema do
         msg = <<~MSG
           subschema is not a schema at pointer: /properties
           \#{<JSI (JSI::JSONSchemaDraft07::Properties)>}
+          its schemas (which should include a Meta-Schema): JSI::SchemaSet[
+            \#{<JSI::MetaSchemaNode (JSI::JSONSchemaDraft07) Schema>
+              "type" => "object",
+              "additionalProperties" => \#{<JSI::MetaSchemaNode (JSI::JSONSchemaDraft07) Schema>
+                "$ref" => "#"
+              },
+              "default" => \#{<JSI::MetaSchemaNode (JSI::JSONSchemaDraft07::Default)>}
+            }
+          ]
           MSG
         assert_equal(msg.chomp, err.message)
       end

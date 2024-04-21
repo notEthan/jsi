@@ -152,7 +152,7 @@ module JSI
         end
       end
 
-      Schema.ensure_schema(result_schema, msg: "object identified by uri #{ref} is not a schema:")
+      Schema.ensure_schema(result_schema) { "object identified by uri #{ref} is not a schema:" }
       return @deref_schema = result_schema
     end
 

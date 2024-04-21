@@ -375,11 +375,10 @@ module JSI
       # ensure the given object is a JSI Schema
       #
       # @param schema [Object] the thing the caller wishes to ensure is a Schema
-      # @param msg [#to_s, #to_ary] lines of the error message preceding the pretty-printed schema param
-      #   if the schema param is not a schema
+      # @yieldreturn [#to_s, #to_ary] first line(s) of the error message, overriding the default
       # @raise [NotASchemaError] if the schema param is not a schema
       # @return [Schema] the given schema
-      def ensure_schema(schema, msg: "indicated object is not a schema:", reinstantiate_as: nil)
+      def ensure_schema(schema, reinstantiate_as: nil)
         if schema.is_a?(Schema)
           schema
         else
@@ -404,10 +403,13 @@ module JSI
               jsi_root_node: schema.jsi_ptr.root? ? nil : schema.jsi_root_node, # bad
             )
           else
-            raise(NotASchemaError, [
-              *msg,
-              schema.pretty_inspect.chomp,
-            ].join("\n"))
+            msg = []
+            msg.concat([*(block_given? ? yield : "indicated object is not a schema:")])
+            msg << schema.pretty_inspect.chomp
+            if schema.is_a?(Base)
+              msg << "its schemas (which should include a Meta-Schema): #{schema.jsi_schemas.pretty_inspect.chomp}"
+            end
+            raise(NotASchemaError, msg.compact.join("\n"))
           end
         end
       end
@@ -636,10 +638,7 @@ module JSI
     # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
     def subschema(subptr)
-          subptr = Ptr.ary_ptr(subptr)
-          Schema.ensure_schema(jsi_descendent_node(subptr), msg: [
-            "subschema is not a schema at pointer: #{subptr.pointer}"
-          ])
+      Schema.ensure_schema(jsi_descendent_node(subptr)) { "subschema is not a schema at pointer: #{Ptr.ary_ptr(subptr).pointer}" }
     end
 
     # a schema in the same schema resource as this one (see {#schema_resource_root}) at the given
