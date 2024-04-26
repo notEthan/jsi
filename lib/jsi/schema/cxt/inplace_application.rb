@@ -14,8 +14,9 @@ module JSI
       end
 
       # @param applicator_schema [Schema]
-      def inplace_schema_applicate(applicator_schema)
-        block.call(applicator_schema)
+      # @param ref [Schema::Ref, nil]
+      def inplace_schema_applicate(applicator_schema, ref: nil)
+        block.call(applicator_schema, ref: ref)
       end
     end
   end
