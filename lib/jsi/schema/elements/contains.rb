@@ -12,13 +12,13 @@ module JSI
         child_idx_valid = Hash.new { |h, i| h[i] = contains_schema.instance_valid?(instance[i]) }
 
         if child_idx_valid[token]
-          cxt_yield(contains_schema)
+          child_schema_applicate(contains_schema)
         else
           instance_valid = instance.each_index.any? { |i| child_idx_valid[i] }
 
           unless instance_valid
             # invalid application: if contains_schema does not validate against any child, it applies to every child
-            cxt_yield(contains_schema)
+            child_schema_applicate(contains_schema)
           end
         end
       end
