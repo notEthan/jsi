@@ -646,9 +646,6 @@ module JSI
 
     private def resource_root_subschema_compute(ptr: )
           Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
-            msg: [
-              "subschema is not a schema at pointer: #{ptr.pointer}"
-            ],
             reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
     end
