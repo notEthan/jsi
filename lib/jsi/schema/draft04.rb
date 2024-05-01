@@ -116,10 +116,6 @@ module JSI
         vocabularies: [VOCABULARY],
         integer_disallows_0_fraction: true,
       )
-
-      def dialect
-        DIALECT
-      end
     end
   end
 end

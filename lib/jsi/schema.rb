@@ -52,8 +52,8 @@ module JSI
     #
     # A schema is indicated as describing other schemas using the {Schema#describes_schema!} method.
     module MetaSchema
-      # @return [Set<Module>]
-      attr_reader(:schema_implementation_modules)
+      # @return [Schema::Dialect]
+      attr_reader(:dialect)
 
       # Instantiates the given schema content as a JSI Schema.
       #
@@ -518,31 +518,28 @@ module JSI
     # Indicates that this schema describes schemas, i.e. it is a meta-schema.
     # this schema is extended with {Schema::MetaSchema} and its {#jsi_schema_module} is extended
     # with {SchemaModule::MetaSchemaModule}, and the JSI Schema Module will include
-    # JSI::Schema and the given modules.
+    # JSI::Schema.
     #
-    # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality of
-    #   the schema to extend schemas described by this schema.
+    # @param dialect [Schema::Dialect]
     # @return [void]
-    def describes_schema!(schema_implementation_modules)
-      schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
+    def describes_schema!(dialect)
+      raise(TypeError) if !dialect.is_a?(Schema::Dialect)
 
       if jsi_schema_module <= Schema
         # this schema has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
-        # it is a bug if it was called different times with different schema_implementation_modules, though.
-        unless @schema_implementation_modules == schema_implementation_modules
-          raise(ArgumentError, "this schema already describes a schema with different schema_implementation_modules")
+        # it is a bug if it was called different times with different dialect, though.
+        if @dialect != dialect
+          raise(ArgumentError, "this schema already describes a schema with different dialect")
         end
       else
         jsi_schema_module.include(Schema)
-        schema_implementation_modules.each do |mod|
-          jsi_schema_module.include(mod)
-        end
+        jsi_schema_module.send(:define_method, :dialect) { dialect }
         proc { |metaschema| jsi_schema_module.send(:define_method, :metaschema) { metaschema } }[self]
         jsi_schema_module.extend(SchemaModule::MetaSchemaModule)
       end
 
-      @schema_implementation_modules = schema_implementation_modules
+      @dialect = dialect
       extend(Schema::MetaSchema)
 
       nil

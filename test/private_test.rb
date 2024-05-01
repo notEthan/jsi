@@ -5,13 +5,9 @@ require_relative 'test_helper'
 # tests of private APIs. although private methods are usually tested indirectly, called by public APIs they
 # exist to support, some code paths for development or debugging are not.
 
-module TestSchemaImplModule
-  dialect = JSI::Schema::Dialect.new(id: 'tag:dialect:dqzk', vocabularies: [])
-  define_method(:dialect) { dialect }
-end
-
 describe(JSI::MetaSchemaNode::BootstrapSchema) do
-  let(:bootstrap_schema_class) { JSI::SchemaClasses.bootstrap_schema_class([TestSchemaImplModule]) }
+  let(:dialect) { JSI::Schema::Dialect.new(id: 'tag:dialect:dqzk', vocabularies: []) }
+  let(:bootstrap_schema_class) { JSI::SchemaClasses.bootstrap_schema_class(dialect) }
   let(:document) do
     JSI::DEFAULT_CONTENT_TO_IMMUTABLE[{
       "properties" => {
@@ -38,7 +34,7 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
 
   it 'has a named class' do
     assert_equal('JSI::MetaSchemaNode::BootstrapSchema', JSI::MetaSchemaNode::BootstrapSchema.inspect)
-    assert_equal('JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule)', bootstrap_schema_class.inspect)
+    assert_equal('JSI::MetaSchemaNode::BootstrapSchema (#<JSI::Schema::Dialect id: <tag:dialect:dqzk>>)', bootstrap_schema_class.inspect)
   end
 end
 

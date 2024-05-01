@@ -126,10 +126,6 @@ module JSI
         id: "http://json-schema.org/draft-06/schema",
         vocabularies: [VOCABULARY],
       )
-
-      def dialect
-        DIALECT
-      end
     end
   end
 end

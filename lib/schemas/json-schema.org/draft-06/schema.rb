@@ -3,7 +3,7 @@
 module JSI
   metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-06/schema.json').read)
   JSONSchemaDraft06 = JSI.new_metaschema_module(metaschema_document,
-    schema_implementation_modules: [JSI::Schema::Draft06],
+    dialect: JSI::Schema::Draft06::DIALECT,
   )
 
   # the JSI schema module for `http://json-schema.org/draft-06/schema`

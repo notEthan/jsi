@@ -12,20 +12,13 @@ module JSI
     ],
   )
 
-  simple_wrap_implementation = Module.new do
-    define_method(:dialect) do
-      dialect
-    end
-  end
-
-  simple_wrap_metaschema = JSI.new_metaschema(nil, schema_implementation_modules: [simple_wrap_implementation])
+  simple_wrap_metaschema = JSI.new_metaschema(nil, dialect: dialect)
   SimpleWrap = simple_wrap_metaschema.new_schema_module(Util::EMPTY_HASH)
 
   # SimpleWrap is a JSI schema module which recursively wraps nested structures
   module SimpleWrap
   end
 
-  SimpleWrap::Implementation = simple_wrap_implementation
   SimpleWrap::DIALECT = dialect
   SimpleWrap::METASCHEMA = simple_wrap_metaschema
 end

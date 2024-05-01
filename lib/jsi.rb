@@ -93,19 +93,19 @@ module JSI
   # Instantiates the given document as a JSI Meta-Schema.
   #
   # @param metaschema_document an object to be instantiated as a JSI Meta-Schema
-  # @param schema_implementation_modules (see MetaSchemaNode#initialize)
+  # @param dialect (see MetaSchemaNode#initialize)
   # @param to_immutable (see SchemaSet#new_jsi)
   # @yield (see Schema::MetaSchema#new_schema)
   # @return [JSI::MetaSchemaNode + JSI::Schema::MetaSchema + JSI::Schema]
   def self.new_metaschema(metaschema_document,
-      schema_implementation_modules: ,
+      dialect: ,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
       &block
   )
     metaschema_document = to_immutable.call(metaschema_document) if to_immutable
 
     metaschema = MetaSchemaNode.new(metaschema_document,
-      schema_implementation_modules: schema_implementation_modules,
+      dialect: dialect,
       jsi_content_to_immutable: to_immutable,
     )
 

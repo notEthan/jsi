@@ -87,9 +87,9 @@ module JSI
       schema.new_schema(schema_content, **kw, &block).jsi_schema_module
     end
 
-    # @return [Set<Module>]
-    def schema_implementation_modules
-      schema.schema_implementation_modules
+    # @return [Schema::Dialect]
+    def dialect
+      schema.dialect
     end
   end
 
@@ -161,19 +161,18 @@ module JSI
 
       # a subclass of MetaSchemaNode::BootstrapSchema with the given modules included
       # @api private
-      # @param modules [Set<Module>] schema implementation modules
+      # @param dialect [Schema::Dialect]
       # @return [Class subclass of JSI::MetaSchemaNode::BootstrapSchema]
-      def bootstrap_schema_class(modules)
+      def bootstrap_schema_class(dialect)
         @bootstrap_schema_class_map[
-          modules: Util.ensure_module_set(modules),
+          dialect: dialect,
         ]
       end
 
-      private def bootstrap_schema_class_compute(modules: )
+      private def bootstrap_schema_class_compute(dialect: )
           Class.new(MetaSchemaNode::BootstrapSchema) do
-            define_singleton_method(:schema_implementation_modules) { modules }
-            define_method(:schema_implementation_modules) { modules }
-            modules.each { |mod| include(mod) }
+            define_singleton_method(:dialect) { dialect }
+            define_method(:dialect) { dialect }
 
             self
           end

@@ -8,7 +8,7 @@ module JSI
   # Schema#subschema and Schema#resource_root_subschema are the intended mechanisms to instantiate subschemas
   # and resolve references. #[] and #jsi_root_node are not implemented.
   #
-  # schema implementation modules are included on generated subclasses of BootstrapSchema by
+  # #dialect is defined on generated subclasses of BootstrapSchema by
   # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
   #
@@ -25,7 +25,7 @@ module JSI
         if self == MetaSchemaNode::BootstrapSchema
           name.freeze
         else
-          -"#{name || MetaSchemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
+          -"#{name || MetaSchemaNode::BootstrapSchema.name} (#{dialect})"
         end
       end
 
@@ -43,7 +43,7 @@ module JSI
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_registry: nil
     )
-      fail(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
+      fail(Bug, "no #dialect") unless respond_to?(:dialect)
 
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document

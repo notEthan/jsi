@@ -836,7 +836,7 @@ describe JSI::Base do
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "tag:u20x",
     })
-    ms.describes_schema!([])
+    ms.describes_schema!(JSI::Schema::Dialect.new(vocabularies: []))
     assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft07) Meta-Schema> "$schema" => "http://json-schema.org/draft-07/schema#", "$id" => "tag:u20x"}), ms.inspect)
   end
 

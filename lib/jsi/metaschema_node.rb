@@ -28,17 +28,13 @@ module JSI
     # @param jsi_document the document containing the meta-schema.
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
-    # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality
-    #   of the schema. These are included on the {Schema#jsi_schema_module} of the meta-schema.
-    #   They extend any schema described by the meta-schema, including those in the document containing
-    #   the meta-schema, and the meta-schema itself.
-    #   see {Schema#describes_schema!} param `schema_implementation_modules`.
+    # @param dialect [Schema::Dialect]
     # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the meta-schema in the jsi_document
     # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        schema_implementation_modules: ,
+        dialect: ,
         metaschema_root_ptr: Ptr[],
         root_schema_ptr: Ptr[],
         jsi_schema_base_uri: nil,
@@ -59,7 +55,7 @@ module JSI
       @initialize_finished = false
       @to_initialize_finish = []
 
-      @schema_implementation_modules = schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
+      @dialect = dialect
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
 
@@ -72,7 +68,7 @@ module JSI
       @extends = Set[]
 
       instance_for_schemas = jsi_document
-      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules)
+      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(dialect)
       root_bootstrap_schema = bootstrap_schema_class.new(
         jsi_document,
         jsi_ptr: root_schema_ptr,
@@ -95,11 +91,8 @@ module JSI
       @bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the meta-schema, i.e. this is a schema
-          schema_implementation_modules.each do |schema_implementation_module|
-            extend schema_implementation_module
-          end
+          define_singleton_method(:dialect) { dialect }
           extend(Schema)
-          @extends += schema_implementation_modules
         end
       end
 
@@ -116,7 +109,7 @@ module JSI
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if jsi_ptr == metaschema_root_ptr
-        describes_schema!(schema_implementation_modules)
+        describes_schema!(dialect)
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
@@ -147,9 +140,8 @@ module JSI
       end
     end
 
-    # Set of modules to apply to schemas that are instances of (described by) the meta-schema
-    # @return [Set<Module>]
-    attr_reader :schema_implementation_modules
+    # @return [Schema::Dialect]
+    attr_reader(:dialect)
 
     # ptr to the root of the meta-schema in the jsi_document
     # @return [JSI::Ptr]
@@ -226,7 +218,7 @@ module JSI
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
-        schema_implementation_modules: schema_implementation_modules,
+        dialect: dialect,
         metaschema_root_ptr: metaschema_root_ptr,
         root_schema_ptr: root_schema_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,
