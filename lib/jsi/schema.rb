@@ -523,6 +523,8 @@ module JSI
     # @param dialect [Schema::Dialect]
     # @return [void]
     def describes_schema!(dialect)
+      # TODO rm bridge code hax
+      dialect = dialect.first::DIALECT if dialect.is_a?(Array) && dialect.size == 1
       raise(TypeError) if !dialect.is_a?(Schema::Dialect)
 
       if jsi_schema_module <= Schema
