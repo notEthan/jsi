@@ -5,9 +5,10 @@ module JSI
     class Dialect
       # @param id [#to_str, nil]
       # @param vocabularies [Enumerable<Schema::Vocabulary>]
-      def initialize(id: nil, vocabularies: )
+      def initialize(id: nil, vocabularies: , **config)
         @id = Util.uri(id, nnil: false, yabs: true, ynorm: true)
         @vocabularies = Set.new(vocabularies).freeze
+        @config = config.freeze
 
         elements = vocabularies.map(&:elements).inject(Set.new, &:merge)
 
@@ -52,6 +53,9 @@ module JSI
 
       # @return [Set<Schema::Vocabulary>]
       attr_reader(:vocabularies)
+
+      # @return [Hash]
+      attr_reader(:config)
 
       # @return [Array<Schema::Element>]
       attr_reader(:elements)
