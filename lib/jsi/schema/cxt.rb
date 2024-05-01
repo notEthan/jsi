@@ -48,9 +48,14 @@ module JSI
         keyword?(keyword) && schema_content[keyword].is_a?(Numeric)
       end
 
+      # is `value` an integer?
       # @return [Boolean]
       def internal_integer?(value)
-        schema.internal_integer?(value)
+        if schema.dialect.config[:integer_disallows_0_fraction]
+          value.is_a?(Integer)
+        else
+          value.is_a?(Integer) || (value.is_a?(Numeric) && value % 1.0 == 0.0)
+        end
       end
     end
 

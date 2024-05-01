@@ -3,8 +3,6 @@
 module JSI
   module Schema
     module Draft06
-      include IntegerAllows0Fraction
-
       VOCABULARY = Vocabulary.new(
         elements: [
           # the schema itself

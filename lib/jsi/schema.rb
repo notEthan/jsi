@@ -41,28 +41,6 @@ module JSI
     # an exception raised when we are unable to resolve a schema reference
     ReferenceError = ResolutionError
 
-    # @private
-    module IntegerAllows0Fraction
-      # is `value` an integer?
-      # @private
-      # @param value
-      # @return [Boolean]
-      def internal_integer?(value)
-        value.is_a?(Integer) || (value.is_a?(Numeric) && value % 1.0 == 0.0)
-      end
-    end
-
-    # @private
-    module IntegerDisallows0Fraction
-      # is `value` an integer?
-      # @private
-      # @param value
-      # @return [Boolean]
-      def internal_integer?(value)
-        value.is_a?(Integer)
-      end
-    end
-
     # This module extends any JSI Schema that is a meta-schema, i.e. it describes schemas.
     #
     # Examples of a meta-schema include the JSON Schema meta-schemas and
