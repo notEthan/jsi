@@ -21,6 +21,8 @@ module JSI
           end
         end # element.add_action(:subschema)
 
+        element.add_action(:inplace_application_requires_instance) { cxt_yield(true) if keyword?('if') }
+
         element.add_action(:inplace_applicate) do
       if keyword?('if')
         if subschema(['if']).instance_valid?(instance)

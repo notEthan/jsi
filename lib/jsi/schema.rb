@@ -645,6 +645,48 @@ module JSI
       dialect_invoke_each(:subschema) { |ptr| yield(Ptr.ary_ptr(ptr)) }
     end
 
+    # @private
+    # @yield each in-place applicator schema and params yielded from action :inplace_applicate
+    def each_immediate_inplace_applicator_schema(
+        instance: ,
+        visited_refs: ,
+        collect_evaluated: ,
+        &block
+    )
+      # if collect_evaluated, applicators must validate the instance to set `evaluated`
+      if collect_evaluated || @inplace_application_requires_instance
+        dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
+          instance: instance,
+          visited_refs: visited_refs,
+          collect_evaluated: collect_evaluated,
+          &block
+        )
+      else
+        # memoize: if the instance is not used by any in-place applicator present in this schema,
+        # the schema can do in-place application once instead of for every instance,
+        # for a very substantial performance gain.
+        #
+        # :inplace_applicate yields (schema, **keywords)
+        # so @immediate_inplace_applicators is a 2D Array of tuples (schema, keywords)
+        @immediate_inplace_applicators ||= begin
+          immediate_inplace_applicators = []
+          dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
+            instance: nil,
+            visited_refs: visited_refs,
+            collect_evaluated: false,
+          ) do |s, **kw|
+            immediate_inplace_applicators.push([s, kw])
+          end
+          immediate_inplace_applicators.freeze
+        end
+
+        @immediate_inplace_applicators.each do |(s, kw)|
+          yield(s, **kw)
+        end
+        nil
+      end
+    end
+
     # Yields each in-place applicator schema which applies to the given instance.
     #
     # @param instance [Object] the instance to check any applicators against
@@ -656,8 +698,7 @@ module JSI
         visited_refs: Util::EMPTY_ARY,
         &block
     )
-      dialect_invoke_each(:inplace_applicate,
-        Cxt::InplaceApplication,
+      each_immediate_inplace_applicator_schema(
         instance: instance,
         visited_refs: visited_refs,
         collect_evaluated: false, # child application is not invoked so no evaluated children to collect
@@ -718,8 +759,7 @@ module JSI
       inplace_child_evaluated = false
       applicate_self = false
 
-      dialect_invoke_each(:inplace_applicate,
-        Cxt::InplaceApplication,
+      each_immediate_inplace_applicator_schema(
         instance: instance,
         visited_refs: visited_refs,
         collect_evaluated: collect_evaluated,
@@ -934,6 +974,8 @@ module JSI
         @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       end
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
+      @inplace_application_requires_instance = dialect_invoke_each(:inplace_application_requires_instance).any?
+      @immediate_inplace_applicators = nil
     end
   end
 end

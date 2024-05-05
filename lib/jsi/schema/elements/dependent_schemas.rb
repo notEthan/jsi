@@ -19,6 +19,8 @@ module JSI
           schema_content['dependentSchemas'].each_key(&block)
         end
 
+        element.add_action(:inplace_application_requires_instance) { cxt_yield(true) if keyword?('dependentSchemas') }
+
         element.add_action(:inplace_applicate) do
           #> This keyword's value MUST be an object.
           next if !keyword_value_hash?('dependentSchemas')
