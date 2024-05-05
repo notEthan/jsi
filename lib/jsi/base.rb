@@ -823,7 +823,7 @@ module JSI
     end
 
     def jsi_child_indicated_schemas_compute(token: , content: )
-      if jsi_indicated_schemas.any? { |is| is.dialect_invoke_each(:application_requires_evaluated).any? }
+      if jsi_indicated_schemas.any?(&:application_requires_evaluated)
         # if application_requires_evaluated, in-place application needs to collect token evaluation
         # recursively to inform child application, so must be recomputed.
         jsi_indicated_schemas.each_yield_set do |is, y|

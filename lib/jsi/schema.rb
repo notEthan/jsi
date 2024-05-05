@@ -697,7 +697,7 @@ module JSI
         collect_evaluated: false,
         &block
     )
-      collect_evaluated ||= dialect_invoke_each(:application_requires_evaluated).any?
+      collect_evaluated ||= application_requires_evaluated
       inplace_child_evaluated = false
       applicate_self = false
 
@@ -849,6 +849,12 @@ module JSI
       end
     end
 
+    # Does application require collection of evaluated children?
+    # (i.e. does the schema contain `unevaluatedItems` / `unevaluatedProperties`?)
+    # @private
+    # @return [Boolean]
+    attr_reader(:application_requires_evaluated)
+
     private
 
     def jsi_schema_initialize
@@ -859,6 +865,7 @@ module JSI
       @schema_absolute_uris_map = jsi_memomap { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
+      @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
     end
   end
 end
