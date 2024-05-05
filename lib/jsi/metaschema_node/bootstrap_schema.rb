@@ -43,8 +43,6 @@ module JSI
     )
       raise(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
 
-      super()
-
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
@@ -52,6 +50,8 @@ module JSI
 
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
       #chkbug raise(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
+
+      super()
     end
 
     # document containing the schema content

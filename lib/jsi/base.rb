@@ -122,8 +122,6 @@ module JSI
     )
       #chkbug raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
-      super()
-
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
       self.jsi_indicated_schemas = jsi_indicated_schemas
@@ -142,6 +140,8 @@ module JSI
 
       jsi_memomaps_initialize
       jsi_mutability_initialize
+
+      super()
 
       if jsi_instance.is_a?(JSI::Base)
         raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
