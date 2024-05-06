@@ -13,7 +13,7 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
       remote_content = ::JSON.parse(File.open(subpath, 'r:UTF-8', &:read))
       uri = File.join('http://localhost:1234/', subpath)
       schema_registry.autoload_uri(uri) do
-        if subpath == 'subSchemas.json'
+        if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
           subSchemas_schema = JSI.new_schema({
             '$schema' => 'http://json-schema.org/draft-07/schema',
             'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
