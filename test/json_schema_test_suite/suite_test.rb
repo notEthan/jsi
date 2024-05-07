@@ -6,6 +6,10 @@ test_schema_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-sc
 JSONSchemaTestSchema = JSI::JSONSchemaDraft07.new_schema(JSON.parse(test_schema_path.open('r:UTF-8', &:read), freeze: true))
 $test_report_time["JSONSchemaTestSchema set up"]
 
+all_vocabularies = Set[]
+all_vocabularies.merge(JSI::Schema::Draft202012::DIALECT.vocabularies)
+all_vocabularies.freeze
+
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
   jsts_schema_registry = JSI.schema_registry.dup
 
@@ -24,11 +28,28 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
             schema_registry: schema_registry,
           )
         else
-          JSI.new_schema(remote_content,
+          schema = JSI.new_schema(remote_content,
             uri: uri,
             default_metaschema: metaschema,
             schema_registry: schema_registry,
           )
+
+          if remote_content['$vocabulary']
+            vocabularies = Set[]
+            remote_content['$vocabulary'].each do |vocabulary_uri, required|
+              vocabulary = all_vocabularies.detect { |v| v.id == JSI::Util.uri(vocabulary_uri) }
+              if vocabulary
+                vocabularies << vocabulary
+              elsif required
+                raise(JSI::ResolutionError, "vocabulary: #{vocabulary_uri}")
+              end
+            end
+
+            dialect = JSI::Schema::Dialect.new(vocabularies: vocabularies)
+            schema.describes_schema!(dialect)
+          end
+
+          schema
         end
       end
     end
