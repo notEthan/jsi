@@ -902,7 +902,11 @@ module JSI
       @described_object_property_names_map = jsi_memomap do
         dialect_invoke_each(:described_object_property_names).to_set.freeze
       end
-      @next_schema_dynamic_anchor_map = nil
+      if dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }
+        @next_schema_dynamic_anchor_map = nil
+      else
+        @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+      end
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
     end
   end
