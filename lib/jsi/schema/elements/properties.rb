@@ -63,10 +63,7 @@ module JSI
                 instance.each_key do |property_name|
                   if value.key?(property_name)
                     evaluated_property_names << property_name
-                    results[property_name] = child_subschema_validate(
-                      property_name,
-                      ['properties', property_name],
-                    )
+                    results[property_name] = child_subschema_validate(property_name, ['properties', property_name])
                   end
                 end
                 validate(
@@ -98,10 +95,7 @@ module JSI
                       # TODO ECMA 262
                       if value_property_pattern.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name.to_s)
                         evaluated_property_names << property_name
-                        results[property_name] = child_subschema_validate(
-                          property_name,
-                          ['patternProperties', value_property_pattern],
-                        )
+                        results[property_name] = child_subschema_validate(property_name, ['patternProperties', value_property_pattern])
                       end
                     rescue ::RegexpError
                       # cannot validate
@@ -126,10 +120,7 @@ module JSI
               results = {}
               instance.each_key do |property_name|
                 if !evaluated_property_names.include?(property_name)
-                  results[property_name] = child_subschema_validate(
-                    property_name,
-                    ['additionalProperties'],
-                  )
+                  results[property_name] = child_subschema_validate(property_name, ['additionalProperties'])
                 end
               end
               validate(
