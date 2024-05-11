@@ -98,7 +98,6 @@ module JSI
           end
 
           if keyword?('additionalProperties')
-            value = schema_content['additionalProperties']
             # The value of "additionalProperties" MUST be a valid JSON Schema.
             if instance.respond_to?(:to_hash)
               results = {}
