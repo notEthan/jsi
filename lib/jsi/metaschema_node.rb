@@ -28,13 +28,13 @@ module JSI
     # @param jsi_document the document containing the meta-schema.
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
-    # @param dialect [Schema::Dialect]
+    # @param msn_dialect [Schema::Dialect]
     # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the meta-schema in the jsi_document
     # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        dialect: ,
+        msn_dialect: ,
         metaschema_root_ptr: Ptr[],
         root_schema_ptr: Ptr[],
         jsi_schema_base_uri: nil,
@@ -55,7 +55,7 @@ module JSI
       @initialize_finished = false
       @to_initialize_finish = []
 
-      @dialect = dialect
+      @msn_dialect = msn_dialect
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
 
@@ -66,7 +66,7 @@ module JSI
       #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
       instance_for_schemas = jsi_document
-      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(dialect)
+      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(msn_dialect)
       root_bootstrap_schema = bootstrap_schema_class.new(
         jsi_document,
         jsi_ptr: root_schema_ptr,
@@ -89,7 +89,7 @@ module JSI
       @bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the meta-schema, i.e. this is a schema
-          define_singleton_method(:dialect) { dialect }
+          define_singleton_method(:dialect) { msn_dialect }
           extend(Schema)
         end
       end
@@ -107,7 +107,7 @@ module JSI
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if jsi_ptr == metaschema_root_ptr
-        describes_schema!(dialect)
+        describes_schema!(msn_dialect)
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
@@ -137,7 +137,7 @@ module JSI
     end
 
     # @return [Schema::Dialect]
-    attr_reader(:dialect)
+    attr_reader(:msn_dialect)
 
     # ptr to the root of the meta-schema in the jsi_document
     # @return [JSI::Ptr]
@@ -214,7 +214,7 @@ module JSI
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
-        dialect: dialect,
+        msn_dialect: msn_dialect,
         metaschema_root_ptr: metaschema_root_ptr,
         root_schema_ptr: root_schema_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,

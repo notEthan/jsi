@@ -105,7 +105,7 @@ module JSI
     metaschema_document = to_immutable.call(metaschema_document) if to_immutable
 
     metaschema = MetaSchemaNode.new(metaschema_document,
-      dialect: dialect,
+      msn_dialect: dialect,
       jsi_content_to_immutable: to_immutable,
     )
 

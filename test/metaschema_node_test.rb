@@ -33,7 +33,7 @@ describe(JSI::MetaSchemaNode) do
 
   let(:root_node) do
     JSI::MetaSchemaNode.new(to_immutable[jsi_document],
-      dialect: dialect,
+      msn_dialect: dialect,
       metaschema_root_ptr: metaschema_root_ptr,
       root_schema_ptr: root_schema_ptr,
       jsi_content_to_immutable: to_immutable,
