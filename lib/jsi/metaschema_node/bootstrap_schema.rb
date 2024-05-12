@@ -25,7 +25,7 @@ module JSI
         if self == MetaSchemaNode::BootstrapSchema
           name.freeze
         else
-          -"#{name || MetaSchemaNode::BootstrapSchema.name} (#{dialect})"
+          -"#{name || MetaSchemaNode::BootstrapSchema.name} (#{described_dialect})"
         end
       end
 

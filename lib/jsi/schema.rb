@@ -53,7 +53,7 @@ module JSI
     # A schema is indicated as describing other schemas using the {Schema#describes_schema!} method.
     module MetaSchema
       # @return [Schema::Dialect]
-      attr_reader(:dialect)
+      attr_reader(:described_dialect)
 
       # Instantiates the given schema content as a JSI Schema.
       #
@@ -531,7 +531,7 @@ module JSI
         # this schema has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
         # it is a bug if it was called different times with different dialect, though.
-        if @dialect != dialect
+        if @described_dialect != dialect
           raise(ArgumentError, "this schema already describes a schema with different dialect")
         end
       else
@@ -541,7 +541,7 @@ module JSI
         jsi_schema_module.extend(SchemaModule::MetaSchemaModule)
       end
 
-      @dialect = dialect
+      @described_dialect = dialect
       extend(Schema::MetaSchema)
 
       nil

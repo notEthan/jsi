@@ -88,8 +88,8 @@ module JSI
     end
 
     # @return [Schema::Dialect]
-    def dialect
-      schema.dialect
+    def described_dialect
+      schema.described_dialect
     end
   end
 
@@ -171,7 +171,7 @@ module JSI
 
       private def bootstrap_schema_class_compute(dialect: )
           Class.new(MetaSchemaNode::BootstrapSchema) do
-            define_singleton_method(:dialect) { dialect }
+            define_singleton_method(:described_dialect) { dialect }
             define_method(:dialect) { dialect }
 
             self
