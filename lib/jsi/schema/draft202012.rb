@@ -281,6 +281,8 @@ module JSI
     # but the meta-schema describes them. The test suite considers them optional.
     Vocab::COMPATIBILITY = Schema::Vocabulary.new(
       elements: [
+        Schema::Elements::DEFINITIONS[keyword: 'definitions'],
+
         Schema::Elements::DEPENDENCIES[],
       ],
     )
