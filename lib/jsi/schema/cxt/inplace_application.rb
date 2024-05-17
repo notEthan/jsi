@@ -3,7 +3,6 @@
 module JSI
   class Schema::Cxt
     InplaceApplication = Block.subclass(*%i(
-      instance
       visited_refs
       collect_evaluated
     ))
@@ -22,5 +21,9 @@ module JSI
         block.call(applicator_schema, **kw)
       end
     end
+
+    InplaceApplication::WithInstance = InplaceApplication.subclass(*%i(
+      instance
+    ))
   end
 end

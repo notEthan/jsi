@@ -646,7 +646,7 @@ module JSI
     )
       # if collect_evaluated, applicators must validate the instance to set `evaluated`
       if collect_evaluated || @inplace_application_requires_instance
-        dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
+        dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication::WithInstance,
           instance: instance,
           visited_refs: visited_refs,
           collect_evaluated: collect_evaluated,
@@ -662,7 +662,6 @@ module JSI
         @immediate_inplace_applicators ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
-            instance: nil,
             visited_refs: visited_refs,
             collect_evaluated: false,
           ) do |s, **kw|
