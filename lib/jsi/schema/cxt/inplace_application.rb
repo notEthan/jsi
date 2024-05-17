@@ -20,6 +20,10 @@ module JSI
       def inplace_schema_applicate(applicator_schema, **kw)
         block.call(applicator_schema, **kw)
       end
+
+      def instance
+        raise(Bug, "in-place application is being invoked without an instance; the current element needs action :inplace_application_requires_instance")
+      end
     end
 
     InplaceApplication::WithInstance = InplaceApplication.subclass(*%i(
