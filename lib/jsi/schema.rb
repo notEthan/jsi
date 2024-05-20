@@ -607,6 +607,7 @@ module JSI
         schema_implementation_modules.each do |mod|
           jsi_schema_module.include(mod)
         end
+        proc { |metaschema| jsi_schema_module.send(:define_method, :metaschema) { metaschema } }[self]
         jsi_schema_module.extend(SchemaModule::MetaSchemaModule)
       end
 
