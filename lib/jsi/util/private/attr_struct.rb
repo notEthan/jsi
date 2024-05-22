@@ -100,7 +100,7 @@ module JSI
         q.text '#<'
         q.text self.class.name
         q.group(2) {
-            q.breakable(@attributes.empty? ? '' : ' ')
+            q.breakable(' ') if !@attributes.empty?
             q.seplist(@attributes, nil, :each_pair) { |k, v|
               q.group {
                 q.text k
@@ -109,7 +109,7 @@ module JSI
               }
             }
         }
-        q.breakable ''
+        q.breakable('') if !@attributes.empty?
         q.text '>'
       end
 
