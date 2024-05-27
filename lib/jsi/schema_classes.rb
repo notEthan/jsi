@@ -78,6 +78,11 @@ module JSI
       node = node.jsi_node if node.is_a?(SchemaModule::Connects)
       schema.jsi_with_schema_dynamic_anchor_map(node.jsi_next_schema_dynamic_anchor_map).jsi_schema_module
     end
+
+    # `$defs` property reader
+    def defs
+      self['$defs']
+    end
   end
 
   # A module to extend the {SchemaModule} of a schema which describes other schemas (a {Schema::MetaSchema})
