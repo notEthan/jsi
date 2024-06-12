@@ -75,7 +75,7 @@ module JSI
         jsi_ptr: jsi_ptr + subptr,
         jsi_schema_base_uri: jsi_resource_ancestor_uri,
         jsi_schema_resource_ancestors: jsi_subschema_resource_ancestors,
-        jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map,
+        jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr + subptr),
         jsi_schema_registry: jsi_schema_registry,
       )
     end
@@ -110,7 +110,7 @@ module JSI
         jsi_ptr: ptr,
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
-        jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map,
+        jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: ptr),
         jsi_schema_registry: jsi_schema_registry,
       )
     end

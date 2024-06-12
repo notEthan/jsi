@@ -841,7 +841,7 @@ module JSI
           jsi_indicated_schemas: child_indicated_schemas,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
-          jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map,
+          jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token]),
           jsi_schema_registry: jsi_schema_registry,
           jsi_content_to_immutable: @jsi_content_to_immutable,
           jsi_root_node: @jsi_root_node,
