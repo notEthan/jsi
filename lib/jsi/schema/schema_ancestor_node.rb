@@ -100,6 +100,7 @@ module JSI
     def jsi_schema_dynamic_anchor_map=(dynamic_anchor_map)
       #chkbug fail if !dynamic_anchor_map.is_a?(Schema::DynamicAnchorMap)
       #chkbug fail if !dynamic_anchor_map.frozen?
+      #chkbug fail if dynamic_anchor_map != dynamic_anchor_map.without_node(self)
       @jsi_schema_dynamic_anchor_map = dynamic_anchor_map
     end
 
