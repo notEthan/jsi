@@ -1,3 +1,18 @@
+# v0.8.0
+
+- Immutable JSIs with new_jsi param `mutable`
+  - JSIs are still mutable by default, but in the next release they will default to immutable
+- Base#jsi_indicated_schemas
+- Base::StringNode
+- rename metaschema modules /JSONSchemaOrgDraft0X/JSONSchemaDraft0X/
+- terminology: /Metaschema/Meta-Schema/ and /metaschema/meta-schema/ (where hyphen is allowed)
+- Base::HashNode#jsi_each_propertyName
+- new_schema and/or new_jsi params register, schema_registry, stringify_symbol_keys, to_immutable
+- new_schema block param will module_exec on schema module
+- Base#[] param use_default default false, overridable
+- SchemaModule::Connects, SchemaModule::Connection
+- rm Schema#jsi_schema_instance_modules
+
 # v0.7.0
 
 - JSI::Base instances include Array/Hash-like modules on subclasses rather than extending each instance; are only Enumerable when appropriate instead of always
