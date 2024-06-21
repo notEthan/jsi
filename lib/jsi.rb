@@ -69,6 +69,7 @@ module JSI
     new_schema(schema_content, **kw, &block).jsi_schema_module
   end
 
+  # @private pending dialect/vocabularies
   # Instantiates the given document as a JSI Meta-Schema.
   #
   # @param metaschema_document an object to be instantiated as a JSI Meta-Schema
@@ -87,6 +88,7 @@ module JSI
     )
   end
 
+  # @private pending dialect/vocabularies
   # Instantiates the given document as a JSI Meta-Schema, passing all params to
   # {new_metaschema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
