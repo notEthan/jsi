@@ -65,11 +65,15 @@ describe 'JSON Schema Test Suite' do
                 # :nocov:
               end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
-                desc_schema = metaschema.new_schema(tests_desc.jsi_instance['schema'], schema_registry: desc_schema_registry)
+                desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
+                  schema_registry: desc_schema_registry,
+                  default_metaschema: metaschema,
+                )
 
                 describe(tests_desc.description) do
                   let(:schema_registry) { desc_schema_registry }
                   let(:schema) { desc_schema }
+                  let(:optional) { subpath.split('/').include?('optional') }
 
                   tests_desc.tests.each do |test|
                       it(test.description) do
@@ -82,7 +86,7 @@ describe 'JSON Schema Test Suite' do
                             'contentMediaType',
                             'contentEncoding',
                           ].select { |kw| schema.keyword?(kw) }
-                          if unsupported_keywords.any?
+                          if unsupported_keywords.any? && optional
                             skip("unsupported validation keywords: #{unsupported_keywords.join(' ')}")
                           end
 

@@ -46,12 +46,12 @@ module JSI
       # allow for registration of resources at the root of a document whether or not they are schemas.
       # jsi_schema_base_uri at the root comes from the `uri` parameter to new_jsi / new_schema.
       if resource.jsi_schema_base_uri && resource.jsi_ptr.root?
-        register_single(resource.jsi_schema_base_uri, resource)
+        internal_store(resource.jsi_schema_base_uri, resource)
       end
 
       resource.jsi_each_descendent_node do |node|
         if node.is_a?(JSI::Schema) && node.schema_absolute_uri
-          register_single(node.schema_absolute_uri, node)
+          internal_store(node.schema_absolute_uri, node)
         end
       end
 
@@ -136,7 +136,7 @@ module JSI
     def dup
       self.class.new.tap do |reg|
         @resources.each do |uri, resource|
-          reg.register_single(uri, resource)
+          reg.internal_store(uri, resource)
         end
         @autoload_uris.each do |uri, autoload|
           reg.autoload_uri(uri, &autoload)
@@ -155,7 +155,7 @@ module JSI
     # @param uri [Addressable::URI]
     # @param resource [JSI::Base]
     # @return [void]
-    def register_single(uri, resource)
+    def internal_store(uri, resource)
       mutating
       @resources_mutex.synchronize do
         uri = registration_uri(uri)

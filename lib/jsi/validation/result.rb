@@ -3,10 +3,7 @@
 module JSI
   module Validation
     # a result of validating an instance against schemas which describe it.
-    # virtual base class.
     class Result
-      include Util::Virtual
-
       Builder = Util::AttrStruct[*%w(
         result
         schema
@@ -24,7 +21,6 @@ module JSI
         end
 
         def schema_issue(*_)
-          virtual_method
         end
 
         def schema_error(message, keyword = nil)
@@ -74,23 +70,10 @@ module JSI
     end
 
     class Result
-      def builder(schema, instance_ptr, instance_document, validate_only, visited_refs)
-        self.class::Builder.new(
-          result: self,
-          schema: schema,
-          instance_ptr: instance_ptr,
-          instance_document: instance_document,
-          validate_only: validate_only,
-          visited_refs: visited_refs,
-        )
-      end
-
       # is the instance valid against its schemas?
       # @return [Boolean]
       def valid?
-        # :nocov:
-        virtual_method
-        # :nocov:
+        #chkbug raise(NotImplementedError)
       end
 
       include Util::FingerprintHash
@@ -144,7 +127,6 @@ module JSI
       end
 
       def freeze
-        @validation_errors.each(&:freeze)
         @schema_issues.each(&:freeze)
         @validation_errors.freeze
         @schema_issues.freeze
@@ -158,10 +140,6 @@ module JSI
         validation_errors.merge(result.validation_errors)
         schema_issues.merge(result.schema_issues)
         self
-      end
-
-      def +(result)
-        FullResult.new.merge(self).merge(result)
       end
 
       # see {Util::Private::FingerprintHash}

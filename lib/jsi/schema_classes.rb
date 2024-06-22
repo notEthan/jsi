@@ -210,12 +210,12 @@ module JSI
 
       private def schema_property_reader_module_compute(schema: , conflicting_modules: )
           Module.new do
-            define_singleton_method(:inspect) { '(JSI Schema Property Reader Module)' }
-
             readers = schema.described_object_property_names.select do |name|
               Util.ok_ruby_method_name?(name) &&
                 !conflicting_modules.any? { |m| m.method_defined?(name) || m.private_method_defined?(name) }
             end.to_set.freeze
+
+            define_singleton_method(:inspect) { "(JSI Schema Property Reader Module: #{readers.join(', ')})" }
 
             define_singleton_method(:jsi_property_readers) { readers }
 

@@ -167,11 +167,17 @@ module JSI
         tokens.size == 1 ? EMPTY : Ptr.new(tokens[0...-1].freeze)
       end
 
-      # whether this pointer contains the other_ptr - that is, whether this pointer is an ancestor
-      # of `other_ptr`, a descendent pointer. `contains?` is inclusive; a pointer does contain itself.
+      # whether this pointer is an ancestor of `other_ptr`, a descendent pointer.
+      # `ancestor_of?` is inclusive; a pointer is an ancestor of itself.
+      #
       # @return [Boolean]
-      def contains?(other_ptr)
+      def ancestor_of?(other_ptr)
         tokens == other_ptr.tokens[0...tokens.size]
+      end
+
+      # @deprecated
+      def contains?(other_ptr)
+        ancestor_of?(other_ptr)
       end
 
       # part of this pointer relative to the given ancestor_ptr
@@ -179,7 +185,7 @@ module JSI
       # @raise [JSI::Ptr::Error] if the given ancestor_ptr is not an ancestor of this pointer
       def relative_to(ancestor_ptr)
         return self if ancestor_ptr.empty?
-        unless ancestor_ptr.contains?(self)
+        unless ancestor_ptr.ancestor_of?(self)
           raise(Error, "ancestor_ptr #{ancestor_ptr.inspect} is not ancestor of #{inspect}")
         end
         ancestor_ptr.tokens.size == tokens.size ? EMPTY : Ptr.new(tokens[ancestor_ptr.tokens.size..-1].freeze)

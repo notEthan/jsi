@@ -87,7 +87,7 @@ module JSI
                 ['additionalProperties'],
               )
             end
-          end.compact
+          end
           result_builder.validate(
             results.values.all?(&:valid?),
             'instance object additional properties are not all valid against `additionalProperties` schema value',

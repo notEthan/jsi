@@ -230,7 +230,7 @@ module JSI
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_registry: jsi_schema_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
-      }
+      }.freeze
     end
 
     # note: not for root node

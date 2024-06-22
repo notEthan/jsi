@@ -31,7 +31,7 @@ module JSI
     #   or an array of them. note that it may be preferable to simply use an array schema.
     # @param jsi_opt [Hash] keyword arguments to pass to {Schema#new_jsi} when loading
     # @param as_json_opt [Hash] keyword arguments to pass to `#as_json` when dumping
-    def initialize(schema, array: false, jsi_opt: {}, as_json_opt: {})
+    def initialize(schema, array: false, jsi_opt: Util::EMPTY_HASH, as_json_opt: Util::EMPTY_HASH)
       unless schema.respond_to?(:new_jsi)
         raise(ArgumentError, "schema param does not respond to #new_jsi: #{schema.inspect}")
       end

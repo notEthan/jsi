@@ -49,6 +49,13 @@ namespace 'test' do
     pattern: "test/json_schema_test_suite/*_test.rb",
   )
 
+  JSITestTask.new(
+    name: 'ref',
+    title: "JSON Referencing Test Suite",
+    description: "run tests from the JSON Referencing Test Suite",
+    pattern: "test/referencing_suite/*_test.rb",
+  )
+
   # tests which rely on libraries jsi does not itself depend on are run separately.
   # if code is added to JSI which inadvertantly relies on these, and the tests require that dependency,
   # then tests might pass when applications without that dependency would fail.
@@ -74,6 +81,7 @@ desc 'run all tests'
 task 'test' => [
   'test:unit',
   'test:jsts',
+  'test:ref',
   'test:extdep'
 ]
 

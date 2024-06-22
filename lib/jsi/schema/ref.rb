@@ -180,6 +180,7 @@ module JSI
     def jsi_fingerprint
       {class: self.class, ref: ref, ref_schema: ref_schema}.freeze
     end
-    include Util::FingerprintHash
+
+    include(Util::FingerprintHash::Immutable)
   end
 end

@@ -16,11 +16,17 @@ module JSI
         # creates a AttrStruct subclass with the given attribute keys.
         # @param attribute_keys [Enumerable<String, Symbol>]
         def subclass(*attribute_keys)
-          bad = attribute_keys.reject { |key| key.respond_to?(:to_str) || key.is_a?(Symbol) }
-          unless bad.empty?
-            raise ArgumentError, "attribute keys must be String or Symbol; got keys: #{bad.map(&:inspect).join(', ')}"
+          bad_type = attribute_keys.reject { |key| key.respond_to?(:to_str) || key.is_a?(Symbol) }
+          unless bad_type.empty?
+            raise(ArgumentError, "attribute keys must be String or Symbol; got keys: #{bad_type.map(&:inspect).join(', ')}")
           end
+
           attribute_keys = attribute_keys.map { |key| convert_key(key) }
+
+          bad_name = attribute_keys.reject { |key| Util::Private.ok_ruby_method_name?(key) }
+          unless bad_name.empty?
+            raise(ArgumentError, "attribute keys must be valid ruby method names; got keys: #{bad_name.map(&:inspect).join(', ')}")
+          end
 
           all_attribute_keys = (self.attribute_keys + attribute_keys).freeze
 
@@ -67,7 +73,7 @@ module JSI
         attributes.to_hash.each do |k, v|
           @attributes[self.class.convert_key(k)] = v
         end
-        bad = @attributes.keys.reject { |k| attribute_keys.include?(k) }
+        bad = @attributes.keys.reject { |k| class_attribute_keys.include?(k) }
         unless bad.empty?
           raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
         end
@@ -79,7 +85,7 @@ module JSI
 
       def []=(key, value)
         key = self.class.convert_key(key)
-        unless attribute_keys.include?(key)
+        unless class_attribute_keys.include?(key)
           raise UndefinedAttributeKey, "undefined attribute key: #{key.inspect}"
         end
         @attributes[key] = value
@@ -100,7 +106,7 @@ module JSI
         q.text '#<'
         q.text self.class.name
         q.group(2) {
-            q.breakable(@attributes.empty? ? '' : ' ')
+            q.breakable(' ') if !@attributes.empty?
             q.seplist(@attributes, nil, :each_pair) { |k, v|
               q.group {
                 q.text k
@@ -109,13 +115,18 @@ module JSI
               }
             }
         }
-        q.breakable ''
+        q.breakable('') if !@attributes.empty?
         q.text '>'
       end
 
       # (see AttrStruct.attribute_keys)
-      def attribute_keys
+      def class_attribute_keys
         self.class.attribute_keys
+      end
+
+      def freeze
+        @attributes.freeze
+        super
       end
 
       include FingerprintHash

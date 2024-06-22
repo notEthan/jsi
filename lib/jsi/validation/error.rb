@@ -29,6 +29,10 @@ module JSI
     #   document containing the instance at instance_ptr
     #   @return [Object]
     class Error
+      def initialize(attributes = {})
+        super
+        freeze
+      end
     end
   end
 end
