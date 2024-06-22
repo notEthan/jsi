@@ -159,15 +159,6 @@ module JSI
           end
       end
 
-      # @private
-      # @deprecated after v0.7
-      def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
-        Module.new do
-          include SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
-          include SchemaClasses.schema_property_writer_module(schema, conflicting_modules: conflicting_modules) if setters
-        end
-      end
-
       # a module of readers for described property names of the given schema.
       #
       # @private
