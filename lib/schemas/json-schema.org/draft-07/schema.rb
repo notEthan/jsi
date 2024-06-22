@@ -189,10 +189,4 @@ module JSI
     module StringItem
     end
   end
-
-  JSONSchemaOrgDraft07 = JSONSchemaDraft07
-
-  # @deprecated after v0.7.0, alias of {JSONSchemaDraft07}
-  module JSONSchemaOrgDraft07
-  end
 end

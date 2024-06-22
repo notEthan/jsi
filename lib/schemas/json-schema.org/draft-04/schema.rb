@@ -156,10 +156,4 @@ module JSI
     module StringItem
     end
   end
-
-  JSONSchemaOrgDraft04 = JSONSchemaDraft04
-
-  # @deprecated after v0.7.0, alias of {JSONSchemaDraft04}
-  module JSONSchemaOrgDraft04
-  end
 end
