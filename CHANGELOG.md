@@ -1,3 +1,7 @@
+# v0.8.1
+
+- JSIs are immutable by default
+
 # v0.8.0
 
 - Immutable JSIs with new_jsi param `mutable`
