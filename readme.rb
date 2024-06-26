@@ -59,7 +59,7 @@ bill = Contact.new_jsi({
     }
   ],
   "nickname" => "big b",
-})
+}, mutable: true)
 
 print 'bill: '
 pp bill

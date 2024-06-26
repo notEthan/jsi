@@ -63,8 +63,12 @@ nickname: big b
 So, if we construct an instance like:
 
 ```ruby
-# this would usually load YAML or JSON; the schema instance is inlined for copypastability.
-bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"})
+bill = Contact.new_jsi(
+  # this would typically load JSON or YAML; the schema instance is inlined for copypastability.
+  {"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"},
+  # note: bill is mutable to demonstrate setters below; the default is immutable.
+  mutable: true
+)
 # => #{<JSI (Contact)>
 #   "name" => "bill",
 #   "phone" => #[<JSI (Contact.properties["phone"])>
@@ -240,6 +244,10 @@ end
 ### A note on Classes
 
 The classes used to instantiate JSIs are dynamically generated subclasses of JSI::Base which include the JSI Schema Module of each schema describing the given instance. These are mostly intended to be ignored: applications aren't expected to instantiate these directly (rather, `#new_jsi` on a Schema or Schema Module is intended), and they are not intended for subclassing or method definition (applications should instead define methods on a schema's {JSI::Schema#jsi_schema_module}).
+
+## Mutability
+
+JSI instances are immutable by default. Mutable JSIs may be instantiated using the `mutable` param of `new_jsi`. Immutable JSIs are much more performant, because mutation may change what schemas apply to nodes in a document, and checking for that is costly. It is not recommended to instantiate large documents as mutable; their JSI instances become unusably slow.
 
 ## Registration
 
