@@ -57,6 +57,8 @@ jobs:
 
     - run: bundle exec rake test
 
+    - run: bundle exec ruby readme.rb
+
     - name: Report to Coveralls
       uses: coverallsapp/github-action@v2.3.0
       with:
