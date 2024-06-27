@@ -185,21 +185,6 @@ module JSI
       end
     end
 
-    # @private
-    # @return [Array<String>]
-    def jsi_object_group_text
-      if jsi_schemas && jsi_schemas.any?
-        class_n_schemas = -"#{self.class} (#{jsi_schemas.map { |s| s.jsi_schema_module.name_from_ancestor || s.jsi_ptr.uri }.join(' ')})"
-      else
-        class_n_schemas = self.class.to_s
-      end
-      [
-        class_n_schemas,
-        is_a?(Schema::MetaSchema) ? "Meta-Schema" : is_a?(Schema) ? "Schema" : nil,
-        *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : nil),
-      ].compact.freeze
-    end
-
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint

@@ -162,17 +162,17 @@ describe 'JSI::Base hash' do
     end
     describe '#inspect, #to_s' do
       it 'inspects' do
-        assert_equal("\#{<JSI> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
+        assert_equal("\#{<JSI*1> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => #[<JSI*1> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
         assert_equal(subject.inspect, subject.to_s)
       end
     end
     describe '#pretty_print' do
       it 'pretty prints' do
         pp = <<~PP
-          \#{<JSI>
-            "foo" => \#{<JSI> "x" => "y"},
-            "bar" => #[<JSI> 9],
-            "baz" => #[<JSI> true]
+          \#{<JSI*1>
+            "foo" => \#{<JSI*1> "x" => "y"},
+            "bar" => #[<JSI*1> 9],
+            "baz" => #[<JSI*0> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -191,7 +191,7 @@ describe 'JSI::Base hash' do
       let(:instance) { SortOfHash.new(default_instance) }
       let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
-        assert_equal("\#{<JSI SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
+        assert_equal("\#{<JSI*1 SortOfHash> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => #[<JSI*1> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
       end
     end
     describe '#pretty_print SortOfHash' do
@@ -199,10 +199,10 @@ describe 'JSI::Base hash' do
       let(:subject_opt) { {to_immutable: nil} }
       it 'pretty prints' do
         pp = <<~PP
-          \#{<JSI SortOfHash>
-            "foo" => \#{<JSI> "x" => "y"},
-            "bar" => #[<JSI> 9],
-            "baz" => #[<JSI> true]
+          \#{<JSI*1 SortOfHash>
+            "foo" => \#{<JSI*1> "x" => "y"},
+            "bar" => #[<JSI*1> 9],
+            "baz" => #[<JSI*0> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -211,7 +211,7 @@ describe 'JSI::Base hash' do
     describe '#inspect with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       it 'inspects' do
-        assert_equal("\#{<JSI (http://jsi/base_hash/withid)> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
+        assert_equal("\#{<JSI (http://jsi/base_hash/withid)> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
@@ -221,7 +221,7 @@ describe 'JSI::Base hash' do
           \#{<JSI (http://jsi/base_hash/withid)>
             "foo" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> "x" => "y"},
             "bar" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9],
-            "baz" => #[<JSI> true]
+            "baz" => #[<JSI*0> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -232,7 +232,7 @@ describe 'JSI::Base hash' do
       let(:instance) { SortOfHash.new(default_instance) }
       let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
-        assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
+        assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfHash' do
@@ -244,7 +244,7 @@ describe 'JSI::Base hash' do
           \#{<JSI (http://jsi/base_hash/withid) SortOfHash>
             "foo" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> "x" => "y"},
             "bar" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9],
-            "baz" => #[<JSI> true]
+            "baz" => #[<JSI*0> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -255,7 +255,7 @@ describe 'JSI::Base hash' do
       let(:instance) { instance_class.new(default_instance) }
       let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
-        assert_equal("\#{<JSI ☺> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
+        assert_equal("\#{<JSI*1 ☺> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => #[<JSI*1> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
       end
     end
     describe '#pretty_print jsi_object_group_text' do
@@ -264,10 +264,10 @@ describe 'JSI::Base hash' do
       let(:subject_opt) { {to_immutable: nil} }
       it 'pretty prints' do
         pp = <<~PP
-          \#{<JSI ☺>
-            "foo" => \#{<JSI> "x" => "y"},
-            "bar" => #[<JSI> 9],
-            "baz" => #[<JSI> true]
+          \#{<JSI*1 ☺>
+            "foo" => \#{<JSI*1> "x" => "y"},
+            "bar" => #[<JSI*1> 9],
+            "baz" => #[<JSI*0> true]
           }
           PP
         assert_equal(pp, subject.pretty_inspect)

@@ -86,20 +86,17 @@ describe(JSI::MetaSchemaNode) do
       assert_metaschema_behaves
     end
     it 'is pretty' do
-      inspect = %q(#{<JSI::MetaSchemaNode (#) Meta-Schema> "properties" => #{<JSI::MetaSchemaNode (#/properties/properties)> "properties" => #{<JSI::MetaSchemaNode (#) Schema> "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI::MetaSchemaNode (#) Schema>}}})
+      inspect = %q(#{<JSI:MSN (#) Meta-Schema> "properties" => #{<JSI:MSN*1> "properties" => #{<JSI:MSN (#) Schema> "additionalProperties" => #{<JSI:MSN (#) Schema> "$ref" => "#"}}, "additionalProperties" => #{<JSI:MSN (#) Schema> "$ref" => "#"}, "$ref" => #{<JSI:MSN (#) Schema>}}})
       assert_equal(inspect, metaschema.inspect)
       assert_equal(inspect, metaschema.to_s)
       pp = <<~PP
-        \#{<JSI::MetaSchemaNode (#) Meta-Schema>
-          "properties" => \#{<JSI::MetaSchemaNode (#/properties/properties)>
-            "properties" => \#{<JSI::MetaSchemaNode (#) Schema>
-              "additionalProperties" => \#{<JSI::MetaSchemaNode (#) Schema>
-                "$ref" => "#"
-              }
+        \#{<JSI:MSN (#) Meta-Schema>
+          "properties" => \#{<JSI:MSN*1>
+            "properties" => \#{<JSI:MSN (#) Schema>
+              "additionalProperties" => \#{<JSI:MSN (#) Schema> "$ref" => "#"}
             },
-            "additionalProperties" => \#{<JSI::MetaSchemaNode (#) Schema> "$ref" => "#"
-            },
-            "$ref" => \#{<JSI::MetaSchemaNode (#) Schema>}
+            "additionalProperties" => \#{<JSI:MSN (#) Schema> "$ref" => "#"},
+            "$ref" => \#{<JSI:MSN (#) Schema>}
           }
         }
         PP
@@ -110,18 +107,18 @@ describe(JSI::MetaSchemaNode) do
   describe 'basic, named' do
     it 'is pretty' do
       pretty = <<~str
-      \#{<JSI::MetaSchemaNode (BasicMetaSchema) Meta-Schema>
+      \#{<JSI:MSN (BasicMetaSchema) Meta-Schema>
         "$id" => "tag:named-basic-meta-schema",
-        "properties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema.properties["properties"])>
-          "properties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
-            "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
+        "properties" => \#{<JSI:MSN (BasicMetaSchema.properties["properties"])>
+          "properties" => \#{<JSI:MSN (BasicMetaSchema) Schema>
+            "additionalProperties" => \#{<JSI:MSN (BasicMetaSchema) Schema>
               "$ref" => "#"
             }
           },
-          "additionalProperties" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>
+          "additionalProperties" => \#{<JSI:MSN (BasicMetaSchema) Schema>
             "$ref" => "#"
           },
-          "$ref" => \#{<JSI::MetaSchemaNode (BasicMetaSchema) Schema>}
+          "$ref" => \#{<JSI:MSN (BasicMetaSchema) Schema>}
         }
       }
       str

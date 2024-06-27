@@ -36,7 +36,7 @@ describe JSI::Schema::Ref do
           msg = <<~MSG
             could not resolve pointer: "/no"
             from: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}
-            in schema resource root: #[<JSI> \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}]
+            in schema resource root: #[<JSI*1> \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}]
             MSG
           assert_equal(msg.chomp, err.message)
         end
@@ -166,7 +166,7 @@ describe JSI::Schema::Ref do
         err = assert_raises(JSI::Schema::NotASchemaError) { schema.new_jsi({}) }
         msg = <<~MSG
           object identified by uri http://jsi/ref_to_not_a_schema is not a schema:
-          \#{<JSI>}
+          \#{<JSI*1>}
           its schemas (which should include a Meta-Schema): JSI::SchemaSet[\#{<JSI (JSI::JSONSchemaDraft07) Schema>}]
           MSG
         assert_equal(msg.chomp, err.message)

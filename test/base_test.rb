@@ -126,7 +126,7 @@ describe JSI::Base do
       let(:subject_opt) { {to_immutable: nil} }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI> "foo" => "bar"}), err.message)
+        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI*1> "foo" => "bar"}), err.message)
       end
     end
     describe 'Schema invalid' do
@@ -647,9 +647,9 @@ describe JSI::Base do
 
           refute_respond_to(subject.method(:initialize).owner, :jsi_property_readers)
           assert_equal('hi', subject['initialize'])
-          assert_equal(%q(#{<JSI> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
+          assert_equal(%q(#{<JSI*1> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
-          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "to_ary" => "not ary",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
+          assert_equal(%Q(\#{<JSI*1>\n  "foo" => "bar",\n  "to_ary" => "not ary",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
@@ -763,7 +763,7 @@ describe JSI::Base do
     let(:instance) { Object.new }
     let(:subject_opt) { {to_immutable: nil} }
     it 'inspects' do
-      assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.inspect)
+      assert_match(%r(\A\#<JSI\*1\ \#<Object:[^<>]*>>\z), subject.inspect)
       assert_equal(subject.inspect, subject.to_s)
     end
   end
@@ -772,7 +772,7 @@ describe JSI::Base do
     let(:instance) { Object.new }
     let(:subject_opt) { {to_immutable: nil} }
     it 'pretty_prints' do
-      assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
+      assert_match(%r(\A\#<JSI\*1\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
     end
   end
   describe 'name_from_ancestor #inspect #pretty_print' do

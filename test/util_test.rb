@@ -16,7 +16,7 @@ describe JSI::Util do
         err = assert_raises(ArgumentError) { JSI::Util.stringify_symbol_keys(nil) }
         assert_equal("expected argument to be a hash; got NilClass: nil", err.message)
         err = assert_raises(ArgumentError) { JSI::Util.stringify_symbol_keys(JSI::JSONSchemaDraft07.new_schema({}).new_jsi(3)) }
-        assert_equal("expected argument to be a hash; got (JSI Schema Class: #): #<JSI 3>", err.message)
+        assert_equal("expected argument to be a hash; got (JSI Schema Class: #): #<JSI*1 3>", err.message)
       end
     end
   end

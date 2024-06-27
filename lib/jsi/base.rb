@@ -659,11 +659,45 @@ module JSI
     # @private
     # @return [Array<String>]
     def jsi_object_group_text
-      schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_uri }.compact
+      jsi_schemas = self.jsi_schemas || Util::EMPTY_SET # for debug during MSN initialize, may not be set yet
+      schemas_priorities = jsi_schemas.each_with_index.map do |schema, i|
+        if schema.describes_schema?
+          [0, i, schema]
+        elsif schema.jsi_schema_module.name
+          [1, i, schema]
+        elsif schema.jsi_schema_module.name_from_ancestor
+          [2, i, schema]
+        elsif schema.schema_absolute_uri
+          [3, i, schema]
+        elsif schema.schema_uri
+          [4, i, schema]
+        elsif !schema.respond_to?(:to_hash)
+          # boolean
+          [9, i, schema]
+        elsif schema.empty?
+          [8, i, schema]
+        elsif schema.all? { |k, _| k == '$ref' || k == '$dynamicRef' }
+          [7, i, schema]
+        else
+          [5, i, schema]
+        end
+      end.sort
+
+      schema_names = []
+      schemas_priorities.each do |(priority, _idx, schema)|
+        if priority == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
+          name = schema.jsi_schema_module.name_from_ancestor || schema.schema_uri
+          name ||= schema.jsi_ptr.uri if priority == 0
+          schema_names << name if name
+        end
+      end
+
       if schema_names.empty?
-        class_txt = "JSI"
+        schemas_txt = -"*#{jsi_schemas.size}"
+      elsif schema_names.size == jsi_schemas.size
+        schemas_txt = -" (#{schema_names.join(' + ')})"
       else
-        class_txt = -"JSI (#{schema_names.join(', ')})"
+        schemas_txt = -" (#{schema_names.join(' + ')} + #{jsi_schemas.size - schema_names.size})"
       end
 
       if (is_a?(ArrayNode) || is_a?(HashNode)) && ![Array, Hash].include?(jsi_node_content.class)
@@ -677,7 +711,7 @@ module JSI
       end
 
       [
-        class_txt,
+        -"JSI#{is_a?(MetaSchemaNode) ? ":MSN" : ""}#{schemas_txt}",
         is_a?(Schema::MetaSchema) ? "Meta-Schema" : is_a?(Schema) ? "Schema" : nil,
         *content_txt,
       ].compact.freeze
