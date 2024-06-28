@@ -1,6 +1,6 @@
 # JSI: JSON Schema Instantiation
 
-![Test CI Status](https://github.com/notEthan/jsi/actions/workflows/test.yml/badge.svg?branch=stable)
+![Test CI Status](https://github.com/notEthan/jsi/actions/workflows/test.yml/badge.svg?branch=main)
 [![Coverage Status](https://coveralls.io/repos/github/notEthan/jsi/badge.svg)](https://coveralls.io/github/notEthan/jsi)
 
 JSI offers an Object-Oriented representation for JSON data using JSON Schemas. Given your JSON Schemas, JSI constructs Ruby modules and classes which are used to instantiate your JSON data. These modules let you use JSON with all the niceties of OOP such as property accessors and application-defined instance methods.
