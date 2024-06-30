@@ -92,8 +92,10 @@ module JSI
         else
           uri.dup.freeze
         end
-      else
+      elsif uri.is_a?(String) || uri.respond_to?(:to_str)
         Addressable::URI.parse(uri).freeze
+      else
+        raise(TypeError, "uri is not a string: #{uri.inspect}")
       end
     end
 
