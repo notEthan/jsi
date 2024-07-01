@@ -18,10 +18,10 @@ module JSI
     TYPE = element_map do
       Schema::Element.new do |element|
         element.add_action(:validate) do
-      if keyword?('type')
-        value = schema_content['type']
-        # The value of this keyword MUST be either a string or an array. If it is an array, elements of
-        # the array MUST be strings and MUST be unique.
+          next if !keyword?('type')
+          value = schema_content['type']
+          #> The value of this keyword MUST be either a string or an array. If it is an array, elements of
+          #> the array MUST be strings and MUST be unique.
           types = value.respond_to?(:to_ary) ? value : [value]
           matched_type = types.any? do |type|
               if instance_types.key?(type)
@@ -36,7 +36,6 @@ module JSI
             'instance type does not match `type` value',
             keyword: 'type',
           )
-      end
         end # element.add_action(:validate)
       end # Schema::Element.new
     end # TYPE = element_map
