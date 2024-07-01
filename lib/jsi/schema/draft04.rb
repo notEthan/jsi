@@ -101,6 +101,7 @@ module JSI
       )
 
       DIALECT = Dialect.new(
+        id: "http://json-schema.org/draft-04/schema",
         vocabularies: [VOCABULARY],
       )
 
