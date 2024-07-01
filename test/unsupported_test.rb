@@ -6,9 +6,11 @@ require_relative 'test_helper'
 # behaviors are tested so I know if any of it breaks, but unsupported behavior may change at any time.
 
 describe 'unsupported behavior' do
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
+  let(:schema_opt) { {} }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07, **schema_opt) }
   let(:instance) { {} }
-  let(:subject) { schema.new_jsi(instance) }
+  let(:subject_opt) { {} }
+  let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
   describe 'JSI::Schema' do
     # reinstantiating objects at unrecognized paths as schemas is implemented but I don't want to officially
@@ -98,11 +100,13 @@ describe 'unsupported behavior' do
           },
         }
       end
+      let(:schema_opt) { {to_immutable: nil} }
       let(:instance) do
         {
           ARBITRARY_OBJECT => {},
         }
       end
+      let(:subject_opt) { {to_immutable: nil} }
 
       it 'applies properties' do
         assert_schemas([schema.properties[ARBITRARY_OBJECT]], subject[ARBITRARY_OBJECT])
@@ -293,6 +297,8 @@ describe 'unsupported behavior' do
       end
     end
 
+    let(:subject_opt) { {to_immutable: nil} }
+
     describe 'properties and items' do
       let(:schema_content) do
         {
@@ -361,7 +367,7 @@ describe 'unsupported behavior' do
         child = {'a' => ['turtle']}
         child['on'] = child
         root = {'a' => ['world'], 'on' => child}
-        jsi = schema.new_jsi(root)
+        jsi = schema.new_jsi(root, to_immutable: nil)
         assert_schemas([schema.properties['a']], jsi.a)
         assert_schemas([schema], jsi.on)
         # little deeper

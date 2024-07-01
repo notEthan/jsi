@@ -101,7 +101,7 @@ module JSI
         schema_registry: JSI.schema_registry,
         stringify_symbol_keys: false,
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
-        mutable: true
+        mutable: false
     )
       instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 

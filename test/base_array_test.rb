@@ -58,7 +58,8 @@ describe 'JSI::Base array' do
     }
   end
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
-  let(:subject) { schema.new_jsi(instance) }
+  let(:subject_opt) { {} }
+  let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
   describe '#[]' do
     describe 'negative index in range' do
@@ -186,6 +187,8 @@ describe 'JSI::Base array' do
     end
   end
   describe 'arraylike []=' do
+    let(:subject_opt) { {mutable: true} }
+
     it 'sets an index' do
       orig_2 = subject[2]
 
@@ -275,12 +278,14 @@ describe 'JSI::Base array' do
     end
     describe '#inspect SortOfArray' do
       let(:instance) { SortOfArray.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
         assert_equal("#[<JSI SortOfArray> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print SortOfArray' do
       let(:instance) { SortOfArray.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'pretty prints' do
         pp = <<~PP
           #[<JSI SortOfArray>
@@ -316,6 +321,7 @@ describe 'JSI::Base array' do
     describe '#inspect with id SortOfArray' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
       let(:instance) { SortOfArray.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
         assert_equal("#[<JSI (http://jsi/base_array/withid) SortOfArray> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
       end
@@ -323,6 +329,7 @@ describe 'JSI::Base array' do
     describe '#pretty_print with id SortOfArray' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
       let(:instance) { SortOfArray.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'pretty prints' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid) SortOfArray>
@@ -429,6 +436,7 @@ describe 'JSI::Base array' do
   end
   describe 'with an instance that has to_ary but not other ary instance methods' do
     let(:instance) { SortOfArray.new(['foo', {'lamp' => SortOfArray.new([3])}, SortOfArray.new(['q', 'r'])]) }
+    let(:subject_opt) { {to_immutable: nil} }
     describe 'delegating instance methods to #to_ary' do
       it('#each_index') { assert_equal([0, 1, 2], subject.each_index.to_a) }
       it('#size')      { assert_equal(3, subject.size) }
@@ -443,7 +451,7 @@ describe 'JSI::Base array' do
         modified_root = subject[2].select { false }.jsi_root_node
         # modified_root instance ceases to be SortOfArray because SortOfArray has no #[]= method
         # modified_root[2] ceases to be SortOfArray because SortOfArray has no #select method
-        assert_equal(schema.new_jsi(['foo', {'lamp' => SortOfArray.new([3])}, []]), modified_root)
+        assert_equal(schema.new_jsi(['foo', {'lamp' => SortOfArray.new([3])}, []], **subject_opt), modified_root)
       end
     end
   end

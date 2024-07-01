@@ -14,7 +14,8 @@ describe 'JSI::Base hash' do
     }
   end
   let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
-  let(:subject) { schema.new_jsi(instance) }
+  let(:subject_opt) { {} }
+  let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
   describe '#[] with a schema default that is a basic type' do
     let(:schema_content) do
@@ -106,6 +107,8 @@ describe 'JSI::Base hash' do
     end
   end
   describe 'hashlike []=' do
+    let(:subject_opt) { {mutable: true} }
+
     it 'sets a property' do
       orig_foo = subject['foo']
 
@@ -186,12 +189,14 @@ describe 'JSI::Base hash' do
     end
     describe '#inspect SortOfHash' do
       let(:instance) { SortOfHash.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
         assert_equal("\#{<JSI SortOfHash> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
     end
     describe '#pretty_print SortOfHash' do
       let(:instance) { SortOfHash.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'pretty prints' do
         pp = <<~PP
           \#{<JSI SortOfHash>
@@ -225,6 +230,7 @@ describe 'JSI::Base hash' do
     describe '#inspect with id SortOfHash' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:instance) { SortOfHash.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
         assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
@@ -232,6 +238,7 @@ describe 'JSI::Base hash' do
     describe '#pretty_print with id SortOfHash' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       let(:instance) { SortOfHash.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'pretty prints' do
         pp = <<~PP
           \#{<JSI (http://jsi/base_hash/withid) SortOfHash>
@@ -246,6 +253,7 @@ describe 'JSI::Base hash' do
     describe '#inspect jsi_object_group_text' do
       let(:instance_class) { Class.new(SortOfHash) { define_method(:jsi_object_group_text) { ['☺'] } } }
       let(:instance) { instance_class.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
         assert_equal("\#{<JSI ☺> \"foo\" => \#{<JSI> \"x\" => \"y\"}, \"bar\" => #[<JSI> 9], \"baz\" => #[<JSI> true]}", subject.inspect)
       end
@@ -253,6 +261,7 @@ describe 'JSI::Base hash' do
     describe '#pretty_print jsi_object_group_text' do
       let(:instance_class) { Class.new(SortOfHash) { define_method(:jsi_object_group_text) { ['☺'] } } }
       let(:instance) { instance_class.new(default_instance) }
+      let(:subject_opt) { {to_immutable: nil} }
       it 'pretty prints' do
         pp = <<~PP
           \#{<JSI ☺>
@@ -423,6 +432,7 @@ describe 'JSI::Base hash' do
   end
   describe 'with an instance that has to_hash but not other hash instance methods' do
     let(:instance) { SortOfHash.new({'foo' => SortOfHash.new({'a' => 'b'})}) }
+    let(:subject_opt) { {to_immutable: nil} }
     describe 'delegating instance methods to #to_hash' do
       it('#each_key') { assert_equal(['foo'], subject.each_key.to_a) }
       it('#each_pair') { assert_equal([['foo', subject['foo']]], subject.each_pair.to_a) }
