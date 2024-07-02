@@ -82,7 +82,7 @@ print 'bad.phone.jsi_validate: '
 pp bad.phone.jsi_validate
 
 print 'bill.transform_values(&:size): '
-pp bill.transform_values(&:size)
+pp bill.transform_values(&:size) if Hash.method_defined?(:transform_values)
 
 print "bill['nickname']: "
 pp bill['nickname']
