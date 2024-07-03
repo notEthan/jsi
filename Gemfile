@@ -4,6 +4,7 @@ gemspec
 
 gem 'rake'
 gem 'gig'
+gem 'ansi'
 
 group(:dev) do
   gem 'irb'
