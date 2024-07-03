@@ -17,7 +17,7 @@ describe 'JSI::Base hash' do
   let(:subject_opt) { {} }
   let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
-  describe '#[] with a schema default that is a basic type' do
+  describe("#[] with a schema default that is a simple type") do
     let(:schema_content) do
       {
         'type' => 'object',
@@ -36,14 +36,14 @@ describe 'JSI::Base hash' do
         assert_nil(subject.foo(use_default: false))
       end
     end
-    describe 'nondefault value (basic type)' do
+    describe("nondefault value (simple type)") do
       let(:instance) { {'foo' => 'who'} }
       it 'returns the nondefault value' do
         assert_equal('who', subject.foo)
         assert_equal('who', subject.foo(use_default: false))
       end
     end
-    describe 'nondefault value (nonbasic type)' do
+    describe("nondefault value (complex type)") do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_schemas([schema.properties['foo']], subject.foo)
@@ -51,7 +51,7 @@ describe 'JSI::Base hash' do
       end
     end
   end
-  describe '#[] with a schema default that is a nonbasic type' do
+  describe("#[] with a schema default that is a complex type") do
     let(:schema_content) do
       {
         'type' => 'object',
@@ -71,14 +71,14 @@ describe 'JSI::Base hash' do
         assert_equal({'foo' => 2}, subject.foo.jsi_instance)
       end
     end
-    describe 'nondefault value (basic type)' do
+    describe("nondefault value (simple type)") do
       let(:instance) { {'foo' => 'who'} }
       it 'returns the nondefault value' do
         assert_equal('who', subject.foo)
         assert_equal('who', subject.foo(use_default: false))
       end
     end
-    describe 'nondefault value (nonbasic type)' do
+    describe("nondefault value (complex type)") do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_schemas([schema.properties['foo']], subject.foo)
@@ -86,7 +86,7 @@ describe 'JSI::Base hash' do
       end
     end
   end
-  describe '#[] with a hash default that is a nonbasic type' do
+  describe("#[] with a hash default that is a complex type") do
     let(:schema_content) do
       {
         'type' => 'object',

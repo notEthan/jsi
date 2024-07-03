@@ -87,7 +87,7 @@ describe 'JSI::Base array' do
     end
   end
 
-  describe '#[] with a default that is a basic type' do
+  describe("#[] with a default that is a simple type") do
     let(:schema_content) do
       {
         'type' => 'array',
@@ -104,14 +104,14 @@ describe 'JSI::Base array' do
         assert_nil(subject[2, use_default: false])
       end
     end
-    describe 'nondefault value (basic type)' do
+    describe("nondefault value (simple type)") do
       let(:instance) { ['who'] }
       it 'returns the nondefault value' do
         assert_equal('who', subject[0])
         assert_equal('who', subject[0, use_default: false])
       end
     end
-    describe 'nondefault value (nonbasic type)' do
+    describe("nondefault value (complex type)") do
       let(:instance) { [[2]] }
       it 'returns the nondefault value' do
         assert_schemas([schema.items], subject[0])
@@ -120,23 +120,23 @@ describe 'JSI::Base array' do
     end
 
     describe 'negative index out of range' do
-      it 'returns nil, does not try to insert basic default' do
+      it("returns nil, does not try to insert simple default") do
         assert_nil(subject[-5])
       end
     end
 
     describe 'Range' do
-      # it does not try to insert basic defaults, so behavior is the same as tests without a default value.
+      # it does not try to insert simple defaults, so behavior is the same as tests without a default value.
       BaseArrayTest.test_ranges(self)
     end
 
     describe 'arbitrary object' do
-      it 'raises, does not try to insert basic default' do
+      it("raises, does not try to insert simple default") do
         assert_raises(TypeError) { subject[Object.new] }
       end
     end
   end
-  describe '#[] with a default that is a nonbasic type' do
+  describe("#[] with a default that is a complex type") do
     let(:schema_content) do
       {
         'type' => 'array',
@@ -154,14 +154,14 @@ describe 'JSI::Base array' do
         assert_equal({'foo' => 2}, subject[1].jsi_instance)
       end
     end
-    describe 'nondefault value (basic type)' do
+    describe("nondefault value (simple type)") do
       let(:instance) { [true, 'who'] }
       it 'returns the nondefault value' do
         assert_equal('who', subject[1])
         assert_equal('who', subject[1, use_default: false])
       end
     end
-    describe 'nondefault value (nonbasic type)' do
+    describe("nondefault value (complex type)") do
       let(:instance) { [true, [2]] }
       it 'returns the nondefault value' do
         assert_schemas([schema.items], subject[1])

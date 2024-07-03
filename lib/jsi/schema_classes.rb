@@ -292,7 +292,7 @@ module JSI
 
     # Subscripting a JSI schema module or a {SchemaModule::Connection} will subscript its node, and
     # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a JSI::Base,
-    # return a SchemaModule::Connection; or if it is another value (a basic type), return that value.
+    # return a SchemaModule::Connection; or if it is another value (a simple type), return that value.
     #
     # @param token [Object]
     # @yield If the token identifies a schema and a block is given,

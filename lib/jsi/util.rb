@@ -32,7 +32,7 @@ module JSI
 
     # A structure like the given `object`, recursively coerced to JSON-compatible types.
     #
-    # - Structures of Hash, Array, and basic types of String/number/boolean/nil are returned as-is.
+    # - Structures of Hash, Array, and simple types of String/number/boolean/nil are returned as-is.
     # - If the object responds to `#as_json`, that method is used, passing any given options.
     # - If the object supports [implicit conversion](https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html)
     #   with `#to_hash`, `#to_ary`, `#to_str`, or `#to_int`, that is used.
