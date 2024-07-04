@@ -75,17 +75,23 @@ module JSI
   # @param metaschema_document an object to be instantiated as a JSI Meta-Schema
   # @param schema_implementation_modules (see MetaSchemaNode#initialize)
   # @param to_immutable (see SchemaSet#new_jsi)
+  # @yield (see Schema::MetaSchema#new_schema)
   # @return [JSI::MetaSchemaNode + JSI::Schema::MetaSchema + JSI::Schema]
   def self.new_metaschema(metaschema_document,
       schema_implementation_modules: ,
-      to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE
+      to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
+      &block
   )
     metaschema_document = to_immutable.call(metaschema_document) if to_immutable
 
-    MetaSchemaNode.new(metaschema_document,
+    metaschema = MetaSchemaNode.new(metaschema_document,
       schema_implementation_modules: schema_implementation_modules,
       jsi_content_to_immutable: to_immutable,
     )
+
+    metaschema.jsi_schema_module_exec(&block) if block
+
+    metaschema
   end
 
   # @private pending dialect/vocabularies
@@ -93,8 +99,8 @@ module JSI
   # {new_metaschema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
   # @return [JSI::SchemaModule + JSI::SchemaModule::MetaSchemaModule]
-  def self.new_metaschema_module(metaschema_document, **kw)
-    new_metaschema(metaschema_document, **kw).jsi_schema_module
+  def self.new_metaschema_module(metaschema_document, **kw, &block)
+    new_metaschema(metaschema_document, **kw, &block).jsi_schema_module
   end
 
   # `JSI.schema_registry` is the default {JSI::SchemaRegistry} in which schemas are registered and from

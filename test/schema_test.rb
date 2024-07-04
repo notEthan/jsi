@@ -14,7 +14,7 @@ describe JSI::Schema do
 
     it '$schema resolves but does not describe schemas' do
       JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#", "$id": "tag:guqh"})
-      e = assert_raises(TypeError) { JSI.new_schema({"$schema": "tag:guqh"}) }
+      e = assert_raises(JSI::Schema::NotAMetaSchemaError) { JSI.new_schema({"$schema": "tag:guqh"}) }
       assert_equal(%q($schema URI indicates a schema that is not a meta-schema: "tag:guqh"), e.message)
     end
 
@@ -25,7 +25,7 @@ describe JSI::Schema do
 
     it 'cannot instantiate from a JSI' do
       err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}), default_metaschema: JSI::JSONSchemaDraft07) }
-      assert_equal("Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI>}", err.message)
+      assert_equal("Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI*1>}", err.message)
     end
 
     it 'instantiates using default_metaschema' do
@@ -589,7 +589,8 @@ describe JSI::Schema do
         end
         msg = <<~MSG
           subschema is not a schema at pointer: /foo
-          \#{<JSI>}
+          \#{<JSI*0>}
+          its schemas (which should include a Meta-Schema): JSI::SchemaSet[]
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -604,6 +605,15 @@ describe JSI::Schema do
         msg = <<~MSG
           subschema is not a schema at pointer: /properties
           \#{<JSI (JSI::JSONSchemaDraft07::Properties)>}
+          its schemas (which should include a Meta-Schema): JSI::SchemaSet[
+            \#{<JSI:MSN (JSI::JSONSchemaDraft07) Schema>
+              "type" => "object",
+              "additionalProperties" => \#{<JSI:MSN (JSI::JSONSchemaDraft07) Schema>
+                "$ref" => "#"
+              },
+              "default" => \#{<JSI:MSN (JSI::JSONSchemaDraft07::Default)>}
+            }
+          ]
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -720,35 +730,35 @@ describe JSI::Schema do
     end
 
     it '#inspect' do
-      assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaDraft06::Type, JSI::JSONSchemaDraft06::Type::Array)> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaDraft06::Items, JSI::JSONSchemaDraft06) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaDraft06::Items, JSI::JSONSchemaDraft06::SchemaArray)> #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency, JSI::JSONSchemaDraft06::StringArray)> "b"]}}, #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency, JSI::JSONSchemaDraft06) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaDraft06::Enum)>]}}}), schema.inspect)
+      assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaDraft06::Type + JSI::JSONSchemaDraft06::Type::Array)> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaDraft06 + 1) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaDraft06::Items + JSI::JSONSchemaDraft06::SchemaArray)> #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency + JSI::JSONSchemaDraft06::StringArray)> "b"]}}, #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaDraft06 + 1) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaDraft06::Enum)>]}}}), schema.inspect)
     end
     it '#pretty_print' do
       pp = <<~PP
         \#{<JSI (JSI::JSONSchemaDraft06) Schema>
           "$schema" => "http://json-schema.org/draft-06/schema",
           "$id" => "http://jsi/schema/stringification",
-          "type" => #[<JSI (JSI::JSONSchemaDraft06::Type, JSI::JSONSchemaDraft06::Type::Array)>
+          "type" => #[<JSI (JSI::JSONSchemaDraft06::Type + JSI::JSONSchemaDraft06::Type::Array)>
             "object",
             "array"
           ],
           "properties" => \#{<JSI (JSI::JSONSchemaDraft06::Properties)>
             "foo" => \#{<JSI (JSI::JSONSchemaDraft06) Schema>
-              "items" => \#{<JSI (JSI::JSONSchemaDraft06::Items, JSI::JSONSchemaDraft06) Schema>
+              "items" => \#{<JSI (JSI::JSONSchemaDraft06 + 1) Schema>
                 "$ref" => "#/definitions/no"
               }
             }
           },
-          "items" => #[<JSI (JSI::JSONSchemaDraft06::Items, JSI::JSONSchemaDraft06::SchemaArray)>
+          "items" => #[<JSI (JSI::JSONSchemaDraft06::Items + JSI::JSONSchemaDraft06::SchemaArray)>
             \#{<JSI (JSI::JSONSchemaDraft06) Schema>
               "dependencies" => \#{<JSI (JSI::JSONSchemaDraft06::Dependencies)>
-                "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency, JSI::JSONSchemaDraft06::StringArray)>
+                "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency + JSI::JSONSchemaDraft06::StringArray)>
                   "b"
                 ]
               }
             },
             \#{<JSI (JSI::JSONSchemaDraft06) Schema>
               "dependencies" => \#{<JSI (JSI::JSONSchemaDraft06::Dependencies)>
-                "a" => \#{<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency, JSI::JSONSchemaDraft06) Schema>}
+                "a" => \#{<JSI (JSI::JSONSchemaDraft06 + 1) Schema>}
               }
             }
           ],
@@ -929,6 +939,7 @@ describe JSI::Schema do
             :keyword => "type",
             :schema => schema,
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
+            :child_errors => Set[],
           }),
         ], result.validation_errors)
         assert_equal(Set[], result.schema_issues)

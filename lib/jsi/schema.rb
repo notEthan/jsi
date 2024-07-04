@@ -34,6 +34,9 @@ module JSI
     class NotASchemaError < Error
     end
 
+    class NotAMetaSchemaError < TypeError
+    end
+
     # an exception raised when we are unable to resolve a schema reference
     class ReferenceError < StandardError
     end
@@ -325,7 +328,7 @@ module JSI
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
-            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema")
+            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", schema_registry: schema_registry)
           elsif self.default_metaschema
             self.default_metaschema
           else
@@ -376,11 +379,10 @@ module JSI
       # ensure the given object is a JSI Schema
       #
       # @param schema [Object] the thing the caller wishes to ensure is a Schema
-      # @param msg [#to_s, #to_ary] lines of the error message preceding the pretty-printed schema param
-      #   if the schema param is not a schema
+      # @yieldreturn [#to_s, #to_ary] first line(s) of the error message, overriding the default
       # @raise [NotASchemaError] if the schema param is not a schema
       # @return [Schema] the given schema
-      def ensure_schema(schema, msg: "indicated object is not a schema:", reinstantiate_as: nil)
+      def ensure_schema(schema, reinstantiate_as: nil)
         if schema.is_a?(Schema)
           schema
         else
@@ -388,7 +390,9 @@ module JSI
             # TODO warn; behavior is undefined and I hate this implementation
 
             result_schema_indicated_schemas = SchemaSet.new(schema.jsi_indicated_schemas + reinstantiate_as)
-            result_schema_applied_schemas = result_schema_indicated_schemas.inplace_applicator_schemas(schema.jsi_node_content)
+            result_schema_applied_schemas = result_schema_indicated_schemas.each_yield_set do |is, y|
+              is.each_inplace_applicator_schema(schema.jsi_node_content, &y)
+            end
 
             result_schema_class = JSI::SchemaClasses.class_for_schemas(result_schema_applied_schemas,
               includes: SchemaClasses.includes_for(schema.jsi_node_content),
@@ -405,10 +409,13 @@ module JSI
               jsi_root_node: schema.jsi_ptr.root? ? nil : schema.jsi_root_node, # bad
             )
           else
-            raise(NotASchemaError, [
-              *msg,
-              schema.pretty_inspect.chomp,
-            ].join("\n"))
+            msg = []
+            msg.concat([*(block_given? ? yield : "indicated object is not a schema:")])
+            msg << schema.pretty_inspect.chomp
+            if schema.is_a?(Base)
+              msg << "its schemas (which should include a Meta-Schema): #{schema.jsi_schemas.pretty_inspect.chomp}"
+            end
+            raise(NotASchemaError, msg.compact.join("\n"))
           end
         end
       end
@@ -423,7 +430,7 @@ module JSI
         if metaschema.respond_to?(:to_str)
           schema = Schema::Ref.new(metaschema, schema_registry: schema_registry).deref_schema
           if !schema.describes_schema?
-            raise(TypeError, [name, "URI indicates a schema that is not a meta-schema: #{metaschema.pretty_inspect.chomp}"].compact.join(" "))
+            raise(NotAMetaSchemaError, [name, "URI indicates a schema that is not a meta-schema: #{metaschema.pretty_inspect.chomp}"].compact.join(" "))
           end
           schema
         elsif metaschema.is_a?(SchemaModule::MetaSchemaModule)
@@ -431,7 +438,7 @@ module JSI
         elsif metaschema.is_a?(Schema::MetaSchema)
           metaschema
         else
-          raise(TypeError, "#{name || "param"} does not indicate a meta-schema: #{metaschema.pretty_inspect.chomp}")
+          raise(NotAMetaSchemaError, "#{name || "param"} does not indicate a meta-schema: #{metaschema.pretty_inspect.chomp}")
         end
       end
     end
@@ -556,7 +563,7 @@ module JSI
     # applicators of this schema which apply to the given instance.
     #
     # @param (see SchemaSet#new_jsi)
-    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   inplace applicators of this schema.
     def new_jsi(instance, **kw)
       SchemaSet[self].new_jsi(instance, **kw)
@@ -604,6 +611,7 @@ module JSI
         schema_implementation_modules.each do |mod|
           jsi_schema_module.include(mod)
         end
+        proc { |metaschema| jsi_schema_module.send(:define_method, :metaschema) { metaschema } }[self]
         jsi_schema_module.extend(SchemaModule::MetaSchemaModule)
       end
 
@@ -637,10 +645,7 @@ module JSI
     # @param subptr [JSI::Ptr, #to_ary] a relative pointer, or array of tokens, pointing to the subschema
     # @return [JSI::Schema] the subschema at the location indicated by subptr. self if subptr is empty.
     def subschema(subptr)
-          subptr = Ptr.ary_ptr(subptr)
-          Schema.ensure_schema(jsi_descendent_node(subptr), msg: [
-            "subschema is not a schema at pointer: #{subptr.pointer}"
-          ])
+      Schema.ensure_schema(jsi_descendent_node(subptr)) { "subschema is not a schema at pointer: #{Ptr.ary_ptr(subptr).pointer}" }
     end
 
     # a schema in the same schema resource as this one (see {#schema_resource_root}) at the given
@@ -649,26 +654,14 @@ module JSI
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-          ptr = Ptr.ary_ptr(ptr)
           Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
             reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
     end
 
-    # a set of inplace applicator schemas of this schema (from $ref, allOf, etc.) which apply to the
-    # given instance.
-    #
-    # the returned set will contain this schema itself, unless this schema contains a $ref keyword.
-    #
-    # @param instance [Object] the instance to check any applicators against
-    # @return [JSI::SchemaSet] matched applicator schemas
-    def inplace_applicator_schemas(instance)
-      SchemaSet.new(each_inplace_applicator_schema(instance))
-    end
-
     # yields each inplace applicator schema which applies to the given instance.
     #
-    # @param instance (see #inplace_applicator_schemas)
+    # @param instance [Object] the instance to check any applicators against
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
@@ -784,9 +777,9 @@ module JSI
         validate_only: false
     )
       if validate_only
-        result = JSI::Validation::VALID
+        result = JSI::Validation::Result::Valid.new
       else
-        result = JSI::Validation::FullResult.new
+        result = JSI::Validation::Result::Full.new
       end
       result_builder = result.class::Builder.new(
         result: result,

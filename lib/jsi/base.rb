@@ -453,8 +453,10 @@ module JSI
 
     # subscripts to return a child value identified by the given token.
     #
-    # @param token [String, Integer, Object] an array index or hash key (JSON object property name)
-    #   of the instance identifying the child value
+    # @param token [String, Integer, Range, Object] Identifies the child or children to return.
+    #   Typically an array index or hash key (JSON object property name) of the instance.
+    #   For an array instance, this may also be a Range (in which case an Array of children is returned)
+    #   or a negative index; these behave as Array#[] does.
     # @param as_jsi [:auto, true, false] (default is `:auto`)
     #   Whether to return the child as a JSI. One of:
     #
@@ -486,7 +488,7 @@ module JSI
     #   defaults are specified across those schemas), nil is returned.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
-    # @return [JSI::Base, Object, nil] the child value identified by the subscript token
+    # @return [Base, Object, Array, nil] the child or children identified by `token`
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
@@ -629,16 +631,29 @@ module JSI
       JMESPath.search(expression, self, **runtime_options)
     end
 
+    # A JSI whose node content is a duplicate of this JSI's (using its #dup).
+    #
+    # Note that immutable JSIs are not made mutable with #dup.
+    # The content's #dup may return an unfrozen copy, but instantiating a modified
+    # copy of this JSI involves transforming the content to immutable again
+    # (using our {#jsi_content_to_immutable}).
+    # @return [Base]
     def dup
       jsi_modified_copy(&:dup)
     end
 
-    # a string representing this JSI, indicating any named schemas and inspecting its instance
+    # A string indicating this JSI's schemas, briefly, and its content.
+    #
+    # If described by a schema with a named schema module, that is shown.
+    # The number of schemas describing this JSI is indicated.
+    #
+    # If this JSI is a simple type, the node's content is inspected; if complex, its children are inspected.
     # @return [String]
     def inspect
       -"\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
     end
 
+    # See #inspect
     def to_s
       inspect
     end
@@ -659,11 +674,45 @@ module JSI
     # @private
     # @return [Array<String>]
     def jsi_object_group_text
-      schema_names = jsi_schemas.map { |schema| schema.jsi_schema_module.name_from_ancestor || schema.schema_uri }.compact
+      jsi_schemas = self.jsi_schemas || Util::EMPTY_SET # for debug during MSN initialize, may not be set yet
+      schemas_priorities = jsi_schemas.each_with_index.map do |schema, i|
+        if schema.describes_schema?
+          [0, i, schema]
+        elsif schema.jsi_schema_module.name
+          [1, i, schema]
+        elsif schema.jsi_schema_module.name_from_ancestor
+          [2, i, schema]
+        elsif schema.schema_absolute_uri
+          [3, i, schema]
+        elsif schema.schema_uri
+          [4, i, schema]
+        elsif !schema.respond_to?(:to_hash)
+          # boolean
+          [9, i, schema]
+        elsif schema.empty?
+          [8, i, schema]
+        elsif schema.all? { |k, _| k == '$ref' || k == '$dynamicRef' }
+          [7, i, schema]
+        else
+          [5, i, schema]
+        end
+      end.sort
+
+      schema_names = []
+      schemas_priorities.each do |(priority, _idx, schema)|
+        if priority == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
+          name = schema.jsi_schema_module.name_from_ancestor || schema.schema_uri
+          name ||= schema.jsi_ptr.uri if priority == 0
+          schema_names << name if name
+        end
+      end
+
       if schema_names.empty?
-        class_txt = "JSI"
+        schemas_txt = -"*#{jsi_schemas.size}"
+      elsif schema_names.size == jsi_schemas.size
+        schemas_txt = -" (#{schema_names.join(' + ')})"
       else
-        class_txt = -"JSI (#{schema_names.join(', ')})"
+        schemas_txt = -" (#{schema_names.join(' + ')} + #{jsi_schemas.size - schema_names.size})"
       end
 
       if (is_a?(ArrayNode) || is_a?(HashNode)) && ![Array, Hash].include?(jsi_node_content.class)
@@ -677,7 +726,7 @@ module JSI
       end
 
       [
-        class_txt,
+        -"JSI#{is_a?(MetaSchemaNode) ? ":MSN" : ""}#{schemas_txt}",
         is_a?(Schema::MetaSchema) ? "Meta-Schema" : is_a?(Schema) ? "Schema" : nil,
         *content_txt,
       ].compact.freeze
@@ -745,7 +794,9 @@ module JSI
     end
 
     def jsi_child_applied_schemas_compute(token: , child_indicated_schemas: , child_content: )
-      child_indicated_schemas.inplace_applicator_schemas(child_content)
+      child_indicated_schemas.each_yield_set do |cis, y|
+        cis.each_inplace_applicator_schema(child_content, &y)
+      end
     end
 
     def jsi_child_as_jsi(child_content, child_schemas, as_jsi)

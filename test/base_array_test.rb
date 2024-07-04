@@ -87,7 +87,7 @@ describe 'JSI::Base array' do
     end
   end
 
-  describe '#[] with a default that is a basic type' do
+  describe("#[] with a default that is a simple type") do
     let(:schema_content) do
       {
         'type' => 'array',
@@ -104,14 +104,14 @@ describe 'JSI::Base array' do
         assert_nil(subject[2, use_default: false])
       end
     end
-    describe 'nondefault value (basic type)' do
+    describe("nondefault value (simple type)") do
       let(:instance) { ['who'] }
       it 'returns the nondefault value' do
         assert_equal('who', subject[0])
         assert_equal('who', subject[0, use_default: false])
       end
     end
-    describe 'nondefault value (nonbasic type)' do
+    describe("nondefault value (complex type)") do
       let(:instance) { [[2]] }
       it 'returns the nondefault value' do
         assert_schemas([schema.items], subject[0])
@@ -120,23 +120,23 @@ describe 'JSI::Base array' do
     end
 
     describe 'negative index out of range' do
-      it 'returns nil, does not try to insert basic default' do
+      it("returns nil, does not try to insert simple default") do
         assert_nil(subject[-5])
       end
     end
 
     describe 'Range' do
-      # it does not try to insert basic defaults, so behavior is the same as tests without a default value.
+      # it does not try to insert simple defaults, so behavior is the same as tests without a default value.
       BaseArrayTest.test_ranges(self)
     end
 
     describe 'arbitrary object' do
-      it 'raises, does not try to insert basic default' do
+      it("raises, does not try to insert simple default") do
         assert_raises(TypeError) { subject[Object.new] }
       end
     end
   end
-  describe '#[] with a default that is a nonbasic type' do
+  describe("#[] with a default that is a complex type") do
     let(:schema_content) do
       {
         'type' => 'array',
@@ -154,14 +154,14 @@ describe 'JSI::Base array' do
         assert_equal({'foo' => 2}, subject[1].jsi_instance)
       end
     end
-    describe 'nondefault value (basic type)' do
+    describe("nondefault value (simple type)") do
       let(:instance) { [true, 'who'] }
       it 'returns the nondefault value' do
         assert_equal('who', subject[1])
         assert_equal('who', subject[1, use_default: false])
       end
     end
-    describe 'nondefault value (nonbasic type)' do
+    describe("nondefault value (complex type)") do
       let(:instance) { [true, [2]] }
       it 'returns the nondefault value' do
         assert_schemas([schema.items], subject[1])
@@ -250,18 +250,18 @@ describe 'JSI::Base array' do
     end
     describe '#inspect, #to_s' do
       it 'inspects' do
-        assert_equal("#[<JSI> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
+        assert_equal("#[<JSI*1> \"foo\", \#{<JSI*1> \"lamp\" => #[<JSI*0> 3]}, #[<JSI*1> \"q\", \"r\"], \#{<JSI*0> \"four\" => 4}]", subject.inspect)
         assert_equal(subject.inspect, subject.to_s)
       end
     end
     describe '#pretty_print' do
       it 'pretty prints' do
         pp = <<~PP
-          #[<JSI>
+          #[<JSI*1>
             "foo",
-            \#{<JSI> "lamp" => #[<JSI> 3]},
-            #[<JSI> "q", "r"],
-            \#{<JSI> "four" => 4}
+            \#{<JSI*1> "lamp" => #[<JSI*0> 3]},
+            #[<JSI*1> "q", "r"],
+            \#{<JSI*0> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -280,7 +280,7 @@ describe 'JSI::Base array' do
       let(:instance) { SortOfArray.new(default_instance) }
       let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
-        assert_equal("#[<JSI SortOfArray> \"foo\", \#{<JSI> \"lamp\" => #[<JSI> 3]}, #[<JSI> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
+        assert_equal("#[<JSI*1 SortOfArray> \"foo\", \#{<JSI*1> \"lamp\" => #[<JSI*0> 3]}, #[<JSI*1> \"q\", \"r\"], \#{<JSI*0> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print SortOfArray' do
@@ -288,11 +288,11 @@ describe 'JSI::Base array' do
       let(:subject_opt) { {to_immutable: nil} }
       it 'pretty prints' do
         pp = <<~PP
-          #[<JSI SortOfArray>
+          #[<JSI*1 SortOfArray>
             "foo",
-            \#{<JSI> "lamp" => #[<JSI> 3]},
-            #[<JSI> "q", "r"],
-            \#{<JSI> "four" => 4}
+            \#{<JSI*1> "lamp" => #[<JSI*0> 3]},
+            #[<JSI*1> "q", "r"],
+            \#{<JSI*0> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -301,7 +301,7 @@ describe 'JSI::Base array' do
     describe '#inspect with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_array/withid', 'items' => [{}, {}, {}]} }
       it 'inspects' do
-        assert_equal("#[<JSI (http://jsi/base_array/withid)> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
+        assert_equal("#[<JSI (http://jsi/base_array/withid)> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI*0> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI*0> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
@@ -310,9 +310,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid)>
             "foo",
-            \#{<JSI (http://jsi/base_array/withid#/items/1)> "lamp" => #[<JSI> 3]},
+            \#{<JSI (http://jsi/base_array/withid#/items/1)> "lamp" => #[<JSI*0> 3]},
             #[<JSI (http://jsi/base_array/withid#/items/2)> "q", "r"],
-            \#{<JSI> "four" => 4}
+            \#{<JSI*0> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)
@@ -323,7 +323,7 @@ describe 'JSI::Base array' do
       let(:instance) { SortOfArray.new(default_instance) }
       let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
-        assert_equal("#[<JSI (http://jsi/base_array/withid) SortOfArray> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI> \"four\" => 4}]", subject.inspect)
+        assert_equal("#[<JSI (http://jsi/base_array/withid) SortOfArray> \"foo\", \#{<JSI (http://jsi/base_array/withid#/items/1)> \"lamp\" => #[<JSI*0> 3]}, #[<JSI (http://jsi/base_array/withid#/items/2)> \"q\", \"r\"], \#{<JSI*0> \"four\" => 4}]", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfArray' do
@@ -334,9 +334,9 @@ describe 'JSI::Base array' do
         pp = <<~PP
           #[<JSI (http://jsi/base_array/withid) SortOfArray>
             "foo",
-            \#{<JSI (http://jsi/base_array/withid#/items/1)> "lamp" => #[<JSI> 3]},
+            \#{<JSI (http://jsi/base_array/withid#/items/1)> "lamp" => #[<JSI*0> 3]},
             #[<JSI (http://jsi/base_array/withid#/items/2)> "q", "r"],
-            \#{<JSI> "four" => 4}
+            \#{<JSI*0> "four" => 4}
           ]
           PP
         assert_equal(pp, subject.pretty_inspect)

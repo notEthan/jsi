@@ -75,23 +75,27 @@ module JSI
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
       )
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
-        bootstrap_schemas = bootstrap_indicated_schemas.inplace_applicator_schemas(instance_for_schemas)
+        bootstrap_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
+          is.each_inplace_applicator_schema(instance_for_schemas, &y)
+        end
         child_indicated_schemas = bootstrap_schemas.child_applicator_schemas(tok, instance_for_schemas)
         instance_for_schemas = instance_for_schemas[tok]
         child_indicated_schemas
       end
       @indicated_schemas_map = jsi_memomap { bootstrap_schemas_to_msn(our_bootstrap_indicated_schemas) }
 
-      our_bootstrap_schemas = our_bootstrap_indicated_schemas.inplace_applicator_schemas(instance_for_schemas)
+      our_bootstrap_schemas = our_bootstrap_indicated_schemas.each_yield_set do |is, y|
+        is.each_inplace_applicator_schema(instance_for_schemas, &y)
+      end
 
       describes_self = false
       our_bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the meta-schema, i.e. this is a schema
-          extend Schema
           schema_implementation_modules.each do |schema_implementation_module|
             extend schema_implementation_module
           end
+          extend(Schema)
           extends += schema_implementation_modules
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
@@ -183,21 +187,6 @@ module JSI
         end
         modified_jsi_root_node.jsi_descendent_node(jsi_ptr)
       end
-    end
-
-    # @private
-    # @return [Array<String>]
-    def jsi_object_group_text
-      if jsi_schemas && jsi_schemas.any?
-        class_n_schemas = -"#{self.class} (#{jsi_schemas.map { |s| s.jsi_schema_module.name_from_ancestor || s.jsi_ptr.uri }.join(' ')})"
-      else
-        class_n_schemas = self.class.to_s
-      end
-      [
-        class_n_schemas,
-        is_a?(Schema::MetaSchema) ? "Meta-Schema" : is_a?(Schema) ? "Schema" : nil,
-        *(jsi_node_content.respond_to?(:jsi_object_group_text) ? jsi_node_content.jsi_object_group_text : nil),
-      ].compact.freeze
     end
 
     # see {Util::Private::FingerprintHash}

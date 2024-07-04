@@ -156,7 +156,7 @@ describe 'JSI::SchemaRegistry' do
       msg = <<~MSG
         URI http://jsi/schema_registry/6d86 was registered with autoload_uri but the result did not contain a resource with that URI.
         the resource resulting from autoload_uri was:
-        \#{<JSI>}
+        \#{<JSI*1>}
         MSG
       assert_equal(msg.chomp, err.message)
     end

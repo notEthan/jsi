@@ -93,7 +93,7 @@ module JSI
     #   guaranteed to be immutable, as well as any modified copies of the instance.
     # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
     #   The instance content will be transformed with `to_immutable` if the JSI will be immutable.
-    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   inplace applicators of the schemas in this set.
     def new_jsi(instance,
         uri: nil,
@@ -107,7 +107,10 @@ module JSI
 
       instance = to_immutable.call(instance) if !mutable && to_immutable
 
-      applied_schemas = inplace_applicator_schemas(instance)
+      applied_schemas = SchemaSet.build do |y|
+        c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
+        each { |is| is.each_inplace_applicator_schema(instance, &c) }
+      end
 
       if uri
         unless uri.respond_to?(:to_str)
@@ -133,30 +136,6 @@ module JSI
       schema_registry.register(jsi) if register && schema_registry
 
       jsi
-    end
-
-    # a set of inplace applicator schemas of each schema in this set which apply to the given instance.
-    # (see {Schema#inplace_applicator_schemas})
-    #
-    # @param instance (see Schema#inplace_applicator_schemas)
-    # @return [JSI::SchemaSet]
-    def inplace_applicator_schemas(instance)
-      SchemaSet.new(each_inplace_applicator_schema(instance))
-    end
-
-    # yields each inplace applicator schema which applies to the given instance.
-    #
-    # @param instance (see Schema#inplace_applicator_schemas)
-    # @yield [JSI::Schema]
-    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def each_inplace_applicator_schema(instance, &block)
-      return to_enum(__method__, instance) unless block
-
-      each do |schema|
-        schema.each_inplace_applicator_schema(instance, &block)
-      end
-
-      nil
     end
 
     # a set of child applicator subschemas of each schema in this set which apply to the child
@@ -190,7 +169,7 @@ module JSI
     # @param instance [Object] the instance to validate against our schemas
     # @return [JSI::Validation::Result]
     def instance_validate(instance)
-      inject(Validation::FullResult.new) do |result, schema|
+      inject(Validation::Result::Full.new) do |result, schema|
         result.merge(schema.instance_validate(instance))
       end.freeze
     end
@@ -200,6 +179,16 @@ module JSI
     # @return [Boolean]
     def instance_valid?(instance)
       all? { |schema| schema.instance_valid?(instance) }
+    end
+
+    # Builds a SchemaSet, yielding each schema and a callable to be called with each schema of the resulting SchemaSet.
+    # @yield [Schema, #to_proc]
+    # @return [SchemaSet]
+    def each_yield_set(&block)
+      self.class.new(Enumerator.new do |y|
+        c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
+        each { |schema| yield(schema, c) }
+      end)
     end
 
     # @return [String]

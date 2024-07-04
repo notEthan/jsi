@@ -126,7 +126,7 @@ describe JSI::Base do
       let(:subject_opt) { {to_immutable: nil} }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI> "foo" => "bar"}), err.message)
+        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI*1> "foo" => "bar"}), err.message)
       end
     end
     describe 'Schema invalid' do
@@ -398,7 +398,7 @@ describe JSI::Base do
         end
         assert_equal(schema.new_jsi(['{}']), modified)
       end
-      it 'changes from complex to a basic type' do
+      it("changes from complex to a simple type") do
         mod = subject[0].jsi_modified_copy { |o| o.to_s }
         assert_equal(schema.new_jsi(['{}'])[0, as_jsi: true], mod)
       end
@@ -462,6 +462,7 @@ describe JSI::Base do
             keyword: "type",
             schema: schema,
             instance_ptr: JSI::Ptr[], instance_document: instance,
+            child_errors: Set[],
           }),
         ], result.validation_errors)
         assert_equal(Set[], result.schema_issues)
@@ -506,6 +507,7 @@ describe JSI::Base do
               keyword: "type",
               schema: schema["properties"]["foo"],
               instance_ptr: JSI::Ptr["foo"], instance_document: instance,
+              child_errors: Set[],
             }),
           ], subject.foo.jsi_validate.validation_errors)
           assert_equal(Set[], subject.bar.jsi_validate.validation_errors)
@@ -515,6 +517,7 @@ describe JSI::Base do
               keyword: "type",
               schema: schema["properties"]["baz"],
               instance_ptr: JSI::Ptr["baz"], instance_document: instance,
+              child_errors: Set[],
             }),
           ], subject.baz.jsi_validate.validation_errors)
           assert_equal(Set[
@@ -523,38 +526,46 @@ describe JSI::Base do
               keyword: "not",
               schema: schema["additionalProperties"],
               instance_ptr: JSI::Ptr["more"], instance_document: instance,
+              child_errors: Set[],
             }),
           ], subject['more'].jsi_validate.validation_errors)
           assert_equal(Set[
-            JSI::Validation::Error.new({
-              message: "instance type does not match `type` value",
-              keyword: "type",
-              schema: schema["properties"]["foo"],
-              instance_ptr: JSI::Ptr["foo"], instance_document: instance,
-            }),
-            JSI::Validation::Error.new({
-              message: "instance type does not match `type` value",
-              keyword: "type",
-              schema: schema["properties"]["baz"],
-              instance_ptr: JSI::Ptr["baz"], instance_document: instance,
-            }),
             JSI::Validation::Error.new({
               message: "instance object properties are not all valid against corresponding `properties` schema values",
               keyword: "properties",
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
-            }),
-            JSI::Validation::Error.new({
-              message: "instance is valid against the schema specified as `not` value",
-              keyword: "not",
-              schema: schema["additionalProperties"],
-              instance_ptr: JSI::Ptr["more"], instance_document: instance,
+              child_errors: Set[
+                JSI::Validation::Error.new({
+                  message: "instance type does not match `type` value",
+                  keyword: "type",
+                  schema: schema["properties"]["foo"],
+                  instance_ptr: JSI::Ptr["foo"], instance_document: instance,
+                  child_errors: Set[],
+                }),
+                JSI::Validation::Error.new({
+                  message: "instance type does not match `type` value",
+                  keyword: "type",
+                  schema: schema["properties"]["baz"],
+                  instance_ptr: JSI::Ptr["baz"], instance_document: instance,
+                  child_errors: Set[],
+                }),
+              ],
             }),
             JSI::Validation::Error.new({
               message: "instance object additional properties are not all valid against `additionalProperties` schema value",
               keyword: "additionalProperties",
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
+              child_errors: Set[
+                JSI::Validation::Error.new({
+                  message: "instance is valid against the schema specified as `not` value",
+                  keyword: "not",
+                  schema: schema["additionalProperties"],
+                  instance_ptr: JSI::Ptr["more"], instance_document: instance,
+                  child_errors: Set[],
+                }),
+              ],
             }),
           ], subject.jsi_validate.validation_errors)
         end
@@ -647,9 +658,9 @@ describe JSI::Base do
 
           refute_respond_to(subject.method(:initialize).owner, :jsi_property_readers)
           assert_equal('hi', subject['initialize'])
-          assert_equal(%q(#{<JSI> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
+          assert_equal(%q(#{<JSI*1> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
-          assert_equal(%Q(\#{<JSI>\n  "foo" => "bar",\n  "to_ary" => "not ary",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
+          assert_equal(%Q(\#{<JSI*1>\n  "foo" => "bar",\n  "to_ary" => "not ary",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
@@ -763,7 +774,7 @@ describe JSI::Base do
     let(:instance) { Object.new }
     let(:subject_opt) { {to_immutable: nil} }
     it 'inspects' do
-      assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.inspect)
+      assert_match(%r(\A\#<JSI\*1\ \#<Object:[^<>]*>>\z), subject.inspect)
       assert_equal(subject.inspect, subject.to_s)
     end
   end
@@ -772,7 +783,7 @@ describe JSI::Base do
     let(:instance) { Object.new }
     let(:subject_opt) { {to_immutable: nil} }
     it 'pretty_prints' do
-      assert_match(%r(\A\#<JSI\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
+      assert_match(%r(\A\#<JSI\*1\ \#<Object:[^<>]*>>\z), subject.pretty_inspect.chomp)
     end
   end
   describe 'name_from_ancestor #inspect #pretty_print' do
@@ -807,6 +818,17 @@ describe JSI::Base do
       assert_equal(pp, phonebook.pretty_inspect)
     end
   end
+
+  it("indicates that a Base is a meta-schema") do
+    # hack together a meta-schema that is not a MetaSchemaNode to test Base
+    ms = JSI.new_schema({
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "tag:u20x",
+    })
+    ms.describes_schema!([])
+    assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft07) Meta-Schema> "$schema" => "http://json-schema.org/draft-07/schema#", "$id" => "tag:u20x"}), ms.inspect)
+  end
+
   describe '#as_json' do
     it '#as_json' do
       assert_equal({'a' => 'b'}, JSI::JSONSchemaDraft07.new_schema({'type' => 'object'}).new_jsi({'a' => 'b'}).as_json)

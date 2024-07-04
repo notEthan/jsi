@@ -124,6 +124,11 @@ module JSI
         self.class.attribute_keys
       end
 
+      # @return [Hash]
+      def to_h
+        @attributes.frozen? ? @attributes : @attributes.dup.freeze
+      end
+
       def freeze
         @attributes.freeze
         super

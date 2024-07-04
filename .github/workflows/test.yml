@@ -3,6 +3,25 @@ on:
 - push
 - pull_request
 jobs:
+  gig:
+    runs-on: ubuntu-latest
+
+    env:
+      BUNDLE_WITHOUT: dev test extdep doc # ruby/setup-ruby's invocation of bundle install will be without these groups
+
+    steps:
+
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: head
+        bundler-cache: true
+
+    - run: bundle exec rake gig
+
   test:
     strategy:
       fail-fast: false
@@ -37,6 +56,8 @@ jobs:
     - run: "if (( RANDOM % 2 )); then bin/chkbug.rb; fi"
 
     - run: bundle exec rake test
+
+    - run: bundle exec ruby readme.rb
 
     - name: Report to Coveralls
       uses: coverallsapp/github-action@v2.3.0
