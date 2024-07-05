@@ -151,6 +151,8 @@ class JSISpec < Minitest::Spec
   if ENV['JSI_TEST_ALPHA']
     # :nocov:
     define_singleton_method(:test_order) { :alpha }
+
+    Minitest::Runnable.runnables.define_singleton_method(:shuffle) { self }
     # :nocov:
   end
 
