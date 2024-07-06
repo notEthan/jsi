@@ -9,7 +9,7 @@ describe JSI::Schema do
       let(:schema_content) do
         {
           "$schema": "http://json-schema.org/draft-06/schema#",
-          "$id": "http://jsi/npjv",
+          "title": "npjv",
           "properties": {
             "foo": {}
           }

@@ -564,8 +564,8 @@ describe JSI::Schema do
     end
 
     it 'returns the same module for equal schemas' do
-      schema = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
-      schema_again = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
+      schema = JSI::JSONSchemaDraft07.new_schema({'title' => 'jsi_schema_module_eq'})
+      schema_again = JSI::JSONSchemaDraft07.new_schema({'title' => 'jsi_schema_module_eq'})
       assert_equal(schema.jsi_schema_module, schema_again.jsi_schema_module)
     end
   end
