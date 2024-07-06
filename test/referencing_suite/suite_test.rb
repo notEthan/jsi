@@ -41,9 +41,6 @@ describe("JSON Referencing Test Suite") do
                   raise(Bug) if curr_test['then']
                   begin
                     resolved_schema = ref.deref_schema
-                    if resolved_schema['$ref']
-                      skip("unsupported: id is ignored when $ref is a sibling")
-                    end
                     assert(false, [
                       "expected resolution to error",
                       "test: #{curr_test.pretty_inspect.chomp}",
