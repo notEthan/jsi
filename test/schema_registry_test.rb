@@ -60,9 +60,18 @@ describe 'JSI::SchemaRegistry' do
 
     it "registers the same schema twice" do
       uri = 'http://jsi/schema_registry/r3fh'
-      schema_registry.register(JSI::JSONSchemaDraft07.new_schema({'$id' => uri}))
-      schema_registry.register(JSI::JSONSchemaDraft07.new_schema({'$id' => uri}))
-      assert_equal(JSI::JSONSchemaDraft07.new_schema({'$id' => uri}), schema_registry.find(uri))
+      schema = JSI::JSONSchemaDraft07.new_schema({'$id' => uri}, register: false)
+      schema_registry.register(schema)
+      schema_registry.register(schema)
+    end
+
+    it("registers two equal schemas") do
+      uri = 'http://jsi/schema_registry/r3fi'
+      schema = JSI::JSONSchemaDraft07.new_schema({'$id' => uri}, register: false)
+      schema_registry.register(schema)
+      assert_raises(JSI::SchemaRegistry::Collision) do
+        schema_registry.register(JSI::JSONSchemaDraft07.new_schema({'$id' => uri}))
+      end
     end
 
     it "registers two different things with the same URI" do

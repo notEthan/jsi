@@ -155,7 +155,7 @@ module JSI
       @resources_mutex.synchronize do
         uri = registration_uri(uri)
         if @resources.key?(uri)
-          if @resources[uri] != resource
+          if !@resources[uri].equal?(resource)
             raise(Collision, "URI collision on #{uri}.\nexisting:\n#{@resources[uri].pretty_inspect.chomp}\nnew:\n#{resource.pretty_inspect.chomp}")
           end
         else
