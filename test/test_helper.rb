@@ -177,6 +177,10 @@ class JSISpec < Minitest::Spec
     assert exp == act, msg
   end
 
+  def assert_enum_equal(exp, act)
+    assert_equal(exp.to_a, act.to_a)
+  end
+
   def assert_match matcher, obj, msg = nil
     msg = message(msg) do
       [].tap do |ms|
