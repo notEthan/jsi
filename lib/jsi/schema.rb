@@ -498,16 +498,8 @@ module JSI
       @schema_uris_map[]
     end
 
-    private def schema_uris_compute(**_) # TODO remove **_ eventually (keyword argument compatibility)
-        each_schema_uri.to_a
-    end
-
-    # see {#schema_uris}
     # @yield [Addressable::URI]
-    # @return [Enumerator, nil]
-    def each_schema_uri
-      return to_enum(__method__) unless block_given?
-
+    private def schema_uris_compute
       yield schema_absolute_uri if schema_absolute_uri
 
       ancestor_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
@@ -815,7 +807,7 @@ module JSI
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end
-      @schema_uris_map = jsi_memomap(&method(:schema_uris_compute))
+      @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
     end
   end
