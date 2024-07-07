@@ -149,7 +149,7 @@ module JSI
             end
 
             includes.each { |m| include(m) }
-            schemas.each { |schema| include(schema.jsi_schema_module) }
+            schemas.to_a.reverse_each { |schema| include(schema.jsi_schema_module) }
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
 
