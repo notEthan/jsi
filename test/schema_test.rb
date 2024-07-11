@@ -143,7 +143,7 @@ describe JSI::Schema do
             # no #collide
           ],
           "#/definitions/child" => [
-            # #X collides with anchor in different descendent resource
+            "http://jsi/schema_uris/q0wo#X",
             "http://jsi/schema_uris/q0wo#/definitions/child",
           ],
           "#/definitions/child/definitions/rel" => [
@@ -154,8 +154,6 @@ describe JSI::Schema do
           "#/definitions/child/definitions/rel/definitions/x" => [
             "http://jsi/schema_uris/z268#X",
             "http://jsi/schema_uris/z268#/definitions/x",
-            # no "http://jsi/schema_uris/q0wo#X"; we detect that the anchor no longer
-            # refers to self in the parent resource (it becomes ambiguous)
             "http://jsi/schema_uris/q0wo#/definitions/child/definitions/rel/definitions/x",
           ],
         }
@@ -213,16 +211,13 @@ describe JSI::Schema do
           '#/definitions/schema2/definitions/nested' => [
             "http://x.y.z/otherschema.json#bar",
             "http://x.y.z/otherschema.json#/definitions/nested",
-            "http://x.y.z/rootschema.json#bar",
             "http://x.y.z/rootschema.json#/definitions/schema2/definitions/nested",
           ],
           '#/definitions/schema2/definitions/alsonested' => [
             "http://x.y.z/t/inner.json",
             "http://x.y.z/t/inner.json#a",
             "http://x.y.z/t/inner.json#",
-            "http://x.y.z/otherschema.json#a",
             "http://x.y.z/otherschema.json#/definitions/alsonested",
-            "http://x.y.z/rootschema.json#a",
             "http://x.y.z/rootschema.json#/definitions/schema2/definitions/alsonested",
           ],
           '#/definitions/schema3' => [
@@ -278,7 +273,6 @@ describe JSI::Schema do
           '#/definitions/B/definitions/X' => [
             "http://example.com/other.json#bar",
             "http://example.com/other.json#/definitions/X",
-            "http://example.com/root.json#bar",
             "http://example.com/root.json#/definitions/B/definitions/X",
           ],
           '#/definitions/B/definitions/Y' => [
