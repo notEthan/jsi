@@ -449,6 +449,11 @@ module JSI
       dialect_invoke_each(:id).first
     end
 
+    # @return [Enumerable<String>]
+    def anchors
+      dialect_invoke_each(:anchor)
+    end
+
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
     # @return [Addressable::URI, nil]
     def schema_absolute_uri
