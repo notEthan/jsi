@@ -112,15 +112,7 @@ module JSI
         each { |is| is.each_inplace_applicator_schema(instance, &c) }
       end
 
-      if uri
-        unless uri.respond_to?(:to_str)
-          raise(TypeError, "uri must be string or Addressable::URI; got: #{uri.inspect}")
-        end
-        uri = Util.uri(uri)
-        unless uri.absolute? && !uri.fragment
-          raise(ArgumentError, "uri must be an absolute URI with no fragment; got: #{uri.inspect}")
-        end
-      end
+      uri = Util.uri(uri, nnil: false, yabs: true)
 
       jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
         includes: SchemaClasses.includes_for(instance),

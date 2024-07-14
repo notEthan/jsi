@@ -44,6 +44,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_registry: nil,
         jsi_content_to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
+        initialize_finish: true,
         jsi_root_node: nil
     )
       super(jsi_document,
@@ -55,6 +56,9 @@ module JSI
         jsi_root_node: jsi_root_node,
       )
 
+      @initialize_finished = false
+      @to_initialize_finish = []
+
       @schema_implementation_modules = schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
@@ -65,7 +69,7 @@ module JSI
 
       #chkbug raise(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
-      extends = Set[]
+      @extends = Set[]
 
       instance_for_schemas = jsi_document
       bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules)
@@ -84,38 +88,47 @@ module JSI
       end
       @indicated_schemas_map = jsi_memomap { bootstrap_schemas_to_msn(our_bootstrap_indicated_schemas) }
 
-      our_bootstrap_schemas = our_bootstrap_indicated_schemas.each_yield_set do |is, y|
+      @bootstrap_schemas = our_bootstrap_indicated_schemas.each_yield_set do |is, y|
         is.each_inplace_applicator_schema(instance_for_schemas, &y)
       end
 
-      describes_self = false
-      our_bootstrap_schemas.each do |bootstrap_schema|
+      @describes_self = false
+      @bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the meta-schema, i.e. this is a schema
           schema_implementation_modules.each do |schema_implementation_module|
             extend schema_implementation_module
           end
           extend(Schema)
-          extends += schema_implementation_modules
+          @extends += schema_implementation_modules
         end
         if bootstrap_schema.jsi_ptr == jsi_ptr
           # this is the meta-schema (it is described by itself)
-          describes_self = true
+          @describes_self = true
         end
       end
 
-      @jsi_schemas = bootstrap_schemas_to_msn(our_bootstrap_schemas)
+      @jsi_schemas = @bootstrap_schemas
+
+      jsi_initialize_finish if initialize_finish
+    end
+
+    private def jsi_initialize_finish
+      return if @initialize_finished
+      @initialize_finished = true
+
+      @jsi_schemas = bootstrap_schemas_to_msn(@bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
-      if describes_self
+      if @describes_self
         describes_schema!(schema_implementation_modules)
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
-      extends.merge(extends_for_instance)
-      extends.freeze
+      @extends.merge(extends_for_instance)
+      @extends.freeze
 
-      conflicting_modules = Set[self.class] + extends + @jsi_schemas.map(&:jsi_schema_module)
+      conflicting_modules = Set[self.class] + @extends + @jsi_schemas.map(&:jsi_schema_module)
       reader_modules = @jsi_schemas.map do |schema|
         JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
       end
@@ -131,6 +144,11 @@ module JSI
 
       @jsi_schemas.each do |schema|
         extend schema.jsi_schema_module
+      end
+
+      while !@to_initialize_finish.empty?
+        node = @to_initialize_finish.shift
+        node.send(:jsi_initialize_finish)
       end
     end
 
@@ -158,7 +176,7 @@ module JSI
 
     # see {Base#jsi_child}
     def jsi_child(token, as_jsi: )
-      child_node = @root_descendent_node_map[ptr: jsi_ptr[token]]
+      child_node = root_descendent_node(jsi_ptr[token])
 
       jsi_child_as_jsi(child_node.jsi_node_content, child_node.jsi_schemas, as_jsi) do
         child_node
@@ -222,37 +240,42 @@ module JSI
       }.freeze
     end
 
-    # note: not for root node
-    def new_node(**params)
-      MetaSchemaNode.new(jsi_document, jsi_root_node: jsi_root_node, **our_initialize_params, **params)
-    end
-
     def jsi_root_descendent_node_compute(ptr: )
       #chkbug raise(Bug) unless jsi_ptr.root?
       if ptr.root?
         self
       else
-        new_node(
+        MetaSchemaNode.new(jsi_document,
+          **our_initialize_params,
           jsi_ptr: ptr,
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
+          jsi_root_node: jsi_root_node,
+          initialize_finish: false,
         )
       end
+    end
+
+    # @param ptr [Ptr]
+    # @return [MetaSchemaNode]
+    private def root_descendent_node(ptr)
+      node = @root_descendent_node_map[
+        ptr: ptr,
+      ]
+
+      if @initialize_finished
+        node.send(:jsi_initialize_finish)
+      else
+        @to_initialize_finish.push(node)
+      end
+
+      node
     end
 
     # @param bootstrap_schemas [Enumerable<BootstrapSchema>]
     # @return [SchemaSet<MetaSchemaNode>]
     def bootstrap_schemas_to_msn(bootstrap_schemas)
       SchemaSet.new(bootstrap_schemas) do |bootstrap_schema|
-        if bootstrap_schema.jsi_ptr == jsi_ptr
-          self
-        elsif bootstrap_schema.jsi_ptr.root?
-          @jsi_root_node
-        else
-          new_node(
-            jsi_ptr: bootstrap_schema.jsi_ptr,
-            jsi_schema_base_uri: bootstrap_schema.jsi_schema_base_uri,
-          )
-        end
+        root_descendent_node(bootstrap_schema.jsi_ptr)
       end
     end
   end

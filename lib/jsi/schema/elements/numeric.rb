@@ -49,7 +49,7 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance <= value,
-              'instance is not less than or equal to `maximum` value',
+              "instance is greater than `maximum` value",
               keyword: 'maximum',
             )
           end
@@ -75,7 +75,7 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance < value,
-              'instance is not less than `exclusiveMaximum` value',
+              "instance is greater than or equal to `exclusiveMaximum` value",
               keyword: 'exclusiveMaximum',
             )
           end
@@ -101,7 +101,7 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance >= value,
-              'instance is not greater than or equal to `minimum` value',
+              "instance is less than `minimum` value",
               keyword: 'minimum',
             )
           end
@@ -127,7 +127,7 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance > value,
-              'instance is not greater than `exclusiveMinimum` value',
+              "instance is less than or equal to `exclusiveMinimum` value",
               keyword: 'exclusiveMinimum',
             )
           end

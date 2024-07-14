@@ -12,7 +12,7 @@ module JSI
         not_valid = inplace_subschema_validate(['not']).valid?
         validate(
           !not_valid,
-          'instance is valid against the schema specified as `not` value',
+          "instance is valid against `not` schema",
           keyword: 'not',
         )
       end

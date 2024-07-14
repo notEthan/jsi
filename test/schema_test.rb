@@ -159,7 +159,7 @@ describe JSI::Schema do
             "http://jsi/schema_uris/q0wo#/definitions/child/definitions/rel/definitions/x",
           ],
         }
-        all_act_uris = all_exp_uris.keys.map do |uri|
+        all_act_uris = all_exp_uris.each_key.map do |uri|
           subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
           {uri => subschema.schema_uris.map(&:to_s)}
         end.inject({}, &:update)
@@ -231,7 +231,7 @@ describe JSI::Schema do
             "http://x.y.z/rootschema.json#/definitions/schema3",
           ],
         }
-        all_act_uris = all_exp_uris.keys.map do |uri|
+        all_act_uris = all_exp_uris.each_key.map do |uri|
           subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
           {uri => subschema.schema_uris.map(&:to_s)}
         end.inject({}, &:update)
@@ -293,7 +293,7 @@ describe JSI::Schema do
             "http://example.com/root.json#/definitions/C",
           ],
         }
-        all_act_uris = all_exp_uris.keys.map do |uri|
+        all_act_uris = all_exp_uris.each_key.map do |uri|
           subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
           {uri => subschema.schema_uris.map(&:to_s)}
         end.inject({}, &:update)

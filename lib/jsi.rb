@@ -20,6 +20,11 @@ module JSI
   # @private TODO remove, any ruby without this is already long EOL
   FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
 
+  # A URI does not meet some requirement where it is used - absent
+  # when it's required, relative when it must be absolute, etc.
+  class URIError < Addressable::URI::InvalidURIError
+  end
+
   # @private
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
 
@@ -79,6 +84,7 @@ module JSI
   # @return [JSI::MetaSchemaNode + JSI::Schema::MetaSchema + JSI::Schema]
   def self.new_metaschema(metaschema_document,
       schema_implementation_modules: ,
+      schema_registry: JSI.schema_registry,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
       &block
   )
@@ -86,6 +92,7 @@ module JSI
 
     metaschema = MetaSchemaNode.new(metaschema_document,
       schema_implementation_modules: schema_implementation_modules,
+      jsi_schema_registry: schema_registry,
       jsi_content_to_immutable: to_immutable,
     )
 

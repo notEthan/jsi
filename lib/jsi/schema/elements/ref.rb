@@ -2,8 +2,8 @@
 
 module JSI
   module Schema::Elements
-    REF = element_map do
-      exclusive = true
+    # exclusive [Boolean]: whether to abort invocation of subsequent actions when a $ref is evaluated
+    REF = element_map do |exclusive: |
       Schema::Element.new do |element|
         element.add_action(:inplace_applicate) do
       if keyword?('$ref') && schema_content['$ref'].respond_to?(:to_str)
@@ -35,7 +35,7 @@ module JSI
                 )
                 validate(
                   ref_result.valid?,
-                  'instance is not valid against the schema referenced by `$ref` value',
+                  "instance is not valid against the schema referenced by `$ref`",
                   keyword: '$ref',
                   results: [ref_result],
                 )

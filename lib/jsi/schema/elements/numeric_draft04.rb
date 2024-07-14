@@ -28,7 +28,7 @@ module JSI
               # than the value of "maximum".
               validate(
                 instance < value,
-                'instance is not less than `maximum` value with `exclusiveMaximum` = true',
+                "instance is greater than or equal to `maximum` value with `exclusiveMaximum` = true",
                 keyword: 'maximum',
               )
             else
@@ -36,7 +36,7 @@ module JSI
               # valid if it is lower than, or equal to, the value of "maximum"
               validate(
                 instance <= value,
-                'instance is not less than or equal to `maximum` value',
+                "instance is greater than `maximum` value",
                 keyword: 'maximum',
               )
             end
@@ -77,7 +77,7 @@ module JSI
               # strictly greater than the value of "minimum".
               validate(
                 instance > value,
-                'instance is not greater than `minimum` value with `exclusiveMinimum` = true',
+                "instance is less than or equal to `minimum` value with `exclusiveMinimum` = true",
                 keyword: 'minimum',
               )
             else
@@ -85,7 +85,7 @@ module JSI
               # valid if it is greater than, or equal to, the value of "minimum"
               validate(
                 instance >= value,
-                'instance is not greater than or equal to `minimum` value',
+                "instance is less than `minimum` value",
                 keyword: 'minimum',
               )
             end

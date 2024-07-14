@@ -511,6 +511,26 @@ describe 'JSI Schema inplace application' do
       end
     end
   end
+
+  describe("Base class for schemas: ancestry of in-place applicators' JSI Schema Modules") do
+    let(:metaschema) { JSI::JSONSchemaDraft07 }
+    let(:schema_content) do
+      {
+        allOf: [{}, {}],
+      }
+    end
+    let(:instance) { {} }
+
+    it("methods of a schema's module override methods of modules of in-place applicators") do
+      schema.jsi_each_descendent_node.select(&:jsi_is_schema?).each do |desc_schema|
+        desc_schema.jsi_schema_module_exec do
+          define_method(:methodtest) { {schema_ptr: desc_schema.jsi_ptr} }
+        end
+      end
+      assert_schemas([schema, schema.allOf[0], schema.allOf[1]], subject)
+      assert_equal({schema_ptr: JSI::Ptr[]}, subject.methodtest)
+    end
+  end
 end
 
 $test_report_file_loaded[__FILE__]

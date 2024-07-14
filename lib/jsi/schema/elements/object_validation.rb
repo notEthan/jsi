@@ -13,7 +13,7 @@ module JSI
             # An object instance is valid against "maxProperties" if its number of properties is less than, or equal to, the value of this keyword.
             validate(
               instance.size <= value,
-              'instance object contains more properties than `maxProperties` value',
+              "instance object properties count is greater than `maxProperties` value",
               keyword: 'maxProperties',
             )
           end
@@ -38,7 +38,7 @@ module JSI
             # An object instance is valid against "minProperties" if its number of properties is greater than, or equal to, the value of this keyword.
             validate(
               instance.size >= value,
-              'instance object contains fewer properties than `minProperties` value',
+              "instance object properties count is less than `minProperties` value",
               keyword: 'minProperties',
             )
           end

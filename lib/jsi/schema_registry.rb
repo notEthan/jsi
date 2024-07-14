@@ -7,11 +7,6 @@ module JSI
     class Collision < StandardError
     end
 
-    # an exception raised when an attempt is made to access (register or find) a resource of the
-    # registry using a URI which is not absolute (it is a relative URI or it contains a fragment)
-    class NonAbsoluteURI < StandardError
-    end
-
     # an exception raised when a URI we are looking for has not been registered
     class ResourceNotFound < StandardError
       attr_accessor :uri
@@ -181,14 +176,7 @@ module JSI
     # @param uri [#to_str]
     # @return [Addressable::URI]
     def registration_uri(uri)
-      uri = Util.uri(uri)
-      if uri.fragment
-        raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access URI with fragment: #{uri}")
-      end
-      if uri.relative?
-        raise(NonAbsoluteURI, "#{self.class} only registers absolute URIs. cannot access relative URI: #{uri}")
-      end
-      uri.normalize.freeze
+      Util.uri(uri, yabs: true, tonorm: true)
     end
 
     def mutating

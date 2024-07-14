@@ -4,6 +4,7 @@ module JSI
   module Schema
     Cxt = Util::AttrStruct[*%w(
       schema
+      abort
     )]
 
     # @!attribute schema
@@ -20,6 +21,31 @@ module JSI
 
       def keyword?(keyword)
         schema.keyword?(keyword)
+      end
+
+      # @return [Boolean]
+      def keyword_value_hash?(keyword)
+        keyword?(keyword) && schema_content[keyword].respond_to?(:to_hash)
+      end
+
+      # @return [Boolean]
+      def keyword_value_ary?(keyword)
+        keyword?(keyword) && schema_content[keyword].respond_to?(:to_ary)
+      end
+
+      # @return [Boolean]
+      def keyword_value_str?(keyword)
+        keyword?(keyword) && schema_content[keyword].respond_to?(:to_str)
+      end
+
+      # @return [Boolean]
+      def keyword_value_bool?(keyword)
+        keyword?(keyword) && (schema_content[keyword] == true || schema_content[keyword] == false)
+      end
+
+      # @return [Boolean]
+      def keyword_value_numeric?(keyword)
+        keyword?(keyword) && schema_content[keyword].is_a?(Numeric)
       end
 
       # @return [Boolean]

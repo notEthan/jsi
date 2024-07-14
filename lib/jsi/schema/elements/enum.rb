@@ -14,7 +14,7 @@ module JSI
           # elements in this keyword's array value.
           validate(
             value.include?(instance),
-            'instance is not equal to any `enum` value',
+            "instance is not equal to any `enum` item",
             keyword: 'enum',
           )
         else
