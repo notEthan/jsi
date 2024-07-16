@@ -215,7 +215,7 @@ module JSI
                 !conflicting_modules.any? { |m| m.method_defined?(name) || m.private_method_defined?(name) }
             end.to_set.freeze
 
-            define_singleton_method(:inspect) { "(JSI Schema Property Reader Module: #{readers.join(', ')})" }
+            define_singleton_method(:inspect) { -"(JSI Schema Property Reader Module: #{readers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_readers) { readers }
 
@@ -236,13 +236,13 @@ module JSI
 
       private def schema_property_writer_module_compute(schema: , conflicting_modules: )
           Module.new do
-            define_singleton_method(:inspect) { '(JSI Schema Property Writer Module)' }
-
             writers = schema.described_object_property_names.select do |name|
               writer = "#{name}="
               Util.ok_ruby_method_name?(name) &&
                 !conflicting_modules.any? { |m| m.method_defined?(writer) || m.private_method_defined?(writer) }
             end.to_set.freeze
+
+            define_singleton_method(:inspect) { -"(JSI Schema Property Writer Module: #{writers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_writers) { writers }
 
