@@ -28,6 +28,9 @@ module JSI
     class SimpleNodeChildError < StandardError
     end
 
+    class ChildNotPresent < StandardError
+    end
+
     class << self
       # A string indicating the schema module name
       # and/or schema URI of each schema the class represents.
@@ -408,9 +411,13 @@ module JSI
     end
     private :jsi_child # internals for #[] but idk, could be public
 
-    # @param token (see Base#[])
+    # @param token An array index or Hash/object property name identifying a present child of this node
     # @return [JSI::Base]
-    protected def jsi_child_node(token)
+    # @raise [Base::ChildNotPresent]
+    def jsi_child_node(token)
+      if !jsi_child_token_present?(token)
+        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
+      end
       jsi_child(token, as_jsi: true)
     end
 
