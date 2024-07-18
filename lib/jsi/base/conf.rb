@@ -189,4 +189,7 @@ module JSI
       proc { |input| call(input) }
     end
   end
+
+  class Base::Conf::Schema < Base::Conf
+  end
 end
