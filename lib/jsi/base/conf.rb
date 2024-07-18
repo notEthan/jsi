@@ -102,5 +102,18 @@ module JSI
       super
       self.root_uri = Util.uri(root_uri, nnil: false, yabs: true)
     end
+
+    # @return [Base]
+    def call(input)
+    end
+
+    # see {#call}
+    def [](input)
+      call(input)
+    end
+
+    def to_proc
+      proc { |input| call(input) }
+    end
   end
 end
