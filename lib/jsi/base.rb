@@ -367,7 +367,7 @@ module JSI
     #
     # @param token [String, Integer]
     # @return [Boolean]
-    def jsi_child_token_in_range?(token)
+    def jsi_child_token_present?(token)
       # note: overridden by Base::HashNode, Base::ArrayNode
       false
     end
