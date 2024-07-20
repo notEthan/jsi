@@ -41,7 +41,7 @@ module JSI
         jsi_ptr: Ptr[],
         jsi_schema_base_uri: nil
     )
-      raise(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
+      fail(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
 
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
@@ -49,7 +49,7 @@ module JSI
       self.jsi_schema_resource_ancestors = Util::EMPTY_ARY
 
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
-      #chkbug raise(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
+      #chkbug fail(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
 
       super()
     end

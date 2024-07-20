@@ -15,6 +15,8 @@ module JSI
   # if you've found this class because JSI has raised this error, please open an issue with the backtrace
   # and any context you can provide at https://github.com/notEthan/jsi/issues
   class Bug < NotImplementedError
+    # implementation note: use `fail` with Bug instead of `raise` to avoid
+    # YARD's ExceptionHandler adding an inferred `@raise` tag for it.
   end
 
   # @private TODO remove, any ruby without this is already long EOL

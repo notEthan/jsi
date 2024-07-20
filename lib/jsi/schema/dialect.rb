@@ -30,7 +30,7 @@ module JSI
         until elements.empty?
           sort_element = elements.detect do |element|
             dependencies[element].all? { |req_el| @elements.include?(req_el) }
-          end || raise(Bug)
+          end || fail(Bug)
           @elements.push(sort_element)
           elements.delete(sort_element)
         end

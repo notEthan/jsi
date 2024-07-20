@@ -67,7 +67,7 @@ module JSI
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on meta-schema document root")
       end
 
-      #chkbug raise(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
+      #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
       @extends = Set[]
 
@@ -241,7 +241,7 @@ module JSI
     end
 
     def jsi_root_descendent_node_compute(ptr: )
-      #chkbug raise(Bug) unless jsi_ptr.root?
+      #chkbug fail(Bug) unless jsi_ptr.root?
       if ptr.root?
         self
       else

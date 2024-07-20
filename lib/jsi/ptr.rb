@@ -255,7 +255,7 @@ module JSI
             modified_document = document.respond_to?(:[]=) ? document.dup :
               document.respond_to?(:to_hash) ? document.to_hash.dup :
               document.respond_to?(:to_ary) ? document.to_ary.dup :
-              raise(Bug) # not possible; node_subscript_token_child would have raised
+              fail(Bug) # not possible; node_subscript_token_child would have raised
             modified_document[token] = modified_document_child
             modified_document
           end

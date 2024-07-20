@@ -123,7 +123,7 @@ module JSI
         jsi_content_to_immutable: ,
         jsi_root_node: nil
     )
-      #chkbug raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
+      #chkbug fail(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
@@ -133,11 +133,11 @@ module JSI
       self.jsi_schema_registry = jsi_schema_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
       if @jsi_ptr.root?
-        #chkbug raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
+        #chkbug fail(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
       else
-        #chkbug raise(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
-        #chkbug raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
+        #chkbug fail(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
+        #chkbug fail(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
         @jsi_root_node = jsi_root_node
       end
 
@@ -802,7 +802,7 @@ module JSI
     end
 
     def jsi_indicated_schemas=(jsi_indicated_schemas)
-      #chkbug raise(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
+      #chkbug fail(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
       @jsi_indicated_schemas = jsi_indicated_schemas
     end
 
