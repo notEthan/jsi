@@ -872,6 +872,21 @@ describe JSI::Base do
     end
   end
 
+  describe("#to_json") do
+    it("makes JSON") do
+      assert_equal(%q({}), schema.new_jsi({}).to_json)
+      assert_equal(%q({"a":"b"}), schema.new_jsi({"a" => "b"}).to_json)
+      assert_equal(%q({"a":"b"}), JSON.generate(schema.new_jsi({"a" => "b"})))
+      pretty = <<~JSON
+      {
+        "a": "b"
+      }
+      JSON
+      assert_equal(pretty.chomp, JSON.pretty_generate(schema.new_jsi({"a" => "b"})))
+      assert_equal(%q({"a":   "b"}), JSON.generate(schema.new_jsi({"a" => "b"}), space: '   '))
+    end
+  end
+
   describe 'overriding HashNode methods' do
     it 'can override' do
       schema = JSI::JSONSchemaDraft06.new_schema({'$id' => 'http://jsi/base/def_to_hash'})
