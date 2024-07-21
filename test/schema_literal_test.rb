@@ -19,7 +19,7 @@ describe JSI::Schema do
 
       let(:schema_content_from_json) do
         # this is a bit silly
-        JSON.parse(File.read(__FILE__).split("\n", -1)[line_a + 1...line_b - 2].join("\n"))
+        JSON.parse(File.read(__FILE__).split("\n", -1)[line_a + 1...line_b - 2].join("\n"), freeze: true)
       end
 
       it 'initializes, stringifying symbol keys' do

@@ -68,7 +68,7 @@ describe JSI::Schema::Ref do
             "sibling2": {"$id": "#collide"},
             "ref": {"$ref": "#collide"}
           }
-        }))
+        }), freeze: true)
       end
 
       it 'finds a collision' do

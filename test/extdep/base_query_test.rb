@@ -71,7 +71,7 @@ describe JSI::Base do
             ]
           }
         ]
-      ))
+      ), freeze: true)
     end
 
     it 'searches JSIs' do

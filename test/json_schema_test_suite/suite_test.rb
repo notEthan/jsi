@@ -11,7 +11,7 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
 
   Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
     Dir.glob('**/*.json').each do |subpath|
-      remote_content = ::JSON.parse(File.open(subpath, 'r:UTF-8', &:read))
+      remote_content = JSON.parse(File.open(subpath, 'r:UTF-8', &:read), freeze: true)
       uri = File.join('http://localhost:1234/', subpath)
       jsts_schema_registry.autoload_uri(uri) do |schema_registry: |
         if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
@@ -53,7 +53,7 @@ describe 'JSON Schema Test Suite' do
             path = base.join(subpath)
             describe(subpath) do
               begin
-                tests_desc_object = ::JSON.parse(path.open('r:UTF-8', &:read))
+                tests_desc_object = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
               rescue JSON::ParserError => e
                 # :nocov:
                 # known json/pure issue https://github.com/flori/json/pull/483

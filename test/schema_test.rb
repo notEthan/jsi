@@ -125,7 +125,7 @@ describe JSI::Schema do
               }
             }
           }
-        })))
+        }), freeze: true))
       end
 
       it 'has the specified uris' do
@@ -190,7 +190,7 @@ describe JSI::Schema do
               "id": "some://where.else/completely#"
             }
           }
-        })))
+        }), freeze: true))
       end
 
       it 'has the specified uris' do
@@ -252,7 +252,7 @@ describe JSI::Schema do
               "$id": "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f"
             }
           }
-        })))
+        }), freeze: true))
       end
 
       it 'has the specified uris' do

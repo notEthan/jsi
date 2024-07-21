@@ -16,7 +16,7 @@ describe("JSON Referencing Test Suite") do
     subpaths.each do |subpath|
       path = base.join(subpath)
       describe(subpath) do
-        ref_tests = JSON.parse(path.open('r:UTF-8', &:read))
+        ref_tests = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
         desc_schema_registry = JSI.schema_registry.dup
         ref_tests['registry'].each_key do |uri|
           schema_content = ref_tests['registry'][uri]
