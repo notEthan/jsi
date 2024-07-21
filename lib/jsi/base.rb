@@ -742,7 +742,7 @@ module JSI
     # Calls {Util.to_json} with the instance and any given options.
     # @return [String]
     def to_json(options = {})
-      Util.to_json(jsi_instance, **options)
+      Util.to_json(jsi_instance, options)
     end
 
     # see {Util::Private::FingerprintHash}
