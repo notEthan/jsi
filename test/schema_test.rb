@@ -568,6 +568,12 @@ describe JSI::Schema do
       schema_again = JSI::JSONSchemaDraft07.new_schema({'title' => 'jsi_schema_module_eq'})
       refute_equal(schema.jsi_schema_module, schema_again.jsi_schema_module)
     end
+
+    it("does not create a schema module for a mutable schema") do
+      schema = JSI::JSONSchemaDraft07.new_jsi({'$id' => 'tag:4o50'}, mutable: true)
+      e = assert_raises(TypeError) { schema.jsi_schema_module }
+      assert_equal(%q(mutable schema may not have a schema module: #{<JSI (JSI::JSONSchemaDraft07) Schema> "$id" => "tag:4o50"}), e.message)
+    end
   end
 
   describe '#jsi_schema_module_exec' do
