@@ -730,10 +730,10 @@ module JSI
         end.freeze
     end
 
-    # validates the given instance against this schema
+    # Validates the given instance against this schema, returning a result with each validation error.
     #
     # @param instance [Object] the instance to validate against this schema
-    # @return [JSI::Validation::Result]
+    # @return [JSI::Validation::Result::Full]
     def instance_validate(instance)
       if instance.is_a?(SchemaAncestorNode)
         instance_ptr = instance.jsi_ptr
