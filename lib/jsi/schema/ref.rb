@@ -47,7 +47,7 @@ module JSI
           raise(ResolutionError.new([
             "cannot find schema by ref: #{ref}",
             ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
-          ].compact.join("\n")).tap { |e| e.uri = ref_uri })
+          ], uri: ref_uri))
         end
       }
 
@@ -58,7 +58,7 @@ module JSI
           raise(ResolutionError.new([
             "cannot find schema by ref: #{ref}",
             "with no ref schema",
-          ].join("\n")).tap { |e| e.uri = ref_uri })
+          ], uri: ref_uri))
         end
 
         # the URI only consists of a fragment (or is empty).
@@ -82,7 +82,7 @@ module JSI
               "could not resolve remote ref with no schema_registry specified",
               "ref URI: #{ref_uri.to_s}",
               ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
-            ].compact.join("\n")).tap { |e| e.uri = ref_uri })
+            ], uri: ref_uri))
           end
           schema_resource_root = schema_registry.find(ref_abs_uri)
         end
@@ -126,7 +126,7 @@ module JSI
             "could not resolve pointer: #{ptr_from_fragment.pointer.inspect}",
             ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
             ("in schema resource root: #{schema_resource_root.pretty_inspect.chomp}" if schema_resource_root),
-          ].compact.join("\n")).tap { |e| e.uri = ref_uri })
+          ], uri: ref_uri))
         end
       elsif fragment.nil?
         check_schema_resource_root.call
@@ -143,12 +143,12 @@ module JSI
           raise(Schema::ReferenceError.new([
             "could not find schema by fragment: #{fragment.inspect}",
             "in schema resource root: #{schema_resource_root.pretty_inspect.chomp}",
-          ].join("\n")).tap { |e| e.uri = ref_uri })
+          ], uri: ref_uri))
         else
           raise(Schema::ReferenceError.new([
             "found multiple schemas for plain name fragment #{fragment.inspect}:",
             *result_schemas.map { |s| s.pretty_inspect.chomp },
-          ].join("\n")).tap { |e| e.uri = ref_uri })
+          ], uri: ref_uri))
         end
       end
 

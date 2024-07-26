@@ -103,7 +103,7 @@ module JSI
         else
           msg = ["URI #{uri} is not registered. registered URIs:", *(@resources.keys | @autoload_uris.keys)]
         end
-        raise(ResolutionError.new(msg.join("\n")).tap { |e| e.uri = uri })
+        raise(ResolutionError.new(msg, uri: uri))
       end
       @resources[uri]
     end

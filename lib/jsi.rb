@@ -22,6 +22,13 @@ module JSI
 
   # A reference or pointer cannot be resolved
   class ResolutionError < StandardError
+    # @param msg [String, Array]
+    # @param uri [Addressable::URI, nil]
+    def initialize(msg, *a, uri: nil)
+      super([*msg].compact.join("\n"), *a)
+      @uri = Util.uri(uri, nnil: false)
+    end
+
     # @return [Addressable::URI, nil]
     attr_accessor(:uri)
   end
