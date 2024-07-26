@@ -10,15 +10,17 @@ module JSI
     #   If the ref URI consists of only a fragment, it is resolved from the `ref_schema`'s
     #   {Schema#schema_resource_root}. Otherwise the resource is found in the `ref_schema`'s
     #   {SchemaAncestorNode#jsi_schema_registry #jsi_schema_registry} (and any fragment is resolved from there).
-    # @param schema_registry [SchemaRegistry] The registry in which the resource this ref refers to will be found.
-    #   This should only be specified in the absence of a `ref_schema`.
+    # @param schema_registry [SchemaRegistry, nil] The registry in which the resource this ref refers to will be found.
+    #   If `ref_schema` is specified and `schema_registry` is not, defaults to its `#jsi_schema_registry`.
     #   If neither is specified, {JSI.schema_registry} is used.
-    def initialize(ref, ref_schema: nil, schema_registry: nil)
+    def initialize(ref, ref_schema: nil, schema_registry: (schema_registry_undefined = true))
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Util.uri(ref)
       @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
-      @schema_registry = schema_registry || (ref_schema ? ref_schema.jsi_schema_registry : JSI.schema_registry)
+      @schema_registry = !schema_registry_undefined ? schema_registry
+      : ref_schema ? ref_schema.jsi_schema_registry
+      : JSI.schema_registry
       @deref_schema = nil
     end
 
