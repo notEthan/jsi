@@ -20,6 +20,12 @@ module JSI
   # @private TODO remove, any ruby without this is already long EOL
   FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
 
+  # A reference or pointer cannot be resolved
+  class ResolutionError < StandardError
+    # @return [Addressable::URI, nil]
+    attr_accessor(:uri)
+  end
+
   # A URI does not meet some requirement where it is used - absent
   # when it's required, relative when it must be absolute, etc.
   class URIError < Addressable::URI::InvalidURIError

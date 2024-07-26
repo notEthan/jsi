@@ -7,10 +7,9 @@ module JSI
     class Collision < StandardError
     end
 
+    # @deprecated alias after v0.8
     # an exception raised when a URI we are looking for has not been registered
-    class ResourceNotFound < StandardError
-      attr_accessor :uri
-    end
+    ResourceNotFound = ResolutionError
 
     def initialize
       @resources = {}
@@ -86,7 +85,7 @@ module JSI
 
     # @param uri [Addressable::URI, #to_str]
     # @return [JSI::Base]
-    # @raise [JSI::SchemaRegistry::ResourceNotFound]
+    # @raise [ResolutionError]
     def find(uri)
       uri = registration_uri(uri)
       if @autoload_uris.key?(uri)
@@ -104,7 +103,7 @@ module JSI
         else
           msg = ["URI #{uri} is not registered. registered URIs:", *(@resources.keys | @autoload_uris.keys)]
         end
-        raise(ResourceNotFound.new(msg.join("\n")).tap { |e| e.uri = uri })
+        raise(ResolutionError.new(msg.join("\n")).tap { |e| e.uri = uri })
       end
       @resources[uri]
     end

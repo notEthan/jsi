@@ -37,9 +37,9 @@ module JSI
     class NotAMetaSchemaError < TypeError
     end
 
+    # @deprecated alias after v0.8
     # an exception raised when we are unable to resolve a schema reference
-    class ReferenceError < StandardError
-    end
+    ReferenceError = ResolutionError
 
     # extends any schema which uses the keyword '$id' to identify its canonical URI
     module BigMoneyId
