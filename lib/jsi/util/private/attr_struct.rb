@@ -73,7 +73,7 @@ module JSI
         attributes.to_hash.each do |k, v|
           @attributes[self.class.convert_key(k)] = v
         end
-        bad = @attributes.keys.reject { |k| class_attribute_keys.include?(k) }
+        bad = @attributes.each_key.reject { |k| class_attribute_keys.include?(k) }
         unless bad.empty?
           raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
         end

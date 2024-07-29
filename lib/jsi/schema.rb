@@ -498,16 +498,8 @@ module JSI
       @schema_uris_map[]
     end
 
-    private def schema_uris_compute(**_) # TODO remove **_ eventually (keyword argument compatibility)
-        each_schema_uri.to_a
-    end
-
-    # see {#schema_uris}
     # @yield [Addressable::URI]
-    # @return [Enumerator, nil]
-    def each_schema_uri
-      return to_enum(__method__) unless block_given?
-
+    private def schema_uris_compute
       yield schema_absolute_uri if schema_absolute_uri
 
       ancestor_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
@@ -729,7 +721,7 @@ module JSI
     private def described_object_property_names_compute(**_) # TODO remove **_ eventually (keyword argument compatibility)
         Set.new.tap do |property_names|
           if schema_content.respond_to?(:to_hash) && schema_content['properties'].respond_to?(:to_hash)
-            property_names.merge(schema_content['properties'].keys)
+            property_names.merge(schema_content['properties'].each_key)
           end
           if schema_content.respond_to?(:to_hash) && schema_content['required'].respond_to?(:to_ary)
             property_names.merge(schema_content['required'].to_ary)
@@ -797,6 +789,27 @@ module JSI
       end.freeze
     end
 
+    # @param action_name [Symbol]
+    # @param cxt_class [Class]
+    # @yield
+    def dialect_invoke_each(
+        action_name,
+        cxt_class = Cxt::Block,
+        **cxt_param,
+        &block
+    )
+      return(to_enum(__method__, action_name, cxt_class, **cxt_param)) unless block_given?
+
+      cxt = cxt_class.new(
+        schema: self,
+        block: block,
+        **cxt_param,
+      )
+      dialect.invoke(action_name, cxt)
+
+      nil
+    end
+
     # schema resources which are ancestors of any subschemas below this schema.
     # this may include this schema if this is a schema resource root.
     # @api private
@@ -815,7 +828,7 @@ module JSI
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end
-      @schema_uris_map = jsi_memomap(&method(:schema_uris_compute))
+      @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
     end
   end

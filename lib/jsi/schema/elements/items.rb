@@ -19,40 +19,45 @@ module JSI
         end # element.add_action(:child_applicate)
 
         element.add_action(:validate) do
-          if keyword?('items')
-            value = schema_content['items']
-            # The value of "items" MUST be either a valid JSON Schema or an array of valid JSON Schemas.
-            if value.respond_to?(:to_ary)
-              # If "items" is an array of schemas, validation succeeds if each element of the instance validates
-              # against the schema at the same position, if any.
-              if instance.respond_to?(:to_ary)
-                results = {}
+          if instance.respond_to?(:to_ary)
+            if keyword?('items')
+              #> The value of "items" MUST be either a valid JSON Schema or an array of valid JSON Schemas.
+              if schema_content['items'].respond_to?(:to_ary)
+                #> If "items" is an array of schemas, validation succeeds if each element of the instance
+                #> validates against the schema at the same position, if any.
+                items_results = {}
+                additionalItems_results = {}
                 instance.each_index do |i|
-                  if i < value.size
-                    results[i] = child_subschema_validate(i, ['items', i])
+                  if i < schema_content['items'].size
+                    items_results[i] = child_subschema_validate(i, ['items', i])
                   elsif keyword?('additionalItems')
-                    results[i] = child_subschema_validate(i, ['additionalItems'])
+                    additionalItems_results[i] = child_subschema_validate(i, ['additionalItems'])
                   end
                 end
                 validate(
-                  results.values.all?(&:valid?),
-                  'instance array items are not all valid against corresponding `items` or `additionalItems` schema values',
+                  items_results.each_value.all?(&:valid?),
+                  "instance array items are not all valid against corresponding `items` schemas",
                   keyword: 'items',
-                  results: results.values,
+                  results: items_results.each_value,
                 )
-              end
-            else
-              # If "items" is a schema, validation succeeds if all elements in the array successfully validate
-              # against that schema.
-              if instance.respond_to?(:to_ary)
-                results = instance.each_index.map do |i|
-                  child_subschema_validate(i, ['items'])
+                validate(
+                  additionalItems_results.each_value.all?(&:valid?),
+                  "instance array items after `items` schemas are not all valid against `additionalItems` schema",
+                  keyword: 'additionalItems',
+                  results: additionalItems_results.each_value,
+                )
+              else
+                #> If "items" is a schema, validation succeeds if all elements in the array successfully
+                #> validate against that schema.
+                items_results = {}
+                instance.each_index do |i|
+                  items_results[i] = child_subschema_validate(i, ['items'])
                 end
                 validate(
-                  results.all?(&:valid?),
-                  'instance array items are not all valid against `items` schema value',
+                  items_results.each_value.all?(&:valid?),
+                  "instance array items are not all valid against `items` schema",
                   keyword: 'items',
-                  results: results,
+                  results: items_results.each_value,
                 )
               end
               if keyword?('additionalItems')

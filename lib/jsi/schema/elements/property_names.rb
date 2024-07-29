@@ -13,7 +13,7 @@ module JSI
         # always be a string.
         if instance.respond_to?(:to_hash)
           results = {}
-          instance.keys.each do |property_name|
+          instance.each_key do |property_name|
             results[property_name] = subschema(['propertyNames']).internal_validate_instance(
               Ptr[],
               property_name,
@@ -21,10 +21,10 @@ module JSI
             )
           end
           validate(
-            results.values.all?(&:valid?),
-            'instance object property names are not all valid against `propertyNames` schema value',
+            results.each_value.all?(&:valid?),
+            "instance object property names are not all valid against `propertyNames` schema",
             keyword: 'propertyNames',
-            results: results.values,
+            results: results.each_value,
           )
         end
       end

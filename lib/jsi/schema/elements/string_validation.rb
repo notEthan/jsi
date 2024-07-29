@@ -14,7 +14,7 @@ module JSI
             # value of this keyword.
             validate(
               instance.to_str.length <= value,
-              'instance string length is not less than or equal to `maxLength` value',
+              "instance string length is greater than `maxLength` value",
               keyword: 'maxLength',
             )
           end
@@ -40,7 +40,7 @@ module JSI
             # value of this keyword.
             validate(
               instance.to_str.length >= value,
-              'instance string length is not greater than or equal to `minLength` value',
+              "instance string length is less than `minLength` value",
               keyword: 'minLength',
             )
           end

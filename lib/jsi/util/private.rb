@@ -84,19 +84,32 @@ module JSI
     end
 
     # string or URI → frozen URI
-    # @return [Addressable::URI]
-    def uri(uri)
+    # @param nnil must not be nil
+    # @param yabs must be absolute
+    # @param ynorm must be normalized
+    # @param tonorm normalize returned URI
+    # @return [Addressable::URI, nil]
+    def uri(uri, nnil: true, yabs: false, ynorm: false, tonorm: false)
+      return nil if !nnil && uri.nil?
       if uri.is_a?(Addressable::URI)
         if uri.frozen?
-          uri
+          auri = uri
         else
-          uri.dup.freeze
+          auri = uri.dup.freeze
         end
       elsif uri.is_a?(String) || uri.respond_to?(:to_str)
-        Addressable::URI.parse(uri).freeze
+        auri = Addressable::URI.parse(uri).freeze
       else
-        raise(TypeError, "uri is not a string: #{uri.inspect}")
+        raise(URIError, "URI is not a string: #{uri.inspect}")
       end
+      if yabs && (!auri.scheme || auri.fragment)
+        raise(URIError, "URI must be an absolute URI with no fragment. got: #{uri.inspect}")
+      end
+      if ynorm && uri.to_str != auri.normalize.to_s
+        raise(URIError, "URI must be in normalized form. got: #{uri.inspect}; normalized: #{auri.normalize.to_s.inspect}")
+      end
+      auri = auri.normalize.freeze if tonorm
+      auri
     end
 
     # this is the Y-combinator, which allows anonymous recursive functions. for a simple example,

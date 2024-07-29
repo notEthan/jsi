@@ -20,6 +20,11 @@ module JSI
   # @private TODO remove, any ruby without this is already long EOL
   FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
 
+  # A URI does not meet some requirement where it is used - absent
+  # when it's required, relative when it must be absolute, etc.
+  class URIError < Addressable::URI::InvalidURIError
+  end
+
   # @private
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
 
