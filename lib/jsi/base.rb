@@ -53,7 +53,7 @@ module JSI
           end
 
           if schema_names.empty?
-            "(JSI Schema Class for 0 schemas#{jsi_class_includes.map { |n| " + #{n}" }})"
+            "(JSI Schema Class for 0 schemas#{jsi_class_includes.map { |n| " + #{n}" }.join})"
           else
             -"(JSI Schema Class: #{(schema_names + jsi_class_includes.map(&:name)).join(' + ')})"
           end
