@@ -36,6 +36,7 @@ module JSI
               "instance array items are not all valid against corresponding `prefixItems` schemas",
               keyword: 'prefixItems',
               child_results: prefixItems_results,
+              instance_indexes_valid: prefixItems_results.inject({}) { |h, (ri, r)| h.update({ri => r.valid?}) }.freeze,
             )
           end
 
@@ -69,6 +70,7 @@ module JSI
               error_msg,
               keyword: 'items',
               child_results: items_results,
+              instance_indexes_valid: items_results.inject({}) { |h, (ri, r)| h.update({ri => r.valid?}) }.freeze,
             )
           end
         end
