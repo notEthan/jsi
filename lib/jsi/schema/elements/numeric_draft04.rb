@@ -5,18 +5,6 @@ module JSI
     MAXIMUM_BOOLEAN_EXCLUSIVE = element_map do
       Schema::Element.new do |element|
         element.add_action(:validate) do
-      if keyword?('exclusiveMaximum')
-        value = schema_content['exclusiveMaximum']
-        # The value of "exclusiveMaximum" MUST be a boolean.
-        unless [true, false].include?(value)
-          schema_error('`exclusiveMaximum` is not true or false', 'exclusiveMaximum')
-        end
-        #> If "exclusiveMaximum" is present, "maximum" MUST also be present.
-        if !keyword?('maximum')
-          schema_error('`exclusiveMaximum` has no effect without adjacent `maximum` keyword', 'exclusiveMaximum')
-        end
-      end
-
       if keyword?('maximum')
         value = schema_content['maximum']
         # The value of "maximum" MUST be a JSON number.
@@ -28,6 +16,7 @@ module JSI
               # than the value of "maximum".
               validate(
                 instance < value,
+                'validation.keyword.maximum.with_exclusiveMaximum.greater_or_equal',
                 "instance is greater than or equal to `maximum` value with `exclusiveMaximum` = true",
                 keyword: 'maximum',
               )
@@ -36,13 +25,12 @@ module JSI
               # valid if it is lower than, or equal to, the value of "maximum"
               validate(
                 instance <= value,
+                'validation.keyword.maximum.greater',
                 "instance is greater than `maximum` value",
                 keyword: 'maximum',
               )
             end
           end
-        else
-          schema_error('`maximum` is not a number', 'maximum')
         end
       end
         end # element.add_action(:validate)
@@ -54,18 +42,6 @@ module JSI
     MINIMUM_BOOLEAN_EXCLUSIVE = element_map do
       Schema::Element.new do |element|
         element.add_action(:validate) do
-      if keyword?('exclusiveMinimum')
-        value = schema_content['exclusiveMinimum']
-        # The value of "exclusiveMinimum" MUST be a boolean.
-        unless [true, false].include?(value)
-          schema_error('`exclusiveMinimum` is not true or false', 'exclusiveMinimum')
-        end
-        #> If "exclusiveMinimum" is present, "minimum" MUST also be present.
-        if !keyword?('minimum')
-          schema_error('`exclusiveMinimum` has no effect without adjacent `minimum` keyword', 'exclusiveMinimum')
-        end
-      end
-
       if keyword?('minimum')
         value = schema_content['minimum']
         # The value of "minimum" MUST be a JSON number.
@@ -77,6 +53,7 @@ module JSI
               # strictly greater than the value of "minimum".
               validate(
                 instance > value,
+                'validation.keyword.minimum.with_exclusiveMinimum.less_or_equal',
                 "instance is less than or equal to `minimum` value with `exclusiveMinimum` = true",
                 keyword: 'minimum',
               )
@@ -85,13 +62,12 @@ module JSI
               # valid if it is greater than, or equal to, the value of "minimum"
               validate(
                 instance >= value,
+                'validation.keyword.minimum.less',
                 "instance is less than `minimum` value",
                 keyword: 'minimum',
               )
             end
           end
-        else
-          schema_error('`minimum` is not a number', 'minimum')
         end
       end
         end # element.add_action(:validate)

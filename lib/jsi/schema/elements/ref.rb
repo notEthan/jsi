@@ -5,13 +5,19 @@ module JSI
     # exclusive [Boolean]: whether to abort invocation of subsequent actions when a $ref is evaluated
     REF = element_map do |exclusive: |
       Schema::Element.new do |element|
+        if exclusive
+          # $ref must come before all other elements to abort evaluation
+          element.required_before_elements { |_| true }
+        end
+
         element.add_action(:inplace_applicate) do
       if keyword?('$ref') && schema_content['$ref'].respond_to?(:to_str)
         ref = schema.schema_ref('$ref')
         unless visited_refs.include?(ref)
-          ref.deref_schema.each_inplace_applicator_schema(instance, visited_refs: visited_refs + [ref], &block)
+          inplace_schema_applicate(ref.deref_schema, ref: ref)
+
           if exclusive
-            throw(:jsi_application_done)
+            self.abort = true
           end
         end
       end
@@ -25,8 +31,9 @@ module JSI
               schema_ref = schema.schema_ref('$ref')
 
               if visited_refs.include?(schema_ref)
-                schema_error('self-referential schema structure', '$ref')
-              else
+                next
+              end
+
                 ref_result = schema_ref.deref_schema.internal_validate_instance(
                   instance_ptr,
                   instance_document,
@@ -35,16 +42,14 @@ module JSI
                 )
                 validate(
                   ref_result.valid?,
+                  'validation.keyword.$ref.invalid',
                   "instance is not valid against the schema referenced by `$ref`",
                   keyword: '$ref',
                   results: [ref_result],
                 )
                 if exclusive
-                  throw(:jsi_validation_result, result)
+                  self.abort = true
                 end
-              end
-            else
-              schema_error("`$ref` is not a string", '$ref')
             end
           end
         end # element.add_action(:validate)

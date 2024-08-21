@@ -26,12 +26,12 @@ module JSI
     if instance.respond_to?(:to_ary)
       if keyword?('items') && schema_content['items'].respond_to?(:to_ary)
         if schema_content['items'].each_index.to_a.include?(token)
-          cxt_yield(subschema(['items', token]))
+          child_subschema_applicate(['items', token])
         elsif keyword?('additionalItems')
-          cxt_yield(subschema(['additionalItems']))
+          child_subschema_applicate(['additionalItems'])
         end
       elsif keyword?('items')
-        cxt_yield(subschema(['items']))
+        child_subschema_applicate(['items'])
       end
     end # if instance.respond_to?(:to_ary)
         end # element.add_action(:child_applicate)
@@ -54,15 +54,19 @@ module JSI
                 end
                 validate(
                   items_results.each_value.all?(&:valid?),
+                  'validation.keyword.items.array.invalid',
                   "instance array items are not all valid against corresponding `items` schemas",
                   keyword: 'items',
                   results: items_results.each_value,
+                  instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
                 validate(
                   additionalItems_results.each_value.all?(&:valid?),
+                  'validation.keyword.additionalItems.invalid',
                   "instance array items after `items` schemas are not all valid against `additionalItems` schema",
                   keyword: 'additionalItems',
                   results: additionalItems_results.each_value,
+                  instance_indexes_valid: additionalItems_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               else
                 #> If "items" is a schema, validation succeeds if all elements in the array successfully
@@ -73,18 +77,13 @@ module JSI
                 end
                 validate(
                   items_results.each_value.all?(&:valid?),
+                  'validation.keyword.items.schema.invalid',
                   "instance array items are not all valid against `items` schema",
                   keyword: 'items',
                   results: items_results.each_value,
+                  instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               end
-              if keyword?('additionalItems')
-                schema_warning('`additionalItems` has no effect when adjacent `items` keyword is not an array', 'items')
-              end
-            end
-          else
-            if keyword?('additionalItems')
-              schema_warning('`additionalItems` has no effect without adjacent `items` keyword', 'items')
             end
           end
         end # element.add_action(:validate)

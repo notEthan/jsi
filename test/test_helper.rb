@@ -261,6 +261,10 @@ class JSISpec < Minitest::Spec
     assert_equal(JSI::Util.uri(exp), act)
     assert_predicate(act, :frozen?)
   end
+
+  before do
+    JSI.schema_registry = JSI::DEFAULT_SCHEMA_REGISTRY.dup
+  end
 end
 
 # register this to be the base class for specs instead of Minitest::Spec

@@ -25,11 +25,11 @@ module JSI
       if keyword?('if')
         if subschema(['if']).instance_valid?(instance)
           if keyword?('then')
-            subschema(['then']).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+            inplace_subschema_applicate(['then'])
           end
         else
           if keyword?('else')
-            subschema(['else']).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+            inplace_subschema_applicate(['else'])
           end
         end
       end
@@ -42,13 +42,12 @@ module JSI
             # result. Rather, it controls which of the "then" or "else" keywords are evaluated.
             if_result = inplace_subschema_validate(['if'])
 
-            merge_schema_issues(if_result)
-
             if if_result.valid?
               if keyword?('then')
                 then_result = inplace_subschema_validate(['then'])
                 validate(
                   then_result.valid?,
+                  'validation.keyword.then.invalid',
                   "instance is not valid against `then` schema after validating against `if` schema",
                   keyword: 'if',
                   results: [then_result],
@@ -59,18 +58,12 @@ module JSI
                 else_result = inplace_subschema_validate(['else'])
                 validate(
                   else_result.valid?,
+                  'validation.keyword.else.invalid',
                   "instance is not valid against `else` schema after not validating against `if` schema",
                   keyword: 'if',
                   results: [else_result],
                 )
               end
-            end
-          else
-            if keyword?('then')
-              schema_warning('`then` has no effect without adjacent `if` keyword', 'then')
-            end
-            if keyword?('else')
-              schema_warning('`else` has no effect without adjacent `if` keyword', 'else')
             end
           end
         end # element.add_action(:validate)

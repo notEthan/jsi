@@ -30,17 +30,17 @@ module JSI
 
           all_attribute_keys = (self.attribute_keys + attribute_keys).freeze
 
-          Class.new(self).tap do |klass|
-            klass.define_singleton_method(:attribute_keys) { all_attribute_keys }
+          Class.new(self) do
+            define_singleton_method(:attribute_keys) { all_attribute_keys }
 
             attribute_keys.each do |attribute_key|
               # reader
-              klass.send(:define_method, attribute_key) do
+              define_method(attribute_key) do
                 @attributes[attribute_key]
               end
 
               # writer
-              klass.send(:define_method, "#{attribute_key}=") do |value|
+              define_method("#{attribute_key}=") do |value|
                 @attributes[attribute_key] = value
               end
             end

@@ -37,9 +37,9 @@ module JSI
     class NotAMetaSchemaError < TypeError
     end
 
+    # @deprecated alias after v0.8
     # an exception raised when we are unable to resolve a schema reference
-    class ReferenceError < StandardError
-    end
+    ReferenceError = ResolutionError
 
     # extends any schema which uses the keyword '$id' to identify its canonical URI
     module BigMoneyId
@@ -537,7 +537,15 @@ module JSI
     #
     # @return [SchemaModule]
     def jsi_schema_module
-      JSI::SchemaClasses.module_for_schema(self)
+      raise(TypeError, "non-Base schema may not have a schema module: #{self}") unless is_a?(Base)
+      raise(TypeError, "mutable schema may not have a schema module: #{self}") if jsi_mutable?
+      @jsi_schema_module ||= SchemaModule.new(self)
+    end
+
+    # @private
+    # @return [Boolean]
+    def jsi_schema_module_defined?
+      !!@jsi_schema_module
     end
 
     # Evaluates the given block in the context of this schema's JSI schema module.
@@ -563,15 +571,16 @@ module JSI
 
     # @param keyword schema keyword e.g. "$ref", "$schema"
     # @return [Schema::Ref]
+    # @raise [Base::ChildNotPresent]
     def schema_ref(keyword = "$ref")
-      raise(ArgumentError, "keyword not present: #{keyword}") unless keyword?(keyword)
+      raise(Base::ChildNotPresent, "keyword not present: #{keyword}") unless keyword?(keyword)
       @schema_ref_map[keyword: keyword, value: schema_content[keyword]]
     end
 
     # Does this schema itself describe a schema? I.e. is this schema a meta-schema?
     # @return [Boolean]
     def describes_schema?
-      jsi_schema_module <= JSI::Schema || false
+      is_a?(Schema::MetaSchema)
     end
 
     # Is this a JSI Schema?
@@ -591,7 +600,7 @@ module JSI
     def describes_schema!(schema_implementation_modules)
       schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
 
-      if describes_schema?
+      if jsi_schema_module <= Schema
         # this schema, or one equal to it, has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
         # it is a bug if it was called different times with different schema_implementation_modules, though.
@@ -685,26 +694,30 @@ module JSI
     # @param instance [Object] the instance to check any applicators against
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
     # @yield [JSI::Schema]
-    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
+    # @return [nil]
     def each_inplace_applicator_schema(
         instance,
         visited_refs: Util::EMPTY_ARY,
         &block
     )
-      return to_enum(__method__, instance, visited_refs: visited_refs) unless block
-
       catch(:jsi_application_done) do
-      cxt = Cxt::InplaceApplication.new(
-        schema: self,
+      dialect_invoke_each(:inplace_applicate,
+        Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
-        block: block,
-      )
-
-      dialect.invoke(:inplace_applicate, cxt)
+      ) do |schema, ref: nil|
+        if schema.equal?(self)
+          #chkbug raise(Bug) if ref
+          yield(self)
+        else
+          schema.each_inplace_applicator_schema(
+            instance,
+            visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
+            &block
+          )
+        end
       end
-
-      nil
+      end
     end
 
     # a set of child applicator subschemas of this schema which apply to the child of the given instance
@@ -725,18 +738,12 @@ module JSI
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_child_applicator_schema(token, instance, &block)
-      return to_enum(__method__, token, instance) unless block
-
-      cxt = Cxt::ChildApplication.new(
-        schema: self,
+      dialect_invoke_each(:child_applicate,
+        Cxt::ChildApplication,
         instance: instance,
         token: token,
-        block: block,
+        &block
       )
-
-      dialect.invoke(:child_applicate, cxt)
-
-      nil
     end
 
     # any object property names this schema indicates may be present on its instances.
@@ -758,10 +765,10 @@ module JSI
         end.freeze
     end
 
-    # validates the given instance against this schema
+    # Validates the given instance against this schema, returning a result with each validation error.
     #
     # @param instance [Object] the instance to validate against this schema
-    # @return [JSI::Validation::Result]
+    # @return [JSI::Validation::Result::Full]
     def instance_validate(instance)
       if instance.is_a?(SchemaAncestorNode)
         instance_ptr = instance.jsi_ptr
@@ -854,6 +861,7 @@ module JSI
     private
 
     def jsi_schema_initialize
+      @jsi_schema_module = nil
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end

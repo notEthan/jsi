@@ -23,12 +23,11 @@ module JSI
             end
             validate(
               valid,
+              'validation.keyword.multipleOf.not_multiple',
               'instance is not a multiple of `multipleOf` value',
               keyword: 'multipleOf',
             )
           end
-        else
-          schema_error('`multipleOf` is not a number greater than 0', 'multipleOf')
         end
       end
         end # element.add_action(:validate)
@@ -49,12 +48,11 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance <= value,
+              'validation.keyword.maximum.greater',
               "instance is greater than `maximum` value",
               keyword: 'maximum',
             )
           end
-        else
-          schema_error('`maximum` is not a number', 'maximum')
         end
       end
         end # element.add_action(:validate)
@@ -75,12 +73,11 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance < value,
+              'validation.keyword.exclusiveMaximum.greater_or_equal',
               "instance is greater than or equal to `exclusiveMaximum` value",
               keyword: 'exclusiveMaximum',
             )
           end
-        else
-          schema_error('`exclusiveMaximum` is not a number', 'exclusiveMaximum')
         end
       end
         end # element.add_action(:validate)
@@ -101,12 +98,11 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance >= value,
+              'validation.keyword.minimum.less',
               "instance is less than `minimum` value",
               keyword: 'minimum',
             )
           end
-        else
-          schema_error('`minimum` is not a number', 'minimum')
         end
       end
         end # element.add_action(:validate)
@@ -127,12 +123,11 @@ module JSI
           if instance.is_a?(Numeric)
             validate(
               instance > value,
+              'validation.keyword.exclusiveMaximum.less_or_equal',
               "instance is less than or equal to `exclusiveMinimum` value",
               keyword: 'exclusiveMinimum',
             )
           end
-        else
-          schema_error('`exclusiveMinimum` is not a number', 'exclusiveMinimum')
         end
       end
         end # element.add_action(:validate)

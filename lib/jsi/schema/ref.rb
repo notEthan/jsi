@@ -10,15 +10,17 @@ module JSI
     #   If the ref URI consists of only a fragment, it is resolved from the `ref_schema`'s
     #   {Schema#schema_resource_root}. Otherwise the resource is found in the `ref_schema`'s
     #   {SchemaAncestorNode#jsi_schema_registry #jsi_schema_registry} (and any fragment is resolved from there).
-    # @param schema_registry [SchemaRegistry] The registry in which the resource this ref refers to will be found.
-    #   This should only be specified in the absence of a `ref_schema`.
+    # @param schema_registry [SchemaRegistry, nil] The registry in which the resource this ref refers to will be found.
+    #   If `ref_schema` is specified and `schema_registry` is not, defaults to its `#jsi_schema_registry`.
     #   If neither is specified, {JSI.schema_registry} is used.
-    def initialize(ref, ref_schema: nil, schema_registry: nil)
+    def initialize(ref, ref_schema: nil, schema_registry: (schema_registry_undefined = true))
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Util.uri(ref)
       @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
-      @schema_registry = schema_registry || (ref_schema ? ref_schema.jsi_schema_registry : JSI.schema_registry)
+      @schema_registry = !schema_registry_undefined ? schema_registry
+      : ref_schema ? ref_schema.jsi_schema_registry
+      : JSI.schema_registry
       @deref_schema = nil
     end
 
@@ -37,17 +39,17 @@ module JSI
     # finds the schema this ref points to
     # @return [JSI::Schema]
     # @raise [JSI::Schema::NotASchemaError] when the thing this ref points to is not a schema
-    # @raise [JSI::Schema::ReferenceError] when this reference cannot be resolved
+    # @raise [ResolutionError] when this reference cannot be resolved
     def deref_schema
       return @deref_schema if @deref_schema
 
       schema_resource_root = nil
       check_schema_resource_root = -> {
         unless schema_resource_root
-          raise(Schema::ReferenceError, [
+          raise(ResolutionError.new([
             "cannot find schema by ref: #{ref}",
             ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
-          ].compact.join("\n"))
+          ], uri: ref_uri))
         end
       }
 
@@ -55,10 +57,10 @@ module JSI
 
       if ref_uri_nofrag.empty?
         unless ref_schema
-          raise(Schema::ReferenceError, [
+          raise(ResolutionError.new([
             "cannot find schema by ref: #{ref}",
             "with no ref schema",
-          ].join("\n"))
+          ], uri: ref_uri))
         end
 
         # the URI only consists of a fragment (or is empty).
@@ -78,11 +80,11 @@ module JSI
         end
         if ref_abs_uri
           unless schema_registry
-            raise(Schema::ReferenceError, [
+            raise(ResolutionError.new([
               "could not resolve remote ref with no schema_registry specified",
               "ref URI: #{ref_uri.to_s}",
               ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
-            ].compact.join("\n"))
+            ], uri: ref_uri))
           end
           schema_resource_root = schema_registry.find(ref_abs_uri)
         end
@@ -122,11 +124,11 @@ module JSI
         begin
           result_schema = resolve_fragment_ptr.call(ptr_from_fragment)
         rescue Ptr::ResolutionError
-          raise(Schema::ReferenceError, [
+          raise(ResolutionError.new([
             "could not resolve pointer: #{ptr_from_fragment.pointer.inspect}",
             ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
             ("in schema resource root: #{schema_resource_root.pretty_inspect.chomp}" if schema_resource_root),
-          ].compact.join("\n"))
+          ], uri: ref_uri))
         end
       elsif fragment.nil?
         check_schema_resource_root.call
@@ -140,15 +142,15 @@ module JSI
         if result_schemas.size == 1
           result_schema = result_schemas.first
         elsif result_schemas.size == 0
-          raise(Schema::ReferenceError, [
+          raise(Schema::ReferenceError.new([
             "could not find schema by fragment: #{fragment.inspect}",
             "in schema resource root: #{schema_resource_root.pretty_inspect.chomp}",
-          ].join("\n"))
+          ], uri: ref_uri))
         else
-          raise(Schema::ReferenceError, [
+          raise(Schema::ReferenceError.new([
             "found multiple schemas for plain name fragment #{fragment.inspect}:",
             *result_schemas.map { |s| s.pretty_inspect.chomp },
-          ].join("\n"))
+          ], uri: ref_uri))
         end
       end
 

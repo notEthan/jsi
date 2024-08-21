@@ -1,6 +1,8 @@
 require_relative 'test_helper'
 
 describe 'new_jsi, new_schema' do
+  let(:other_schema_registry) { JSI::DEFAULT_SCHEMA_REGISTRY.dup }
+
   describe 'new_schema' do
     it 'initializes with a block' do
       schema1 = JSI.new_schema({'$id' => 'tag:gxif'}, default_metaschema: JSI::JSONSchemaDraft07) do
@@ -15,8 +17,6 @@ describe 'new_jsi, new_schema' do
   end
 
   describe('registration') do
-    let(:other_schema_registry) { JSI::DEFAULT_SCHEMA_REGISTRY.dup }
-
     it('JSI.new_schema registers schemas by default') do
       uri = 'http://jsi/schema_registry/m7ty'
       resource = JSI.new_schema({
@@ -46,10 +46,11 @@ describe 'new_jsi, new_schema' do
       assert_raises(JSI::SchemaRegistry::ResourceNotFound) { JSI.schema_registry.find(uri) }
     end
 
-    it('JSI.new_schema does not register with schema_registry: nil') do
+    it("Schema::MetaSchema#new_schema does not register with schema_registry: nil") do
       uri = 'http://jsi/schema_registry/qvjd'
-      JSI.new_schema({
-        '$schema' => 'http://json-schema.org/draft-07/schema',
+      # note: this uses Schema::MetaSchema#new_schema, not JSI.new_schema, because
+      # passing schema_registry: nil to the latter would cause $schema to fail to resolve
+      JSI::JSONSchemaDraft07.new_schema({
         '$id' => uri,
       }, schema_registry: nil)
       assert_raises(JSI::SchemaRegistry::ResourceNotFound) { other_schema_registry.find(uri) }
@@ -128,7 +129,9 @@ describe 'new_jsi, new_schema' do
       jsi = ref_schema.new_jsi({})
       assert_schemas([resource], jsi)
     end
+  end
 
+  describe("$schema lookup") do
     it('resolves $schema using the specified registry') do
       uri = 'http://jsi/schema_registry/kzwz'
       metaschema_document = JSI::JSONSchemaDraft07.schema.jsi_node_content.merge({'$id' => uri, '$schema' => uri})
@@ -138,6 +141,12 @@ describe 'new_jsi, new_schema' do
       assert_raises(JSI::SchemaRegistry::ResourceNotFound) { JSI.new_schema({'$schema' => uri}) }
       schema = JSI.new_schema({'$schema' => uri}, schema_registry: other_schema_registry)
       assert_schemas([metaschema], schema)
+    end
+
+    it("cannot resolve $schema with no registry") do
+      assert_raises(JSI::Schema::ReferenceError) do
+        JSI.new_schema({'$schema' => "http://json-schema.org/draft-07/schema#"}, schema_registry: nil)
+      end
     end
   end
 end

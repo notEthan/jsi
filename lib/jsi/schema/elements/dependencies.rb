@@ -31,7 +31,7 @@ module JSI
               # property in the instance, the entire instance must validate against
               # the dependency value.
               if instance.respond_to?(:to_hash) && instance.key?(property_name)
-                subschema(['dependencies', property_name]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+                inplace_subschema_applicate(['dependencies', property_name])
               end
             end
           end
@@ -52,12 +52,14 @@ module JSI
                   # a property in the instance, each of the items in the dependency value
                   # must be a property that exists in the instance.
                   if instance.respond_to?(:to_hash) && instance.key?(property_name)
-                    missing_required = dependency.reject { |name| instance.key?(name) }
-                    # TODO include property_name / missing dependent required property names in the validation error
+                    missing_required = dependency.reject { |name| instance.key?(name) }.freeze
                     validate(
                       missing_required.empty?,
+                      'validation.keyword.dependencies.dependent_required.missing_property_names',
                       'instance object does not contain all dependent required property names specified by `dependencies` value',
                       keyword: 'dependencies',
+                      property_name: property_name,
+                      missing_dependent_required_property_names: missing_required,
                     )
                   end
                 else
@@ -66,18 +68,17 @@ module JSI
                   # the dependency value.
                   if instance.respond_to?(:to_hash) && instance.key?(property_name)
                     dependency_result = inplace_subschema_validate(['dependencies', property_name])
-                    # TODO include property_name in the validation error
                     validate(
                       dependency_result.valid?,
+                      'validation.keyword.dependencies.dependent_schema.invalid',
                       'instance object is not valid against the schema corresponding to a matched property name specified by `dependencies` value',
                       keyword: 'dependencies',
                       results: [dependency_result],
+                      property_name: property_name,
                     )
                   end
                 end
               end
-            else
-              schema_error('`dependencies` is not an object', 'dependencies')
             end
           end
         end # element.add_action(:validate)

@@ -19,13 +19,13 @@ module JSI
         child_idx_valid = Hash.new { |h, i| h[i] = contains_schema.instance_valid?(instance[i]) }
 
         if child_idx_valid[token]
-          cxt_yield(contains_schema)
+          child_schema_applicate(contains_schema)
         else
           instance_valid = instance.each_index.any? { |i| child_idx_valid[i] }
 
           unless instance_valid
             # invalid application: if contains_schema does not validate against any child, it applies to every child
-            cxt_yield(contains_schema)
+            child_schema_applicate(contains_schema)
           end
         end
       end
@@ -43,9 +43,12 @@ module JSI
               end
               validate(
                 results.each_value.any?(&:valid?),
+                'validation.keyword.contains.none',
                 "instance array does not contain any items valid against `contains` schema",
                 keyword: 'contains',
                 results: results.each_value,
+                # when invalid these are all false, but included for consistency with `contains` with min/max
+                instance_indexes_valid: results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
               )
             end
           end

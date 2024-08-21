@@ -5,6 +5,7 @@ module JSI
     Error = Util::AttrStruct[*%w(
       message
       keyword
+      additional
       schema
       instance_ptr
       instance_document
@@ -20,6 +21,9 @@ module JSI
     #   the keyword of the schema which failed to validate.
     #   this may be absent if the error is not from a schema keyword (i.e, `false` schema).
     #   @return [String]
+    # @!attribute additional
+    #   additional contextual information about the error
+    #   @return [Hash]
     # @!attribute schema
     #   the schema against which the instance failed to validate
     #   @return [JSI::Schema]

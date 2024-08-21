@@ -56,11 +56,15 @@ describe JSI::Base do
   end
 
   describe('#class') do
-    it('uses the same class for the same schemas') do
-      schema1 = JSI::JSONSchemaDraft07.new_schema({'$id' => 'tag:codt'})
-      schema2 = JSI::JSONSchemaDraft07.new_schema({'$id' => 'tag:codt'}) # same schema, different object
-      assert_equal(schema1.new_jsi([]).class, schema2.new_jsi([]).class) # same class
-      assert_equal(schema1.new_jsi([]).class, schema2.new_jsi([0]).class) # same class, different instance
+    it("uses the same class for the same schema instance but not for equal schemas") do
+      schema1 = JSI::JSONSchemaDraft07.new_schema({'title' => 'c0dt'})
+      schema2 = JSI::JSONSchemaDraft07.new_schema({'title' => 'c0dt'}) # equal schema, different instance
+      schemas1 = JSI::SchemaSet[schema1]
+      schemas2 = JSI::SchemaSet[schema2]
+      assert_equal(schema1.new_jsi([]).class, schema1.new_jsi([]).class)
+      refute_equal(schema1.new_jsi([]).class, schema2.new_jsi([]).class)
+      assert_equal(schemas1.new_jsi([]).class, schemas1.new_jsi([]).class)
+      refute_equal(schemas1.new_jsi([]).class, schemas2.new_jsi([]).class)
     end
   end
 
@@ -427,7 +431,6 @@ describe JSI::Base do
         result = subject.jsi_validate
         assert_equal(true, result.valid?)
         assert_equal(Set[], result.validation_errors)
-        assert_equal(Set[], result.schema_issues)
       end
       it '#jsi_valid?' do
         assert_equal(true, subject.jsi_valid?)
@@ -460,12 +463,12 @@ describe JSI::Base do
           JSI::Validation::Error.new({
             message: "instance type does not match `type` value",
             keyword: "type",
+            additional: {},
             schema: schema,
             instance_ptr: JSI::Ptr[], instance_document: instance,
             child_errors: Set[],
           }),
         ], result.validation_errors)
-        assert_equal(Set[], result.schema_issues)
       end
     end
     describe 'at a depth' do
@@ -505,6 +508,7 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance type does not match `type` value",
               keyword: "type",
+              additional: {},
               schema: schema["properties"]["foo"],
               instance_ptr: JSI::Ptr["foo"], instance_document: instance,
               child_errors: Set[],
@@ -515,6 +519,7 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance type does not match `type` value",
               keyword: "type",
+              additional: {},
               schema: schema["properties"]["baz"],
               instance_ptr: JSI::Ptr["baz"], instance_document: instance,
               child_errors: Set[],
@@ -524,6 +529,7 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance is valid against `not` schema",
               keyword: "not",
+              additional: {},
               schema: schema["additionalProperties"],
               instance_ptr: JSI::Ptr["more"], instance_document: instance,
               child_errors: Set[],
@@ -533,12 +539,14 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance object properties are not all valid against corresponding `properties` schemas",
               keyword: "properties",
+              additional: {instance_properties_valid: {"foo" => false, "bar" => true, "baz" => false}},
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
               child_errors: Set[
                 JSI::Validation::Error.new({
                   message: "instance type does not match `type` value",
                   keyword: "type",
+                  additional: {},
                   schema: schema["properties"]["foo"],
                   instance_ptr: JSI::Ptr["foo"], instance_document: instance,
                   child_errors: Set[],
@@ -546,6 +554,7 @@ describe JSI::Base do
                 JSI::Validation::Error.new({
                   message: "instance type does not match `type` value",
                   keyword: "type",
+                  additional: {},
                   schema: schema["properties"]["baz"],
                   instance_ptr: JSI::Ptr["baz"], instance_document: instance,
                   child_errors: Set[],
@@ -555,12 +564,14 @@ describe JSI::Base do
             JSI::Validation::Error.new({
               message: "instance object additional properties are not all valid against `additionalProperties` schema",
               keyword: "additionalProperties",
+              additional: {instance_properties_valid: {"more" => false}},
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
               child_errors: Set[
                 JSI::Validation::Error.new({
                   message: "instance is valid against `not` schema",
                   keyword: "not",
+                  additional: {},
                   schema: schema["additionalProperties"],
                   instance_ptr: JSI::Ptr["more"], instance_document: instance,
                   child_errors: Set[],
@@ -869,6 +880,21 @@ describe JSI::Base do
     it('HashNode keys') do
       assert_equal({'a' => 'b'}, schema.new_jsi({SortOfString.new('a') => 'b'}, to_immutable: nil).as_json)
       assert_raises(TypeError) { schema.new_jsi({SortOfString.new(0) => 'b'}, to_immutable: nil).as_json }
+    end
+  end
+
+  describe("#to_json") do
+    it("makes JSON") do
+      assert_equal(%q({}), schema.new_jsi({}).to_json)
+      assert_equal(%q({"a":"b"}), schema.new_jsi({"a" => "b"}).to_json)
+      assert_equal(%q({"a":"b"}), JSON.generate(schema.new_jsi({"a" => "b"})))
+      pretty = <<~JSON
+      {
+        "a": "b"
+      }
+      JSON
+      assert_equal(pretty.chomp, JSON.pretty_generate(schema.new_jsi({"a" => "b"})))
+      assert_equal(%q({"a":   "b"}), JSON.generate(schema.new_jsi({"a" => "b"}), space: '   '))
     end
   end
 

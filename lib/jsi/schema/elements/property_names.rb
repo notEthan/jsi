@@ -29,9 +29,11 @@ module JSI
           end
           validate(
             results.each_value.all?(&:valid?),
+            'validation.keyword.propertyNames.invalid',
             "instance object property names are not all valid against `propertyNames` schema",
             keyword: 'propertyNames',
             results: results.each_value,
+            instance_property_names_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
           )
         end
       end

@@ -5,7 +5,7 @@ module JSI
     SELF = element_map do
       Schema::Element.new do |element|
         element.add_action(:inplace_applicate) do
-          cxt_yield(schema)
+          inplace_schema_applicate(schema)
         end
 
         element.add_action(:validate) do
@@ -15,7 +15,7 @@ module JSI
           #>
           #> false: Always fails validation, as if the schema { "not":{} }
           if schema_content == false
-            validate(false, "instance is not valid against `false` schema")
+            validate(false, 'validation.false_schema', "instance is not valid against `false` schema")
           end
         end
       end

@@ -5,8 +5,8 @@ module JSI
     vocabularies: [
       Schema::Vocabulary.new(elements: [
         Schema::Element.new do |element|
-          element.add_action(:inplace_applicate) { cxt_yield(schema) }
-          element.add_action(:child_applicate) { cxt_yield(schema) }
+          element.add_action(:inplace_applicate) { inplace_schema_applicate(schema) }
+          element.add_action(:child_applicate) { child_schema_applicate(schema) }
         end,
       ]),
     ],

@@ -11,16 +11,15 @@ module JSI
         if value.respond_to?(:to_ary)
           if instance.respond_to?(:to_hash)
             # An object instance is valid against this keyword if every item in the array is the name of a property in the instance.
-            missing_required = value.reject { |property_name| instance.key?(property_name) }
-            # TODO include missing required property names in the validation error
+            missing_required = value.reject { |property_name| instance.key?(property_name) }.freeze
             validate(
               missing_required.empty?,
+              'validation.keyword.required.missing_property_names',
               'instance object does not contain all property names specified by `required` value',
               keyword: 'required',
+              missing_required_property_names: missing_required,
             )
           end
-        else
-          schema_error('`required` is not an array', 'required')
         end
       end
         end # element.add_action(:validate)

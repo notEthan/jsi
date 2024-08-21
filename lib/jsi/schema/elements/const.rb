@@ -12,6 +12,7 @@ module JSI
         # the keyword.
         validate(
           instance == value,
+          'validation.keyword.const.not_equal',
           'instance is not equal to `const` value',
           keyword: 'const',
         )

@@ -28,6 +28,9 @@ module JSI
     class SimpleNodeChildError < StandardError
     end
 
+    class ChildNotPresent < StandardError
+    end
+
     class << self
       # A string indicating the schema module name
       # and/or schema URI of each schema the class represents.
@@ -50,7 +53,7 @@ module JSI
           end
 
           if schema_names.empty?
-            "(JSI Schema Class for 0 schemas#{jsi_class_includes.map { |n| " + #{n}" }})"
+            "(JSI Schema Class for 0 schemas#{jsi_class_includes.map { |n| " + #{n}" }.join})"
           else
             -"(JSI Schema Class: #{(schema_names + jsi_class_includes.map(&:name)).join(' + ')})"
           end
@@ -393,7 +396,7 @@ module JSI
     #
     # @param token [String, Integer]
     # @return [Boolean]
-    def jsi_child_token_in_range?(token)
+    def jsi_child_token_present?(token)
       # note: overridden by Base::HashNode, Base::ArrayNode
       false
     end
@@ -434,9 +437,13 @@ module JSI
     end
     private :jsi_child # internals for #[] but idk, could be public
 
-    # @param token (see Base#[])
+    # @param token An array index or Hash/object property name identifying a present child of this node
     # @return [JSI::Base]
-    protected def jsi_child_node(token)
+    # @raise [Base::ChildNotPresent]
+    def jsi_child_node(token)
+      if !jsi_child_token_present?(token)
+        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
+      end
       jsi_child(token, as_jsi: true)
     end
 
@@ -459,9 +466,7 @@ module JSI
 
       defaults = Set.new
       child_applied_schemas.each do |child_schema|
-        if child_schema.keyword?('default')
-          defaults << child_schema.jsi_node_content['default']
-        end
+        defaults.merge(child_schema.dialect_invoke_each(:default))
       end
 
       if defaults.size == 1
@@ -768,7 +773,7 @@ module JSI
     # Calls {Util.to_json} with the instance and any given options.
     # @return [String]
     def to_json(options = {})
-      Util.to_json(jsi_instance, **options)
+      Util.to_json(jsi_instance, options)
     end
 
     # see {Util::Private::FingerprintHash}

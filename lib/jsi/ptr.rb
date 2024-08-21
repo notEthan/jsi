@@ -13,7 +13,7 @@ module JSI
       end
 
       # raised when a pointer refers to a path in a document that could not be resolved
-      class ResolutionError < Error
+      class ResolutionError < JSI::ResolutionError
       end
 
       POS_INT_RE = /\A[1-9]\d*\z/

@@ -115,21 +115,23 @@ module JSI
       # @return [Class subclass of JSI::Base]
       def class_for_schemas(schemas, includes: , mutable: )
         @class_for_schemas_map[
-          schemas: SchemaSet.ensure_schema_set(schemas),
+          schema_modules: schemas.map(&:jsi_schema_module).to_set.freeze,
           includes: Util.ensure_module_set(includes),
           mutable: mutable,
         ]
       end
 
-      private def class_for_schemas_compute(schemas: , includes: , mutable: )
+      private def class_for_schemas_compute(schema_modules: , includes: , mutable: )
           Class.new(Base) do
+            schemas = SchemaSet.new(schema_modules.map(&:schema))
+
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
 
             define_singleton_method(:jsi_class_includes) { includes }
 
             mutability_module = mutable ? Base::Mutable : Base::Immutable
-            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schemas.map(&:jsi_schema_module)
+            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schema_modules
 
             include(mutability_module)
 
@@ -149,7 +151,7 @@ module JSI
             end
 
             includes.each { |m| include(m) }
-            schemas.to_a.reverse_each { |schema| include(schema.jsi_schema_module) }
+            schema_modules.to_a.reverse_each { |m| include(m) }
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
 
@@ -175,15 +177,6 @@ module JSI
 
             self
           end
-      end
-
-      # see {Schema#jsi_schema_module}
-      # @api private
-      # @return [SchemaModule]
-      def module_for_schema(schema)
-        Schema.ensure_schema(schema)
-        raise(Bug, "non-Base schema cannot have schema module: #{schema}") unless schema.is_a?(Base)
-        @schema_module_map[schema]
       end
 
       # @private
@@ -257,7 +250,6 @@ module JSI
 
     @class_for_schemas_map          = Hash.new { |h, k| h[k] = class_for_schemas_compute(**k) }
     @bootstrap_schema_class_map      = Hash.new { |h, k| h[k] = bootstrap_schema_class_compute(**k) }
-    @schema_module_map                = Hash.new { |h, schema| h[schema] = SchemaModule.new(schema) }
     @schema_property_reader_module_map = Hash.new { |h, k| h[k] = schema_property_reader_module_compute(**k) }
     @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(**k) }
   end
@@ -319,7 +311,9 @@ module JSI
     # @return [Array<JSI::Schema, Array>, nil]
     def named_ancestor_schema_tokens
       schema_ancestors = @jsi_node.jsi_ancestor_nodes
-      named_ancestor_schema = schema_ancestors.detect { |jsi| jsi.is_a?(JSI::Schema) && jsi.jsi_schema_module.name }
+      named_ancestor_schema = schema_ancestors.detect do |jsi|
+        jsi.is_a?(Schema) && jsi.jsi_schema_module_defined? && jsi.jsi_schema_module.name
+      end
       return nil unless named_ancestor_schema
       tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
       [named_ancestor_schema, tokens]

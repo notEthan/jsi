@@ -9,11 +9,11 @@ module JSI
 
       VOCABULARY = Vocabulary.new(
         elements: [
-          # draft-wright-json-schema-01 8.  Schema references with $ref
-          Schema::Elements::REF[exclusive: true],
-
           # the schema itself
           Schema::Elements::SELF[],
+
+          # draft-wright-json-schema-01 8.  Schema references with $ref
+          Schema::Elements::REF[exclusive: true],
 
           # draft-wright-json-schema-01 9.  Base URI and dereferencing
 
@@ -107,10 +107,14 @@ module JSI
 
           # draft-wright-json-schema-validation-01 7.1.  definitions
           Schema::Elements::DEFINITIONS[keyword: 'definitions'],
+
+          # draft-wright-json-schema-validation-01 7.3.  "default"
+          Schema::Elements::DEFAULT[],
         ],
       )
 
       DIALECT = Dialect.new(
+        id: "http://json-schema.org/draft-06/schema",
         vocabularies: [VOCABULARY],
       )
 

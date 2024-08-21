@@ -32,18 +32,18 @@ module JSI
       apply_additional = true
       if keyword?('properties') && schema_content['properties'].respond_to?(:to_hash) && schema_content['properties'].key?(token)
         apply_additional = false
-        cxt_yield(subschema(['properties', token]))
+        child_subschema_applicate(['properties', token])
       end
       if keyword?('patternProperties') && schema_content['patternProperties'].respond_to?(:to_hash)
         schema_content['patternProperties'].each_key do |pattern|
           if pattern.respond_to?(:to_str) && token.to_s =~ Regexp.new(pattern) # TODO map pattern to ruby syntax
             apply_additional = false
-            cxt_yield(subschema(['patternProperties', pattern]))
+            child_subschema_applicate(['patternProperties', pattern])
           end
         end
       end
       if apply_additional && keyword?('additionalProperties')
-        cxt_yield(subschema(['additionalProperties']))
+        child_subschema_applicate(['additionalProperties'])
       end
     end # if instance.respond_to?(:to_hash)
         end # element.add_action(:child_applicate)
@@ -71,13 +71,13 @@ module JSI
                 end
                 validate(
                   results.each_value.all?(&:valid?),
+                  'validation.keyword.properties.invalid',
                   "instance object properties are not all valid against corresponding `properties` schemas",
                   keyword: 'properties',
                   results: results.each_value,
+                  instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
                 )
               end
-            else
-              schema_error('`properties` is not an object', 'properties')
             end
           end
 
@@ -104,19 +104,19 @@ module JSI
                         )
                       end
                     rescue ::RegexpError
-                      schema_error("`patternProperties` key #{property_name.inspect} is not a valid regular expression: #{e.message}", 'patternProperties')
+                      # cannot validate
                     end
                   end
                 end
                 validate(
                   results.each_value.all?(&:valid?),
+                  'validation.keyword.patternProperties.invalid',
                   "instance object properties are not all valid against matching `patternProperties` schemas",
                   keyword: 'patternProperties',
                   results: results.each_value,
+                  instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
                 )
               end
-            else
-              schema_error('`patternProperties` is not an object', 'patternProperties')
             end
           end
 
@@ -134,9 +134,11 @@ module JSI
               end
               validate(
                 results.each_value.all?(&:valid?),
+                'validation.keyword.additionalProperties.invalid',
                 "instance object additional properties are not all valid against `additionalProperties` schema",
                 keyword: 'additionalProperties',
                 results: results.each_value,
+                instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
               )
             end
           end

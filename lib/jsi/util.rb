@@ -85,10 +85,15 @@ module JSI
     # - Otherwise, JSON is generated using {as_json} to coerce to compatible types.
     # @return [String]
     def to_json(object, options = {})
+      options_state = options.class.name =~ /\AJSON:.*:Generator::State\z/
       if USE_TO_JSON_METHOD[object.class]
-        options.empty? ? object.to_json : object.to_json(**options) # TODO remove eventually (keyword argument compatibility)
+        (options_state || !options.empty?) ? object.to_json(options) : object.to_json # TODO remove eventually (keyword argument compatibility)
       else
-        JSON.generate(as_json(object, **options))
+        if options_state
+          JSON.generate(as_json(object), options)
+        else
+          JSON.generate(as_json(object, **options))
+        end
       end
     end
 

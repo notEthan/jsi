@@ -15,19 +15,17 @@ module JSI
               # dialect.
               # TODO
               regexp = Regexp.new(value)
-              # A string instance is considered valid if the regular expression matches the instance
-              # succssfully. Recall: regular expressions are not implicitly anchored.
+              #> A string instance is considered valid if the regular expression matches the instance successfully.
               validate(
                 regexp.match(instance),
+                'validation.keyword.pattern.not_match',
                 'instance string does not match `pattern` regular expression value',
                 keyword: 'pattern',
               )
-            rescue RegexpError => e
-              schema_error(-"`pattern` is not a valid regular expression: #{e.message}", 'pattern')
+            rescue RegexpError
+              # cannot validate
             end
           end
-        else
-          schema_error('`pattern` is not a string', 'pattern')
         end
       end
         end # element.add_action(:validate)

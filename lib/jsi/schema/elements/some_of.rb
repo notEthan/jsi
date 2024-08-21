@@ -17,7 +17,7 @@ module JSI
         element.add_action(:inplace_applicate) do
       if keyword?('allOf') && schema_content['allOf'].respond_to?(:to_ary)
         schema_content['allOf'].each_index do |i|
-          subschema(['allOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+          inplace_subschema_applicate(['allOf', i])
         end
       end
         end # element.add_action(:inplace_applicate)
@@ -34,12 +34,12 @@ module JSI
               end
               validate(
                 allOf_results.all?(&:valid?),
+                'validation.keyword.allOf.not_all_valid',
                 "instance is not valid against all `allOf` schemas",
                 keyword: 'allOf',
                 results: allOf_results,
+                allOf_indexes_valid: allOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
               )
-            else
-              schema_error('`allOf` is not an array', 'allOf')
             end
           end
         end # element.add_action(:validate)
@@ -72,7 +72,7 @@ module JSI
         end
 
         applicators.each do |applicator|
-          applicator.each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+          inplace_schema_applicate(applicator)
         end
       end
         end # element.add_action(:inplace_applicate)
@@ -91,12 +91,13 @@ module JSI
               end
               validate(
                 anyOf_results.any?(&:valid?),
+                'validation.keyword.anyOf.not_any_valid',
                 "instance is not valid against any `anyOf` schema",
                 keyword: 'anyOf',
                 results: anyOf_results,
+                # when invalid these are all false, but included for consistency with allOf/oneOf
+                anyOf_indexes_valid: anyOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
               )
-            else
-              schema_error('`anyOf` is not an array', 'anyOf')
             end
           end
         end # element.add_action(:validate)
@@ -131,7 +132,7 @@ module JSI
         end
 
         applicator_idxs.each do |i|
-          subschema(['oneOf', i]).each_inplace_applicator_schema(instance, visited_refs: visited_refs, &block)
+          inplace_subschema_applicate(['oneOf', i])
         end
       end
         end # element.add_action(:inplace_applicate)
@@ -149,21 +150,22 @@ module JSI
               if oneOf_results.none?(&:valid?)
                 validate(
                   false,
+                  'validation.keyword.oneOf.not_any_valid',
                   "instance is not valid against any `oneOf` schema",
                   keyword: 'oneOf',
                   results: oneOf_results,
+                  oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               else
-                # TODO better info on what schemas passed/failed validation
                 validate(
                   oneOf_results.select(&:valid?).size == 1,
+                  'validation.keyword.oneOf.multiple_valid',
                   "instance is valid against multiple `oneOf` schemas",
                   keyword: 'oneOf',
                   results: oneOf_results,
+                  oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
                 )
               end
-            else
-              schema_error('`oneOf` is not an array', 'oneOf')
             end
           end
         end # element.add_action(:validate)

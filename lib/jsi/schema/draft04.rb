@@ -9,11 +9,11 @@ module JSI
 
       VOCABULARY = Vocabulary.new(
         elements: [
-          # draft-pbryan-zyp-json-ref-03
-          Schema::Elements::REF[exclusive: true],
-
           # the schema itself
           Schema::Elements::SELF[],
+
+          # draft-pbryan-zyp-json-ref-03
+          Schema::Elements::REF[exclusive: true],
 
           # draft-zyp-json-schema-04 7.  URI resolution scopes and dereferencing
 
@@ -97,10 +97,14 @@ module JSI
 
           # draft-fge-json-schema-validation-00 5.5.7.  definitions
           Schema::Elements::DEFINITIONS[keyword: 'definitions'],
+
+          # draft-fge-json-schema-validation-00 6.2.  "default"
+          Schema::Elements::DEFAULT[],
         ],
       )
 
       DIALECT = Dialect.new(
+        id: "http://json-schema.org/draft-04/schema",
         vocabularies: [VOCABULARY],
       )
 

@@ -20,6 +20,19 @@ module JSI
   # @private TODO remove, any ruby without this is already long EOL
   FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
 
+  # A reference or pointer cannot be resolved
+  class ResolutionError < StandardError
+    # @param msg [String, Array]
+    # @param uri [Addressable::URI, nil]
+    def initialize(msg, *a, uri: nil)
+      super([*msg].compact.join("\n"), *a)
+      @uri = Util.uri(uri, nnil: false)
+    end
+
+    # @return [Addressable::URI, nil]
+    attr_accessor(:uri)
+  end
+
   # A URI does not meet some requirement where it is used - absent
   # when it's required, relative when it must be absolute, etc.
   class URIError < Addressable::URI::InvalidURIError
@@ -128,6 +141,27 @@ module JSI
   end.freeze
 
   self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup
+
+  # translation
+  # @param key [String]
+  # @param default [String]
+  # @return [String]
+  def self.t(key, default: , **options)
+    translator.call(key, default: default, **options)
+  end
+
+  # @return [#call]
+  def self.translator
+    @translator
+  end
+
+  # @param translator [#call]
+  def self.translator=(translator)
+    @translator = translator
+  end
+
+  DEFAULT_TRANSLATOR = proc { |_key, default: , **_| default }
+  self.translator = DEFAULT_TRANSLATOR
 
   Schema # trigger autoload, ensure JSI methods (new_schema etc) defined in schema.rb load
 end

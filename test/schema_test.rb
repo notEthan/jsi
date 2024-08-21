@@ -563,10 +563,16 @@ describe JSI::Schema do
       assert_equal(schema, schema.jsi_schema_module.schema)
     end
 
-    it 'returns the same module for equal schemas' do
-      schema = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
-      schema_again = JSI::JSONSchemaDraft07.new_schema({'$id' => 'http://jsi/schema/jsi_schema_module_eq'})
-      assert_equal(schema.jsi_schema_module, schema_again.jsi_schema_module)
+    it("is not shared between equal schemas") do
+      schema = JSI::JSONSchemaDraft07.new_schema({'title' => 'jsi_schema_module_eq'})
+      schema_again = JSI::JSONSchemaDraft07.new_schema({'title' => 'jsi_schema_module_eq'})
+      refute_equal(schema.jsi_schema_module, schema_again.jsi_schema_module)
+    end
+
+    it("does not create a schema module for a mutable schema") do
+      schema = JSI::JSONSchemaDraft07.new_jsi({'$id' => 'tag:4o50'}, mutable: true)
+      e = assert_raises(TypeError) { schema.jsi_schema_module }
+      assert_equal(%q(mutable schema may not have a schema module: #{<JSI (JSI::JSONSchemaDraft07) Schema> "$id" => "tag:4o50"}), e.message)
     end
   end
 
@@ -922,7 +928,6 @@ describe JSI::Schema do
         result = schema.instance_validate(instance)
         assert_equal(true, result.valid?)
         assert_equal(Set[], result.validation_errors)
-        assert_equal(Set[], result.schema_issues)
       end
       it '#instance_valid?' do
         assert_equal(true, schema.instance_valid?(instance))
@@ -937,12 +942,12 @@ describe JSI::Schema do
           JSI::Validation::Error.new({
             :message => "instance type does not match `type` value",
             :keyword => "type",
+            :additional => {},
             :schema => schema,
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
             :child_errors => Set[],
           }),
         ], result.validation_errors)
-        assert_equal(Set[], result.schema_issues)
       end
       it '#instance_valid?' do
         assert_equal(false, schema.instance_valid?(instance))
