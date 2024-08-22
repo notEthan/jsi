@@ -7,13 +7,13 @@ JSONSchemaTestSchema = JSI::JSONSchemaOrgDraft07.new_schema(JSON.parse(test_sche
 $test_report_time["JSONSchemaTestSchema set up"]
 
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
-  schema_registry = JSI.schema_registry.dup
+  jsts_schema_registry = JSI.schema_registry.dup
 
   Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
     Dir.glob('**/*.json').each do |subpath|
       remote_content = ::JSON.parse(File.open(subpath, 'r:UTF-8', &:read))
       uri = File.join('http://localhost:1234/', subpath)
-      schema_registry.autoload_uri(uri) do
+      jsts_schema_registry.autoload_uri(uri) do |schema_registry: |
         if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
           subSchemas_schema = JSI.new_schema({
             '$schema' => 'http://json-schema.org/draft-07/schema',
@@ -35,7 +35,7 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
   end
   $test_report_time["remotes set up"]
 
-  h[metaschema] = schema_registry
+  h[metaschema] = jsts_schema_registry
 end
 
 describe 'JSON Schema Test Suite' do
