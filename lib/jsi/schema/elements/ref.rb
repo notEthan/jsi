@@ -10,32 +10,27 @@ module JSI
           element.required_before_elements { |_| true }
         end
 
-        element.add_action(:inplace_applicate) do
-      if keyword?('$ref') && schema_content['$ref'].respond_to?(:to_str)
-        ref = schema.schema_ref('$ref')
-        unless visited_refs.include?(ref)
+        resolve_ref = proc do
+          next if !keyword_value_str?('$ref')
+          ref = schema.schema_ref('$ref')
+          next if visited_refs.include?(ref)
           resolved_schema = ref.deref_schema
+          [resolved_schema, ref]
+        end
+
+        element.add_action(:inplace_applicate) do
+          resolved_schema, ref = *instance_exec(&resolve_ref) || next
+
           inplace_schema_applicate(resolved_schema, ref: ref)
 
           if exclusive
             self.abort = true
           end
-        end
-      end
         end # element.add_action(:inplace_applicate)
 
         element.add_action(:validate) do
-          if keyword?('$ref')
-            value = schema_content['$ref']
+                resolved_schema, schema_ref = *instance_exec(&resolve_ref) || next
 
-            if value.respond_to?(:to_str)
-              schema_ref = schema.schema_ref('$ref')
-
-              if visited_refs.include?(schema_ref)
-                next
-              end
-
-                resolved_schema = schema_ref.deref_schema
                 ref_result = resolved_schema.internal_validate_instance(
                   instance_ptr,
                   instance_document,
@@ -52,8 +47,6 @@ module JSI
                 if exclusive
                   self.abort = true
                 end
-            end
-          end
         end # element.add_action(:validate)
       end # Schema::Element.new
     end # REF = element_map
