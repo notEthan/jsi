@@ -7,10 +7,6 @@ module JSI
     class Collision < StandardError
     end
 
-    # @deprecated alias after v0.8
-    # an exception raised when a URI we are looking for has not been registered
-    ResourceNotFound = ResolutionError
-
     # @private
     Autoloader = Struct.subclass(:block, :mutex)
 
