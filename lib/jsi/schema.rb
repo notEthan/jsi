@@ -35,10 +35,6 @@ module JSI
     class NotAMetaSchemaError < TypeError
     end
 
-    # @deprecated alias after v0.8
-    # an exception raised when we are unable to resolve a schema reference
-    ReferenceError = ResolutionError
-
     # A reference to a schema identified by a given URI.
     # {#resolve} will return a Schema, and param `referrer` must be a Schema.
     class Ref < Ref
