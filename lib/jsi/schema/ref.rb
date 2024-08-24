@@ -142,12 +142,12 @@ module JSI
         if result_schemas.size == 1
           result_schema = result_schemas.first
         elsif result_schemas.size == 0
-          raise(Schema::ReferenceError.new([
+          raise(ResolutionError.new([
             "could not find schema by fragment: #{fragment.inspect}",
             "in schema resource root: #{schema_resource_root.pretty_inspect.chomp}",
           ], uri: ref_uri))
         else
-          raise(Schema::ReferenceError.new([
+          raise(ResolutionError.new([
             "found multiple schemas for plain name fragment #{fragment.inspect}:",
             *result_schemas.map { |s| s.pretty_inspect.chomp },
           ], uri: ref_uri))

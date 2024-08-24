@@ -50,7 +50,7 @@ describe("JSON Referencing Test Suite") do
                       "with base URI: #{base_uri.inspect}",
                       "resolved to: #{resolved_schema.pretty_inspect.chomp}",
                     ].join("\n"))
-                  rescue JSI::SchemaRegistry::ResourceNotFound, JSI::Schema::ReferenceError
+                  rescue JSI::ResolutionError
                   end
                 else
                   resolved_schema = ref.deref_schema
