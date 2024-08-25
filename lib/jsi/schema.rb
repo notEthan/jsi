@@ -706,8 +706,7 @@ module JSI
         instance: instance,
         visited_refs: visited_refs,
       ) do |schema, ref: nil|
-        if schema.equal?(self)
-          #chkbug raise(Bug) if ref
+        if schema.equal?(self) && !ref
           yield(self)
         else
           schema.each_inplace_applicator_schema(
