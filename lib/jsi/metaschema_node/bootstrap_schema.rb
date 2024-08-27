@@ -9,7 +9,7 @@ module JSI
   # and resolve references. #[] and #jsi_root_node are not implemented.
   #
   # #dialect is defined on generated subclasses of BootstrapSchema by
-  # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
+  # {Schema::Dialect#bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
   #
   # BootstrapSchema does not support mutation; its document must be immutable.

@@ -66,7 +66,7 @@ module JSI
       #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
       instance_for_schemas = jsi_document
-      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(msn_dialect)
+      bootstrap_schema_class = msn_dialect.bootstrap_schema_class
       root_bootstrap_schema = bootstrap_schema_class.new(
         jsi_document,
         jsi_ptr: root_schema_ptr,

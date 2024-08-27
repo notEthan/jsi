@@ -7,7 +7,7 @@ require_relative 'test_helper'
 
 describe(JSI::MetaSchemaNode::BootstrapSchema) do
   let(:dialect) { JSI::Schema::Dialect.new(id: 'tag:dialect:dqzk', vocabularies: []) }
-  let(:bootstrap_schema_class) { JSI::SchemaClasses.bootstrap_schema_class(dialect) }
+  let(:bootstrap_schema_class) { dialect.bootstrap_schema_class }
   let(:document) do
     JSI::DEFAULT_CONTENT_TO_IMMUTABLE[{
       "properties" => {

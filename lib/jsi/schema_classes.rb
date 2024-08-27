@@ -159,25 +159,6 @@ module JSI
           end
       end
 
-      # a subclass of MetaSchemaNode::BootstrapSchema with the given modules included
-      # @api private
-      # @param dialect [Schema::Dialect]
-      # @return [Class subclass of JSI::MetaSchemaNode::BootstrapSchema]
-      def bootstrap_schema_class(dialect)
-        @bootstrap_schema_class_map[
-          dialect: dialect,
-        ]
-      end
-
-      private def bootstrap_schema_class_compute(dialect: )
-          Class.new(MetaSchemaNode::BootstrapSchema) do
-            define_singleton_method(:described_dialect) { dialect }
-            define_method(:dialect) { dialect }
-
-            self
-          end
-      end
-
       # @private
       # @deprecated after v0.7
       def accessor_module_for_schema(schema, conflicting_modules: , setters: true)
@@ -248,7 +229,6 @@ module JSI
     end
 
     @class_for_schemas_map          = Hash.new { |h, k| h[k] = class_for_schemas_compute(**k) }
-    @bootstrap_schema_class_map      = Hash.new { |h, k| h[k] = bootstrap_schema_class_compute(**k) }
     @schema_property_reader_module_map = Hash.new { |h, k| h[k] = schema_property_reader_module_compute(**k) }
     @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(**k) }
   end

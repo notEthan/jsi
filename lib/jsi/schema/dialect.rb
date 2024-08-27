@@ -45,6 +45,8 @@ module JSI
         end
         @elements_performing.freeze
 
+        @bootstrap_schema_class = bootstrap_schema_class_compute
+
         freeze
       end
 
@@ -59,6 +61,11 @@ module JSI
 
       # @return [Array<Schema::Element>]
       attr_reader(:elements)
+
+      # a subclass of {MetaSchemaNode::BootstrapSchema} for this Dialect
+      # @api private
+      # @return [Class subclass of MetaSchemaNode::BootstrapSchema]
+      attr_reader(:bootstrap_schema_class)
 
       # Invoke the indicated action of each Element on the given context
       # @param action_name [Symbol]
@@ -94,6 +101,18 @@ module JSI
           q.text("id: <#{id}>")
         end
         q.text('>')
+      end
+
+      private
+
+      def bootstrap_schema_class_compute
+        dialect = self
+        Class.new(MetaSchemaNode::BootstrapSchema) do
+          define_singleton_method(:described_dialect) { dialect }
+          define_method(:dialect) { dialect }
+
+          self
+        end
       end
     end
   end
