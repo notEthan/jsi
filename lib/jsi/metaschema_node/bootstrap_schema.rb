@@ -142,9 +142,9 @@ module JSI
     def jsi_object_group_text
       [
         self.class.name || MetaSchemaNode::BootstrapSchema.name,
-        -"(#{schema_implementation_modules.map(&:inspect).join(', ')})",
+        dialect.id ? -"(#{dialect.id})" : nil,
         jsi_ptr.uri,
-      ].freeze
+      ].compact.freeze
     end
 
     # see {Util::Private::FingerprintHash}

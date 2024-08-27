@@ -6,7 +6,7 @@ require_relative 'test_helper'
 # exist to support, some code paths for development or debugging are not.
 
 module TestSchemaImplModule
-  dialect = JSI::Schema::Dialect.new(vocabularies: [])
+  dialect = JSI::Schema::Dialect.new(id: 'tag:dialect:dqzk', vocabularies: [])
   define_method(:dialect) { dialect }
 end
 
@@ -29,11 +29,11 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
   it 'is pretty' do
     schema = bootstrap_schema_class.new(document)
 
-    inspect = -%Q(#<JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule) # #{document.inspect}>)
+    inspect = -%Q(#<JSI::MetaSchemaNode::BootstrapSchema (tag:dialect:dqzk) # #{document.inspect}>)
     assert_equal(inspect, schema.inspect)
 
     assert_equal(schema.inspect, schema.to_s)
-    assert_match(%r(\A#<JSI::MetaSchemaNode::BootstrapSchema \(TestSchemaImplModule\) #\n  .*\n>\Z)m, schema.pretty_inspect)
+    assert_match(%r(\A#<JSI::MetaSchemaNode::BootstrapSchema \(tag:dialect:dqzk\) #\n  .*\n>\Z)m, schema.pretty_inspect)
   end
 
   it 'has a named class' do
