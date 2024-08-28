@@ -601,10 +601,10 @@ module JSI
       schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
 
       if jsi_schema_module <= Schema
-        # this schema, or one equal to it, has already had describes_schema! called on it.
+        # this schema has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
         # it is a bug if it was called different times with different schema_implementation_modules, though.
-        unless jsi_schema_module.schema_implementation_modules == schema_implementation_modules
+        unless @schema_implementation_modules == schema_implementation_modules
           raise(ArgumentError, "this schema already describes a schema with different schema_implementation_modules")
         end
       else
