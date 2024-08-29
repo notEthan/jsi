@@ -26,7 +26,7 @@ module JSI
   class ResolutionError < StandardError
     # @param msg [String, Array]
     # @param uri [Addressable::URI, nil]
-    def initialize(msg, *a, uri: nil)
+    def initialize(msg = nil, *a, uri: nil)
       super([*msg].compact.join("\n"), *a)
       @uri = Util.uri(uri, nnil: false)
     end
