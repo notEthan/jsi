@@ -68,7 +68,7 @@ module JSI
 
     # overrides {Schema#subschema}
     def subschema(subptr)
-      self.class.new(
+      dialect.bootstrap_schema(
         jsi_document,
         jsi_ptr: jsi_ptr + subptr,
         jsi_schema_base_uri: jsi_resource_ancestor_uri,
@@ -102,7 +102,7 @@ module JSI
       end
       # no schema_resource_root means the root is not a schema and no parent schema has an absolute uri.
       # result schema is instantiated relative to document root.
-      self.class.new(
+      dialect.bootstrap_schema(
         jsi_document,
         jsi_ptr: ptr,
         jsi_schema_base_uri: nil,

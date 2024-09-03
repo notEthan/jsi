@@ -69,6 +69,12 @@ module JSI
       # @return [Class subclass of MetaSchemaNode::BootstrapSchema]
       attr_reader(:bootstrap_schema_class)
 
+      # @api private
+      # @return [MetaSchemaNode::BootstrapSchema]
+      def bootstrap_schema(document, **kw)
+        bootstrap_schema_class.new(document, **kw)
+      end
+
       # Invoke the indicated action of each Element on the given context
       # @param action_name [Symbol]
       # @param cxt [Schema::Cxt] the `self` of the action

@@ -54,7 +54,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   def bootstrap_schema(schema_content, registry: nil, base_uri: nil)
-    dialect.bootstrap_schema_class.new(
+    dialect.bootstrap_schema(
       schema_content,
       jsi_schema_base_uri: JSI::Util.uri(base_uri, nnil: false),
       jsi_schema_registry: registry,

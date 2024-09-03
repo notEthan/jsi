@@ -68,14 +68,12 @@ module JSI
 
       #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
-      bootstrap_schema_class = msn_dialect.bootstrap_schema_class
-
       bootstrap_schema_from_ref = proc do |ref_uri|
         ref_uri_nofrag = ref_uri.merge(fragment: nil).freeze
 
         if ref_uri_nofrag.empty?
           ptr = Ptr.from_fragment(ref_uri.fragment) # anchor not supported
-          bootstrap_schema_class.new(
+          msn_dialect.bootstrap_schema(
             jsi_document,
             jsi_ptr: ptr,
             jsi_schema_base_uri: nil, # not supported

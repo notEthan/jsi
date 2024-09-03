@@ -71,8 +71,7 @@ describe 'JSON Schema Test Suite' do
                 )
 
                 bootstrap_schema_registry = JSTS_REGISTRIES[metaschema].dup
-                bootstrap_schema_class = desc_schema.dialect.bootstrap_schema_class
-                desc_bootstrap_schema = bootstrap_schema_class.new(
+                desc_bootstrap_schema = desc_schema.dialect.bootstrap_schema(
                   tests_desc.jsi_instance['schema'],
                   jsi_schema_registry: bootstrap_schema_registry,
                 )
