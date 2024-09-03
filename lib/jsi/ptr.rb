@@ -134,6 +134,7 @@ module JSI
       # @param document [Object]
       # @return [Ptr]
       def resolve_against(document)
+        return(self) if tokens.empty?
         node = document
         resolved_tokens = Array.new(tokens.size)
         tokens.each_with_index do |token, i|
