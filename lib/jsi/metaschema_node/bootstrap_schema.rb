@@ -8,10 +8,6 @@ module JSI
   # Schema#subschema and Schema#resource_root_subschema are the intended mechanisms to instantiate subschemas
   # and resolve references. #[] and #jsi_root_node are not implemented.
   #
-  # #dialect is defined on generated subclasses of BootstrapSchema by
-  # {Schema::Dialect#bootstrap_schema_class}. that subclass is instantiated with a document and
-  # pointer, representing a schema.
-  #
   # BootstrapSchema does not support mutation; its document must be immutable.
   #
   # @api private
@@ -21,32 +17,18 @@ module JSI
     include Schema
     include(Util::Pretty)
 
-    class << self
-      def inspect
-        if self == MetaSchemaNode::BootstrapSchema
-          name.freeze
-        else
-          -"#{name || MetaSchemaNode::BootstrapSchema.name} (#{described_dialect})"
-        end
-      end
-
-      def to_s
-        inspect
-      end
-    end
-
     # @param jsi_ptr [JSI::Ptr] pointer to the schema in the document
     # @param jsi_document [#to_hash, #to_ary, Boolean, Object] document containing the schema
     def initialize(
         jsi_document,
+        dialect: ,
         jsi_ptr: Ptr[],
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         jsi_registry: nil
     )
-      fail(Bug, "no #dialect") unless respond_to?(:dialect)
-
+      @dialect = dialect
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
@@ -60,6 +42,9 @@ module JSI
 
       super()
     end
+
+    # @return [Schema::Dialect]
+    attr_reader(:dialect)
 
     # document containing the schema content
     attr_reader :jsi_document
@@ -162,6 +147,7 @@ module JSI
     def jsi_fingerprint
       {
         class: self.class,
+        dialect: dialect,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
