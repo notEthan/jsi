@@ -211,10 +211,12 @@ module JSI
       # @return [JSI::Ptr]
       # @raise [ArgumentError] if n is not between 0 and the size of our tokens
       def take(n)
+        return(EMPTY) if n == 0
+        return(self) if n == tokens.size
         unless n.is_a?(Integer) && n >= 0 && n <= tokens.size
           raise(ArgumentError, "n not in range (0..#{tokens.size}): #{n.inspect}")
         end
-        n == tokens.size ? self : Ptr.new(tokens.take(n).freeze)
+        Ptr.new(tokens.take(n).freeze)
       end
 
       # appends the given token to this pointer's tokens and returns the result
