@@ -196,6 +196,7 @@ module JSI
       # @return [JSI::Ptr]
       def +(ptr)
         if ptr.is_a?(Ptr)
+          return(ptr) if tokens.empty?
           ptr_tokens = ptr.tokens
         elsif ptr.respond_to?(:to_ary)
           ptr_tokens = ptr
