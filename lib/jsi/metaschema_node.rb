@@ -65,8 +65,6 @@ module JSI
 
       #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
-      @extends = Set[]
-
       instance_for_schemas = jsi_document
       bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(dialect)
       root_bootstrap_schema = bootstrap_schema_class.new(
@@ -113,10 +111,8 @@ module JSI
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
-      @extends.merge(extends_for_instance)
-      @extends.freeze
 
-      conflicting_modules = Set[self.class] + @extends + @jsi_schemas.map(&:jsi_schema_module)
+      conflicting_modules = Set[self.class] + extends_for_instance + @jsi_schemas.map(&:jsi_schema_module)
       reader_modules = @jsi_schemas.map do |schema|
         JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
       end
