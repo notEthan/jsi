@@ -29,7 +29,7 @@ module JSI
     attr_reader :jsi_schema_resource_ancestors
 
     # See {SchemaSet#new_jsi} param `schema_registry`
-    # @return [SchemaRegistry]
+    # @return [SchemaRegistry, nil]
     attr_reader(:jsi_schema_registry)
 
     # the URI of the resource containing this node.
