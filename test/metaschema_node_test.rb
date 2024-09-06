@@ -153,6 +153,165 @@ describe(JSI::MetaSchemaNode) do
     end
   end
 
+  describe("multi document meta-schema") do
+    describe("two documents") do
+      let(:dialect) do
+        JSI::Schema::Dialect.new(
+          vocabularies: [
+            JSI::Schema::Vocabulary.new(elements: [
+              JSI::Schema::Elements::SELF[],
+              JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: false],
+              JSI::Schema::Elements::REF[exclusive: true],
+              JSI::Schema::Elements::PROPERTIES[], # note: element supports patternProperties but meta-schema does not
+              JSI::Schema::Elements::ITEMS[], # note: element supports additionalItems but meta-schema does not
+              JSI::Schema::Elements::ALL_OF[],
+            ]),
+          ],
+        )
+      end
+
+      let(:metaschema_document) do
+        to_immutable[YAML.load(<<~YAML
+          $id: "tag:7bg7:meta"
+          allOf:
+            - "$ref": "tag:7bg7:applicator"
+          properties:
+            "$id": {}
+            "$ref": {}
+          YAML
+        )]
+      end
+
+      let(:applicator_document) do
+        to_immutable[YAML.load(<<~YAML
+          $id: "tag:7bg7:applicator"
+          properties:
+            properties:
+              additionalProperties:
+                "$ref": "tag:7bg7:meta"
+            additionalProperties:
+              "$ref": "tag:7bg7:meta"
+            items:
+              "$ref": "tag:7bg7:meta"
+            allOf:
+              items:
+                "$ref": "tag:7bg7:meta"
+          YAML
+        )]
+      end
+
+      let(:metaschema_root_ref) { "tag:7bg7:meta" }
+      let(:root_schema_ref) { "tag:7bg7:meta" }
+
+      let(:schema_registry) do
+        JSI::SchemaRegistry.new
+      end
+
+      let(:bootstrap_schema_registry) do
+        registry = JSI::SchemaRegistry.new
+        registry.register(bootstrap_schema(metaschema_document, registry: registry))
+        registry.register(bootstrap_schema(applicator_document, registry: registry))
+        registry
+      end
+
+      let(:applicator_schema) do
+        metaschema
+        schema_registry.find("tag:7bg7:applicator")
+      end
+
+      it("acts like a meta-schema") do
+        assert_schemas([metaschema, applicator_schema], metaschema)
+        assert_schemas([metaschema.properties['$id']],  metaschema / ['$id'])
+        assert_schemas([applicator_schema.properties['allOf']],
+                                                        metaschema / ['allOf'])
+        assert_schemas([metaschema, applicator_schema], metaschema / ['allOf', 0])
+        assert_schemas([metaschema.properties['$ref']], metaschema / ['allOf', 0, '$ref'])
+        assert_schemas([applicator_schema.properties['properties']],
+                                                        metaschema / ['properties'])
+        assert_schemas([metaschema, applicator_schema], metaschema / ['properties', '$id'])
+        assert_schemas([metaschema, applicator_schema], metaschema / ['properties', '$ref'])
+        assert_schemas([metaschema, applicator_schema], applicator_schema)
+        assert_schemas([metaschema.properties['$id']],  applicator_schema / ['$id'])
+        assert_schemas([applicator_schema.properties['properties']],
+                                                        applicator_schema / ['properties'])
+        assert_schemas([metaschema, applicator_schema], applicator_schema / ['properties', 'properties'])
+        assert_schemas([metaschema, applicator_schema], applicator_schema / ['properties', 'properties', 'additionalProperties'])
+        assert_schemas([metaschema.properties['$ref']], applicator_schema / ['properties', 'properties', 'additionalProperties', '$ref'])
+        assert_schemas([metaschema, applicator_schema], applicator_schema / ['properties', 'additionalProperties'])
+        assert_schemas([metaschema, applicator_schema], applicator_schema / ['properties', 'items'])
+        assert_schemas([metaschema.properties['$ref']], applicator_schema / ['properties', 'items', '$ref'])
+        assert_schemas([metaschema, applicator_schema], applicator_schema / ['properties', 'allOf'])
+        assert_schemas([metaschema, applicator_schema], applicator_schema / ['properties', 'allOf', 'items'])
+        assert_schemas([metaschema.properties['$ref']], applicator_schema / ['properties', 'allOf', 'items', '$ref'])
+
+        # subscripting keys that are not present
+        assert_equal(nil, metaschema['no'])
+        assert_equal(nil, metaschema.properties['no'])
+
+        # validates the schemas of the meta-schema
+        assert(metaschema.jsi_valid?)
+        assert(applicator_schema.jsi_valid?)
+        assert(metaschema.instance_valid?(metaschema))
+        assert(metaschema.instance_valid?(applicator_schema))
+
+
+        schema = metaschema.new_schema({
+          'properties' => {
+            'foo' => {
+              '$id' => 'tag:55ky',
+              'items' => {},
+            },
+          },
+          'additionalProperties' => {
+            '$ref' => '#',
+          },
+          'allOf' => [
+            {
+              'properties' => {
+                'bar' => {},
+              },
+            },
+          ],
+        })
+        assert_schemas([metaschema, applicator_schema],              schema)
+        assert_schemas([applicator_schema.properties['properties']], schema / ["properties"])
+        assert_schemas([metaschema, applicator_schema],              schema / ["properties", "foo"])
+        assert_schemas([metaschema.properties['$id']],               schema / ["properties", "foo", "$id"])
+        assert_schemas([metaschema, applicator_schema],              schema / ["properties", "foo", "items"])
+        assert_schemas([metaschema, applicator_schema],              schema / ["additionalProperties"])
+        assert_schemas([metaschema.properties['$ref']],              schema / ["additionalProperties", "$ref"])
+        assert_schemas([applicator_schema.properties['allOf']],      schema / ["allOf"])
+        assert_schemas([metaschema, applicator_schema],              schema / ["allOf", 0])
+        assert_schemas([applicator_schema.properties['properties']], schema / ["allOf", 0, "properties"])
+        assert_schemas([metaschema, applicator_schema],              schema / ["allOf", 0, "properties", "bar"])
+
+        assert(schema.jsi_valid?)
+        assert(metaschema.instance_valid?(schema))
+
+        [metaschema, applicator_schema, schema].each do |jsi|
+          jsi.jsi_each_descendent_node do |node|
+            assert_equal(node.equal?(metaschema), node.is_a?(JSI::Schema::MetaSchema))
+            assert_equal(node.jsi_schemas == Set[metaschema, applicator_schema], node.is_a?(JSI::Schema))
+          end
+        end
+
+
+        schema_by_uri = JSI.new_schema(
+          {"$schema" => "tag:7bg7:meta"},
+          schema_registry: schema_registry,
+        )
+        assert_schemas([metaschema, applicator_schema], schema_by_uri)
+
+
+        instance = schema.new_jsi({'foo' => [], 'bar' => []})
+        assert_schemas([schema, schema.allOf[0]], instance)
+        assert_schemas([schema.properties['foo']], instance.foo)
+        assert_schemas([schema.allOf[0].properties['bar'], schema, schema.allOf[0]], instance['bar'])
+        assert(instance.jsi_valid?)
+      end
+    end
+  end
+
   describe 'with schema default' do
     let(:metaschema_document) do
       YAML.load(<<~YAML
