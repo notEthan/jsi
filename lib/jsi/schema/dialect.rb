@@ -38,7 +38,7 @@ module JSI
         @elements.freeze
 
         @elements_performing = Hash.new(Util::EMPTY_ARY)
-        action_names = @elements.map { |e| e.actions.keys }.inject(Set.new, &:+).freeze
+        action_names = @elements.map { |e| e.actions.each_key }.inject(Set.new, &:+).freeze
         action_names.each do |action_name|
           @elements_performing[action_name] = @elements.select { |e| !e.actions[action_name].empty? }.freeze
         end
