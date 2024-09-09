@@ -18,34 +18,30 @@ module JSI
         end # element.add_action(:subschema)
 
         element.add_action(:inplace_applicate) do
-      if keyword?('dependencies')
-        value = schema_content['dependencies']
-        # This keyword's value MUST be an object. Each property specifies a dependency.  Each dependency
-        # value MUST be an array or a valid JSON Schema.
-        if value.respond_to?(:to_hash)
-          value.each_pair do |property_name, dependency|
+          next if !keyword_value_hash?('dependencies')
+          next if !instance.respond_to?(:to_hash)
+          #> This keyword's value MUST be an object. Each property specifies a dependency.  Each dependency
+          #> value MUST be an array or a valid JSON Schema.
+          schema_content['dependencies'].each_pair do |property_name, dependency|
             if dependency.respond_to?(:to_ary)
               # noop: array-form dependencies has no inplace applicator schema
             else
               # If the dependency value is a subschema, and the dependency key is a
               # property in the instance, the entire instance must validate against
               # the dependency value.
-              if instance.respond_to?(:to_hash) && instance.key?(property_name)
+              if instance.key?(property_name)
                 inplace_subschema_applicate(['dependencies', property_name])
               end
             end
           end
-        end
-      end
         end # element.add_action(:inplace_applicate)
 
         element.add_action(:validate) do
-          if keyword?('dependencies')
-            value = schema_content['dependencies']
-            # This keyword's value MUST be an object. Each property specifies a dependency.  Each dependency
-            # value MUST be an array or a valid JSON Schema.
-            if value.respond_to?(:to_hash)
-              value.each_pair do |property_name, dependency|
+              #> This keyword's value MUST be an object. Each property specifies a dependency.  Each dependency
+              #> value MUST be an array or a valid JSON Schema.
+              next if !keyword_value_hash?('dependencies')
+              next if !instance.respond_to?(:to_hash)
+              schema_content['dependencies'].each_pair do |property_name, dependency|
                 if dependency.respond_to?(:to_ary)
                   # If the dependency value is an array, each element in the array, if
                   # any, MUST be a string, and MUST be unique.  If the dependency key is
@@ -66,7 +62,7 @@ module JSI
                   # If the dependency value is a subschema, and the dependency key is a
                   # property in the instance, the entire instance must validate against
                   # the dependency value.
-                  if instance.respond_to?(:to_hash) && instance.key?(property_name)
+                  if instance.key?(property_name)
                     dependency_result = inplace_subschema_validate(['dependencies', property_name])
                     validate(
                       dependency_result.valid?,
@@ -79,8 +75,6 @@ module JSI
                   end
                 end
               end
-            end
-          end
         end # element.add_action(:validate)
       end # Schema::Element.new
     end # DEPENDENCIES = element_map
