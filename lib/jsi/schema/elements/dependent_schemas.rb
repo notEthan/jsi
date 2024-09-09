@@ -26,6 +26,7 @@ module JSI
             "instance object is not valid against all schemas corresponding to matched property names specified by `dependentSchemas`",
             keyword: 'dependentSchemas',
             results: results.each_value,
+            dependentSchemas_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
           )
         end
       end
