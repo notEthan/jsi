@@ -27,6 +27,11 @@ module JSI
           end
         end # element.add_action(:subschema)
 
+        element.add_action(:described_object_property_names) do
+          next if !keyword_value_hash?('properties')
+          schema_content['properties'].each_key(&block)
+        end
+
         element.add_action(:child_applicate) do
     if instance.respond_to?(:to_hash)
       apply_additional = true
