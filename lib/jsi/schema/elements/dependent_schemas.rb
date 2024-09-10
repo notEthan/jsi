@@ -14,6 +14,11 @@ module JSI
           end
         end
 
+        element.add_action(:described_object_property_names) do
+          next if !keyword_value_hash?('dependentSchemas')
+          schema_content['dependentSchemas'].each_key(&block)
+        end
+
         element.add_action(:inplace_applicate) do
           #> This keyword's value MUST be an object.
           next if !keyword_value_hash?('dependentSchemas')

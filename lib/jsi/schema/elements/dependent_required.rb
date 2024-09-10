@@ -4,6 +4,15 @@ module JSI
   module Schema::Elements
     DEPENDENT_REQUIRED = element_map do
       Schema::Element.new(keyword: 'dependentRequired') do |element|
+        element.add_action(:described_object_property_names) do
+          next if !keyword_value_hash?('dependentRequired')
+          schema_content['dependentRequired'].each do |property_name, dependent_property_names|
+            cxt_yield(property_name)
+            next if !dependent_property_names.respond_to?(:to_ary)
+            dependent_property_names.each(&block)
+          end
+        end
+
         element.add_action(:validate) do
           #> The value of this keyword MUST be an object.
           next if !keyword_value_hash?('dependentRequired')
