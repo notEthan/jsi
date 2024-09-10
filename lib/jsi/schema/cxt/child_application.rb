@@ -23,6 +23,10 @@ module JSI
 
       # @param child_applicator_schema [Schema]
       def child_schema_applicate(child_applicator_schema)
+        if collect_evaluated
+          self.evaluated ||= child_applicator_schema.instance_valid?(instance[token])
+        end
+
         cxt_yield(child_applicator_schema)
       end
     end
