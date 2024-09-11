@@ -712,7 +712,7 @@ module JSI
           schema_evaluated = schema.each_inplace_child_applicator_schema(
             token,
             instance,
-            visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
+            visited_refs: Util.add_visited_ref(visited_refs, ref),
             collect_evaluated: collect_evaluated && !inplace_child_evaluated,
             # the `if` keyword needs to yield to here because it does affect `evaluated`,
             # but it does not apply itself/its applicators, so is not passed to our given block.
