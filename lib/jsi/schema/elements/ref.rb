@@ -13,7 +13,6 @@ module JSI
         resolve_ref = proc do
           next if !keyword_value_str?('$ref')
           ref = schema.schema_ref('$ref')
-          raise(ResolutionError, "cyclical $ref application") if visited_refs.include?(ref)
           resolved_schema = ref.deref_schema
           [resolved_schema, ref]
         end
@@ -35,7 +34,7 @@ module JSI
                   instance_ptr,
                   instance_document,
                   validate_only: validate_only,
-                  visited_refs: visited_refs + [schema_ref],
+                  visited_refs: Util.add_visited_ref(visited_refs, schema_ref),
                 )
                 validate(
                   ref_result.valid?,

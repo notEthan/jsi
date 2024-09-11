@@ -711,7 +711,7 @@ module JSI
         else
           schema.each_inplace_applicator_schema(
             instance,
-            visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
+            visited_refs: Util.add_visited_ref(visited_refs, ref),
             &block
           )
         end
