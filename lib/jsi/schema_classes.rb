@@ -219,7 +219,7 @@ module JSI
 
             include(mutability_module)
 
-            reader_modules = schemas.map do |schema|
+            reader_modules = (includes.include?(Base::HashNode) ? schemas : Util::EMPTY_ARY).map do |schema|
               JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
             end
             reader_modules.each { |m| include m }
@@ -228,7 +228,7 @@ module JSI
             define_singleton_method(:jsi_property_readers) { readers }
 
             if mutable
-              writer_modules = schemas.map do |schema|
+              writer_modules = (includes.include?(Base::HashNode) ? schemas : Util::EMPTY_ARY).map do |schema|
                 JSI::SchemaClasses.schema_property_writer_module(schema, conflicting_modules: conflicting_modules)
               end
               writer_modules.each { |m| include(m) }
