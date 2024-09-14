@@ -40,7 +40,7 @@ module JSI
           super
         else
           schema_names = jsi_class_schemas.map do |schema|
-            mod_name = schema.jsi_schema_module.name_from_ancestor
+            mod_name = schema.jsi_schema_module_name_from_ancestor
             if mod_name && schema.schema_absolute_uri
               "#{mod_name} <#{schema.schema_absolute_uri}>"
             elsif mod_name
@@ -79,7 +79,7 @@ module JSI
         schema_names = jsi_class_schemas.map do |schema|
           named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
           if named_ancestor_schema
-            [named_ancestor_schema.jsi_schema_module.name, *tokens].join('_')
+            [named_ancestor_schema.jsi_schema_module_name, *tokens].join('_')
           elsif schema.schema_uri
             schema.schema_uri.to_s
           else
@@ -709,9 +709,9 @@ module JSI
       schemas_priorities = jsi_schemas.each_with_index.map do |schema, i|
         if schema.describes_schema?
           [0, i, schema]
-        elsif schema.jsi_schema_module.name
+        elsif schema.jsi_schema_module_name
           [1, i, schema]
-        elsif schema.jsi_schema_module.name_from_ancestor
+        elsif schema.jsi_schema_module_name_from_ancestor
           [2, i, schema]
         elsif schema.schema_absolute_uri
           [3, i, schema]
@@ -732,7 +732,7 @@ module JSI
       schema_names = []
       schemas_priorities.each do |(priority, _idx, schema)|
         if priority == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
-          name = schema.jsi_schema_module.name_from_ancestor || schema.schema_uri
+          name = schema.jsi_schema_module_name_from_ancestor || schema.schema_uri
           name ||= schema.jsi_ptr.uri if priority == 0
           schema_names << name if name
         end

@@ -558,6 +558,16 @@ module JSI
       jsi_schema_module.module_exec(*a, **kw, &block)
     end
 
+    # @return [String, nil]
+    def jsi_schema_module_name
+      @jsi_schema_module && @jsi_schema_module.name
+    end
+
+    # @return [String, nil]
+    def jsi_schema_module_name_from_ancestor
+      @jsi_schema_module && @jsi_schema_module.name_from_ancestor
+    end
+
     # Instantiates a new JSI whose content comes from the given `instance` param.
     # This schema indicates the schemas of the JSI - its schemas are inplace
     # applicators of this schema which apply to the given instance.
