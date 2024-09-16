@@ -20,6 +20,7 @@ module JSI
 
     autoload :Issue, 'jsi/schema/issue'
     autoload :Ref, 'jsi/schema/ref'
+    autoload(:DynamicAnchorMap, 'jsi/schema/dynamic_anchor_map')
 
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
 
