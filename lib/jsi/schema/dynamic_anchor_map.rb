@@ -23,6 +23,32 @@ module JSI
   #
   # @api private
   class Schema::DynamicAnchorMap < Hash
+    # In order to avoid instantiating a node with a dynamic_anchor_map that refers to that node itself
+    # (which results in its jsi_fingerprint circularly referring to itself)
+    # we remove such anchors from the dynamic_anchor_map it will be instantiated with.
+    # The node's #jsi_next_schema_dynamic_anchor_map will remap such anchors to the node again.
+    # @return [Schema::DynamicAnchorMap]
+    def without_node(document, ptr, schema_registry)
+      dynamic_anchor_map = self
+      dynamic_anchor_map.each do |anchor, (anchor_root, anchor_ptrs)|
+        # Determine whether this anchor maps to the indicated node.
+        # This should strictly use the same fields as the node's #jsi_fingerprint
+        # (which is different for Base, MetaSchemaNode, and MetaSchemaNode::BootstrapSchema).
+        # However, some fields of the fingerprint are fairly complicated to compute with neither
+        # the node being removed nor the anchor schema actually instantiated.
+        # Realistically document+ptr is sufficient and correct outside of implausible edge cases.
+        maps_to_node = anchor_root.jsi_document == document &&
+          anchor_ptrs.inject(anchor_root.jsi_ptr, &:+) == ptr &&
+          anchor_root.jsi_schema_registry == schema_registry
+        if maps_to_node
+          dynamic_anchor_map = dynamic_anchor_map.dup
+          dynamic_anchor_map.delete(anchor)
+          dynamic_anchor_map.freeze
+        end
+      end
+      dynamic_anchor_map.empty? ? EMPTY : dynamic_anchor_map
+    end
+
     EMPTY = new.freeze
   end
 end
