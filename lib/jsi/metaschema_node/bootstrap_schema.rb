@@ -123,13 +123,15 @@ module JSI
     # @return [MetaSchemaNode::BootstrapSchema]
     def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
       return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
+      new_dynamic_anchor_map = dynamic_anchor_map.without_node(self)
+      return(self) if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
 
       self.class.new(
         jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
-        jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
+        jsi_schema_dynamic_anchor_map: new_dynamic_anchor_map,
         jsi_schema_registry: jsi_schema_registry,
       )
     end
