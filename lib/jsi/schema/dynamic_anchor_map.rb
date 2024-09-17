@@ -23,5 +23,6 @@ module JSI
   #
   # @api private
   class Schema::DynamicAnchorMap < Hash
+    EMPTY = new.freeze
   end
 end
