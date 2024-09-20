@@ -415,12 +415,16 @@ module JSI
     end
 
     # A child JSI node, or the child of our {#jsi_instance}, identified by the given token.
-    # The token must identify an existing child; behavior if the child does not exist is undefined.
     #
     # @param token (see Base#[])
     # @param as_jsi (see Base#[])
     # @return [JSI::Base, Object]
+    # @raise [Base::ChildNotPresent]
     def jsi_child(token, as_jsi: )
+      if !jsi_child_token_present?(token)
+        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
+      end
+
       child_content = jsi_node_content_child(token)
 
       child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
@@ -441,9 +445,6 @@ module JSI
     # @return [JSI::Base]
     # @raise [Base::ChildNotPresent]
     def jsi_child_node(token)
-      if !jsi_child_token_present?(token)
-        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
-      end
       jsi_child(token, as_jsi: true)
     end
 
