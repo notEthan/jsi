@@ -355,8 +355,8 @@ module JSI
     # @param ptr [JSI::Ptr, #to_ary]
     # @return [JSI::Base]
     def jsi_descendent_node(ptr)
-      descendent = Ptr.ary_ptr(ptr).evaluate(self, as_jsi: true)
-      descendent
+      tokens = Ptr.ary_ptr(ptr).resolve_against(jsi_node_content).tokens
+      tokens.inject(self, &:jsi_child_node)
     end
 
     # A shorthand alias for {#jsi_descendent_node}.
