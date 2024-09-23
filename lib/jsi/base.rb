@@ -667,6 +667,10 @@ module JSI
     def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
       return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
 
+      @with_schema_dynamic_anchor_map_map[dynamic_anchor_map: dynamic_anchor_map]
+    end
+
+    private def jsi_with_schema_dynamic_anchor_map_compute(dynamic_anchor_map: )
       # we instantiate a node the same as self but with the given dynamic_anchor_map,
       # under the same root node - so this node is not a descendent of its root node,
       # which is odd but does not cause problems at the moment.
@@ -816,6 +820,7 @@ module JSI
       @child_indicated_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_indicated_schemas_compute))
       @child_applied_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_applied_schemas_compute))
       @child_node_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_node_compute))
+      @with_schema_dynamic_anchor_map_map = jsi_memomap(&method(:jsi_with_schema_dynamic_anchor_map_compute))
     end
 
     def jsi_indicated_schemas=(jsi_indicated_schemas)
