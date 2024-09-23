@@ -898,6 +898,16 @@ describe JSI::Base do
     end
   end
 
+  describe("#to_yaml") do
+    it("makes YAML") do
+      assert_equal("--- {}\n", schema.new_jsi({}).to_yaml)
+      assert_equal("---\na: b\n", schema.new_jsi({"a" => "b"}).to_yaml)
+      assert_equal("---\na: b\n", YAML.dump(schema.new_jsi({"a" => "b"})))
+      assert_equal("\%YAML 1.1\n---\na: b\n", schema.new_jsi({"a" => "b"}).to_yaml(version: true))
+      assert_equal("\%YAML 1.1\n---\na: b\n", YAML.dump(schema.new_jsi({"a" => "b"}), version: true))
+    end
+  end
+
   describe 'overriding HashNode methods' do
     it 'can override' do
       schema = JSI::JSONSchemaDraft06.new_schema({'$id' => 'http://jsi/base/def_to_hash'})

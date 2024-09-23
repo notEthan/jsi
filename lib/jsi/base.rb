@@ -777,6 +777,13 @@ module JSI
       Util.to_json(jsi_instance, options)
     end
 
+    # Psych/YAML .dump calls this method; dumping a JSI as YAML will dump its instance.
+    # @param coder [Psych::Coder]
+    def encode_with(coder)
+      coder.represent_object(nil, jsi_node_content)
+      nil
+    end
+
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
