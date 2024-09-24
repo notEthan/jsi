@@ -148,12 +148,27 @@ module JSI
       end
     end
 
-    class << self
+    # @private
+    module ExtendedInitialize
       def extended(o)
         super
         o.send(:jsi_schema_initialize)
       end
+
+      def included(m)
+        super
+        return if m.is_a?(Class)
+
+        # if a module (m) includes Schema, and an object (o) is extended with m,
+        # then o should have #jsi_schema_initialize called, but Schema.extended is not called,
+        # so m needs its own .extended method to call jsi_schema_initialize.
+        # note: including a module with #extended on m's singleton, rather than m.define_singleton_method(:extended),
+        # avoids possibly clobbering an existing singleton .extended method the module has defined.
+        m.singleton_class.send(:include, ExtendedInitialize)
+      end
     end
+
+    extend(ExtendedInitialize)
   end
 
   class << self
@@ -836,6 +851,9 @@ module JSI
     private
 
     def jsi_schema_initialize
+      # guard against being called twice on MetaSchemaNode, first from extend(Schema) then extend(jsi_schema_module) that includes Schema.
+      # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
+      instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
       @jsi_schema_module = nil
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
