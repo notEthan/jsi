@@ -96,8 +96,10 @@ describe 'JSON Schema Test Suite' do
                   default_metaschema: metaschema,
                 )
 
+                dialect = desc_schema.dialect # typically metaschema.described_dialect but $schema can override
+
                 bootstrap_registry = JSTS_REGISTRIES[metaschema].dup
-                desc_bootstrap_schema = desc_schema.dialect.bootstrap_schema(
+                desc_bootstrap_schema = dialect.bootstrap_schema(
                   tests_desc.jsi_instance['schema'],
                   jsi_registry: bootstrap_registry,
                 )
