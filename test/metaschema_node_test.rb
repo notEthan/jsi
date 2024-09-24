@@ -172,6 +172,32 @@ describe(JSI::MetaSchemaNode) do
       end
     end
   end
+
+  describe("draft04 boolean schema in meta-schema") do
+    it("is a schema") do
+      # d4 meta-schema doesn't have any boolean schema in it; make one that does
+      d4ms_with_bool = JSI.new_metaschema(
+        JSON.parse(JSI::SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read).merge({
+          'additionalProperties' => true,
+        }),
+        dialect: JSI::Schema::Draft04::DIALECT,
+      )
+      # note: this still breaks if d4ms_with_bool.additionalProperties is accessed, i.e. computes its schemas,
+      # before the following line makes its schema describes_schema!
+      d4ms_with_bool["properties"]["additionalProperties"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
+      d4ms_with_bool["properties"]["additionalItems"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
+
+      # check that, for an instance of that meta-schema, a node described by additionalProperties is correctly instantiated
+      j = d4ms_with_bool.new_jsi({'x' => {}})
+      assert_schemas([d4ms_with_bool.additionalProperties], j['x'])
+
+      # this would fail previously because d4ms_with_bool.additionalProperties never had
+      # Schema#jsi_schema_initialize called, because it was extended with Schema via
+      # d4ms_with_bool["properties"]["additionalProperties"]["anyOf"][0].jsi_schema_module,
+      # not Schema itself. fixed by making modules that include Schema define .extended to call jsi_schema_initialize.
+    end
+  end
+
   describe('meta-schema outside the root, document is an instance of a schema in the document') do
     let(:jsi_document) do
       YAML.load(<<~YAML
