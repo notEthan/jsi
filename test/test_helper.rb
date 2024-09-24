@@ -179,6 +179,10 @@ class JSISpec < Minitest::Spec
     assert_equal(exp.to_a, act.to_a)
   end
 
+  def assert_transform_equal(exp, act)
+    assert_equal(yield(exp), yield(act))
+  end
+
   def assert_match matcher, obj, msg = nil
     msg = message(msg) do
       [].tap do |ms|
