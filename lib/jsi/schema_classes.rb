@@ -298,7 +298,7 @@ module JSI
         sub.jsi_schema_module_exec(&block) if block
         sub.jsi_schema_module
       elsif block
-        raise(ArgumentError, "block given but token #{token.inspect} does not identify a schema")
+        raise(BlockGivenError, "block given but token #{token.inspect} does not identify a schema")
       elsif sub.is_a?(JSI::Base)
         SchemaModule::Connection.new(sub)
       else

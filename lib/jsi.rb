@@ -22,6 +22,12 @@ module JSI
   # @private TODO remove, any ruby without this is already long EOL
   FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
 
+  class BlockGivenError < ArgumentError
+    def initialize(msg = "Block given to a method that does not yield", *)
+      super
+    end
+  end
+
   # A reference or pointer cannot be resolved
   class ResolutionError < StandardError
     # @param msg [String, Array]

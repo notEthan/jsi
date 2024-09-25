@@ -522,6 +522,7 @@ module JSI
     #   unspecified behavior.)
     # @return [Base, Object, Array, nil] the child or children identified by `token`
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
+      raise(BlockGivenError) if block_given?
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
     end
