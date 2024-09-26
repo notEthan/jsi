@@ -5,7 +5,7 @@ describe(JSI::MetaSchemaNode) do
   let(:metaschema_root_ref) { '#' }
   let(:root_schema_ref) { metaschema_root_ref }
   let(:registry) { nil }
-  let(:bootstrap_registry) { nil }
+  let(:schema_documents) { nil }
 
   let(:root_node) do
     JSI.new_metaschema_node(metaschema_document,
@@ -13,7 +13,7 @@ describe(JSI::MetaSchemaNode) do
       metaschema_root_ref: metaschema_root_ref,
       root_schema_ref: root_schema_ref,
       registry: registry,
-      bootstrap_registry: bootstrap_registry,
+      schema_documents: schema_documents,
     )
   end
   let(:metaschema) do
@@ -24,14 +24,6 @@ describe(JSI::MetaSchemaNode) do
       root_node
       JSI::Schema::Ref.new(metaschema_root_ref, registry: registry).resolve
     end
-  end
-
-  def bootstrap_schema(schema_content, registry: nil, base_uri: nil)
-    dialect.bootstrap_schema(
-      JSI::DEFAULT_CONTENT_TO_IMMUTABLE[schema_content],
-      jsi_schema_base_uri: JSI::Util.uri(base_uri, nnil: false),
-      jsi_registry: registry,
-    )
   end
 
   def assert_metaschema_behaves
@@ -184,12 +176,7 @@ describe(JSI::MetaSchemaNode) do
         JSI::Registry.new
       end
 
-      let(:bootstrap_registry) do
-        registry = JSI::Registry.new
-        registry.register(bootstrap_schema(metaschema_document, registry: registry))
-        registry.register(bootstrap_schema(applicator_document, registry: registry))
-        registry
-      end
+      let(:schema_documents) { [applicator_document] }
 
       let(:applicator_schema) do
         metaschema
