@@ -122,13 +122,39 @@ module JSI
   # @param conf_kw Passed to initialize a {MetaSchemaNode::Conf} for {Base#jsi_conf}.
   # @return [MetaSchemaNode]
   def self.new_metaschema_node(metaschema_document,
+      schema_documents: nil,
       **conf_kw
   )
     raise(BlockGivenError) if block_given?
 
     conf = MetaSchemaNode::Conf.new(**conf_kw)
 
+    # need the metaschema_document root to be registered in the bootstrap_registry if...
+    register_bootstrap_metaschema =
+      # the root is a schema
+      conf.root_schema_ref == conf.metaschema_root_ref &&
+      # and the metaschema ref is not fragment-only
+      !conf.metaschema_root_ref.merge(fragment: nil).empty? &&
+      # and it's not already registered (I don't know that an externally supplied bootstrap_registry
+      # would ever need to register the meta-schema differently than this does, but allow for it)
+      (!conf.bootstrap_registry || !conf.bootstrap_registry.registered?(conf.metaschema_root_ref.merge(fragment: nil)))
+
+    if !conf.bootstrap_registry && (register_bootstrap_metaschema || schema_documents)
+      conf = conf.class.new(**conf.to_h, bootstrap_registry: Registry.new)
+    end
+
     metaschema_document = conf.to_immutable.call(metaschema_document) if conf.to_immutable
+    schema_documents = schema_documents.map(&conf.to_immutable) if schema_documents && conf.to_immutable
+
+    to_register = []
+    to_register.concat(schema_documents) if schema_documents
+    to_register.push(metaschema_document) if register_bootstrap_metaschema
+    to_register.each do |document|
+      conf.bootstrap_registry.register_immediate(conf.dialect.bootstrap_schema(
+        document,
+        jsi_registry: conf.bootstrap_registry,
+      ))
+    end
 
     MetaSchemaNode.new(metaschema_document, jsi_conf: conf)
   end
