@@ -423,6 +423,7 @@ module JSI
           yield(id_without_fragment)
         end
       end
+      yield(jsi_schema_base_uri) if jsi_schema_base_uri && jsi_ptr.root?
     end
 
     # a nonrelative URI which refers to this schema.
