@@ -45,6 +45,14 @@ describe(JSI::MetaSchemaNode) do
   end
   let(:metaschema) { root_node.jsi_descendent_node(JSI::Ptr.from_fragment(JSI::Util.uri(metaschema_root_ref).fragment)) }
 
+  def bootstrap_schema(schema_content, registry: nil, base_uri: nil)
+    dialect.bootstrap_schema_class.new(
+      schema_content,
+      jsi_schema_base_uri: JSI::Util.uri(base_uri, nnil: false),
+      jsi_schema_registry: registry,
+    )
+  end
+
   def assert_metaschema_behaves
     assert_schemas([metaschema], metaschema)
     assert_schemas([metaschema.properties['properties']], metaschema.properties)
