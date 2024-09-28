@@ -32,7 +32,7 @@ describe(JSI::MetaSchemaNode) do
   let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
-    JSI::MetaSchemaNode.new(to_immutable[jsi_document],
+    JSI::MetaSchemaNode.new(to_immutable[metaschema_document],
       msn_dialect: dialect,
       metaschema_root_ptr: metaschema_root_ptr,
       root_schema_ptr: root_schema_ptr,
@@ -76,7 +76,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe 'basic' do
-    let(:jsi_document) do
+    let(:metaschema_document) do
       YAML.load(<<~YAML
         properties:
           properties:
@@ -134,7 +134,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe 'with schema default' do
-    let(:jsi_document) do
+    let(:metaschema_document) do
       YAML.load(<<~YAML
         properties:
           properties:
@@ -173,7 +173,7 @@ describe(JSI::MetaSchemaNode) do
     end
   end
   describe('meta-schema outside the root, document is an instance of a schema in the document') do
-    let(:jsi_document) do
+    let(:metaschema_document) do
       YAML.load(<<~YAML
         schemas:
           JsonSchema:
@@ -208,7 +208,7 @@ describe(JSI::MetaSchemaNode) do
     end
   end
   describe('meta-schema outside the root, document is a schema') do
-    let(:jsi_document) do
+    let(:metaschema_document) do
       YAML.load(<<~YAML
         $defs:
           JsonSchema:
@@ -234,7 +234,7 @@ describe(JSI::MetaSchemaNode) do
     end
   end
   describe('meta-schema outside the root on schemas, document is a schema') do
-    let(:jsi_document) do
+    let(:metaschema_document) do
       YAML.load(<<~YAML
         schemas:
           JsonSchema:
