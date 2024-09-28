@@ -29,6 +29,8 @@ describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
   let(:metaschema_root_ref) { '#' }
   let(:root_schema_ref) { '#' }
+  let(:schema_registry) { nil }
+  let(:bootstrap_schema_registry) { nil }
   let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
@@ -36,6 +38,8 @@ describe(JSI::MetaSchemaNode) do
       msn_dialect: dialect,
       metaschema_root_ref: metaschema_root_ref,
       root_schema_ref: root_schema_ref,
+      jsi_schema_registry: schema_registry,
+      bootstrap_schema_registry: bootstrap_schema_registry,
       jsi_content_to_immutable: to_immutable,
     )
   end
