@@ -116,7 +116,7 @@ module JSI
       # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
-      #   the given `schema_content` and whose schemas are this schema's inplace applicators.
+      #   the given `schema_content` and whose schemas are this schema's in-place applicators.
       def new_schema(schema_content,
           uri: nil,
           register: true,
@@ -245,7 +245,7 @@ module JSI
       # @param to_immutable (see Schema::DescribesSchema#new_schema)
       # @yield (see Schema::MetaSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
-      #   the given `schema_content` and whose schemas are inplace applicators of the indicated meta-schema
+      #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
       def new_schema(schema_content,
           default_metaschema: nil,
           # params of Schema::MetaSchema#new_schema have their default values repeated here. delegating in a splat
@@ -522,12 +522,12 @@ module JSI
     end
 
     # Instantiates a new JSI whose content comes from the given `instance` param.
-    # This schema indicates the schemas of the JSI - its schemas are inplace
+    # This schema indicates the schemas of the JSI - its schemas are in-place
     # applicators of this schema which apply to the given instance.
     #
     # @param (see SchemaSet#new_jsi)
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
-    #   inplace applicators of this schema.
+    #   in-place applicators of this schema.
     def new_jsi(instance, **kw)
       SchemaSet[self].new_jsi(instance, **kw)
     end
@@ -652,7 +652,7 @@ module JSI
       dialect_invoke_each(:subschema) { |ptr| yield(Ptr.ary_ptr(ptr)) }
     end
 
-    # yields each inplace applicator schema which applies to the given instance.
+    # Yields each in-place applicator schema which applies to the given instance.
     #
     # @param instance [Object] the instance to check any applicators against
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]

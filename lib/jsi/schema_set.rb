@@ -67,7 +67,7 @@ module JSI
     end
 
     # Instantiates a new JSI whose content comes from the given `instance` param.
-    # This SchemaSet indicates the schemas of the JSI - its schemas are inplace
+    # This SchemaSet indicates the schemas of the JSI - its schemas are in-place
     # applicators of this set's schemas which apply to the given instance.
     #
     # @param instance [Object] the instance to be represented as a JSI
@@ -94,7 +94,7 @@ module JSI
     # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
     #   The instance content will be transformed with `to_immutable` if the JSI will be immutable.
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
-    #   inplace applicators of the schemas in this set.
+    #   in-place applicators of the schemas in this set.
     def new_jsi(instance,
         uri: nil,
         register: false,

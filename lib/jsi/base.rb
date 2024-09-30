@@ -153,7 +153,7 @@ module JSI
 
     # @!method jsi_schemas
     #   The set of schemas that describe this instance.
-    #   These are the applicator schemas that apply to this instance, the result of inplace application
+    #   These are the applicator schemas that apply to this instance, the result of in-place application
     #   of our {#jsi_indicated_schemas}.
     #   @return [JSI::SchemaSet]
     # note: defined on subclasses by JSI::SchemaClasses.class_for_schemas
@@ -188,12 +188,12 @@ module JSI
       jsi_node_content
     end
 
-    # the schemas indicated as describing this instance, prior to inplace application.
+    # The schemas indicated as describing this instance, prior to in-place application.
     #
-    # this is different from {#jsi_schemas}, which are the inplace applicator schemas
+    # This is different from {#jsi_schemas}, which are the in-place applicator schemas
     # which describe this instance. for most purposes, `#jsi_schemas` is more relevant.
     #
-    # `jsi_indicated_schemas` does not include inplace applicator schemas, such as the
+    # `jsi_indicated_schemas` does not include in-place applicator schemas, such as the
     # subschemas of `allOf`, whereas `#jsi_schemas` does.
     #
     # this does include indicated schemas which do not apply themselves, such as `$ref`

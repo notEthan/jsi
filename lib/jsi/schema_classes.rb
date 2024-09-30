@@ -47,7 +47,7 @@ module JSI
     #
     # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
-    #   inplace applicators of this module's schema.
+    #   in-place applicators of this module's schema.
     def new_jsi(instance, **kw)
       schema.new_jsi(instance, **kw)
     end
@@ -77,7 +77,7 @@ module JSI
     # @param (see Schema::MetaSchema#new_schema)
     # @yield (see Schema::MetaSchema#new_schema)
     # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
-    #   the given `schema_content` and whose schemas are inplace applicators of this module's schema
+    #   the given `schema_content` and whose schemas are in-place applicators of this module's schema.
     def new_schema(schema_content, **kw, &block)
       schema.new_schema(schema_content, **kw, &block)
     end
