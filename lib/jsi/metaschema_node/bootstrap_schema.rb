@@ -129,11 +129,13 @@ module JSI
     def pretty_print(q)
       q.text '#<'
       q.text jsi_object_group_text.join(' ')
-      q.group(2) {
+      q.group {
+        q.nest(2) {
           q.breakable ' '
           q.pp schema_content
+        }
+        q.breakable('')
       }
-      q.breakable ''
       q.text '>'
     end
 

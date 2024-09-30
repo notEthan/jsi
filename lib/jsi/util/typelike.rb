@@ -110,7 +110,8 @@ module JSI
     def pretty_print(q)
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#{<#{object_group_str}>"
-      q.group(2) {
+      q.group {
+        q.nest(2) {
           q.breakable ' ' if !empty?
           q.seplist(self, nil, :each_pair) { |k, v|
             q.group {
@@ -119,8 +120,9 @@ module JSI
               q.pp v
             }
           }
+        }
+        q.breakable('') if !empty?
       }
-      q.breakable '' if !empty?
       q.text '}'
     end
   end
@@ -216,13 +218,15 @@ module JSI
     def pretty_print(q)
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#[<#{object_group_str}>"
-      q.group(2) {
+      q.group {
+        q.nest(2) {
           q.breakable ' ' if !empty?
           q.seplist(self, nil, :each) { |e|
             q.pp e
           }
+        }
+        q.breakable('') if !empty?
       }
-      q.breakable '' if !empty?
       q.text ']'
     end
   end
