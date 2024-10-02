@@ -16,7 +16,7 @@ module JSI
   #
   # @api private
   class MetaSchemaNode::BootstrapSchema
-    include Util::FingerprintHash
+    include(Util::FingerprintHash::Immutable)
     include Schema::SchemaAncestorNode
     include Schema
 
