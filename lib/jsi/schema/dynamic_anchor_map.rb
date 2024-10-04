@@ -28,7 +28,7 @@ module JSI
     # we remove such anchors from the dynamic_anchor_map it will be instantiated with.
     # The node's #jsi_next_schema_dynamic_anchor_map will remap such anchors to the node again.
     # @return [Schema::DynamicAnchorMap]
-    def without_node(document, ptr, schema_registry)
+    def without_node(node, document: node.jsi_document, ptr: node.jsi_ptr, schema_registry: node.jsi_schema_registry)
       dynamic_anchor_map = self
       dynamic_anchor_map.each do |anchor, (anchor_root, anchor_ptrs)|
         # Determine whether this anchor maps to the indicated node.
