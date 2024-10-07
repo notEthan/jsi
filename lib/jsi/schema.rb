@@ -416,14 +416,17 @@ module JSI
 
     # @yield [Addressable::URI]
     private def schema_absolute_uris_compute
+      root_uri = jsi_schema_base_uri if jsi_ptr.root?
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
         if jsi_schema_base_uri
-          yield(jsi_schema_base_uri.join(id_without_fragment).freeze)
+          uri = jsi_schema_base_uri.join(id_without_fragment).freeze
+          root_uri = nil if root_uri == uri
+          yield(uri)
         elsif id_without_fragment.absolute?
           yield(id_without_fragment)
         end
       end
-      yield(jsi_schema_base_uri) if jsi_schema_base_uri && jsi_ptr.root?
+      yield(root_uri) if root_uri
     end
 
     # a nonrelative URI which refers to this schema.
