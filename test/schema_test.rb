@@ -400,6 +400,21 @@ describe JSI::Schema do
           assert_uri('http://jsi/test/d4/ignore_external_uri/nested_absolute', schema.properties['absolute'].schema_absolute_uri)
           assert_nil(schema.properties['none'].schema_absolute_uri)
         end
+
+        it("schema with same id as externally supplied") do
+          schema = metaschema.new_schema({
+            'id' => 'http://jsi/3bz9/root',
+            'properties' => {
+              'relative' => {'id' => 'nested_relative'},
+              'absolute' => {'id' => 'http://jsi/3bza'},
+              'none' => {},
+            },
+          }, uri: 'http://jsi/3bz9/root')
+          assert_uris(['http://jsi/3bz9/root'], schema.schema_absolute_uris)
+          assert_uris(['http://jsi/3bz9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
+          assert_uris(['http://jsi/3bza'], schema.properties['absolute'].schema_absolute_uris)
+          assert_uris([], schema.properties['none'].schema_absolute_uris)
+        end
       end
       describe 'relative id uri with no base' do
         it 'has no schema_absolute_uri' do
@@ -521,6 +536,21 @@ describe JSI::Schema do
           assert_uri('http://jsi/test/d6/external_uri/nested_relative', schema.properties['relative'].schema_absolute_uri)
           assert_uri('http://jsi/test/d6/ignore_external_uri/nested_absolute', schema.properties['absolute'].schema_absolute_uri)
           assert_nil(schema.properties['none'].schema_absolute_uri)
+        end
+
+        it("schema with same id as externally supplied") do
+          schema = metaschema.new_schema({
+            '$id' => 'http://jsi/3by9/root',
+            'properties' => {
+              'relative' => {'$id' => 'nested_relative'},
+              'absolute' => {'$id' => 'http://jsi/3bya'},
+              'none' => {},
+            },
+          }, uri: 'http://jsi/3by9/root')
+          assert_uris(['http://jsi/3by9/root'], schema.schema_absolute_uris)
+          assert_uris(['http://jsi/3by9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
+          assert_uris(['http://jsi/3bya'], schema.properties['absolute'].schema_absolute_uris)
+          assert_uris([], schema.properties['none'].schema_absolute_uris)
         end
       end
       describe 'relative id uri with no base' do
