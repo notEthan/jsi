@@ -401,6 +401,20 @@ describe JSI::Schema do
           assert_nil(schema.properties['none'].schema_absolute_uri)
         end
 
+        it("root with only externally supplied uri") do
+          schema = metaschema.new_schema({
+            'properties' => {
+              'relative' => {'id' => 'nested_relative'},
+              'absolute' => {'id' => 'http://jsi/3aza'},
+              'none' => {},
+            },
+          }, uri: 'http://jsi/3az9/root')
+          assert_uris(['http://jsi/3az9/root'], schema.schema_absolute_uris)
+          assert_uris(['http://jsi/3az9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
+          assert_uris(['http://jsi/3aza'], schema.properties['absolute'].schema_absolute_uris)
+          assert_uris([], schema.properties['none'].schema_absolute_uris)
+        end
+
         it("schema with same id as externally supplied") do
           schema = metaschema.new_schema({
             'id' => 'http://jsi/3bz9/root',
@@ -536,6 +550,20 @@ describe JSI::Schema do
           assert_uri('http://jsi/test/d6/external_uri/nested_relative', schema.properties['relative'].schema_absolute_uri)
           assert_uri('http://jsi/test/d6/ignore_external_uri/nested_absolute', schema.properties['absolute'].schema_absolute_uri)
           assert_nil(schema.properties['none'].schema_absolute_uri)
+        end
+
+        it("root with only externally supplied uri") do
+          schema = metaschema.new_schema({
+            'properties' => {
+              'relative' => {'$id' => 'nested_relative'},
+              'absolute' => {'$id' => 'http://jsi/3aya'},
+              'none' => {},
+            },
+          }, uri: 'http://jsi/3ay9/root')
+          assert_uris(['http://jsi/3ay9/root'], schema.schema_absolute_uris)
+          assert_uris(['http://jsi/3ay9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
+          assert_uris(['http://jsi/3aya'], schema.properties['absolute'].schema_absolute_uris)
+          assert_uris([], schema.properties['none'].schema_absolute_uris)
         end
 
         it("schema with same id as externally supplied") do
