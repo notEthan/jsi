@@ -785,7 +785,7 @@ module JSI
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
-        jsi_resource_ancestor_uri: jsi_resource_ancestor_uri,
+        jsi_schema_base_uri: jsi_schema_base_uri,
         # different registries mean references may resolve to different resources so must not be equal
         jsi_schema_registry: jsi_schema_registry,
       }.freeze

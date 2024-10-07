@@ -909,26 +909,27 @@ describe JSI::Base do
   end
 
   describe 'equality' do
-    describe 'with different jsi_schema_base_uri' do
+    describe("with different externally supplied URI") do
       let(:schema) { JSI::JSONSchemaDraft06 }
       let(:instance) { {'$id' => '4c01'} }
       it 'is not equal' do
         exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
         act = schema.new_jsi(instance, uri: 'http://jsi/test/802e/')
         refute_equal(exp, act)
-        assert_uri('http://jsi/test/802d/4c01', exp.schema_absolute_uri)
-        assert_uri('http://jsi/test/802e/4c01', act.schema_absolute_uri)
+        assert_uris(['http://jsi/test/802d/4c01', 'http://jsi/test/802d/'], exp.schema_absolute_uris)
+        assert_uris(['http://jsi/test/802e/4c01', 'http://jsi/test/802e/'], act.schema_absolute_uris)
       end
     end
-    describe 'the jsi_schema_base_uri is different, but the schema_absolute_uri is unaffected' do
+
+    describe("with different externally supplied URI, same id URI") do
       let(:schema) { JSI::JSONSchemaDraft06 }
       let(:instance) { {'$id' => 'http://jsi/test/a86e'} }
       it 'is not equal' do
         exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
         act = schema.new_jsi(instance, uri: 'http://jsi/test/802e/')
-        assert_equal(exp, act)
-        assert_uri('http://jsi/test/a86e', exp.schema_absolute_uri)
-        assert_uri('http://jsi/test/a86e', act.schema_absolute_uri)
+        refute_equal(exp, act)
+        assert_uris(['http://jsi/test/a86e', 'http://jsi/test/802d/'], exp.schema_absolute_uris)
+        assert_uris(['http://jsi/test/a86e', 'http://jsi/test/802e/'], act.schema_absolute_uris)
       end
     end
 
