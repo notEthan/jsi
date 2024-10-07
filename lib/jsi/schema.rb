@@ -116,7 +116,7 @@ module JSI
       # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
-      #   the given `schema_content` and whose schemas are this schema's in-place applicators.
+      #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
       def new_schema(schema_content,
           uri: nil,
           register: true,
