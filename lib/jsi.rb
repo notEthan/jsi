@@ -8,7 +8,7 @@ require "pathname"
 require "bigdecimal"
 require "addressable/uri"
 
-module JSI
+module JSI::Error
   # generally put in code paths that are not expected to be valid control flow paths.
   # rather a NotImplementedCorrectlyError. but that's too long.
   #
@@ -34,7 +34,7 @@ module JSI
     # @param uri [Addressable::URI, nil]
     def initialize(msg = nil, *a, uri: nil)
       super([*msg].compact.join("\n"), *a)
-      @uri = Util.uri(uri, nnil: false)
+      @uri = JSI::Util.uri(uri, nnil: false)
     end
 
     # @return [Addressable::URI, nil]
@@ -45,6 +45,12 @@ module JSI
   # when it's required, relative when it must be absolute, etc.
   class URIError < Addressable::URI::InvalidURIError
   end
+end
+
+module JSI
+  include(Error)
+  # include(Error) doesn't make its constants available in nested namespaces; fix
+  Error.constants.each { |n| const_set(n, const_get(n)) }
 
   # @private
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
