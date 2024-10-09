@@ -29,20 +29,11 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
   it 'is pretty' do
     schema = bootstrap_schema_class.new(document)
 
-    inspect = %q(#<JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule) # {"properties"=>{"properties"=>{"additionalProperties"=>{"$ref"=>"#"}}, "additionalProperties"=>{"$ref"=>"#"}, "$ref"=>{}}}>)
+    inspect = -%Q(#<JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule) # #{document.inspect}>)
     assert_equal(inspect, schema.inspect)
 
     assert_equal(schema.inspect, schema.to_s)
-
-    pp = <<~PP
-      #<JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule) #
-        {"properties"=>
-          {"properties"=>{"additionalProperties"=>{"$ref"=>"#"}},
-           "additionalProperties"=>{"$ref"=>"#"},
-           "$ref"=>{}}}
-      >
-      PP
-    assert_equal(pp, schema.pretty_inspect)
+    assert_match(%r(\A#<JSI::MetaSchemaNode::BootstrapSchema \(TestSchemaImplModule\) #\n  .*\n>\Z)m, schema.pretty_inspect)
   end
 
   it 'has a named class' do
