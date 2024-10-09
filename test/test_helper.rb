@@ -44,6 +44,7 @@ ENV["MT_NO_EXPECTATIONS"] = ''
 require 'minitest/autorun'
 require 'minitest/around/spec'
 require 'minitest/reporters'
+require('ansi/code')
 
 module Minitest
   module WithEndSummary
