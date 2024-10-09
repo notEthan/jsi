@@ -82,7 +82,7 @@ describe 'JSI::Base array' do
     describe 'arbitrary object' do
       it 'raises' do
         err = assert_raises(TypeError) { subject[{"valid" => 0}] }
-        assert_equal(["expected `token` param to be an Integer or Range", %q(token: {"valid"=>0})].join("\n"), err.message)
+        assert_equal(-"expected `token` param to be an Integer or Range\ntoken: #{{"valid" => 0}.inspect}", err.message)
       end
     end
   end
