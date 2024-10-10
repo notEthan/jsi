@@ -63,7 +63,7 @@ module JSI
       # Note: A fragment does not include a leading '#'. The string "#/foo" is a URI containing the
       # fragment "/foo", which should be parsed by `JSI::URI` before passing to this method, e.g.:
       #
-      #     JSI::Ptr.from_fragment(JSI::URI.parse("#/foo").fragment)
+      #     JSI::Ptr.from_fragment(JSI::URI["#/foo"].fragment)
       #     => JSI::Ptr["foo"]
       #
       # @param fragment [String] a fragment containing a pointer
