@@ -112,7 +112,7 @@ module JSI
     # @api private
     # @param jsi_document [Object] the document containing the instance
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
-    # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
+    # @param jsi_schema_base_uri [URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     def initialize(jsi_document,

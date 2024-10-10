@@ -20,7 +20,7 @@ module JSI
     # this is always an absolute URI (with no fragment).
     # This may be the absolute schema URI of an ancestor schema or the URI from which the document was retrieved.
     # @api private
-    # @return [Addressable::URI, nil]
+    # @return [URI, nil]
     attr_reader :jsi_schema_base_uri
 
     # resources which are ancestors of this JSI in the document. this does not include self.
@@ -36,7 +36,7 @@ module JSI
     # this is always an absolute URI (with no fragment).
     # If this node is a schema with an id, this is its absolute URI; otherwise an ancestor resource's URI,
     # or nil if not contained by a resource with a URI.
-    # @return [Addressable::URI, nil]
+    # @return [URI, nil]
     def jsi_resource_ancestor_uri
       (is_a?(Schema) && schema_absolute_uri) || jsi_schema_base_uri
     end
@@ -62,7 +62,7 @@ module JSI
     end
 
     def jsi_schema_base_uri=(jsi_schema_base_uri)
-      #chkbug fail(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.is_a?(Addressable::URI)
+      #chkbug fail(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.is_a?(URI)
       #chkbug fail(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.absolute?
       #chkbug fail(Bug) if jsi_schema_base_uri && jsi_schema_base_uri.fragment
 

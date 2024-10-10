@@ -87,7 +87,7 @@ module JSI
       nil
     end
 
-    # @param uri [Addressable::URI, #to_str]
+    # @param uri [URI, #to_str]
     # @return [JSI::Base]
     # @raise [ResolutionError]
     def find(uri)
@@ -164,7 +164,7 @@ module JSI
     end
 
     protected
-    # @param uri [Addressable::URI]
+    # @param uri [URI]
     # @param resource [JSI::Base]
     # @return [void]
     def internal_store(uri, resource)

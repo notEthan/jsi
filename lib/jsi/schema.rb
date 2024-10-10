@@ -67,7 +67,7 @@ module JSI
       # the `to_immutable` param.
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
-      # @param uri [#to_str, Addressable::URI] The retrieval URI of the schema document.
+      # @param uri [#to_str, URI] The retrieval URI of the schema document.
       #   If specified, the root schema will be identified by this URI, in addition
       #   to any absolute URI declared with an id keyword, for resolution in the `schema_registry`.
       #
@@ -397,17 +397,17 @@ module JSI
     end
 
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
-    # @return [Addressable::URI, nil]
+    # @return [URI, nil]
     def schema_absolute_uri
       schema_absolute_uris.first
     end
 
-    # @return [Enumerable<Addressable::URI>]
+    # @return [Enumerable<URI>]
     def schema_absolute_uris
       @schema_absolute_uris_map[]
     end
 
-    # @yield [Addressable::URI]
+    # @yield [URI]
     private def schema_absolute_uris_compute
       root_uri = jsi_schema_base_uri if jsi_ptr.root?
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
@@ -425,18 +425,18 @@ module JSI
     # a nonrelative URI which refers to this schema.
     # `nil` if no ancestor of this schema defines an id.
     # see {#schema_uris} for all URIs known to refer to this schema.
-    # @return [Addressable::URI, nil]
+    # @return [URI, nil]
     def schema_uri
       schema_uris.first
     end
 
     # nonrelative URIs (that is, absolute, but possibly with a fragment) which refer to this schema
-    # @return [Array<Addressable::URI>]
+    # @return [Array<URI>]
     def schema_uris
       @schema_uris_map[]
     end
 
-    # @yield [Addressable::URI]
+    # @yield [URI]
     private def schema_uris_compute(&block)
       schema_absolute_uris.each(&block)
 

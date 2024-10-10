@@ -96,9 +96,9 @@ describe JSI::Util do
       assert_equal(['a'], JSI::Util.as_json(schema.new_jsi(['a'])))
       assert_equal(%q(["a"]), JSI::Util.to_json(schema.new_jsi(['a'])))
 
-      # Addressable::URI, which responds to both #to_hash and #to_str
-      assert_equal('tag:x', JSI::Util.as_json(Addressable::URI.parse('tag:x')))
-      assert_equal(%q("tag:x"), JSI::Util.to_json(Addressable::URI.parse('tag:x')))
+      # JSI::URI, which responds to both #to_hash and #to_str
+      assert_equal('tag:x', JSI::Util.as_json(JSI::URI.parse('tag:x')))
+      assert_equal(%q("tag:x"), JSI::Util.to_json(JSI::URI.parse('tag:x')))
 
       # #as_json opt
       assert_equal({'a' => 0}, JSI::Util.as_json(OptJson.new, a: 0))

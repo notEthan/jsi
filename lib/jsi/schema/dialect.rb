@@ -52,7 +52,7 @@ module JSI
         freeze
       end
 
-      # @return [Addressable::URI, nil]
+      # @return [URI, nil]
       attr_reader(:id)
 
       # @return [Set<Schema::Vocabulary>]

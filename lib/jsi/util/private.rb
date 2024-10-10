@@ -88,17 +88,17 @@ module JSI
     # @param yabs must be absolute
     # @param ynorm must be normalized
     # @param tonorm normalize returned URI
-    # @return [Addressable::URI, nil]
+    # @return [URI, nil]
     def uri(uri, nnil: true, yabs: false, ynorm: false, tonorm: false)
       return nil if !nnil && uri.nil?
-      if uri.is_a?(Addressable::URI)
+      if uri.is_a?(URI)
         if uri.frozen?
           auri = uri
         else
           auri = uri.dup.freeze
         end
       elsif uri.is_a?(String) || uri.respond_to?(:to_str)
-        auri = Addressable::URI.parse(uri).freeze
+        auri = URI.parse(uri).freeze
       else
         raise(URIError, "URI is not a string: #{uri.inspect}")
       end

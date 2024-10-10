@@ -31,13 +31,13 @@ module JSI::Error
   # A reference or pointer cannot be resolved
   class ResolutionError < StandardError
     # @param msg [String, Array]
-    # @param uri [Addressable::URI, nil]
+    # @param uri [URI, nil]
     def initialize(msg = nil, *a, uri: nil)
       super([*msg].compact.join("\n"), *a)
       @uri = JSI::Util.uri(uri, nnil: false)
     end
 
-    # @return [Addressable::URI, nil]
+    # @return [URI, nil]
     attr_accessor(:uri)
   end
 
@@ -72,6 +72,7 @@ module JSI
     end)
   end
 
+  autoload(:URI, 'jsi/uri')
   autoload :Util, 'jsi/util'
   autoload :Ptr, 'jsi/ptr'
   autoload :Schema, 'jsi/schema'
