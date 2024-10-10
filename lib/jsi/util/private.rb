@@ -156,6 +156,18 @@ module JSI
       nil
     end
 
+    # @param visited_refs [Array<Schema::Ref>]
+    # @param ref [Schema::Ref, nil]
+    # @return [Array<Schema::Ref>]
+    def add_visited_ref(visited_refs, ref)
+      return(visited_refs) if ref.nil?
+      #chkbug fail unless ref.is_a?(Schema::Ref) && visited_refs.is_a?(Array) && visited_refs.frozen?
+      if visited_refs.include?(ref)
+        raise(ResolutionError, "cyclical ref application with refs: #{visited_refs}")
+      end
+      visited_refs.dup.push(ref).freeze
+    end
+
     # Defines equality methods and #hash (for Hash / Set), based on a method #jsi_fingerprint
     # implemented by the includer. #jsi_fingerprint is to include the class and any properties
     # of the instance which constitute its identity.

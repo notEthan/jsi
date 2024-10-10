@@ -16,7 +16,7 @@ describe 'JSI::SchemaRegistry' do
 
     it 'does not find a schema that is not registered' do
       uri = 'http://jsi/schema_registry/55e6'
-      e = assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema_registry.find(uri) }
+      e = assert_raises(JSI::ResolutionError) { schema_registry.find(uri) }
       assert_uri(uri, e.uri)
     end
 
@@ -159,7 +159,7 @@ describe 'JSI::SchemaRegistry' do
       schema_registry.autoload_uri(uri) do
         JSI::JSONSchemaDraft07.new_schema({}).new_jsi({})
       end
-      err = assert_raises(JSI::SchemaRegistry::ResourceNotFound) do
+      err = assert_raises(JSI::ResolutionError) do
         schema_registry.find(uri)
       end
       msg = <<~MSG
@@ -247,14 +247,14 @@ describe 'JSI::SchemaRegistry' do
       postdup_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => postdup_register_uri})
       schema_registry_dup.register(postdup_resource)
       assert_equal(postdup_resource, schema_registry_dup.find(postdup_register_uri))
-      assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema_registry.find(postdup_register_uri) }
+      assert_raises(JSI::ResolutionError) { schema_registry.find(postdup_register_uri) }
 
       postdup_autoload_uri = 'http://jsi/schema_registry/91wo'
       schema_registry_dup.autoload_uri(postdup_autoload_uri) do
         JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => postdup_autoload_uri})
       end
       assert_equal(postdup_autoload_uri, schema_registry_dup.find(postdup_autoload_uri)['$id'])
-      assert_raises(JSI::SchemaRegistry::ResourceNotFound) { schema_registry.find(postdup_autoload_uri) }
+      assert_raises(JSI::ResolutionError) { schema_registry.find(postdup_autoload_uri) }
     end
 
     it 'freezes' do

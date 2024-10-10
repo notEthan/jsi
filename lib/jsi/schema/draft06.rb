@@ -3,8 +3,6 @@
 module JSI
   module Schema
     module Draft06
-      include BigMoneyId
-      include IdWithAnchor
       include IntegerAllows0Fraction
 
       VOCABULARY = Vocabulary.new(
@@ -21,7 +19,7 @@ module JSI
           # draft-wright-json-schema-01 9.  Base URI and dereferencing
 
           # draft-wright-json-schema-01 9.2.  The "$id" keyword
-          Schema::Elements::ID[keyword: '$id'],
+          Schema::Elements::ID[keyword: '$id', fragment_is_anchor: true],
 
           # draft-wright-json-schema-validation-01 6.  Validation keywords
 

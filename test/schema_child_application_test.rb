@@ -3,6 +3,74 @@ require_relative 'test_helper'
 describe 'JSI Schema child application' do
   let(:schema) { metaschema.new_schema(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
+
+  {
+    draft04: JSI::JSONSchemaDraft04,
+    draft06: JSI::JSONSchemaDraft06,
+    draft07: JSI::JSONSchemaDraft07,
+  }.each do |name, metaschema|
+    describe("#{name} child application aborted by $ref") do
+      let(:metaschema) { metaschema }
+
+      describe("array instance") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              a:
+                items: [{}]
+            $ref: "#/definitions/a"
+            items: [{}]
+            additionalItems: {}
+            contains: {}
+            YAML
+          )
+        end
+        let(:instance) { [{}, {}] }
+
+        it("applies no $ref siblings") do
+          assert_schemas([schema.definitions['a'].items[0]], subject[0])
+          assert_schemas([], subject[1])
+          refute_schema(schema.items[0], subject[0])
+          refute_schema(schema.items[0], subject[1])
+          refute_schema(schema.additionalItems, subject[0])
+          refute_schema(schema.additionalItems, subject[1])
+          if schema['contains'].jsi_is_schema? # skip draft04
+            refute_schema(schema.contains, subject[0])
+            refute_schema(schema.contains, subject[1])
+          end
+        end
+      end
+
+      describe("hash/object instance") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              a:
+                properties:
+                  a: {}
+            $ref: "#/definitions/a"
+            properties: {a: {}}
+            patternProperties: {a: {}}
+            additionalProperties: {}
+            YAML
+          )
+        end
+        let(:instance) { {"a" => {}, "b" => {}} }
+
+        it("applies no $ref siblings") do
+          assert_schemas([schema.definitions['a'].properties['a']], subject['a'])
+          assert_schemas([], subject['b'])
+          refute_schema(schema.properties['a'], subject['a'])
+          refute_schema(schema.properties['a'], subject['b'])
+          refute_schema(schema.patternProperties['a'], subject['a'])
+          refute_schema(schema.patternProperties['a'], subject['b'])
+          refute_schema(schema.additionalProperties, subject['a'])
+          refute_schema(schema.additionalProperties, subject['b'])
+        end
+      end
+    end
+  end
+
   {
     draft04: JSI::JSONSchemaDraft04,
     draft06: JSI::JSONSchemaDraft06,

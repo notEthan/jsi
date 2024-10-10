@@ -63,18 +63,15 @@ module JSI
                 instance.each_key do |property_name|
                   if value.key?(property_name)
                     evaluated_property_names << property_name
-                    results[property_name] = child_subschema_validate(
-                      property_name,
-                      ['properties', property_name],
-                    )
+                    results[property_name] = child_subschema_validate(property_name, ['properties', property_name])
                   end
                 end
-                validate(
+                child_results_validate(
                   results.each_value.all?(&:valid?),
                   'validation.keyword.properties.invalid',
                   "instance object properties are not all valid against corresponding `properties` schemas",
                   keyword: 'properties',
-                  results: results.each_value,
+                  child_results: results,
                   instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
                 )
               end
@@ -98,22 +95,19 @@ module JSI
                       # TODO ECMA 262
                       if value_property_pattern.respond_to?(:to_str) && Regexp.new(value_property_pattern).match(property_name.to_s)
                         evaluated_property_names << property_name
-                        results[property_name] = child_subschema_validate(
-                          property_name,
-                          ['patternProperties', value_property_pattern],
-                        )
+                        results[property_name] = child_subschema_validate(property_name, ['patternProperties', value_property_pattern])
                       end
                     rescue ::RegexpError
                       # cannot validate
                     end
                   end
                 end
-                validate(
+                child_results_validate(
                   results.each_value.all?(&:valid?),
                   'validation.keyword.patternProperties.invalid',
                   "instance object properties are not all valid against matching `patternProperties` schemas",
                   keyword: 'patternProperties',
-                  results: results.each_value,
+                  child_results: results,
                   instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
                 )
               end
@@ -126,18 +120,15 @@ module JSI
               results = {}
               instance.each_key do |property_name|
                 if !evaluated_property_names.include?(property_name)
-                  results[property_name] = child_subschema_validate(
-                    property_name,
-                    ['additionalProperties'],
-                  )
+                  results[property_name] = child_subschema_validate(property_name, ['additionalProperties'])
                 end
               end
-              validate(
+              child_results_validate(
                 results.each_value.all?(&:valid?),
                 'validation.keyword.additionalProperties.invalid',
                 "instance object additional properties are not all valid against `additionalProperties` schema",
                 keyword: 'additionalProperties',
-                results: results.each_value,
+                child_results: results,
                 instance_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
               )
             end

@@ -67,7 +67,7 @@ module JSI
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on meta-schema document root")
       end
 
-      #chkbug raise(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
+      #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
       @extends = Set[]
 
@@ -77,12 +77,12 @@ module JSI
         jsi_document,
         jsi_ptr: root_schema_ptr,
         jsi_schema_base_uri: nil, # supplying jsi_schema_base_uri on root bootstrap schema is not supported
+        jsi_schema_registry: nil,
       )
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
-        bootstrap_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
-          is.each_inplace_applicator_schema(instance_for_schemas, &y)
+        child_indicated_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
+          is.each_inplace_child_applicator_schema(tok, instance_for_schemas, &y)
         end
-        child_indicated_schemas = bootstrap_schemas.child_applicator_schemas(tok, instance_for_schemas)
         instance_for_schemas = instance_for_schemas[tok]
         child_indicated_schemas
       end
@@ -92,7 +92,6 @@ module JSI
         is.each_inplace_applicator_schema(instance_for_schemas, &y)
       end
 
-      @describes_self = false
       @bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the meta-schema, i.e. this is a schema
@@ -101,10 +100,6 @@ module JSI
           end
           extend(Schema)
           @extends += schema_implementation_modules
-        end
-        if bootstrap_schema.jsi_ptr == jsi_ptr
-          # this is the meta-schema (it is described by itself)
-          @describes_self = true
         end
       end
 
@@ -120,7 +115,7 @@ module JSI
       @jsi_schemas = bootstrap_schemas_to_msn(@bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
-      if @describes_self
+      if jsi_ptr == metaschema_root_ptr
         describes_schema!(schema_implementation_modules)
       end
 
@@ -241,7 +236,7 @@ module JSI
     end
 
     def jsi_root_descendent_node_compute(ptr: )
-      #chkbug raise(Bug) unless jsi_ptr.root?
+      #chkbug fail(Bug) unless jsi_ptr.root?
       if ptr.root?
         self
       else

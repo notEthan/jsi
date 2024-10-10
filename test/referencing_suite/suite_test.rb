@@ -38,19 +38,16 @@ describe("JSON Referencing Test Suite") do
                 ref_uri = base_uri ? JSI::Util.uri(base_uri).join(curr_test['ref']).freeze : curr_test['ref']
                 ref = JSI::Schema::Ref.new(ref_uri, schema_registry: schema_registry)
                 if curr_test['error']
-                  raise(Bug) if curr_test['then']
+                  fail(Bug) if curr_test['then']
                   begin
                     resolved_schema = ref.deref_schema
-                    if resolved_schema['$ref']
-                      skip("unsupported: id is ignored when $ref is a sibling")
-                    end
                     assert(false, [
                       "expected resolution to error",
                       "test: #{curr_test.pretty_inspect.chomp}",
                       "with base URI: #{base_uri.inspect}",
                       "resolved to: #{resolved_schema.pretty_inspect.chomp}",
                     ].join("\n"))
-                  rescue JSI::SchemaRegistry::ResourceNotFound, JSI::Schema::ReferenceError
+                  rescue JSI::ResolutionError
                   end
                 else
                   resolved_schema = ref.deref_schema

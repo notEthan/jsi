@@ -39,17 +39,20 @@ module JSI
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        jsi_schema_base_uri: nil
+        jsi_schema_base_uri: nil,
+        jsi_schema_resource_ancestors: Util::EMPTY_ARY,
+        jsi_schema_registry: nil
     )
-      raise(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
+      fail(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
 
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
-      self.jsi_schema_resource_ancestors = Util::EMPTY_ARY
+      self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
+      self.jsi_schema_registry = jsi_schema_registry
 
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
-      #chkbug raise(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
+      #chkbug fail(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
 
       super()
     end
@@ -68,20 +71,48 @@ module JSI
         jsi_document,
         jsi_ptr: jsi_ptr + subptr,
         jsi_schema_base_uri: jsi_resource_ancestor_uri,
+        jsi_schema_resource_ancestors: jsi_subschema_resource_ancestors,
+        jsi_schema_registry: jsi_schema_registry,
       )
     end
 
     # overrides {Schema#resource_root_subschema}
     def resource_root_subschema(ptr)
-      # BootstrapSchema does not track jsi_schema_resource_ancestors used by Schema#schema_resource_root;
-      # resource_root_subschema is always relative to the document root.
-      # BootstrapSchema also does not implement jsi_root_node or #[]. we instantiate the ptr directly
-      # rather than as a subschema from the root.
+      ptr = Ptr.ary_ptr(ptr)
+      if schema_resource_root
+        curschema = schema_resource_root
+        remptr = ptr.resolve_against(schema_resource_root.jsi_node_content)
+        found = true
+        while found
+          return(curschema) if remptr.empty?
+          found = false
+          curschema.each_immediate_subschema_ptr do |subptr|
+            if subptr.ancestor_of?(remptr)
+              curschema = curschema.subschema(subptr)
+              remptr = remptr.relative_to(subptr)
+              found = true
+              break
+            end
+          end
+        end
+        # ptr indicates a location where no element indicates a subschema.
+        # TODO rm support (along with reinstantiate_as) and raise(NotASchemaError) here.
+        return(curschema.subschema(remptr))
+      end
+      # no schema_resource_root means the root is not a schema and no parent schema has an absolute uri.
+      # result schema is instantiated relative to document root.
       self.class.new(
         jsi_document,
-        jsi_ptr: Ptr.ary_ptr(ptr),
+        jsi_ptr: ptr,
         jsi_schema_base_uri: nil,
+        jsi_schema_resource_ancestors: Util::EMPTY_ARY,
+        jsi_schema_registry: jsi_schema_registry,
       )
+    end
+
+    # @return [MetaschemaNode::BootstrapSchema, nil]
+    def schema_resource_root
+      jsi_subschema_resource_ancestors.last
     end
 
     # @return [String]
@@ -123,6 +154,7 @@ module JSI
         class: self.class,
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
+        jsi_schema_registry: jsi_schema_registry,
       }.freeze
     end
 

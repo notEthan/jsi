@@ -3,6 +3,47 @@ require_relative 'test_helper'
 describe 'JSI Schema inplace application' do
   let(:schema) { metaschema.new_schema(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
+
+  {
+    draft04: JSI::JSONSchemaDraft04,
+    draft06: JSI::JSONSchemaDraft06,
+    draft07: JSI::JSONSchemaDraft07,
+  }.each do |name, metaschema|
+    describe("#{name} in-place application aborted by $ref") do
+      let(:metaschema) { metaschema }
+
+      describe("any instance") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            definitions:
+              a: {}
+            $ref: "#/definitions/a"
+            dependencies: {a: {}}
+            if: {}
+            then: {}
+            else: {}
+            allOf: [{}]
+            anyOf: [{}]
+            oneOf: [{}]
+            YAML
+          )
+        end
+        let(:instance) { {"a" => {}, "b" => {}} }
+
+        it("applies no $ref siblings") do
+          assert_schemas([schema.definitions['a']], subject)
+          refute_schema(schema.dependencies['a'], subject)
+          refute_schema(schema['if'], subject) if schema['if'].jsi_is_schema?
+          refute_schema(schema['then'], subject) if schema['then'].jsi_is_schema?
+          refute_schema(schema['else'], subject) if schema['else'].jsi_is_schema?
+          refute_schema(schema.allOf[0], subject)
+          refute_schema(schema.anyOf[0], subject)
+          refute_schema(schema.oneOf[0], subject)
+        end
+      end
+    end
+  end
+
   {
     draft04: JSI::JSONSchemaDraft04,
     draft06: JSI::JSONSchemaDraft06,

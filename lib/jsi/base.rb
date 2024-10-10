@@ -40,7 +40,7 @@ module JSI
           super
         else
           schema_names = jsi_class_schemas.map do |schema|
-            mod_name = schema.jsi_schema_module.name_from_ancestor
+            mod_name = schema.jsi_schema_module_name_from_ancestor
             if mod_name && schema.schema_absolute_uri
               "#{mod_name} <#{schema.schema_absolute_uri}>"
             elsif mod_name
@@ -79,7 +79,7 @@ module JSI
         schema_names = jsi_class_schemas.map do |schema|
           named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
           if named_ancestor_schema
-            [named_ancestor_schema.jsi_schema_module.name, *tokens].join('_')
+            [named_ancestor_schema.jsi_schema_module_name, *tokens].join('_')
           elsif schema.schema_uri
             schema.schema_uri.to_s
           else
@@ -123,7 +123,7 @@ module JSI
         jsi_content_to_immutable: ,
         jsi_root_node: nil
     )
-      #chkbug raise(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
+      #chkbug fail(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
@@ -133,11 +133,11 @@ module JSI
       self.jsi_schema_registry = jsi_schema_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
       if @jsi_ptr.root?
-        #chkbug raise(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
+        #chkbug fail(Bug, "jsi_root_node specified for root JSI") if jsi_root_node
         @jsi_root_node = self
       else
-        #chkbug raise(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
-        #chkbug raise(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
+        #chkbug fail(Bug, "jsi_root_node is not JSI::Base") if !jsi_root_node.is_a?(JSI::Base)
+        #chkbug fail(Bug, "jsi_root_node ptr is not root") if !jsi_root_node.jsi_ptr.root?
         @jsi_root_node = jsi_root_node
       end
 
@@ -709,9 +709,9 @@ module JSI
       schemas_priorities = jsi_schemas.each_with_index.map do |schema, i|
         if schema.describes_schema?
           [0, i, schema]
-        elsif schema.jsi_schema_module.name
+        elsif schema.jsi_schema_module_name
           [1, i, schema]
-        elsif schema.jsi_schema_module.name_from_ancestor
+        elsif schema.jsi_schema_module_name_from_ancestor
           [2, i, schema]
         elsif schema.schema_absolute_uri
           [3, i, schema]
@@ -732,7 +732,7 @@ module JSI
       schema_names = []
       schemas_priorities.each do |(priority, _idx, schema)|
         if priority == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
-          name = schema.jsi_schema_module.name_from_ancestor || schema.schema_uri
+          name = schema.jsi_schema_module_name_from_ancestor || schema.schema_uri
           name ||= schema.jsi_ptr.uri if priority == 0
           schema_names << name if name
         end
@@ -793,14 +793,16 @@ module JSI
 
     private
 
+    BY_TOKEN = proc { |i| i[:token] }
+
     def jsi_memomaps_initialize
-      @child_indicated_schemas_map = jsi_memomap(key_by: proc { |i| i[:token] }, &method(:jsi_child_indicated_schemas_compute))
-      @child_applied_schemas_map = jsi_memomap(key_by: proc { |i| i[:token] }, &method(:jsi_child_applied_schemas_compute))
-      @child_node_map = jsi_memomap(key_by: proc { |i| i[:token] }, &method(:jsi_child_node_compute))
+      @child_indicated_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_indicated_schemas_compute))
+      @child_applied_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_applied_schemas_compute))
+      @child_node_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_node_compute))
     end
 
     def jsi_indicated_schemas=(jsi_indicated_schemas)
-      #chkbug raise(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
+      #chkbug fail(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
       @jsi_indicated_schemas = jsi_indicated_schemas
     end
 
@@ -821,7 +823,18 @@ module JSI
     end
 
     def jsi_child_indicated_schemas_compute(token: , content: )
-      jsi_schemas.child_applicator_schemas(token, content)
+      if jsi_indicated_schemas.any? { |is| is.dialect_invoke_each(:application_requires_evaluated).any? }
+        # if application_requires_evaluated, in-place application needs to collect token evaluation
+        # recursively to inform child application, so must be recomputed.
+        jsi_indicated_schemas.each_yield_set do |is, y|
+          is.each_inplace_child_applicator_schema(token, content, &y)
+        end
+      else
+        # if token evaluation does not need to be collected, use our already-computed #jsi_schemas.
+        jsi_schemas.each_yield_set do |s, y|
+          s.each_child_applicator_schema(token, content, &y)
+        end
+      end
     end
 
     def jsi_child_applied_schemas_compute(token: , child_indicated_schemas: , child_content: )

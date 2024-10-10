@@ -41,83 +41,6 @@ module JSI
     # an exception raised when we are unable to resolve a schema reference
     ReferenceError = ResolutionError
 
-    # extends any schema which uses the keyword '$id' to identify its canonical URI
-    module BigMoneyId
-      # the contents of a $id keyword whose value is a string, or nil
-      # @return [#to_str, nil]
-      def id
-        if keyword?('$id') && schema_content['$id'].respond_to?(:to_str)
-          schema_content['$id']
-        else
-          nil
-        end
-      end
-    end
-
-    # extends any schema which uses the keyword 'id' to identify its canonical URI
-    module OldId
-      # the contents of an `id` keyword whose value is a string, or nil
-      # @return [#to_str, nil]
-      def id
-        if keyword?('id') && schema_content['id'].respond_to?(:to_str)
-          schema_content['id']
-        else
-          nil
-        end
-      end
-    end
-
-    # extends any schema which defines an anchor as a URI fragment in the schema id
-    module IdWithAnchor
-      # a URI for the schema's id, unless the id defines an anchor in its
-      # fragment. nil if the schema defines no id.
-      # @return [Addressable::URI, nil]
-      def id_without_fragment
-        if id
-          id_uri = Util.uri(id)
-          if id_uri.merge(fragment: nil).empty?
-            # fragment-only id is just an anchor
-            # e.g. #foo
-            nil
-          elsif id_uri.fragment == nil
-            # no fragment
-            # e.g. http://localhost:1234/bar
-            id_uri
-          elsif id_uri.fragment == ''
-            # empty fragment
-            # e.g. http://json-schema.org/draft-07/schema#
-            id_uri.merge(fragment: nil).freeze
-          elsif jsi_schema_base_uri && jsi_schema_base_uri.join(id_uri).merge(fragment: nil) == jsi_schema_base_uri
-            # the id, resolved against the base uri, consists of the base uri plus an anchor fragment.
-            # so there's no non-fragment id.
-            # e.g. base uri is http://localhost:1234/bar
-            #        and id is http://localhost:1234/bar#foo
-            nil
-          else
-            # e.g. http://localhost:1234/bar#foo
-            id_uri.merge(fragment: nil).freeze
-          end
-        else
-          nil
-        end
-      end
-
-      # an anchor defined by a non-empty fragment in the id uri
-      # @return [String]
-      def anchor
-        if id
-          id_uri = Util.uri(id)
-          if id_uri.fragment == ''
-            nil
-          else
-            id_uri.fragment
-          end
-        else
-          nil
-        end
-      end
-    end
-
     # @private
     module IntegerAllows0Fraction
       # is `value` an integer?
@@ -469,17 +392,35 @@ module JSI
       schema_content.respond_to?(:to_hash) && schema_content.key?(keyword)
     end
 
+    # the string contents of an `$id`/`id` keyword, or nil
+    # @return [#to_str, nil]
+    def id
+      dialect_invoke_each(:id).first
+    end
+
+    # @return [Enumerable<String>]
+    def anchors
+      dialect_invoke_each(:anchor)
+    end
+
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
     # @return [Addressable::URI, nil]
     def schema_absolute_uri
-      if respond_to?(:id_without_fragment) && id_without_fragment
+      schema_absolute_uris.first
+    end
+
+    # @return [Enumerable<Addressable::URI>]
+    def schema_absolute_uris
+      @schema_absolute_uris_map[]
+    end
+
+    # @yield [Addressable::URI]
+    private def schema_absolute_uris_compute
+      dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
         if jsi_schema_base_uri
-          jsi_schema_base_uri.join(id_without_fragment).freeze
+          yield(jsi_schema_base_uri.join(id_without_fragment).freeze)
         elsif id_without_fragment.absolute?
-          id_without_fragment
-        else
-          # TODO warn / schema_error
-          nil
+          yield(id_without_fragment)
         end
       end
     end
@@ -499,25 +440,22 @@ module JSI
     end
 
     # @yield [Addressable::URI]
-    private def schema_uris_compute
-      yield schema_absolute_uri if schema_absolute_uri
+    private def schema_uris_compute(&block)
+      schema_absolute_uris.each(&block)
 
-      ancestor_schemas = jsi_subschema_resource_ancestors.reverse_each.select do |resource|
-        resource.schema_absolute_uri
-      end
-
-      anchored = respond_to?(:anchor) ? anchor : nil
-      ancestor_schemas.each do |ancestor_schema|
-        if anchored
-          if ancestor_schema.jsi_anchor_subschema(anchor) == self
-            yield(ancestor_schema.schema_absolute_uri.merge(fragment: anchor).freeze)
-          else
-            anchored = false
+      if schema_resource_root
+        anchors.each do |anchor|
+          schema_resource_root.schema_absolute_uris.each do |uri|
+            yield(uri.merge(fragment: anchor).freeze)
           end
         end
+      end
 
+      jsi_subschema_resource_ancestors.reverse_each do |ancestor_schema|
         relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
-        yield(ancestor_schema.schema_absolute_uri.merge(fragment: relative_ptr.fragment).freeze)
+        ancestor_schema.schema_absolute_uris.each do |uri|
+          yield(uri.merge(fragment: relative_ptr.fragment).freeze)
+        end
       end
 
       nil
@@ -556,6 +494,16 @@ module JSI
     # @return the result of evaluating the block
     def jsi_schema_module_exec(*a, **kw, &block)
       jsi_schema_module.module_exec(*a, **kw, &block)
+    end
+
+    # @return [String, nil]
+    def jsi_schema_module_name
+      @jsi_schema_module && @jsi_schema_module.name
+    end
+
+    # @return [String, nil]
+    def jsi_schema_module_name_from_ancestor
+      @jsi_schema_module && @jsi_schema_module.name_from_ancestor
     end
 
     # Instantiates a new JSI whose content comes from the given `instance` param.
@@ -601,10 +549,10 @@ module JSI
       schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
 
       if jsi_schema_module <= Schema
-        # this schema, or one equal to it, has already had describes_schema! called on it.
+        # this schema has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
         # it is a bug if it was called different times with different schema_implementation_modules, though.
-        unless jsi_schema_module.schema_implementation_modules == schema_implementation_modules
+        unless @schema_implementation_modules == schema_implementation_modules
           raise(ArgumentError, "this schema already describes a schema with different schema_implementation_modules")
         end
       else
@@ -638,7 +586,7 @@ module JSI
     # is this schema the root of a schema resource?
     # @return [Boolean]
     def schema_resource_root?
-      jsi_ptr.root? || !!schema_absolute_uri
+      jsi_ptr.root? || schema_absolute_uris.any?
     end
 
     # a subschema of this Schema
@@ -700,41 +648,28 @@ module JSI
         visited_refs: Util::EMPTY_ARY,
         &block
     )
-      catch(:jsi_application_done) do
       dialect_invoke_each(:inplace_applicate,
         Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
       ) do |schema, ref: nil|
-        if schema.equal?(self)
-          #chkbug raise(Bug) if ref
+        if schema.equal?(self) && !ref
           yield(self)
         else
           schema.each_inplace_applicator_schema(
             instance,
-            visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
+            visited_refs: Util.add_visited_ref(visited_refs, ref),
             &block
           )
         end
       end
-      end
-    end
-
-    # a set of child applicator subschemas of this schema which apply to the child of the given instance
-    # on the given token.
-    #
-    # @param token [Object] the array index or object property name for the child instance
-    # @param instance [Object] the instance to check any child applicators against
-    # @return [JSI::SchemaSet] child applicator subschemas of this schema for the given token
-    #   of the instance
-    def child_applicator_schemas(token, instance)
-      SchemaSet.new(each_child_applicator_schema(token, instance))
     end
 
     # yields each child applicator subschema (from properties, items, etc.) which applies to the child of
     # the given instance on the given token.
     #
-    # @param (see #child_applicator_schemas)
+    # @param token [Object] the array index or object property name for the child instance
+    # @param instance [Object] the instance to check any child applicators against
     # @yield [JSI::Schema]
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def each_child_applicator_schema(token, instance, &block)
@@ -744,6 +679,46 @@ module JSI
         token: token,
         &block
       )
+    end
+
+    # @param token [Object] array index or hash/object property name
+    # @param instance [Object]
+    # @yield [Schema]
+    def each_inplace_child_applicator_schema(
+        token,
+        instance,
+        visited_refs: Util::EMPTY_ARY,
+        &block
+    )
+      applicate_self = false
+
+      dialect_invoke_each(:inplace_applicate,
+        Cxt::InplaceApplication,
+        instance: instance,
+        visited_refs: visited_refs,
+      ) do |schema, ref: nil|
+        if schema.equal?(self) && !ref
+          applicate_self = true
+        else
+          schema.each_inplace_child_applicator_schema(
+            token,
+            instance,
+            visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
+            &block
+          )
+        end
+      end
+
+      if applicate_self
+        dialect.invoke(:child_applicate, Cxt::ChildApplication.new(
+          schema: self,
+          token: token,
+          instance: instance,
+          block: block,
+        ))
+      end
+
+      nil
     end
 
     # any object property names this schema indicates may be present on its instances.
@@ -865,6 +840,7 @@ module JSI
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end
+      @schema_absolute_uris_map = jsi_memomap { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
     end

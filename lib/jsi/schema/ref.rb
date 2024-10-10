@@ -65,8 +65,8 @@ module JSI
 
         # the URI only consists of a fragment (or is empty).
         # for a fragment pointer, resolve using Schema#resource_root_subschema on the ref_schema.
-        # for a fragment anchor, bootstrap does not support anchors; otherwise use the ref_schema's schema_resource_root.
-        schema_resource_root = ref_schema.is_a?(MetaSchemaNode::BootstrapSchema) ? nil : ref_schema.schema_resource_root
+        # for a fragment anchor, use the ref_schema's schema_resource_root.
+        schema_resource_root = ref_schema.schema_resource_root
         resolve_fragment_ptr = ref_schema.method(:resource_root_subschema)
       else
         # find the schema_resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.
@@ -142,12 +142,12 @@ module JSI
         if result_schemas.size == 1
           result_schema = result_schemas.first
         elsif result_schemas.size == 0
-          raise(Schema::ReferenceError.new([
+          raise(ResolutionError.new([
             "could not find schema by fragment: #{fragment.inspect}",
             "in schema resource root: #{schema_resource_root.pretty_inspect.chomp}",
           ], uri: ref_uri))
         else
-          raise(Schema::ReferenceError.new([
+          raise(ResolutionError.new([
             "found multiple schemas for plain name fragment #{fragment.inspect}:",
             *result_schemas.map { |s| s.pretty_inspect.chomp },
           ], uri: ref_uri))

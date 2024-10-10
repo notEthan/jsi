@@ -30,7 +30,7 @@ module JSI
         until elements.empty?
           sort_element = elements.detect do |element|
             dependencies[element].all? { |req_el| @elements.include?(req_el) }
-          end || raise(Bug)
+          end || fail(Bug)
           @elements.push(sort_element)
           elements.delete(sort_element)
         end
@@ -38,7 +38,7 @@ module JSI
         @elements.freeze
 
         @elements_performing = Hash.new(Util::EMPTY_ARY)
-        action_names = @elements.map { |e| e.actions.keys }.inject(Set.new, &:+).freeze
+        action_names = @elements.map { |e| e.actions.each_key }.inject(Set.new, &:+).freeze
         action_names.each do |action_name|
           @elements_performing[action_name] = @elements.select { |e| !e.actions[action_name].empty? }.freeze
         end
@@ -69,6 +69,27 @@ module JSI
         end
 
         cxt
+      end
+
+      # @return [String]
+      def inspect
+        -%Q(\#<#{self.class.name}#{" id: <#{id}>" if id}>)
+      end
+
+      # @return [String]
+      def to_s
+        inspect
+      end
+
+      # @param q
+      def pretty_print(q)
+        q.text('#<')
+        q.text(self.class.name)
+        if id
+          q.text(' ')
+          q.text("id: <#{id}>")
+        end
+        q.text('>')
       end
     end
   end

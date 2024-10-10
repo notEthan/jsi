@@ -267,7 +267,7 @@ module JSI
       named_ancestor_schema, tokens = named_ancestor_schema_tokens
       return nil unless named_ancestor_schema
 
-      name = named_ancestor_schema.jsi_schema_module.name
+      name = named_ancestor_schema.jsi_schema_module_name
       ancestor = named_ancestor_schema
       tokens.each do |token|
         if ancestor.jsi_property_readers.include?(token)
@@ -312,7 +312,7 @@ module JSI
     def named_ancestor_schema_tokens
       schema_ancestors = @jsi_node.jsi_ancestor_nodes
       named_ancestor_schema = schema_ancestors.detect do |jsi|
-        jsi.is_a?(Schema) && jsi.jsi_schema_module_defined? && jsi.jsi_schema_module.name
+        jsi.is_a?(Schema) && jsi.jsi_schema_module_defined? && jsi.jsi_schema_module_name
       end
       return nil unless named_ancestor_schema
       tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
@@ -337,8 +337,8 @@ module JSI
 
     # @param node [JSI::Base]
     def initialize(node)
-      raise(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
-      raise(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
+      fail(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
+      fail(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
       @jsi_node = node
       node.jsi_schemas.each do |schema|
         extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [SchemaModule::Connection]))

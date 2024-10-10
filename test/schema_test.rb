@@ -135,15 +135,15 @@ describe JSI::Schema do
             "http://jsi/schema_uris/q0wo#",
           ],
           "#/definitions/sibling1" => [
+            "http://jsi/schema_uris/q0wo#collide",
             "http://jsi/schema_uris/q0wo#/definitions/sibling1",
-            # no #collide
           ],
           "#/definitions/sibling2" => [
+            "http://jsi/schema_uris/q0wo#collide",
             "http://jsi/schema_uris/q0wo#/definitions/sibling2",
-            # no #collide
           ],
           "#/definitions/child" => [
-            # #X collides with anchor in different descendent resource
+            "http://jsi/schema_uris/q0wo#X",
             "http://jsi/schema_uris/q0wo#/definitions/child",
           ],
           "#/definitions/child/definitions/rel" => [
@@ -154,8 +154,6 @@ describe JSI::Schema do
           "#/definitions/child/definitions/rel/definitions/x" => [
             "http://jsi/schema_uris/z268#X",
             "http://jsi/schema_uris/z268#/definitions/x",
-            # no "http://jsi/schema_uris/q0wo#X"; we detect that the anchor no longer
-            # refers to self in the parent resource (it becomes ambiguous)
             "http://jsi/schema_uris/q0wo#/definitions/child/definitions/rel/definitions/x",
           ],
         }
@@ -213,16 +211,13 @@ describe JSI::Schema do
           '#/definitions/schema2/definitions/nested' => [
             "http://x.y.z/otherschema.json#bar",
             "http://x.y.z/otherschema.json#/definitions/nested",
-            "http://x.y.z/rootschema.json#bar",
             "http://x.y.z/rootschema.json#/definitions/schema2/definitions/nested",
           ],
           '#/definitions/schema2/definitions/alsonested' => [
             "http://x.y.z/t/inner.json",
             "http://x.y.z/t/inner.json#a",
             "http://x.y.z/t/inner.json#",
-            "http://x.y.z/otherschema.json#a",
             "http://x.y.z/otherschema.json#/definitions/alsonested",
-            "http://x.y.z/rootschema.json#a",
             "http://x.y.z/rootschema.json#/definitions/schema2/definitions/alsonested",
           ],
           '#/definitions/schema3' => [
@@ -278,7 +273,6 @@ describe JSI::Schema do
           '#/definitions/B/definitions/X' => [
             "http://example.com/other.json#bar",
             "http://example.com/other.json#/definitions/X",
-            "http://example.com/root.json#bar",
             "http://example.com/root.json#/definitions/B/definitions/X",
           ],
           '#/definitions/B/definitions/Y' => [
@@ -307,17 +301,17 @@ describe JSI::Schema do
       it "hasn't got one" do
         schema = metaschema.new_schema({})
         assert_nil(schema.schema_absolute_uri)
-        assert_nil(schema.anchor)
+        assert_enum_equal([], schema.anchors)
       end
       it 'uses a given id with an empty fragment' do
         schema = metaschema.new_schema({'id' => 'http://jsi/test/schema_absolute_uri/d4/empty_fragment#'})
         assert_uri('http://jsi/test/schema_absolute_uri/d4/empty_fragment', schema.schema_absolute_uri)
-        assert_nil(schema.anchor)
+        assert_enum_equal([], schema.anchors)
       end
       it 'uses a given id without a fragment' do
         schema = metaschema.new_schema({'id' => 'http://jsi/test/schema_absolute_uri/d4/given_id'})
         assert_uri('http://jsi/test/schema_absolute_uri/d4/given_id', schema.schema_absolute_uri)
-        assert_nil(schema.anchor)
+        assert_enum_equal([], schema.anchors)
       end
       it 'nested schema without id' do
         schema = metaschema.new_schema({
@@ -325,7 +319,7 @@ describe JSI::Schema do
           'items' => {},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with absolute id' do
         schema = metaschema.new_schema({
@@ -333,7 +327,7 @@ describe JSI::Schema do
           'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_abs_id'},
         })
         assert_uri('http://jsi/test/schema_absolute_uri/d4/nested_w_abs_id', schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with relative id' do
         schema = metaschema.new_schema({
@@ -341,7 +335,7 @@ describe JSI::Schema do
           'items' => {'id' => 'nested_w_rel_id'},
         })
         assert_uri('http://jsi/test/schema_absolute_uri/d4/nested_w_rel_id', schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with anchor id' do
         schema = metaschema.new_schema({
@@ -349,7 +343,7 @@ describe JSI::Schema do
           'items' => {'id' => '#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_equal('nested_anchor', schema.items.anchor)
+        assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with anchor id on the base' do
         schema = metaschema.new_schema({
@@ -357,7 +351,7 @@ describe JSI::Schema do
           'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_anchor_on_base#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_equal('nested_anchor', schema.items.anchor)
+        assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with anchor id on the base after resolution' do
         schema = metaschema.new_schema({
@@ -365,7 +359,7 @@ describe JSI::Schema do
           'items' => {'id' => 'nested_w_anchor_on_base_rel#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_equal('nested_anchor', schema.items.anchor)
+        assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
@@ -373,7 +367,7 @@ describe JSI::Schema do
           'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag#nested_anchor'},
         })
         assert_uri('http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag', schema.items.schema_absolute_uri)
-        assert_equal('nested_anchor', schema.items.anchor)
+        assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with id with empty fragment' do
         schema = metaschema.new_schema({
@@ -381,7 +375,7 @@ describe JSI::Schema do
           'items' => {'id' => '#'},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with empty id' do
         schema = metaschema.new_schema({
@@ -389,7 +383,7 @@ describe JSI::Schema do
           'items' => {'id' => ''},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       describe 'externally supplied uri' do
         it 'schema with relative ids' do
@@ -413,14 +407,14 @@ describe JSI::Schema do
             'id' => 'test/d4/relative_uri',
           })
           assert_nil(schema.schema_absolute_uri)
-          assert_nil(schema.anchor)
+          assert_enum_equal([], schema.anchors)
         end
         it 'has no schema_absolute_uri but has an anchor' do
           schema = metaschema.new_schema({
             'id' => 'test/d4/relative_uri_w_anchor#anchor',
           })
           assert_nil(schema.schema_absolute_uri)
-          assert_equal('anchor', schema.anchor)
+          assert_enum_equal(['anchor'], schema.anchors)
         end
       end
     end
@@ -429,17 +423,17 @@ describe JSI::Schema do
       it "hasn't got one" do
         schema = metaschema.new_schema({})
         assert_nil(schema.schema_absolute_uri)
-        assert_nil(schema.anchor)
+        assert_enum_equal([], schema.anchors)
       end
       it 'uses a given id with an empty fragment' do
         schema = metaschema.new_schema({'$id' => 'http://jsi/test/schema_absolute_uri/d6/empty_fragment#'})
         assert_uri('http://jsi/test/schema_absolute_uri/d6/empty_fragment', schema.schema_absolute_uri)
-        assert_nil(schema.anchor)
+        assert_enum_equal([], schema.anchors)
       end
       it 'uses a given id without a fragment' do
         schema = metaschema.new_schema({'$id' => 'http://jsi/test/schema_absolute_uri/d6/given_id'})
         assert_uri('http://jsi/test/schema_absolute_uri/d6/given_id', schema.schema_absolute_uri)
-        assert_nil(schema.anchor)
+        assert_enum_equal([], schema.anchors)
       end
       it 'nested schema without id' do
         schema = metaschema.new_schema({
@@ -447,7 +441,7 @@ describe JSI::Schema do
           'items' => {},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with absolute id' do
         schema = metaschema.new_schema({
@@ -455,7 +449,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_abs_id'},
         })
         assert_uri('http://jsi/test/schema_absolute_uri/d6/nested_w_abs_id', schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with relative id' do
         schema = metaschema.new_schema({
@@ -463,7 +457,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'nested_w_rel_id'},
         })
         assert_uri('http://jsi/test/schema_absolute_uri/d6/nested_w_rel_id', schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with anchor id' do
         schema = metaschema.new_schema({
@@ -471,7 +465,7 @@ describe JSI::Schema do
           'items' => {'$id' => '#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_equal('nested_anchor', schema.items.anchor)
+        assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with anchor id on the base' do
         schema = metaschema.new_schema({
@@ -479,7 +473,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_on_base#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_equal('nested_anchor', schema.items.anchor)
+        assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with anchor id on the base after resolution' do
         schema = metaschema.new_schema({
@@ -487,7 +481,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'nested_w_anchor_on_base_rel#nested_anchor'},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_equal('nested_anchor', schema.items.anchor)
+        assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
@@ -495,7 +489,7 @@ describe JSI::Schema do
           'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag#nested_anchor'},
         })
         assert_uri('http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag', schema.items.schema_absolute_uri)
-        assert_equal('nested_anchor', schema.items.anchor)
+        assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with id with empty fragment' do
         schema = metaschema.new_schema({
@@ -503,7 +497,7 @@ describe JSI::Schema do
           'items' => {'$id' => '#'},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with empty id' do
         schema = metaschema.new_schema({
@@ -511,7 +505,7 @@ describe JSI::Schema do
           'items' => {'$id' => ''},
         })
         assert_nil(schema.items.schema_absolute_uri)
-        assert_nil(schema.items.anchor)
+        assert_enum_equal([], schema.items.anchors)
       end
       describe 'externally supplied uri' do
         it 'schema with relative ids' do
@@ -535,14 +529,14 @@ describe JSI::Schema do
             '$id' => 'test/d6/relative_uri',
           })
           assert_nil(schema.schema_absolute_uri)
-          assert_nil(schema.anchor)
+          assert_enum_equal([], schema.anchors)
         end
         it 'has no schema_absolute_uri but has an anchor' do
           schema = metaschema.new_schema({
             '$id' => 'test/d6/relative_uri_w_anchor#anchor',
           })
           assert_nil(schema.schema_absolute_uri)
-          assert_equal('anchor', schema.anchor)
+          assert_enum_equal(['anchor'], schema.anchors)
         end
       end
     end
@@ -626,7 +620,7 @@ describe JSI::Schema do
     end
   end
 
-  describe '#child_applicator_schemas with an object' do
+  describe("#each_child_applicator_schema with an object") do
     let(:schema) do
       JSI::JSONSchemaDraft07.new_schema({
         properties: {
@@ -640,22 +634,22 @@ describe JSI::Schema do
       })
     end
     it 'has no subschemas' do
-      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).child_applicator_schemas('no', {}))
+      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).each_child_applicator_schema('no', {}).to_a)
     end
     it 'has a subschema by property' do
-      subschemas = schema.child_applicator_schemas('foo', {}).to_a
+      subschemas = schema.each_child_applicator_schema('foo', {}).to_a
       assert_equal(1, subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('foo', subschemas[0].description)
     end
     it 'has subschemas by patternProperties' do
-      subschemas = schema.child_applicator_schemas('bar', {}).to_a
+      subschemas = schema.each_child_applicator_schema('bar', {}).to_a
       assert_equal(1, subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('b*', subschemas[0].description)
     end
     it 'has subschemas by properties, patternProperties' do
-      subschemas = schema.child_applicator_schemas('baz', {}).to_a
+      subschemas = schema.each_child_applicator_schema('baz', {}).to_a
       assert_equal(2, subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('baz', subschemas[0].description)
@@ -663,25 +657,26 @@ describe JSI::Schema do
       assert_equal('b*', subschemas[1].description)
     end
     it 'has subschemas by additional properties' do
-      subschemas = schema.child_applicator_schemas('anything', {}).to_a
+      subschemas = schema.each_child_applicator_schema('anything', {}).to_a
       assert_equal(1, subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, subschemas[0])
       assert_equal('whatever', subschemas[0].description)
     end
   end
-  describe '#child_applicator_schemas with an array instance' do
+
+  describe("#each_child_applicator_schema with an array instance") do
     it 'has no subschemas' do
-      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).child_applicator_schemas(0, []))
+      assert_empty(JSI::JSONSchemaDraft07.new_schema({}).each_child_applicator_schema(0, []).to_a)
     end
     it 'has a subschema for items' do
       schema = JSI::JSONSchemaDraft07.new_schema({
         items: {description: 'items!'}
       })
-      first_subschemas = schema.child_applicator_schemas(0, []).to_a
+      first_subschemas = schema.each_child_applicator_schema(0, []).to_a
       assert_equal(1, first_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('items!', first_subschemas[0].description)
-      last_subschemas = schema.child_applicator_schemas(1, []).to_a
+      last_subschemas = schema.each_child_applicator_schema(1, []).to_a
       assert_equal(1, last_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal('items!', last_subschemas[0].description)
@@ -690,11 +685,11 @@ describe JSI::Schema do
       schema = JSI::JSONSchemaDraft07.new_schema({
         items: [{description: 'item one'}, {description: 'item two'}]
       })
-      first_subschemas = schema.child_applicator_schemas(0, []).to_a
+      first_subschemas = schema.each_child_applicator_schema(0, []).to_a
       assert_equal(1, first_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('item one', first_subschemas[0].description)
-      last_subschemas = schema.child_applicator_schemas(1, []).to_a
+      last_subschemas = schema.each_child_applicator_schema(1, []).to_a
       assert_equal(1, last_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal('item two', last_subschemas[0].description)
@@ -704,11 +699,11 @@ describe JSI::Schema do
         items: [{description: 'item one'}],
         additionalItems: {description: "mo' crap"},
       })
-      first_subschemas = schema.child_applicator_schemas(0, []).to_a
+      first_subschemas = schema.each_child_applicator_schema(0, []).to_a
       assert_equal(1, first_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, first_subschemas[0])
       assert_equal('item one', first_subschemas[0].description)
-      last_subschemas = schema.child_applicator_schemas(1, []).to_a
+      last_subschemas = schema.each_child_applicator_schema(1, []).to_a
       assert_equal(1, last_subschemas.size)
       assert_is_a(JSI::JSONSchemaDraft07, last_subschemas[0])
       assert_equal("mo' crap", last_subschemas[0].description)
@@ -927,7 +922,7 @@ describe JSI::Schema do
       it '#instance_validate' do
         result = schema.instance_validate(instance)
         assert_equal(true, result.valid?)
-        assert_equal(Set[], result.validation_errors)
+        assert_equal(Set[], result.immediate_validation_errors)
       end
       it '#instance_valid?' do
         assert_equal(true, schema.instance_valid?(instance))
@@ -947,7 +942,7 @@ describe JSI::Schema do
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
             :child_errors => Set[],
           }),
-        ], result.validation_errors)
+        ], result.immediate_validation_errors)
       end
       it '#instance_valid?' do
         assert_equal(false, schema.instance_valid?(instance))

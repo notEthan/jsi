@@ -129,6 +129,21 @@ module JSI
         res
       end
 
+      # Resolves each token of this pointer in `document`, in particular resolving strings indicating
+      # array indices to integers.
+      # @param document [Object]
+      # @return [Ptr]
+      def resolve_against(document)
+        return(self) if tokens.empty?
+        node = document
+        resolved_tokens = Array.new(tokens.size)
+        tokens.each_with_index do |token, i|
+          resolved_token, node = node_subscript_token_child(node, token)
+          resolved_tokens[i] = resolved_token
+        end
+        Ptr.new(resolved_tokens.freeze)
+      end
+
       # the pointer string representation of this pointer
       # @return [String]
       def pointer
@@ -196,6 +211,7 @@ module JSI
       # @return [JSI::Ptr]
       def +(ptr)
         if ptr.is_a?(Ptr)
+          return(ptr) if tokens.empty?
           ptr_tokens = ptr.tokens
         elsif ptr.respond_to?(:to_ary)
           ptr_tokens = ptr
@@ -210,10 +226,12 @@ module JSI
       # @return [JSI::Ptr]
       # @raise [ArgumentError] if n is not between 0 and the size of our tokens
       def take(n)
+        return(EMPTY) if n == 0
+        return(self) if n == tokens.size
         unless n.is_a?(Integer) && n >= 0 && n <= tokens.size
           raise(ArgumentError, "n not in range (0..#{tokens.size}): #{n.inspect}")
         end
-        n == tokens.size ? self : Ptr.new(tokens.take(n).freeze)
+        Ptr.new(tokens.take(n).freeze)
       end
 
       # appends the given token to this pointer's tokens and returns the result
@@ -255,7 +273,7 @@ module JSI
             modified_document = document.respond_to?(:[]=) ? document.dup :
               document.respond_to?(:to_hash) ? document.to_hash.dup :
               document.respond_to?(:to_ary) ? document.to_ary.dup :
-              raise(Bug) # not possible; node_subscript_token_child would have raised
+              fail(Bug) # not possible; node_subscript_token_child would have raised
             modified_document[token] = modified_document_child
             modified_document
           end

@@ -45,7 +45,7 @@ module JSI
             if if_result.valid?
               if keyword?('then')
                 then_result = inplace_subschema_validate(['then'])
-                validate(
+                inplace_results_validate(
                   then_result.valid?,
                   'validation.keyword.then.invalid',
                   "instance is not valid against `then` schema after validating against `if` schema",
@@ -56,7 +56,7 @@ module JSI
             else
               if keyword?('else')
                 else_result = inplace_subschema_validate(['else'])
-                validate(
+                inplace_results_validate(
                   else_result.valid?,
                   'validation.keyword.else.invalid',
                   "instance is not valid against `else` schema after not validating against `if` schema",

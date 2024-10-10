@@ -42,6 +42,20 @@ module JSI
           )
           subresult
         end
+
+        # @param results [Enumerable<Validation::Result>]
+        def inplace_results_validate(*a, results: , **kw)
+          validate(*a, **kw,
+            results: results,
+          )
+        end
+
+        # @param child_results [Hash<Object, Validation::Result>] token => child result
+        def child_results_validate(*a, child_results: , **kw)
+          validate(*a, **kw,
+            results: child_results.each_value,
+          )
+        end
       end
     end
 
@@ -68,14 +82,14 @@ module JSI
             **additional
         )
           if !valid
-            result.validation_errors << Validation::Error.new({
+            result.immediate_validation_errors << Validation::Error.new({
               message: JSI.t(message_key, default: message_default, **additional),
               keyword: keyword,
               additional: additional,
               schema: schema,
               instance_ptr: instance_ptr,
               instance_document: instance_document,
-              child_errors: results.map(&:validation_errors).inject(Set[], &:merge).freeze,
+              child_errors: results.map(&:immediate_validation_errors).inject(Set[], &:merge).freeze,
             })
           end
         end
@@ -84,32 +98,33 @@ module JSI
 
     class Result::Full
       def initialize
-        @validation_errors = Set.new
+        @immediate_validation_errors = Set.new
       end
 
-      attr_reader :validation_errors
+      # @return [Set<Validation::Error>]
+      attr_reader(:immediate_validation_errors)
 
       # @yield [Validation::Error]
       def each_validation_error(&block)
         return(to_enum(__method__)) if !block_given?
-        validation_errors.each do |validation_error|
+        immediate_validation_errors.each do |validation_error|
           validation_error.each_validation_error(&block)
         end
         nil
       end
 
       def valid?
-        validation_errors.empty?
+        immediate_validation_errors.empty?
       end
 
       def freeze
-        @validation_errors.freeze
+        @immediate_validation_errors.freeze
         super
       end
 
       def merge(result)
         raise(TypeError, "not a #{Result::Full}: #{result.pretty_inspect.chomp}") unless result.is_a?(Result::Full)
-        validation_errors.merge(result.validation_errors)
+        immediate_validation_errors.merge(result.immediate_validation_errors)
         self
       end
 
@@ -118,7 +133,7 @@ module JSI
       def jsi_fingerprint
         {
           class: self.class,
-          validation_errors: validation_errors,
+          immediate_validation_errors: immediate_validation_errors,
         }.freeze
       end
     end

@@ -135,6 +135,42 @@ describe 'unsupported behavior' do
     end
   end
 
+  describe("cyclical $ref application") do
+    describe("self-referential") do
+      let(:schema_content) do
+        {
+          '$ref' => '#',
+        }
+      end
+
+      it("raises ResolutionError") do
+        assert_raises(JSI::ResolutionError) { subject }
+        assert_raises(JSI::ResolutionError) { schema.instance_validate(instance) }
+      end
+    end
+
+    describe("mutually self-referential") do
+      let(:schema_content) do
+        {
+          'definitions' => {
+            'alice' => {
+              '$ref' => '#/definitions/bob',
+            },
+            'bob' => {
+              '$ref' => '#/definitions/alice',
+            },
+          },
+          'allOf' => [{'$ref' => '#/definitions/alice'}, {'$ref' => '#/definitions/bob'}],
+        }
+      end
+
+      it("raises ResolutionError") do
+        assert_raises(JSI::ResolutionError) { subject }
+        assert_raises(JSI::ResolutionError) { schema.instance_validate(instance) }
+      end
+    end
+  end
+
   describe 'property names which are not strings' do
     ARBITRARY_OBJECT = Object.new
     describe 'arbitrary object property name' do
@@ -256,7 +292,7 @@ describe 'unsupported behavior' do
         expected_nodes = Set[]
         expected_nodes << subject
         subject_key_ary01 = schema.propertyNames.new_jsi(ary01)
-        expected_nodes += [ # recursing the the first propertyName
+        expected_nodes += [ # recursing the first propertyName
           subject_key_ary01,
           subject_key_ary01 / [0],
           JSI::SchemaSet[].new_jsi('y'), # (subject key ary01) / [0] key 'y'
@@ -278,7 +314,7 @@ describe 'unsupported behavior' do
           subject_key_ary01 / [1, 'n', 'a'],
         ]
         expected_nodes << schema.propertyNames.new_jsi('no') # second propertyName (nothing to recurse)
-        expected_nodes += [ # recursing the the first property value
+        expected_nodes += [ # recursing the first property value
           subject / [ary01],
           schema.propertyNames.new_jsi('y'), # subject / [ary01] key 'y'
           schema.propertyNames.new_jsi('n'), # subject / [ary01] key 'n'
@@ -289,7 +325,7 @@ describe 'unsupported behavior' do
           JSI::SchemaSet[].new_jsi('a'), # subject / [ary01, 'n'] key 'a'
           subject / [ary01, 'n', 'a'],
         ]
-        expected_nodes += [ # recursing the the second property value
+        expected_nodes += [ # recursing the second property value
           subject / ['no'],
           subject / ['no', 0],
           JSI::SchemaSet[].new_jsi('y'), # subject / ['no', 0] key 'y'
@@ -358,7 +394,7 @@ describe 'unsupported behavior' do
         HashlikeAry.new([{}])
       end
 
-      it 'applies properties and itmes' do
+      it 'applies properties and items' do
         assert_schemas([schema.properties[0], schema.items], subject[0])
         assert_is_a(Hash, subject.to_hash)
         assert_is_a(Array, subject.to_ary)

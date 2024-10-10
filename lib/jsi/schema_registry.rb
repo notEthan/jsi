@@ -28,8 +28,8 @@ module JSI
     # @param resource [JSI::Base] a JSI containing resources to register
     # @return [void]
     def register(resource)
-      unless resource.is_a?(JSI::Base)
-        raise(ArgumentError, "resource must be a JSI::Base. got: #{resource.pretty_inspect.chomp}")
+      unless resource.is_a?(Base) || resource.is_a?(Schema)
+        raise(ArgumentError, "resource must be a #{Base}. got: #{resource.pretty_inspect.chomp}")
       end
       unless resource.is_a?(JSI::Schema) || resource.jsi_ptr.root?
         # unsure, should this be allowed? the given JSI is not a "resource" as we define it, but
@@ -44,8 +44,8 @@ module JSI
       end
 
       resource.jsi_each_descendent_schema do |node|
-        if node.schema_absolute_uri
-          internal_store(node.schema_absolute_uri, node)
+        node.schema_absolute_uris.each do |uri|
+          internal_store(uri, node)
         end
       end
 
@@ -89,7 +89,18 @@ module JSI
     def find(uri)
       uri = registration_uri(uri)
       if @autoload_uris.key?(uri)
-        autoloaded = @autoload_uris[uri].call
+        autoload_param = {
+          schema_registry: self,
+          uri: uri,
+        }
+        # remove params the autoload proc does not accept
+        autoload_param.select! do |name, _|
+          @autoload_uris[uri].parameters.any? do |type, pname|
+            # dblsplat (**k) ||   required (k: )  || optional (k: nil)
+            type == :keyrest || ((type == :keyreq || type == :key) && pname == name)
+          end
+        end
+        autoloaded = @autoload_uris[uri].call(**autoload_param)
         register(autoloaded)
         @autoload_uris.delete(uri)
       end
@@ -106,6 +117,13 @@ module JSI
         raise(ResolutionError.new(msg, uri: uri))
       end
       @resources[uri]
+    end
+
+    # @param uri [#to_str]
+    # @return [Boolean]
+    def registered?(uri)
+      uri = registration_uri(uri)
+      @resources.key?(uri) || @autoload_uris.key?(uri)
     end
 
     def inspect

@@ -2,18 +2,19 @@ require_relative '../test_helper'
 
 $test_report_time["json_schema_test_suite/suite_test loading"]
 
-JSONSchemaTestSchema = JSI.new_schema(JSON.parse(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json').open('r:UTF-8', &:read)))
+test_schema_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json')
+JSONSchemaTestSchema = JSI::JSONSchemaOrgDraft07.new_schema(JSON.parse(test_schema_path.open('r:UTF-8').read))
 $test_report_time["JSONSchemaTestSchema set up"]
 
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
-  schema_registry = JSI.schema_registry.dup
+  jsts_schema_registry = JSI.schema_registry.dup
 
   Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
     Dir.glob('**/*.json').each do |subpath|
       remote_content = ::JSON.parse(File.open(subpath, 'r:UTF-8', &:read))
       uri = File.join('http://localhost:1234/', subpath)
-      schema_registry.autoload_uri(uri) do
-        if subpath == 'subSchemas.json'
+      jsts_schema_registry.autoload_uri(uri) do |schema_registry: |
+        if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
           subSchemas_schema = JSI.new_schema({
             '$schema' => 'http://json-schema.org/draft-07/schema',
             'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
@@ -34,7 +35,7 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
   end
   $test_report_time["remotes set up"]
 
-  h[metaschema] = schema_registry
+  h[metaschema] = jsts_schema_registry
 end
 
 describe 'JSON Schema Test Suite' do
@@ -46,8 +47,6 @@ describe 'JSON Schema Test Suite' do
     drafts.each do |draft|
       name = draft[:name]
       metaschema = draft[:metaschema]
-      desc_schema_registry = JSTS_REGISTRIES[metaschema]
-
           base = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/tests')
           subpaths = Dir.chdir(base) { Dir.glob(File.join(name, '**/*.json')) }
           subpaths.each do |subpath|
@@ -65,6 +64,7 @@ describe 'JSON Schema Test Suite' do
                 # :nocov:
               end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
+                desc_schema_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
                   schema_registry: desc_schema_registry,
                   default_metaschema: metaschema,
@@ -86,7 +86,13 @@ describe 'JSON Schema Test Suite' do
 
                   tests_desc.tests.each do |test|
                       it(test.description) do
-                        jsi = schema.new_jsi(test.jsi_instance['data'], schema_registry: schema_registry)
+                        begin
+                          jsi = schema.new_jsi(test.jsi_instance['data'], schema_registry: nil)
+                        rescue JSI::SchemaRegistry::ResourceNotFound => e
+                          raise unless e.uri.to_s == 'https://json-schema.org/draft/2019-09/schema'
+                          skip("unsupported URI: #{e.uri}")
+                        end
+
                         result = jsi.jsi_validate
                         assert_equal(result.valid?, jsi.jsi_valid?)
 
