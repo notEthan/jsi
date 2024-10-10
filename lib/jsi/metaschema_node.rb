@@ -39,7 +39,7 @@ module JSI
         jsi_ptr: Ptr[],
         msn_dialect: ,
         metaschema_root_ref: '#',
-        root_schema_ref: '#',
+        root_schema_ref: metaschema_root_ref,
         jsi_schema_base_uri: nil,
         jsi_schema_registry: nil,
         bootstrap_schema_registry: nil,

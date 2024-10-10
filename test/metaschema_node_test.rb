@@ -28,7 +28,7 @@ BasicMetaSchema = JSI.new_metaschema_module(
 describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
   let(:metaschema_root_ref) { '#' }
-  let(:root_schema_ref) { '#' }
+  let(:root_schema_ref) { metaschema_root_ref }
   let(:schema_registry) { nil }
   let(:bootstrap_schema_registry) { nil }
   let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
@@ -201,7 +201,6 @@ describe(JSI::MetaSchemaNode) do
       end
 
       let(:metaschema_root_ref) { "tag:7bg7:meta" }
-      let(:root_schema_ref) { "tag:7bg7:meta" }
 
       let(:schema_registry) do
         JSI::SchemaRegistry.new
@@ -404,7 +403,6 @@ describe(JSI::MetaSchemaNode) do
       )
     end
     let(:metaschema_root_ref) { '#/$defs/JsonSchema' }
-    let(:root_schema_ref) { '#/$defs/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
       assert_schemas([metaschema.properties['$defs']], root_node['$defs'])
@@ -431,7 +429,6 @@ describe(JSI::MetaSchemaNode) do
       )
     end
     let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
-    let(:root_schema_ref) { '#/schemas/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
       assert_schemas([metaschema.properties['schemas']], root_node.schemas)
