@@ -696,6 +696,9 @@ module JSI
       )
     end
 
+    # For each in-place applicator schema that applies to the given instance, yields each child applicator
+    # of that schema that applies to the child of the instance on the given token.
+    #
     # @param token [Object] array index or hash/object property name
     # @param instance [Object]
     # @yield [Schema]
