@@ -92,13 +92,9 @@ module JSI
     def uri(uri, nnil: true, yabs: false, ynorm: false, tonorm: false)
       return nil if !nnil && uri.nil?
       if uri.is_a?(URI)
-        if uri.frozen?
-          auri = uri
-        else
-          auri = uri.dup.freeze
-        end
+        auri = uri
       elsif uri.is_a?(String) || uri.respond_to?(:to_str)
-        auri = URI.parse(uri).freeze
+        auri = URI.parse(uri)
       else
         raise(URIError, "URI is not a string: #{uri.inspect}")
       end
@@ -107,7 +103,7 @@ module JSI
       end
       if yabs && auri.fragment
         if auri.fragment.empty?
-          auri = auri.merge(fragment: nil).freeze
+          auri = auri.merge(fragment: nil)
         else
           raise(URIError, "URI must have no fragment. got: #{uri.inspect}")
         end
@@ -115,7 +111,7 @@ module JSI
       if ynorm && uri.to_str != auri.normalize.to_s
         raise(URIError, "URI must be in normalized form. got: #{uri.inspect}; normalized: #{auri.normalize.to_s.inspect}")
       end
-      auri = auri.normalize.freeze if tonorm
+      auri = auri.normalize if tonorm
       auri
     end
 

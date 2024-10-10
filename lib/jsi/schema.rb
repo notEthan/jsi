@@ -412,7 +412,7 @@ module JSI
       root_uri = jsi_schema_base_uri if jsi_ptr.root?
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
         if jsi_schema_base_uri
-          uri = jsi_schema_base_uri.join(id_without_fragment).freeze
+          uri = jsi_schema_base_uri.join(id_without_fragment)
           root_uri = nil if root_uri == uri
           yield(uri)
         elsif id_without_fragment.absolute?
@@ -443,7 +443,7 @@ module JSI
       if schema_resource_root
         anchors.each do |anchor|
           schema_resource_root.schema_absolute_uris.each do |uri|
-            yield(uri.merge(fragment: anchor).freeze)
+            yield(uri.merge(fragment: anchor))
           end
         end
       end
@@ -451,7 +451,7 @@ module JSI
       jsi_subschema_resource_ancestors.reverse_each do |ancestor_schema|
         relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
         ancestor_schema.schema_absolute_uris.each do |uri|
-          yield(uri.merge(fragment: relative_ptr.fragment).freeze)
+          yield(uri.merge(fragment: relative_ptr.fragment))
         end
       end
 

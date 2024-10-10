@@ -159,7 +159,7 @@ module JSI
       # a URI consisting of a fragment containing this pointer's fragment string representation
       # @return [URI]
       def uri
-        URI.new(fragment: fragment).freeze
+        URI.new(fragment: fragment)
       end
 
       # whether this pointer is empty, i.e. it has no tokens
