@@ -470,17 +470,7 @@ module JSI
       nil
     end
 
-    # a module which extends all instances of this schema. this may be opened by the application to add
-    # methods to schema instances.
-    #
-    # some functionality is also defined on the module itself (its singleton class, not for its instances):
-    #
-    # - the module is extended with {JSI::SchemaModule}, which defines .new_jsi to instantiate instances
-    #   of this schema (see {#new_jsi}).
-    # - properties described by this schema's metaschema are defined as methods to get subschemas' schema
-    #   modules, so for example `schema.jsi_schema_module.items` returns the same module
-    #   as `schema.items.jsi_schema_module`.
-    # - method .schema which returns this schema.
+    # The JSI Schema Module for this schema. JSI instances described by this schema are instances of this module.
     #
     # @return [SchemaModule]
     def jsi_schema_module
