@@ -286,8 +286,9 @@ module JSI
     end
 
     # @param ptr [Ptr]
+    # @param dynamic_anchor_map [Schema::DynamicAnchorMap] must be `without_node(..., ptr: ptr)` or so
     # @return [MetaSchemaNode]
-    protected def root_descendent_node(ptr, dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY)
+    protected def root_descendent_node(ptr, dynamic_anchor_map: )
       node = @root_descendent_node_map[
         ptr: ptr,
         dynamic_anchor_map: dynamic_anchor_map,
