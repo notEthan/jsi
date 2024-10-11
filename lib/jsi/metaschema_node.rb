@@ -101,7 +101,9 @@ module JSI
         instance_for_schemas = instance_for_schemas[tok]
         child_indicated_schemas
       end
-      @indicated_schemas_map = jsi_memomap { bootstrap_schemas_to_msn(our_bootstrap_indicated_schemas) }
+      @indicated_schemas_map = jsi_memomap do
+        SchemaSet.new(our_bootstrap_indicated_schemas) { |s| bootstrap_schema_to_msn(s) }
+      end
 
       @bootstrap_schemas = our_bootstrap_indicated_schemas.each_yield_set do |is, y|
         is.each_inplace_applicator_schema(instance_for_schemas, &y)
@@ -127,7 +129,7 @@ module JSI
     private def jsi_initialize_finish
       return if @initialize_finished
 
-      @jsi_schemas = bootstrap_schemas_to_msn(@bootstrap_schemas)
+      @jsi_schemas = SchemaSet.new(@bootstrap_schemas) { |s| bootstrap_schema_to_msn(s) }
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if jsi_ptr == @bootstrap_metaschema.jsi_ptr && jsi_document == @bootstrap_metaschema.jsi_document
@@ -283,12 +285,10 @@ module JSI
       node
     end
 
-    # @param bootstrap_schemas [Enumerable<BootstrapSchema>]
-    # @return [SchemaSet<MetaSchemaNode>]
-    def bootstrap_schemas_to_msn(bootstrap_schemas)
-      SchemaSet.new(bootstrap_schemas) do |bootstrap_schema|
+    # @param bootstrap_schema [MetaSchemaNode::BootstrapSchema]
+    # @return [MetaSchemaNode]
+    def bootstrap_schema_to_msn(bootstrap_schema)
         root_descendent_node(bootstrap_schema.jsi_ptr)
-      end
     end
   end
 end
