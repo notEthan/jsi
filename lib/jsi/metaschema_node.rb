@@ -305,14 +305,22 @@ module JSI
     # @param bootstrap_schema [MetaSchemaNode::BootstrapSchema]
     # @return [MetaSchemaNode]
     def bootstrap_schema_to_msn(bootstrap_schema)
+      dynamic_anchor_map = Schema::DynamicAnchorMap::EMPTY
+      bootstrap_schema.jsi_schema_dynamic_anchor_map.each do |anchor, (bootstrap_anchor_root, anchor_ptrs)|
+        msn_anchor_root = bootstrap_schema_to_msn(bootstrap_anchor_root)
+        dynamic_anchor_map = dynamic_anchor_map.merge({
+          anchor => [msn_anchor_root, anchor_ptrs].freeze,
+        }).freeze
+      end
+
       if bootstrap_schema.jsi_document == jsi_document
-        root_descendent_node(bootstrap_schema.jsi_ptr)
+        root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
       else
         bootstrap_resource = bootstrap_schema.schema_resource_root
         resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
         if jsi_schema_registry.registered?(resource_uri)
           resource = jsi_schema_registry.find(resource_uri)
-          resource.root_descendent_node(bootstrap_schema.jsi_ptr)
+          resource.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
         else
           #chkbug fail if @initialize_finished
           root = MetaSchemaNode.new(
@@ -320,10 +328,11 @@ module JSI
             **our_initialize_params,
             jsi_ptr: Ptr[],
             jsi_schema_base_uri: nil,
+            jsi_schema_dynamic_anchor_map: dynamic_anchor_map, # TODO does root need this? (if ever !bootstrap_schema.jsi_ptr.root?)
             initialize_finish: false,
           )
           @to_initialize_finish.push(root)
-          root.root_descendent_node(bootstrap_schema.jsi_ptr)
+          root.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
         end
       end
     end
