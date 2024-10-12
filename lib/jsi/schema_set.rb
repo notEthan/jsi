@@ -13,21 +13,6 @@ module JSI
       def build(&block)
         new(Enumerator.new(&block))
       end
-
-      # ensures the given param becomes a SchemaSet. returns the param if it is already SchemaSet, otherwise
-      # initializes a SchemaSet from it.
-      #
-      # @param schemas [SchemaSet, Enumerable] the object to ensure becomes a SchemaSet
-      # @return [SchemaSet] the given SchemaSet, or a SchemaSet initialized from the given Enumerable
-      # @raise [ArgumentError] when the schemas param is not an Enumerable
-      # @raise [Schema::NotASchemaError] when the schemas param contains objects which are not Schemas
-      def ensure_schema_set(schemas)
-        if schemas.is_a?(SchemaSet)
-          schemas
-        else
-          new(schemas)
-        end
-      end
     end
 
     # initializes a SchemaSet from the given enum and freezes it.
