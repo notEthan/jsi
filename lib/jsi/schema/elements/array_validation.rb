@@ -63,8 +63,7 @@ module JSI
         if value == true
           if instance.respond_to?(:to_ary)
             # If it has boolean value true, the instance validates successfully if all of its elements are unique.
-            # TODO instance.tally.select { |_, count| count > 1 }.keys.freeze when all supported Hash.method_defined?(:tally)
-            duplicate_items = instance.group_by(&:itself).select { |_, v| v.size > 1 }.keys.freeze
+            duplicate_items = instance.tally.select { |_, count| count > 1 }.keys.freeze
             validate(
               duplicate_items.empty?,
               'validation.keyword.uniqueItems.not_unique',
