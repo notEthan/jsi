@@ -1,25 +1,23 @@
 # frozen_string_literal: true
 
 module JSI
-  # A MetaSchemaNode is a JSI instance representing a node in a document that contains a meta-schema.
+  # A MetaSchemaNode is a JSI instance representing a node in a document that contains a meta-schema,
+  # or contains a schema describing a meta-schema (e.g. a meta-schema vocabulary schema).
+  #
+  # A meta-schema typically has the unique property that it is an instance of itself.
+  # It may also be an instance of a number of other schemas, each of which
+  # may be an instance of the meta-schema, itself, and/or other schemas.
+  #
+  # This is not a configuration of schemas/instances that normal JSI::Base instantiation can accommodate.
+  # MetaSchemaNode instead bootstraps each node on initialization, computing and instantiating
+  # the schemas that describe it (other MetaSchemaNode instances) and their schema modules.
+  # This results in a node that is a meta-schema being an instance of its own schema module
+  # (as well as JSI::Schema and JSI::Schema::MetaSchema), and a node that is a schema being an instance of
+  # the meta-schema's schema module (and thereby JSI::Schema).
+  #
+  # The meta-schema may be anywhere in a document, though it is rare to put it anywhere but at the root.
   # The root of the meta-schema is referenced by metaschema_root_ref.
   # The schema describing the root of the document is referenced by root_schema_ref.
-  #
-  # like JSI::Base's normal subclasses, this class represents an instance of a schema set, an instance
-  # which may itself be a schema. unlike JSI::Base, the document containing the instance and its schemas
-  # is the same, and a schema (the meta-schema) may be an instance of itself.
-  #
-  # unlike JSI::Base's normal subclasses, the schemas describing the instance are not part of the class.
-  # Since the meta-schema describes itself, attempting to construct a class from the JSI Schema Module of a
-  # schema which is itself an instance of that class results in a causality loop.
-  # instead, a MetaSchemaNode calculates its {#jsi_schemas} and extends itself with their JSI Schema
-  # modules during initialization.
-  # The MetaSchemaNode of the meta-schema is extended with its own JSI Schema Module.
-  #
-  # if the MetaSchemaNode's schemas include its self, it is extended with {JSI::Schema::MetaSchema}.
-  #
-  # a MetaSchemaNode is extended with JSI::Schema when it represents a schema - this is the case when
-  # the meta-schema is one of its schemas.
   class MetaSchemaNode < Base
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
 
