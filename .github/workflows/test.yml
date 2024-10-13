@@ -30,7 +30,6 @@ jobs:
         - jruby
         - truffleruby
         - truffleruby+graalvm
-        - '2.3'
         - '2.7'
         - '3.0'
         - head
