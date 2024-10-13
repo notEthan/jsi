@@ -116,8 +116,7 @@ describe 'JSI::SchemaModule' do
 
   describe 'block given to SchemaModule/Connection reader' do
     it '`module_exec`s (Connection#[])' do
-      # TODO drop support for ancient ruby versions and fix invocation to properties['foo'] do ... end
-      SchemaModuleTestModule.properties.[]('foo') do
+      SchemaModuleTestModule.properties['foo'] do
         def x
           :x
         end
