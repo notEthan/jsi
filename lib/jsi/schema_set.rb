@@ -108,8 +108,7 @@ module JSI
       instance = to_immutable.call(instance) if !mutable && to_immutable
 
       applied_schemas = SchemaSet.build do |y|
-        c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
-        each { |is| is.each_inplace_applicator_schema(instance, &c) }
+        each { |is| is.each_inplace_applicator_schema(instance, &y) }
       end
 
       uri = Util.uri(uri, nnil: false, yabs: true)
@@ -178,8 +177,7 @@ module JSI
     # @return [SchemaSet]
     def each_yield_set(&block)
       self.class.new(Enumerator.new do |y|
-        c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
-        each { |schema| yield(schema, c) }
+        each { |schema| yield(schema, y) }
       end)
     end
 
