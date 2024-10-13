@@ -268,11 +268,11 @@ describe 'JSI::SchemaRegistry' do
       frozen = schema_registry.freeze
       assert(frozen.equal?(schema_registry))
       assert_equal(register_resource, schema_registry.find(register_uri))
-      assert_raises(JSI::FrozenError) do
+      assert_raises(FrozenError) do
         schema_registry.find(autoload_uri)
       end
       s = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => 'http://jsi/schema_registry/5h5c'})
-      assert_raises(JSI::FrozenError) do
+      assert_raises(FrozenError) do
         schema_registry.register(s)
       end
     end

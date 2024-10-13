@@ -17,9 +17,6 @@ module JSI
   class Bug < NotImplementedError
   end
 
-  # @private TODO remove, any ruby without this is already long EOL
-  FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
-
   # A reference or pointer cannot be resolved
   class ResolutionError < StandardError
     # @param msg [String, Array]
