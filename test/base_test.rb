@@ -468,7 +468,7 @@ describe JSI::Base do
             additional: {},
             schema: schema,
             instance_ptr: JSI::Ptr[], instance_document: instance,
-            child_errors: Set[],
+            nested_errors: Set[],
           }),
         ], result.immediate_validation_errors)
       end
@@ -513,7 +513,7 @@ describe JSI::Base do
               additional: {},
               schema: schema["properties"]["foo"],
               instance_ptr: JSI::Ptr["foo"], instance_document: instance,
-              child_errors: Set[],
+              nested_errors: Set[],
             }),
           ], subject.foo.jsi_validate.immediate_validation_errors)
           assert_equal(Set[], subject.bar.jsi_validate.immediate_validation_errors)
@@ -524,7 +524,7 @@ describe JSI::Base do
               additional: {},
               schema: schema["properties"]["baz"],
               instance_ptr: JSI::Ptr["baz"], instance_document: instance,
-              child_errors: Set[],
+              nested_errors: Set[],
             }),
           ], subject.baz.jsi_validate.immediate_validation_errors)
           assert_equal(Set[
@@ -534,7 +534,7 @@ describe JSI::Base do
               additional: {},
               schema: schema["additionalProperties"],
               instance_ptr: JSI::Ptr["more"], instance_document: instance,
-              child_errors: Set[],
+              nested_errors: Set[],
             }),
           ], subject['more'].jsi_validate.immediate_validation_errors)
           assert_equal(Set[
@@ -544,14 +544,14 @@ describe JSI::Base do
               additional: {instance_properties_valid: {"foo" => false, "bar" => true, "baz" => false}},
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
-              child_errors: Set[
+              nested_errors: Set[
                 JSI::Validation::Error.new({
                   message: "instance type does not match `type` value",
                   keyword: "type",
                   additional: {},
                   schema: schema["properties"]["foo"],
                   instance_ptr: JSI::Ptr["foo"], instance_document: instance,
-                  child_errors: Set[],
+                  nested_errors: Set[],
                 }),
                 JSI::Validation::Error.new({
                   message: "instance type does not match `type` value",
@@ -559,7 +559,7 @@ describe JSI::Base do
                   additional: {},
                   schema: schema["properties"]["baz"],
                   instance_ptr: JSI::Ptr["baz"], instance_document: instance,
-                  child_errors: Set[],
+                  nested_errors: Set[],
                 }),
               ],
             }),
@@ -569,14 +569,14 @@ describe JSI::Base do
               additional: {instance_properties_valid: {"more" => false}},
               schema: schema,
               instance_ptr: JSI::Ptr[], instance_document: instance,
-              child_errors: Set[
+              nested_errors: Set[
                 JSI::Validation::Error.new({
                   message: "instance is valid against `not` schema",
                   keyword: "not",
                   additional: {},
                   schema: schema["additionalProperties"],
                   instance_ptr: JSI::Ptr["more"], instance_document: instance,
-                  child_errors: Set[],
+                  nested_errors: Set[],
                 }),
               ],
             }),

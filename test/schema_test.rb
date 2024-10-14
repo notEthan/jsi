@@ -970,7 +970,7 @@ describe JSI::Schema do
             :additional => {},
             :schema => schema,
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
-            :child_errors => Set[],
+            :nested_errors => Set[],
           }),
         ], result.immediate_validation_errors)
       end

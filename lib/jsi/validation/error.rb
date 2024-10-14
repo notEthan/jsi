@@ -9,7 +9,7 @@ module JSI
       schema
       instance_ptr
       instance_document
-      child_errors
+      nested_errors
     )]
 
     # a validation error of a schema instance against a schema
@@ -33,7 +33,7 @@ module JSI
     # @!attribute instance_document
     #   document containing the instance at instance_ptr
     #   @return [Object]
-    # @!attribute child_errors
+    # @!attribute nested_errors
     #   @return [Set<Validation::Error>]
     class Error
       def initialize(attributes = {})
@@ -44,7 +44,7 @@ module JSI
       # @yield [Validation::Error]
       def each_validation_error(&block)
         return(to_enum(__method__)) if !block_given?
-        child_errors.each { |child_error| child_error.each_validation_error(&block) }
+        nested_errors.each { |nested_error| nested_error.each_validation_error(&block) }
         yield(self)
         nil
       end

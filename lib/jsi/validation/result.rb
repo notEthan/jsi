@@ -93,7 +93,7 @@ module JSI
               schema: schema,
               instance_ptr: instance_ptr,
               instance_document: instance_document,
-              child_errors: results.map(&:immediate_validation_errors).inject(Set[], &:merge).freeze,
+              nested_errors: results.map(&:immediate_validation_errors).inject(Set[], &:merge).freeze,
             })
           end
         end
