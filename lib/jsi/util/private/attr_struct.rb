@@ -12,6 +12,8 @@ module JSI
       class UndefinedAttributeKey < AttrStructError
       end
 
+      include(Util::Pretty)
+
       class << self
         # creates a AttrStruct subclass with the given attribute keys.
         # @param attribute_keys [Enumerable<String, Symbol>]

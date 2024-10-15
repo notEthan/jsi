@@ -19,6 +19,7 @@ module JSI
     include Util::FingerprintHash
     include Schema::SchemaAncestorNode
     include Schema
+    include(Util::Pretty)
 
     class << self
       def inspect

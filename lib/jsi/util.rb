@@ -5,6 +5,11 @@ module JSI
   module Util
     autoload :Private, 'jsi/util/private'
 
+    # common methods of inspecting / pretty-printing
+    # @private (not in Util::Private due to dependency order)
+    module Pretty
+    end
+
     include Private
 
     extend self

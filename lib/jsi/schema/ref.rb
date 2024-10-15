@@ -4,6 +4,8 @@ module JSI
   # A JSI::Schema::Ref is a reference to a schema identified by a URI, typically from
   # a `$ref` keyword of a schema.
   class Schema::Ref
+    include(Util::Pretty)
+
     # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
     # @param ref_schema [JSI::Schema] A schema from which the reference originated.
     #

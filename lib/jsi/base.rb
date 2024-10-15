@@ -22,6 +22,7 @@ module JSI
     autoload(:Immutable, 'jsi/base/mutability')
 
     include Schema::SchemaAncestorNode
+    include(Util::Pretty)
 
     # An exception raised when attempting to access a child of a node which cannot have children.
     # A complex node can have children, a simple node cannot.

@@ -3,6 +3,8 @@
 module JSI
   module Schema
     class Dialect
+      include(Util::Pretty)
+
       # @param id [#to_str, nil]
       # @param vocabularies [Enumerable<Schema::Vocabulary>]
       def initialize(id: nil, vocabularies: )
