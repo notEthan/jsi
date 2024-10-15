@@ -97,7 +97,7 @@ module JSI
       # @return [void]
       def pretty_print(q)
         jsi_pp_object_group(q, empty: @attributes.empty?) do
-            q.seplist(@attributes, nil, :each_pair) { |k, v|
+            q.seplist(@attributes) { |k, v|
                 q.text k
                 q.text ': '
                 q.pp v
