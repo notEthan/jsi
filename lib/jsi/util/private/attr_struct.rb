@@ -108,11 +108,9 @@ module JSI
         q.group(2) {
             q.breakable(' ') if !@attributes.empty?
             q.seplist(@attributes, nil, :each_pair) { |k, v|
-              q.group {
                 q.text k
                 q.text ': '
                 q.pp v
-              }
             }
         }
         q.breakable('') if !@attributes.empty?
