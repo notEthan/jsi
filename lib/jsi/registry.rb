@@ -11,6 +11,8 @@ module JSI
     # an exception raised when a URI we are looking for has not been registered
     ResourceNotFound = ResolutionError
 
+    include(Util::Pretty)
+
     def initialize
       @resources = {}
       @resource_autoloaders = {}
@@ -220,10 +222,6 @@ module JSI
         end.inject([], &:+),
         '>',
       ].join("\n").freeze
-    end
-
-    def to_s
-      inspect
     end
 
     def dup
