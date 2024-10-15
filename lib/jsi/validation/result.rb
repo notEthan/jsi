@@ -64,13 +64,25 @@ module JSI
     end
 
     class Result
+      include(Util::Pretty)
+
       # is the instance valid against its schemas?
       # @return [Boolean]
       def valid?
         #chkbug raise(NotImplementedError)
       end
 
+      def pretty_print(q)
+        pretty_print_valid(q)
+      end
+
       include Util::FingerprintHash
+
+      private
+
+      def pretty_print_valid(q, &block)
+        jsi_pp_object_group(q, [self.class.name, valid? ? "(VALID)" : "(INVALID)"].freeze, &block)
+      end
     end
 
     # a full result of validating an instance against its schemas, with each validation error
@@ -142,6 +154,13 @@ module JSI
         immediate_validation_errors.merge(result.immediate_validation_errors)
         evaluated_tokens.merge(result.evaluated_tokens)
         self
+      end
+
+      def pretty_print(q)
+        pretty_print_valid(q) do
+          q.text('validation errors: ')
+          q.pp(immediate_validation_errors)
+        end
       end
 
       # see {Util::Private::FingerprintHash}
