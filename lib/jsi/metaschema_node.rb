@@ -50,6 +50,8 @@ module JSI
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: SchemaSet[],
         jsi_schema_base_uri: jsi_schema_base_uri,
+        # MSN doesn't track schema_resource_ancestors through descendents, but the root is included when appropriate
+        jsi_schema_resource_ancestors: jsi_ptr.root? || !jsi_root_node.is_a?(Schema) ? Util::EMPTY_ARY : [jsi_root_node].freeze,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         jsi_schema_registry: jsi_schema_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
