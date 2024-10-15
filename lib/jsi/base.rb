@@ -681,16 +681,9 @@ module JSI
     #
     # If this JSI is a simple type, the node's content is inspected; if complex, its children are inspected.
     def pretty_print(q)
-      q.text '#<'
-      q.text jsi_object_group_text.join(' ')
-      q.group {
-        q.nest(2) {
-          q.breakable ' '
+      jsi_pp_object_group(q, jsi_object_group_text) do
           q.pp jsi_instance
-        }
-        q.breakable('')
-      }
-      q.text '>'
+      end
     end
 
     # @private

@@ -163,11 +163,7 @@ module JSI
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)
-      q.text '#<'
-      q.text self.class.name
-      q.text ' '
-      q.text ref
-      q.text '>'
+      jsi_pp_object_group(q, [self.class.name, ref].freeze)
     end
 
     # see {Util::Private::FingerprintHash}

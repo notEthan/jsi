@@ -96,11 +96,7 @@ module JSI
       # pretty-prints a representation of self to the given printer
       # @return [void]
       def pretty_print(q)
-        q.text '#<'
-        q.text self.class.name
-        q.group {
-          q.nest(2) {
-            q.breakable(' ') if !@attributes.empty?
+        jsi_pp_object_group(q, empty: @attributes.empty?) do
             q.seplist(@attributes, nil, :each_pair) { |k, v|
               q.group {
                 q.text k
@@ -108,10 +104,7 @@ module JSI
                 q.pp v
               }
             }
-          }
-          q.breakable('') if !@attributes.empty?
-        }
-        q.text '>'
+        end
       end
 
       # (see AttrStruct.attribute_keys)

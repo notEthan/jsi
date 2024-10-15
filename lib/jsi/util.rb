@@ -19,6 +19,26 @@ module JSI
       def to_s
         inspect
       end
+
+      private
+
+      def jsi_pp_object_group(q, pres = [self.class.name].freeze, empty: false)
+        q.text('#<')
+        pres.each_with_index do |pre, i|
+          q.text(' ') if i != 0
+          q.text(pre.to_s)
+        end
+        if block_given? && !empty
+          q.group do
+            q.nest(2) do
+              q.breakable(' ')
+              yield
+            end
+            q.breakable('')
+          end
+        end
+        q.text('>')
+      end
     end
 
     include Private

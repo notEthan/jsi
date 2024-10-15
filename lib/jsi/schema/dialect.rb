@@ -75,13 +75,9 @@ module JSI
 
       # @param q
       def pretty_print(q)
-        q.text('#<')
-        q.text(self.class.name)
-        if id
-          q.text(' ')
-          q.text("id: <#{id}>")
-        end
-        q.text('>')
+        pres = [self.class.name]
+        pres.push(-"id: <#{id}>") if id
+        jsi_pp_object_group(q, pres.freeze)
       end
     end
   end

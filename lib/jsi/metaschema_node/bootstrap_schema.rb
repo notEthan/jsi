@@ -119,16 +119,9 @@ module JSI
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)
-      q.text '#<'
-      q.text jsi_object_group_text.join(' ')
-      q.group {
-        q.nest(2) {
-          q.breakable ' '
+      jsi_pp_object_group(q, jsi_object_group_text) do
           q.pp schema_content
-        }
-        q.breakable('')
-      }
-      q.text '>'
+      end
     end
 
     # @private
