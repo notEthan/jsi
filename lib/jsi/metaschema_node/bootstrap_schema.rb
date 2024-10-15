@@ -116,15 +116,6 @@ module JSI
       jsi_subschema_resource_ancestors.last
     end
 
-    # @return [String]
-    def inspect
-      -"\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
-    end
-
-    def to_s
-      inspect
-    end
-
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)

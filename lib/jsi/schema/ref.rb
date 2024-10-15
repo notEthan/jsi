@@ -160,15 +160,6 @@ module JSI
       return @deref_schema = result_schema
     end
 
-    # @return [String]
-    def inspect
-      -%Q(\#<#{self.class.name} #{ref}>)
-    end
-
-    def to_s
-      inspect
-    end
-
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)

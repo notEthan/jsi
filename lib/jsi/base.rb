@@ -674,24 +674,12 @@ module JSI
       jsi_modified_copy(&:dup)
     end
 
-    # A string indicating this JSI's schemas, briefly, and its content.
+    # Prints a string indicating this JSI's schemas, briefly, and its content.
     #
     # If described by a schema with a named schema module, that is shown.
     # The number of schemas describing this JSI is indicated.
     #
     # If this JSI is a simple type, the node's content is inspected; if complex, its children are inspected.
-    # @return [String]
-    def inspect
-      -"\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
-    end
-
-    # See #inspect
-    def to_s
-      inspect
-    end
-
-    # pretty-prints a representation of this JSI to the given printer
-    # @return [void]
     def pretty_print(q)
       q.text '#<'
       q.text jsi_object_group_text.join(' ')

@@ -93,15 +93,6 @@ module JSI
         @attributes[key] = value
       end
 
-      # @return [String]
-      def inspect
-        -"\#<#{self.class.name}#{@attributes.map { |k, v| " #{k}: #{v.inspect}" }.join(',')}>"
-      end
-
-      def to_s
-        inspect
-      end
-
       # pretty-prints a representation of self to the given printer
       # @return [void]
       def pretty_print(q)

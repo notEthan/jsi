@@ -8,6 +8,17 @@ module JSI
     # common methods of inspecting / pretty-printing
     # @private (not in Util::Private due to dependency order)
     module Pretty
+      # @return [String]
+      def inspect
+        out = String.new
+        PP.singleline_pp(self, out)
+        out.freeze
+      end
+
+      # @return [String]
+      def to_s
+        inspect
+      end
     end
 
     include Private

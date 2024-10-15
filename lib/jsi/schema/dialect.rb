@@ -73,16 +73,6 @@ module JSI
         cxt
       end
 
-      # @return [String]
-      def inspect
-        -%Q(\#<#{self.class.name}#{" id: <#{id}>" if id}>)
-      end
-
-      # @return [String]
-      def to_s
-        inspect
-      end
-
       # @param q
       def pretty_print(q)
         q.text('#<')

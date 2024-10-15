@@ -93,18 +93,6 @@ module JSI
       end
     end
 
-    # basically the same #inspect as Hash, but has the class name and, if responsive,
-    # self's #jsi_object_group_text
-    # @return [String]
-    def inspect
-      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
-      -"\#{<#{object_group_str}>#{map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
-    end
-
-    def to_s
-      inspect
-    end
-
     # pretty-prints a representation of this hashlike to the given printer
     # @return [void]
     def pretty_print(q)
@@ -199,18 +187,6 @@ module JSI
       # note: rassoc implemented here (instead of delegated) due to inconsistencies in whether
       # other implementations expect each element to be an Array or to respond to #to_ary
       detect { |e| e.respond_to?(:to_ary) and e[1] == obj }
-    end
-
-    # basically the same #inspect as Array, but has the class name and, if responsive,
-    # self's #jsi_object_group_text
-    # @return [String]
-    def inspect
-      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
-      -"\#[<#{object_group_str}>#{map { |e| ' ' + e.inspect }.join(',')}]"
-    end
-
-    def to_s
-      inspect
     end
 
     # pretty-prints a representation of this arraylike to the given printer
