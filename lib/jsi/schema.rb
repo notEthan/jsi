@@ -27,6 +27,7 @@ module JSI
     autoload :Draft04, 'jsi/schema/draft04'
     autoload :Draft06, 'jsi/schema/draft06'
     autoload :Draft07, 'jsi/schema/draft07'
+    autoload(:Draft202012, 'jsi/schema/draft202012')
 
     class Error < StandardError
     end
