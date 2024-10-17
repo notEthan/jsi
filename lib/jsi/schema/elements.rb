@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module JSI
   module Schema::Elements
     def self.element_map(&block)
