@@ -314,6 +314,185 @@ describe 'JSI Schema child application' do
       end
     end
   end
+
+  {
+    draft202012: JSI::JSONSchemaDraft202012,
+  }.each do |name, metaschema|
+    describe("#{name} contains application with minContains/maxContains") do
+      let(:metaschema) { metaschema }
+
+      describe("contains + minContains valid") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            minContains: 2
+            YAML
+          )
+        end
+        let(:instance) { [{}, [], [], {}] }
+
+        it("array instance: applies to children that are valid against contains") do
+          assert_schemas([], subject[0])
+          assert_schemas([schema.contains], subject[1])
+          assert_schemas([schema.contains], subject[2])
+          assert_schemas([], subject[3])
+          refute_is_a(schema.contains.jsi_schema_module, subject[0])
+          refute_is_a(schema.contains.jsi_schema_module, subject[3])
+        end
+
+        describe("hash/object instance") do
+          let(:instance) { {0 => {}, '0' => {}, 1 => [], '1' => []} }
+
+          it("does not apply contains") do
+            refute_schema(schema.contains, subject[0])
+            refute_schema(schema.contains, subject['0'])
+            refute_schema(schema.contains, subject[1])
+            refute_schema(schema.contains, subject['1'])
+          end
+        end
+      end
+
+      describe("contains + minContains invalid") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            minContains: 2
+            YAML
+          )
+        end
+        let(:instance) { [{}, [], {}] }
+
+        it("applies to all children") do
+          assert_schemas([schema.contains], subject[0])
+          assert_schemas([schema.contains], subject[1])
+          assert_schemas([schema.contains], subject[2])
+        end
+      end
+
+      describe("contains + maxContains valid") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            maxContains: 2
+            YAML
+          )
+        end
+        let(:instance) { [{}, [], [], {}] }
+
+        it("array instance: applies to children that validate against contains") do
+          assert_schemas([], subject[0])
+          assert_schemas([schema.contains], subject[1])
+          assert_schemas([schema.contains], subject[2])
+          assert_schemas([], subject[3])
+          refute_is_a(schema.contains.jsi_schema_module, subject[0])
+          refute_is_a(schema.contains.jsi_schema_module, subject[3])
+        end
+
+        describe("hash/object instance") do
+          let(:instance) { {0 => {}, '0' => {}, 1 => [], '1' => []} }
+
+          it("does not apply contains") do
+            refute_schema(schema.contains, subject[0])
+            refute_schema(schema.contains, subject['0'])
+            refute_schema(schema.contains, subject[1])
+            refute_schema(schema.contains, subject['1'])
+          end
+        end
+      end
+
+      describe("contains + maxContains invalid (too many valid)") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            maxContains: 2
+            YAML
+          )
+        end
+        let(:instance) { [[], [], [], {}] }
+
+        it("applies to children that validate against contains") do
+          assert_schemas([schema.contains], subject[0])
+          assert_schemas([schema.contains], subject[1])
+          assert_schemas([schema.contains], subject[2])
+          refute_schema(schema.contains, subject[3])
+        end
+      end
+
+      describe("contains + maxContains invalid (none valid, lacking minContains: 0, inferred minContains: 1)") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            maxContains: 1
+            YAML
+          )
+        end
+        let(:instance) { [{}, {}] }
+
+        it("applies to all children") do
+          assert_schemas([schema.contains], subject[0])
+          assert_schemas([schema.contains], subject[1])
+        end
+      end
+
+      describe("contains + minContains + maxContains valid") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            minContains: 2
+            maxContains: 2
+            YAML
+          )
+        end
+        let(:instance) { [{}, [], [], {}] }
+
+        it("array instance: applies") do
+          assert_schemas([], subject[0])
+          assert_schemas([schema.contains], subject[1])
+          assert_schemas([schema.contains], subject[2])
+          assert_schemas([], subject[3])
+          refute_is_a(schema.contains.jsi_schema_module, subject[0])
+          refute_is_a(schema.contains.jsi_schema_module, subject[3])
+        end
+
+        describe("hash/object instance") do
+          let(:instance) { {0 => {}, '0' => {}, 1 => [], '1' => []} }
+
+          it("does not apply contains") do
+            refute_schema(schema.contains, subject[0])
+            refute_schema(schema.contains, subject['0'])
+            refute_schema(schema.contains, subject[1])
+            refute_schema(schema.contains, subject['1'])
+          end
+        end
+      end
+
+      describe("contains + minContains + maxContains both invalid") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            contains:
+              type: array
+            minContains: 3
+            maxContains: 1
+            YAML
+          )
+        end
+        let(:instance) { [{}, [], []] }
+
+        it("applies to all children") do
+          assert_schemas([schema.contains], subject[0])
+          assert_schemas([schema.contains], subject[1])
+          assert_schemas([schema.contains], subject[2])
+        end
+      end
+    end
+  end
+
   {
     draft04: JSI::JSONSchemaDraft04,
     draft06: JSI::JSONSchemaDraft06,
