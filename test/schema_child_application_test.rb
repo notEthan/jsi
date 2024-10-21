@@ -173,6 +173,89 @@ describe 'JSI Schema child application' do
       end
     end
   end
+
+  {
+    draft202012: JSI::JSONSchemaDraft202012,
+  }.each do |name, metaschema|
+    describe("#{name} child prefixItems / items application") do
+      let(:metaschema) { metaschema }
+      describe("items") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            items: {}
+            YAML
+          )
+        end
+        let(:instance) { [{}] }
+
+        it("array instance: applies items") do
+          assert_schemas([schema.items], subject[0])
+        end
+
+        describe("hash/object instance") do
+          let(:instance) { {0 => {}, '0' => {}, 'x' => {}} }
+          it("does not apply items") do
+            refute_schema(schema.items, subject[0])
+            refute_schema(schema.items, subject['0'])
+            refute_schema(schema.items, subject['x'])
+          end
+        end
+      end
+
+      describe("prefixItems") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            prefixItems: [{}]
+            YAML
+          )
+        end
+        let(:instance) { [{}, {}] }
+
+        it("array instance: applies corresponding prefixItems") do
+          assert_schemas([schema.prefixItems[0]], subject[0])
+          refute_is_a(schema.prefixItems[0].jsi_schema_module, subject[1])
+        end
+
+        describe("hash/object instance") do
+          let(:instance) { {0 => {}, '0' => {}, 'x' => {}} }
+          it("does not apply items") do
+            refute_schema(schema.prefixItems[0], subject[0])
+            refute_schema(schema.prefixItems[0], subject['0'])
+            refute_schema(schema.prefixItems[0], subject['x'])
+          end
+        end
+      end
+
+      describe("prefixItems + items") do
+        let(:schema_content) do
+          YAML.load(<<~YAML
+            prefixItems: [{}]
+            items: {}
+            YAML
+          )
+        end
+        let(:instance) { [{}, {}] }
+
+        it("array instance: applies prefixItems, items") do
+          assert_schemas([schema.prefixItems[0]], subject[0])
+          assert_schemas([schema.items], subject[1])
+        end
+
+        describe("hash/object instance") do
+          let(:instance) { {0 => {}, '0' => {}, 'x' => {}} }
+          it("does not apply prefixItems or items") do
+            refute_schema(schema.prefixItems[0], subject[0])
+            refute_schema(schema.prefixItems[0], subject['0'])
+            refute_schema(schema.prefixItems[0], subject['x'])
+            refute_schema(schema.items, subject[0])
+            refute_schema(schema.items, subject['0'])
+            refute_schema(schema.items, subject['x'])
+          end
+        end
+      end
+    end
+  end
+
   {
     draft06: JSI::JSONSchemaDraft06,
     draft07: JSI::JSONSchemaDraft07,
