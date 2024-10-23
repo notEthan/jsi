@@ -83,6 +83,19 @@ module JSI
       self
     end
 
+    # Yields each key (property name)
+    # @param key_as_jsi [Boolean] Yield each key as a JSI instance, per {#jsi_each_propertyName}
+    # @yield [String, Base]
+    def each_key(key_as_jsi: false, &block)
+      return to_enum(__method__, key_as_jsi: key_as_jsi) { size } unless block
+      if key_as_jsi
+        jsi_each_propertyName(&block)
+      else
+        jsi_node_content_hash_pubsend(:each_key, &block)
+      end
+      self
+    end
+
     # a hash in which each key is a key of the instance hash and each value is the result of {Base#[]}
     # @param kw keyword arguments are passed to {Base#[]}
     # @return [Hash]
