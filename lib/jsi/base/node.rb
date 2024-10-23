@@ -84,6 +84,8 @@ module JSI
       self
     end
 
+    alias_method(:each_pair, :each)
+
     # Yields each key (property name)
     # @param key_as_jsi [Boolean] Yield each key as a JSI instance, per {#jsi_each_propertyName}
     # @yield [String, Base]
