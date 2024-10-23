@@ -136,7 +136,7 @@ module JSI
     end
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
-    SAFE_KEY_ONLY_METHODS.each do |method_name|
+    SAFE_KEY_ONLY_METHODS.reject { |m| instance_method(m).owner == self }.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         define_method(method_name) do |*a, &b|
           jsi_node_content_hash_pubsend(method_name, *a, &b)
@@ -301,7 +301,7 @@ module JSI
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
     # we override these methods from Arraylike
-    SAFE_INDEX_ONLY_METHODS.each do |method_name|
+    SAFE_INDEX_ONLY_METHODS.reject { |m| instance_method(m).owner == self }.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         define_method(method_name) do |*a, &b|
           jsi_node_content_ary_pubsend(method_name, *a, &b)
