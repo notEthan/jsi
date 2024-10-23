@@ -297,6 +297,7 @@ module JSI
       private
 
       def node_subscript_token_child(value, token, *a, **kw)
+        token = token.jsi_node_content if token.is_a?(Schema::SchemaAncestorNode)
         if value.respond_to?(:to_ary)
           if token.is_a?(String) && (token == '0' || token =~ POS_INT_RE)
             token = token.to_i
