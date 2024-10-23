@@ -101,7 +101,7 @@ module JSI
     # @return [Hash]
     def to_hash(**kw)
       hash = {}
-      jsi_node_content_hash_pubsend(:each_key) { |k| hash[k] = self[k, **kw] }
+      each_key { |k| hash[k] = self[k, **kw] }
       hash.freeze
     end
 
