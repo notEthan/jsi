@@ -70,15 +70,24 @@ module JSI
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
     #
+    # @param key_as_jsi (see #each_key)
     # @param kw keyword arguments are passed to {Base#[]}
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
-    def each(**kw, &block)
-      return to_enum(__method__, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
+    def each(key_as_jsi: false, **kw, &block)
+      return to_enum(__method__, key_as_jsi: key_as_jsi, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
-        jsi_node_content_hash_pubsend(:each_key) { |k| yield k, self[k, **kw] }
+        if key_as_jsi
+          jsi_each_propertyName { |k| yield(k, self[k.jsi_node_content, **kw]) }
+        else
+          jsi_node_content_hash_pubsend(:each_key) { |k| yield(k, self[k, **kw]) }
+        end
       else
-        jsi_node_content_hash_pubsend(:each_key) { |k| yield [k, self[k, **kw]] }
+        if key_as_jsi
+          jsi_each_propertyName { |k| yield([k, self[k.jsi_node_content, **kw]]) }
+        else
+          jsi_node_content_hash_pubsend(:each_key) { |k| yield([k, self[k, **kw]]) }
+        end
       end
       self
     end
