@@ -77,17 +77,9 @@ module JSI
     def each(key_as_jsi: false, **kw, &block)
       return to_enum(__method__, key_as_jsi: key_as_jsi, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
-        if key_as_jsi
-          jsi_each_propertyName { |k| yield(k, self[k.jsi_node_content, **kw]) }
-        else
-          jsi_node_content_hash_pubsend(:each_key) { |k| yield(k, self[k, **kw]) }
-        end
+        each_key(key_as_jsi: key_as_jsi) { |k| yield(k, self[k, **kw]) }
       else
-        if key_as_jsi
-          jsi_each_propertyName { |k| yield([k, self[k.jsi_node_content, **kw]]) }
-        else
-          jsi_node_content_hash_pubsend(:each_key) { |k| yield([k, self[k, **kw]]) }
-        end
+        each_key(key_as_jsi: key_as_jsi) { |k| yield([k, self[k, **kw]]) }
       end
       self
     end
