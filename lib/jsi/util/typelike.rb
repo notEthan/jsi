@@ -102,11 +102,9 @@ module JSI
         q.nest(2) {
           q.breakable ' ' if !empty?
           q.seplist(self, nil, :each_pair) { |k, v|
-            q.group {
               q.pp k
               q.text ' => '
               q.pp v
-            }
           }
         }
         q.breakable('') if !empty?
