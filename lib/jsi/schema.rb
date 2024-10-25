@@ -518,7 +518,7 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name_from_ancestor
-      @jsi_schema_module && @jsi_schema_module.name_from_ancestor
+      is_a?(Base) ? jsi_schema_module.name_from_ancestor : nil
     end
 
     # Instantiates a new JSI whose content comes from the given `instance` param.
