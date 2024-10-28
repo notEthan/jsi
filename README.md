@@ -256,6 +256,8 @@ The classes used to instantiate JSIs are dynamically generated subclasses of JSI
 
 JSI instances are immutable by default. Mutable JSIs may be instantiated using the `mutable` param of `new_jsi`. Immutable JSIs are much more performant, because mutation may change what schemas apply to nodes in a document, and checking for that is costly. It is not recommended to instantiate large documents as mutable; their JSI instances become unusably slow.
 
+If you are parsing with JSON.parse or YAML.load, it is recommended to pass the `freeze: true` option to these, which lets JSI skip making a frozen copy.
+
 ## Registration
 
 In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry (a {JSI::SchemaRegistry}) which associates URIs with schemas (or resources containing schemas). The default registry is accessible on {JSI.schema_registry}.
