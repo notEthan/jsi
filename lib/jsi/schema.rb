@@ -663,7 +663,6 @@ module JSI
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
             visited_refs: visited_refs,
-            collect_evaluated: false,
           ) do |s, **kw|
             immediate_inplace_applicators.push([s, kw])
           end

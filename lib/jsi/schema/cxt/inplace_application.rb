@@ -4,7 +4,6 @@ module JSI
   class Schema::Cxt
     InplaceApplication = Block.subclass(*%i(
       visited_refs
-      collect_evaluated
     ))
 
     # @!attribute collect_evaluated
@@ -24,10 +23,15 @@ module JSI
       def instance
         raise(Bug, "in-place application is being invoked without an instance; the current element needs action :inplace_application_requires_instance")
       end
+
+      def collect_evaluated
+        false
+      end
     end
 
     InplaceApplication::WithInstance = InplaceApplication.subclass(*%i(
       instance
+      collect_evaluated
     ))
   end
 end
