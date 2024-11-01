@@ -24,6 +24,9 @@ module JSI
         element.add_action(:inplace_applicate) do
       if keyword?('if')
         if subschema(['if']).instance_valid?(instance)
+          if collect_evaluated
+            inplace_subschema_applicate(['if'], applicate: false)
+          end
           if keyword?('then')
             inplace_subschema_applicate(['then'])
           end
