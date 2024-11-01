@@ -1,0 +1,177 @@
+- description: "immediate child applicators : prefixItems"
+  comment: >
+    prefixItems always applies at /0.
+    unevaluatedItems applies at /0 when prefixItems fails to validate and always applies at /1.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    prefixItems: [{type: "array"}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "immediate child applicators : items"
+  comment: >
+    items always applies to all children.
+    unevaluatedItems applies to children where items fails to validate.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    items: {type: "array"}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/items"], /1: ["#/items"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/items"], /1: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/items", "#/unevaluatedItems"], /1: ["#/items"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/items", "#/unevaluatedItems"], /1: ["#/items", "#/unevaluatedItems"]}
+
+- description: "immediate child applicators : contains"
+  comment: >
+    contains applies at any index where it validates.
+    it applies to all children when no child validates (invalid application).
+    unevaluatedItems applies at any index where contains fails to validate.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    contains: {type: "array"}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/contains"], /1: ["#/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/contains", "#/unevaluatedItems"], /1: ["#/contains", "#/unevaluatedItems"]}
+
+
+- description: "unconditional in-place child applicators : prefixItems"
+  comment: >
+    allOf's prefixItems always applies at /0.
+    unevaluatedItems applies at /0 when allOf's prefixItems fails to validate and always applies at /1.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{prefixItems: [{type: "array"}]}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "unconditional in-place child applicators : items"
+  comment: >
+    allOf's items always applies to all children.
+    unevaluatedItems applies to all children when allOf/0 fails to validate (a failing allOf applicator schema does not evaluate any children).
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{items: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/items"], /1: ["#/allOf/0/items"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/items", "#/unevaluatedItems"], /1: ["#/allOf/0/items", "#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/allOf/0/items", "#/unevaluatedItems"], /1: ["#/allOf/0/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/items", "#/unevaluatedItems"], /1: ["#/allOf/0/items", "#/unevaluatedItems"]}
+
+- description: "unconditional in-place child applicators : contains"
+  comment: >
+    allOf's contains applies at any index where it validates.
+    it applies to all children when no child validates (invalid application).
+    when allOf/0 validates, unevaluatedItems applies at any index where contains does not validate the child.
+    unevaluatedItems applies to all children when contains keyword fails to validate.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{contains: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/contains"], /1: ["#/allOf/0/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/allOf/0/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/contains", "#/unevaluatedItems"], /1: ["#/allOf/0/contains", "#/unevaluatedItems"]}
+
+
+- description: "conditional in-place child applicators : prefixItems"
+  comment: >
+    allOf's prefixItems always applies at /0.
+    unevaluatedItems applies at /0 when prefixItems fails to validate and always applies at /1.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf: [{prefixItems: [{type: "array"}]}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "conditional in-place child applicators : items"
+  comment: >
+    anyOf's items always applies to all children.
+    unevaluatedItems applies to all children when anyOf/0 fails to validate (a failing anyOf applicator schema does not evaluate any children).
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf: [{items: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/items"], /1: ["#/anyOf/0/items"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/items", "#/unevaluatedItems"], /1: ["#/anyOf/0/items", "#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/anyOf/0/items", "#/unevaluatedItems"], /1: ["#/anyOf/0/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/items", "#/unevaluatedItems"], /1: ["#/anyOf/0/items", "#/unevaluatedItems"]}
+
+- description: "conditional in-place child applicators : contains"
+  comment: >
+    anyOf's contains applies at any index where it validates.
+    it applies to all children when no child validates (invalid application).
+    when anyOf/0 validates, unevaluatedItems applies at any index where contains does not validate the child.
+    unevaluatedItems applies to all children when contains keyword fails to validate.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf: [{contains: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/contains"], /1: ["#/anyOf/0/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/anyOf/0/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/contains", "#/unevaluatedItems"], /1: ["#/anyOf/0/contains", "#/unevaluatedItems"]}
