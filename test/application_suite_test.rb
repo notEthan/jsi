@@ -22,6 +22,10 @@ describe("application") do
 
           jsi = schema.new_jsi(test.jsi_node_content['instance'])
 
+          it([*test_descr, 'validation'].join(' : ')) do
+            assert_consistent_jsi_descendent_errors(jsi)
+          end
+
           test.schemas.each do |instance_pointer, schema_refs|
             jsi_desc = jsi / instance_pointer
             expected_schemas = JSI::SchemaSet.new(schema_refs) do |ref_uri|
