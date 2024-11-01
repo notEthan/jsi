@@ -746,6 +746,16 @@ module JSI
     end
 
     # @private
+    # @return [SchemaModule::Connection]
+    def jsi_schema_module_connection
+      return(jsi_schema_module) if is_a?(Schema)
+      @memos.fetch(:schema_module_connection) do
+        raise(TypeError, "mutable JSI may not have a SchemaModule::Connection: #{self}") if jsi_mutable?
+        @memos[:schema_module_connection] = SchemaModule::Connection.new(self)
+      end
+    end
+
+    # @private
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [Base]
     def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
