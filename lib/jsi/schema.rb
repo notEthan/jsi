@@ -653,10 +653,10 @@ module JSI
         instance: instance,
         visited_refs: visited_refs,
         collect_evaluated: false, # child application is not invoked so no evaluated children to collect
-      ) do |schema, ref: nil|
+      ) do |schema, ref: nil, applicate: true|
         if schema.equal?(self) && !ref
           yield(self)
-        else
+        elsif applicate
           schema.each_inplace_applicator_schema(
             instance,
             visited_refs: Util.add_visited_ref(visited_refs, ref),
@@ -706,7 +706,7 @@ module JSI
         instance: instance,
         visited_refs: visited_refs,
         collect_evaluated: collect_evaluated,
-      ) do |schema, ref: nil|
+      ) do |schema, ref: nil, applicate: true|
         if schema.equal?(self) && !ref
           applicate_self = true
         else
@@ -715,7 +715,9 @@ module JSI
             instance,
             visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
             collect_evaluated: collect_evaluated && !inplace_child_evaluated,
-            &block
+            # the `if` keyword needs to yield to here because it does affect `evaluated`,
+            # but it does not apply itself/its applicators, so is not passed to our given block.
+            &(applicate ? block : proc { })
           )
           inplace_child_evaluated ||= collect_evaluated && schema_evaluated && schema.instance_valid?(instance)
         end
