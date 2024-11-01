@@ -166,7 +166,7 @@ module JSI
     end
 
     Example = Examples.items
-    PatternPropertyPattern = PatternProperties.propertyNames
+    PatternProperties::Pattern = PatternProperties.propertyNames
     Dependencies::Dependency = Dependencies.additionalProperties
     Enum::Item = Enum.items
     Type::Array = Type.anyOf[1]
@@ -175,7 +175,7 @@ module JSI
 
     module Example
     end
-    module PatternPropertyPattern
+    module PatternProperties::Pattern
     end
     module Dependencies::Dependency
     end
