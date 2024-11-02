@@ -714,7 +714,7 @@ module JSI
             token,
             instance,
             visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
-            collect_evaluated: collect_evaluated,
+            collect_evaluated: collect_evaluated && !inplace_child_evaluated,
             &block
           )
           inplace_child_evaluated ||= collect_evaluated && schema_evaluated && schema.instance_valid?(instance)
