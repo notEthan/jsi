@@ -709,7 +709,7 @@ module JSI
       ) do |schema, ref: nil, applicate: true|
         if schema.equal?(self) && !ref
           applicate_self = true
-        else
+        elsif applicate || (collect_evaluated && !inplace_child_evaluated)
           schema_evaluated = schema.each_inplace_child_applicator_schema(
             token,
             instance,
