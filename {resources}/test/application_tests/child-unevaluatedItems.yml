@@ -428,6 +428,34 @@
     - instance: [{}, {}]
       schemas: {/0: ["#/allOf/0/unevaluatedItems", "#/unevaluatedItems"], /1: ["#/allOf/0/unevaluatedItems", "#/unevaluatedItems"]}
 
+- description: "unconditional in-place child applicators, mix valid/invalid : items + prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf:
+      - {prefixItems: [{type: "array"}]}
+      - {items: {type: boolean}}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [[], true]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+      comment: /0 is evaluated by /allOf/0/prefixItems/0. /1 is not evaluated by /allOf/1/items because / is not valid aginst /allOf/1
+    - instance: [{}, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, true]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, true]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items"], /1: ["#/allOf/1/items"]}
 
 - description: "conditional in-place child applicators : prefixItems"
   comment: >
@@ -504,6 +532,37 @@
     - instance: [{}, {}]
       schemas: {/0: ["#/anyOf/0/unevaluatedItems", "#/unevaluatedItems"], /1: ["#/anyOf/0/unevaluatedItems", "#/unevaluatedItems"]}
 
+- description: "conditional in-place child applicators, mix valid/invalid : items + prefixItems"
+  comment: >
+    if /0 is array then /anyOf/0 applies to the instance, /anyOf/0/prefixItems/0 applies to /0. /anyOf/1 does not apply.
+    if both are boolean, /anyOf/1 applies, /0 and /1 are /anyOf/1/items. /anyOf/0 does not apply.
+    otherwise, both /anyOf/* apply (invalid application). neither /anyOf/* evaluates children, so all are unevaluated.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf:
+      - {prefixItems: [{type: "array"}]}
+      - {items: {type: boolean}}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], true]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, true]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, true]
+      schemas: {/0: ["#/anyOf/1/items"], /1: ["#/anyOf/1/items"]}
 
 - description: "`if` child applicators : prefixItems"
   dialects:
