@@ -71,7 +71,6 @@ describe 'JSON Schema Test Suite' do
                 )
 
                 describe(tests_desc.description) do
-                  let(:schema_registry) { desc_schema_registry }
                   let(:schema) { desc_schema }
                   let(:optional) { subpath.split('/').include?('optional') }
 
