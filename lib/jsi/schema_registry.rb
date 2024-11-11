@@ -151,12 +151,8 @@ module JSI
 
     def dup
       self.class.new.tap do |reg|
-        @resources.each do |uri, resource|
-          reg.internal_store(uri, resource)
-        end
-        @autoload_uris.each do |uri, autoload|
-          reg.autoload_uri(uri, &autoload)
-        end
+        reg.instance_variable_get(:@resources).update(@resources)
+        reg.instance_variable_get(:@autoload_uris).update(@autoload_uris)
       end
     end
 
