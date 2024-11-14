@@ -105,22 +105,7 @@ describe 'JSON Schema Test Suite' do
 
                         assert_equal(result.valid?, bootstrap_schema.instance_valid?(test.jsi_instance['data']))
 
-                        if !test.valid
-                          result.each_validation_error do |result_error|
-                            # since the test data instance has an error at result_error.instance_ptr,
-                            # validation of the JSI descendent at that ptr should include that error,
-                            # as well as errors of its descendents.
-
-                            errors_below_instance_ptr = result.each_validation_error.select do |e|
-                              result_error.instance_ptr.ancestor_of?(e.instance_ptr)
-                            end.to_set
-
-                            descendent = jsi.jsi_descendent_node(result_error.instance_ptr)
-                            descendent_errors = descendent.jsi_validate.each_validation_error.to_set
-
-                            assert_equal(errors_below_instance_ptr, descendent_errors)
-                          end
-                        end
+                        assert_consistent_jsi_descendent_errors(jsi, result: result)
 
                         if test.valid != result.valid?
                           unsupported_keywords = [

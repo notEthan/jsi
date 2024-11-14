@@ -258,6 +258,23 @@ class JSISpec < Minitest::Spec
     refute(instance.described_by?(schema))
   end
 
+  def assert_consistent_jsi_descendent_errors(jsi, result: jsi.jsi_validate)
+    result.each_validation_error do |result_error|
+      # since the instance has an error at result_error.instance_ptr,
+      # validation of the JSI descendent at that ptr should include that error,
+      # as well as errors of its descendents.
+
+      errors_below_instance_ptr = result.each_validation_error.select do |e|
+        result_error.instance_ptr.ancestor_of?(e.instance_ptr)
+      end.to_set
+
+      descendent = jsi.jsi_descendent_node(result_error.instance_ptr)
+      descendent_errors = descendent.jsi_validate.each_validation_error.to_set
+
+      assert_equal(errors_below_instance_ptr, descendent_errors)
+    end
+  end
+
   def assert_uri(exp, act)
     assert_equal(JSI::Util.uri(exp), act)
     assert_predicate(act, :frozen?)
