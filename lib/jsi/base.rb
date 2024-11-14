@@ -560,7 +560,7 @@ module JSI
     # the set of JSI schema modules corresponding to the schemas that describe this JSI
     # @return [Set<Module>]
     def jsi_schema_modules
-      Util.ensure_module_set(jsi_schemas.map(&:jsi_schema_module))
+      Set.new(jsi_schemas, &:jsi_schema_module).freeze
     end
 
     # Is this JSI described by the given schema (or schema module)?

@@ -238,32 +238,5 @@ module JSI
         end
       end
     end
-
-    # ensures the given param becomes a frozen Set of Modules.
-    # returns the param if it is already that, otherwise initializes and freezes such a Set.
-    #
-    # @api private
-    # @param modules [Set, Enumerable] the object to ensure becomes a frozen Set of Modules
-    # @return [Set] frozen Set containing the given modules
-    # @raise [ArgumentError] when the modules param is not an Enumerable
-    # @raise [Schema::NotASchemaError] when the modules param contains objects which are not Schemas
-    def ensure_module_set(modules)
-      if modules.is_a?(Set) && modules.frozen?
-        set = modules
-      elsif modules.is_a?(Enumerable)
-        set = Set.new(modules).freeze
-      else
-        raise(TypeError, "not given an Enumerable of Modules")
-      end
-      not_modules = set.reject { |s| s.is_a?(Module) }
-      if !not_modules.empty?
-        raise(TypeError, [
-          "ensure_module_set given non-Module objects:",
-          *not_modules.map { |ns| ns.pretty_inspect.chomp },
-        ].join("\n"))
-      end
-
-      set
-    end
   end
 end
