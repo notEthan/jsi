@@ -177,6 +177,30 @@
     - instance: [{}, {}]
       schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
 
+- description: "unconditional in-place child applicators : two prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{prefixItems: [{type: "array"}, {type: "array"}]}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], [], []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0"], /1: ["#/allOf/0/prefixItems/1"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], [], {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0"], /1: ["#/allOf/0/prefixItems/1"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], {}, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], {}, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, [], []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, [], {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, {}, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, {}, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+
 - description: "unconditional in-place child applicators : items"
   comment: >
     allOf's items always applies to all children.
