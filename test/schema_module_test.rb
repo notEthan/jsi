@@ -28,6 +28,13 @@ describe 'JSI::SchemaModule' do
       assert_equal(JSI::JSONSchemaDraft06.schema.properties['properties'].additionalProperties, JSI::JSONSchemaDraft06.properties['properties'].additionalProperties.jsi_node)
     end
 
+    it("raises when identified child is not present") do
+      assert_raises(JSI::Base::ChildNotPresent) { SchemaModuleTestModule.items }
+      assert_raises(JSI::Base::ChildNotPresent) { SchemaModuleTestModule['items'] }
+      assert_raises(JSI::Base::ChildNotPresent) { JSI::JSONSchemaDraft06.items }
+      assert_raises(JSI::Base::ChildNotPresent) { JSI::JSONSchemaDraft06['items'] }
+    end
+
     describe 'named properties of a schema module connection' do
       # the json schema meta-schemas don't describe any named properties of any objects that aren't schemas.
       # we need a meta-schema that does.

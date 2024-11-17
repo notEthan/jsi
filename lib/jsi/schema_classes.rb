@@ -263,6 +263,7 @@ module JSI
     # @return [SchemaModule, SchemaModule::Connection, Object]
     def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
+      @jsi_node.jsi_child_ensure_present(token)
       sub = @jsi_node[token]
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module_exec(&block) if block
