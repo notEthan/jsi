@@ -66,6 +66,11 @@ module JSI
     def instance_valid?(instance)
       schema.instance_valid?(instance)
     end
+
+    # See {Schema#describes_schema!}
+    def describes_schema!(dialect)
+      schema.describes_schema!(dialect)
+    end
   end
 
   # A module to extend the {SchemaModule} of a schema which describes other schemas (a {Schema::MetaSchema})
