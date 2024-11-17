@@ -896,6 +896,11 @@ module JSI
       @next_schema_dynamic_anchor_map
     end
 
+    # @private pending stronger stability of dynamic scope
+    def with_dynamic_scope_from(node)
+      jsi_with_schema_dynamic_anchor_map(node.jsi_next_schema_dynamic_anchor_map)
+    end
+
     # Does application require collection of evaluated children?
     # (i.e. does the schema contain `unevaluatedItems` / `unevaluatedProperties`?)
     # @private
