@@ -402,6 +402,15 @@ module JSI
       false
     end
 
+    # @api private
+    # @return [nil]
+    def jsi_child_ensure_present(token)
+      if !jsi_child_token_present?(token)
+        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
+      end
+      nil
+    end
+
     # The child of the {#jsi_node_content} identified by the given token,
     # or `nil` if the token does not identify an existing child.
     #
@@ -422,9 +431,7 @@ module JSI
     # @return [JSI::Base, Object]
     # @raise [Base::ChildNotPresent]
     def jsi_child(token, as_jsi: )
-      if !jsi_child_token_present?(token)
-        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
-      end
+      jsi_child_ensure_present(token)
 
       child_content = jsi_node_content_child(token)
 
