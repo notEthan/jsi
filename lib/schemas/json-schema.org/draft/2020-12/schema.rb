@@ -11,11 +11,10 @@ module JSI
 
   jsi_schema_registry = SchemaRegistry.new
   bootstrap_schema_registry = SchemaRegistry.new
-  bootstrap_schema_class = dialect.bootstrap_schema_class
-  bootstrap_metaschema = bootstrap_schema_class.new(metaschema_document, jsi_schema_registry: bootstrap_schema_registry)
+  bootstrap_metaschema = dialect.bootstrap_schema(metaschema_document, jsi_schema_registry: bootstrap_schema_registry)
   bootstrap_schema_registry.register(bootstrap_metaschema)
   vocabulary_schema_documents.each do |vocabulary_schema_document|
-    bootstrap_vocabulary_schema = bootstrap_schema_class.new(vocabulary_schema_document, jsi_schema_registry: bootstrap_schema_registry)
+    bootstrap_vocabulary_schema = dialect.bootstrap_schema(vocabulary_schema_document, jsi_schema_registry: bootstrap_schema_registry)
     bootstrap_schema_registry.register(bootstrap_vocabulary_schema)
   end
 
