@@ -881,7 +881,7 @@ module JSI
           # - check for $dynamicAnchor
           # can't use #subschema here (it would need to pass this method's result to instantiate the subschema);
           # a minimal bootstrap schema is used instead.
-          descendent_subschema = dialect.bootstrap_schema_class.new(
+          descendent_subschema = dialect.bootstrap_schema(
             jsi_document,
             jsi_ptr: descendent_schema.jsi_ptr + subptr,
             # note: same as anchor_root.jsi_resource_ancestor_uri since we don't cross resource boundaries.
