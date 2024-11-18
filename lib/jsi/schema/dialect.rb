@@ -49,6 +49,8 @@ module JSI
 
         @bootstrap_schema_class = bootstrap_schema_class_compute
 
+        @bootstrap_schema_map = Util::MemoMap::Immutable.new { |document: , **kw| bootstrap_schema_class.new(document, **kw) }
+
         freeze
       end
 
@@ -72,7 +74,7 @@ module JSI
       # @api private
       # @return [MetaSchemaNode::BootstrapSchema]
       def bootstrap_schema(document, **kw)
-        bootstrap_schema_class.new(document, **kw)
+        @bootstrap_schema_map[document: document, **kw]
       end
 
       # Invoke the indicated action of each Element on the given context
