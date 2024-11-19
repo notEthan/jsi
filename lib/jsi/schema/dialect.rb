@@ -49,7 +49,18 @@ module JSI
 
         @bootstrap_schema_class = bootstrap_schema_class_compute
 
-        @bootstrap_schema_map = Util::MemoMap::Immutable.new { |document: , **kw| bootstrap_schema_class.new(document, **kw) }
+        # Bootstrap schemas are memoized in nested hashes.
+        # The outer hash is keyed by document, compared by identity, because hashing the document
+        # is expensive and there aren't typically multiple instances of the same document
+        # (and if there are, it is no problem for them to map to different bootstrap schemas).
+        # The inner hash is keyed by other keyword params to MetaSchemaNode::BootstrapSchema#initialize,
+        # not by identity, as those use different instances but are cheaper to hash.
+        @bootstrap_schema_map = Hash.new do |dochash, document|
+          dochash[document] = Hash.new do |paramhash, kw|
+            paramhash[kw] = bootstrap_schema_class.new(document, **kw)
+          end
+        end
+        @bootstrap_schema_map.compare_by_identity
 
         freeze
       end
@@ -74,7 +85,7 @@ module JSI
       # @api private
       # @return [MetaSchemaNode::BootstrapSchema]
       def bootstrap_schema(document, **kw)
-        @bootstrap_schema_map[document: document, **kw]
+        @bootstrap_schema_map[document][kw]
       end
 
       # Invoke the indicated action of each Element on the given context
