@@ -314,7 +314,7 @@ module JSI
         }).freeze
       end
 
-      if bootstrap_schema.jsi_document == jsi_document
+      if bootstrap_schema.jsi_document.equal?(jsi_document)
         root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
       else
         bootstrap_resource = bootstrap_schema.schema_resource_root
