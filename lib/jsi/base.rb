@@ -560,7 +560,7 @@ module JSI
     # the set of JSI schema modules corresponding to the schemas that describe this JSI
     # @return [Set<Module>]
     def jsi_schema_modules
-      Util.ensure_module_set(jsi_schemas.map(&:jsi_schema_module))
+      Set.new(jsi_schemas, &:jsi_schema_module).freeze
     end
 
     # Is this JSI described by the given schema (or schema module)?
@@ -816,7 +816,7 @@ module JSI
     end
 
     def jsi_child_indicated_schemas_compute(token: , content: )
-      if jsi_indicated_schemas.any?(&:application_requires_evaluated)
+      if jsi_schemas.any?(&:application_requires_evaluated)
         # if application_requires_evaluated, in-place application needs to collect token evaluation
         # recursively to inform child application, so must be recomputed.
         jsi_indicated_schemas.each_yield_set do |is, y|

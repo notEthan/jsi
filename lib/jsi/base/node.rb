@@ -11,12 +11,8 @@ module JSI
     def jsi_each_propertyName
       return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block_given?
 
-      property_schemas = SchemaSet.build do |schemas|
-        jsi_schemas.each do |s|
-          if s.keyword?('propertyNames') && s['propertyNames'].is_a?(Schema)
-            schemas << s['propertyNames']
-          end
-        end
+      property_schemas = jsi_schemas.each_yield_set do |s, y|
+        s.dialect_invoke_each(:propertyNames, &y)
       end
       jsi_node_content_hash_pubsend(:each_key) do |key|
         yield property_schemas.new_jsi(key)
@@ -54,6 +50,7 @@ module JSI
     # See {Base#[]}
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       raise(BlockGivenError) if block_given?
+      token = token.jsi_node_content if token.is_a?(Schema::SchemaAncestorNode)
       if jsi_node_content_hash_pubsend(:key?, token)
         jsi_child(token, as_jsi: as_jsi)
       else
@@ -69,15 +66,31 @@ module JSI
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
     #
+    # @param key_as_jsi (see #each_key)
     # @param kw keyword arguments are passed to {Base#[]}
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
-    def each(**kw, &block)
-      return to_enum(__method__, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
+    def each(key_as_jsi: false, **kw, &block)
+      return to_enum(__method__, key_as_jsi: key_as_jsi, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity > 1
-        jsi_node_content_hash_pubsend(:each_key) { |k| yield k, self[k, **kw] }
+        each_key(key_as_jsi: key_as_jsi) { |k| yield(k, self[k, **kw]) }
       else
-        jsi_node_content_hash_pubsend(:each_key) { |k| yield [k, self[k, **kw]] }
+        each_key(key_as_jsi: key_as_jsi) { |k| yield([k, self[k, **kw]]) }
+      end
+      self
+    end
+
+    alias_method(:each_pair, :each)
+
+    # Yields each key (property name)
+    # @param key_as_jsi [Boolean] Yield each key as a JSI instance, per {#jsi_each_propertyName}
+    # @yield [String, Base]
+    def each_key(key_as_jsi: false, &block)
+      return to_enum(__method__, key_as_jsi: key_as_jsi) { size } unless block
+      if key_as_jsi
+        jsi_each_propertyName(&block)
+      else
+        jsi_node_content_hash_pubsend(:each_key, &block)
       end
       self
     end
@@ -87,7 +100,7 @@ module JSI
     # @return [Hash]
     def to_hash(**kw)
       hash = {}
-      jsi_node_content_hash_pubsend(:each_key) { |k| hash[k] = self[k, **kw] }
+      each_key { |k| hash[k] = self[k, **kw] }
       hash.freeze
     end
 
@@ -136,7 +149,7 @@ module JSI
     end
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_hash)
-    SAFE_KEY_ONLY_METHODS.each do |method_name|
+    SAFE_KEY_ONLY_METHODS.reject { |m| instance_method(m).owner == self }.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         define_method(method_name) do |*a, &b|
           jsi_node_content_hash_pubsend(method_name, *a, &b)
@@ -183,6 +196,7 @@ module JSI
     # See {Base#[]}
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       raise(BlockGivenError) if block_given?
+      token = token.jsi_node_content if token.is_a?(Schema::SchemaAncestorNode)
       size = jsi_node_content_ary_pubsend(:size)
       if token.is_a?(Integer)
         if token < 0
@@ -301,7 +315,7 @@ module JSI
 
     # methods that don't look at the value; can skip the overhead of #[] (invoked by #to_a).
     # we override these methods from Arraylike
-    SAFE_INDEX_ONLY_METHODS.each do |method_name|
+    SAFE_INDEX_ONLY_METHODS.reject { |m| instance_method(m).owner == self }.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         define_method(method_name) do |*a, &b|
           jsi_node_content_ary_pubsend(method_name, *a, &b)

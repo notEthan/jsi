@@ -17,6 +17,16 @@ module JSI
           end
         end # element.add_action(:subschema)
 
+        element.add_action(:described_object_property_names) do
+          next if !keyword_value_hash?('dependencies')
+          schema_content['dependencies'].each do |property_name, dependency|
+            cxt_yield(property_name)
+            if dependency.respond_to?(:to_ary)
+              dependency.each(&block)
+            end
+          end
+        end
+
         element.add_action(:inplace_applicate) do
           next if !keyword_value_hash?('dependencies')
           next if !instance.respond_to?(:to_hash)

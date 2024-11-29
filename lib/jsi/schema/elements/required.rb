@@ -4,6 +4,11 @@ module JSI
   module Schema::Elements
     REQUIRED = element_map do
       Schema::Element.new(keyword: 'required') do |element|
+        element.add_action(:described_object_property_names) do
+          next if !keyword_value_ary?('required')
+          schema_content['required'].each(&block)
+        end
+
         element.add_action(:validate) do
       if keyword?('required')
         value = schema_content['required']

@@ -3,7 +3,7 @@ require_relative '../test_helper'
 $test_report_time["json_schema_test_suite/suite_test loading"]
 
 test_schema_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json')
-JSONSchemaTestSchema = JSI::JSONSchemaDraft07.new_schema(JSON.parse(test_schema_path.open('r:UTF-8').read))
+JSONSchemaTestSchema = JSI::JSONSchemaDraft07.new_schema(JSON.parse(test_schema_path.open('r:UTF-8', &:read), freeze: true))
 $test_report_time["JSONSchemaTestSchema set up"]
 
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
@@ -70,8 +70,17 @@ describe 'JSON Schema Test Suite' do
                   default_metaschema: metaschema,
                 )
 
+                bootstrap_schema_registry = JSTS_REGISTRIES[metaschema].dup
+                bootstrap_schema_class = desc_schema.dialect.bootstrap_schema_class
+                desc_bootstrap_schema = bootstrap_schema_class.new(
+                  tests_desc.jsi_instance['schema'],
+                  jsi_schema_registry: bootstrap_schema_registry,
+                )
+                bootstrap_schema_registry.register(desc_bootstrap_schema)
+
                 describe(tests_desc.description) do
                   let(:schema) { desc_schema }
+                  let(:bootstrap_schema) { desc_bootstrap_schema }
                   let(:optional) { subpath.split('/').include?('optional') }
 
                   if desc_schema.is_a?(JSI::Base)
@@ -94,6 +103,8 @@ describe 'JSON Schema Test Suite' do
 
                         result = jsi.jsi_validate
                         assert_equal(result.valid?, jsi.jsi_valid?)
+
+                        assert_equal(result.valid?, bootstrap_schema.instance_valid?(test.jsi_instance['data']))
 
                         if !test.valid
                           result.each_validation_error do |result_error|

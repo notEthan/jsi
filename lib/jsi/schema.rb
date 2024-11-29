@@ -712,7 +712,7 @@ module JSI
           schema_evaluated = schema.each_inplace_child_applicator_schema(
             token,
             instance,
-            visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
+            visited_refs: Util.add_visited_ref(visited_refs, ref),
             collect_evaluated: collect_evaluated && !inplace_child_evaluated,
             # the `if` keyword needs to yield to here because it does affect `evaluated`,
             # but it does not apply itself/its applicators, so is not passed to our given block.
@@ -744,17 +744,6 @@ module JSI
     # @return [Set]
     def described_object_property_names
       @described_object_property_names_map[]
-    end
-
-    private def described_object_property_names_compute(**_) # TODO remove **_ eventually (keyword argument compatibility)
-        Set.new.tap do |property_names|
-          if schema_content.respond_to?(:to_hash) && schema_content['properties'].respond_to?(:to_hash)
-            property_names.merge(schema_content['properties'].each_key)
-          end
-          if schema_content.respond_to?(:to_hash) && schema_content['required'].respond_to?(:to_ary)
-            property_names.merge(schema_content['required'].to_ary)
-          end
-        end.freeze
     end
 
     # Validates the given instance against this schema, returning a result with each validation error.
@@ -868,7 +857,9 @@ module JSI
       end
       @schema_absolute_uris_map = jsi_memomap { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
-      @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
+      @described_object_property_names_map = jsi_memomap do
+        dialect_invoke_each(:described_object_property_names).to_set.freeze
+      end
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
     end
   end
