@@ -110,7 +110,6 @@ module JSI
 
     private def jsi_initialize_finish
       return if @initialize_finished
-      @initialize_finished = true
 
       @jsi_schemas = bootstrap_schemas_to_msn(@bootstrap_schemas)
 
@@ -141,6 +140,7 @@ module JSI
         extend schema.jsi_schema_module
       end
 
+      @initialize_finished = true
       while !@to_initialize_finish.empty?
         node = @to_initialize_finish.shift
         node.send(:jsi_initialize_finish)
