@@ -3,8 +3,6 @@
 module JSI
   module Schema
     module Draft07
-      include IntegerAllows0Fraction
-
       VOCABULARY = Vocabulary.new(
         elements: [
           # the schema itself
@@ -162,10 +160,6 @@ module JSI
         id: "http://json-schema.org/draft-07/schema",
         vocabularies: [VOCABULARY],
       )
-
-      def dialect
-        DIALECT
-      end
     end
   end
 end

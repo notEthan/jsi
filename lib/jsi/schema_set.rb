@@ -13,21 +13,6 @@ module JSI
       def build(&block)
         new(Enumerator.new(&block))
       end
-
-      # ensures the given param becomes a SchemaSet. returns the param if it is already SchemaSet, otherwise
-      # initializes a SchemaSet from it.
-      #
-      # @param schemas [SchemaSet, Enumerable] the object to ensure becomes a SchemaSet
-      # @return [SchemaSet] the given SchemaSet, or a SchemaSet initialized from the given Enumerable
-      # @raise [ArgumentError] when the schemas param is not an Enumerable
-      # @raise [Schema::NotASchemaError] when the schemas param contains objects which are not Schemas
-      def ensure_schema_set(schemas)
-        if schemas.is_a?(SchemaSet)
-          schemas
-        else
-          new(schemas)
-        end
-      end
     end
 
     # initializes a SchemaSet from the given enum and freezes it.
@@ -67,7 +52,7 @@ module JSI
     end
 
     # Instantiates a new JSI whose content comes from the given `instance` param.
-    # This SchemaSet indicates the schemas of the JSI - its schemas are inplace
+    # This SchemaSet indicates the schemas of the JSI - its schemas are in-place
     # applicators of this set's schemas which apply to the given instance.
     #
     # @param instance [Object] the instance to be represented as a JSI
@@ -94,7 +79,7 @@ module JSI
     # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
     #   The instance content will be transformed with `to_immutable` if the JSI will be immutable.
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
-    #   inplace applicators of the schemas in this set.
+    #   in-place applicators of the schemas in this set.
     def new_jsi(instance,
         uri: nil,
         register: false,
@@ -169,13 +154,15 @@ module JSI
     def pretty_print(q)
       q.text self.class.to_s
       q.text '['
-      q.group(2) {
+      q.group {
+        q.nest(2) {
           q.breakable('')
           q.seplist(self, nil, :each) { |e|
             q.pp e
           }
+        }
+        q.breakable('')
       }
-      q.breakable ''
       q.text ']'
     end
   end

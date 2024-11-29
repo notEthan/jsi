@@ -58,7 +58,7 @@ module JSI
                   "instance array items are not all valid against corresponding `items` schemas",
                   keyword: 'items',
                   child_results: items_results,
-                  instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
+                  instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i => r.valid?}) }.freeze,
                 )
                 child_results_validate(
                   additionalItems_results.each_value.all?(&:valid?),
@@ -66,7 +66,7 @@ module JSI
                   "instance array items after `items` schemas are not all valid against `additionalItems` schema",
                   keyword: 'additionalItems',
                   child_results: additionalItems_results,
-                  instance_indexes_valid: additionalItems_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
+                  instance_indexes_valid: additionalItems_results.inject({}) { |h, (i, r)| h.update({i => r.valid?}) }.freeze,
                 )
               else
                 #> If "items" is a schema, validation succeeds if all elements in the array successfully
@@ -81,7 +81,7 @@ module JSI
                   "instance array items are not all valid against `items` schema",
                   keyword: 'items',
                   child_results: items_results,
-                  instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
+                  instance_indexes_valid: items_results.inject({}) { |h, (i, r)| h.update({i => r.valid?}) }.freeze,
                 )
               end
             end

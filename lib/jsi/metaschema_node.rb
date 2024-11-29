@@ -28,17 +28,13 @@ module JSI
     # @param jsi_document the document containing the meta-schema.
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
-    # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality
-    #   of the schema. These are included on the {Schema#jsi_schema_module} of the meta-schema.
-    #   They extend any schema described by the meta-schema, including those in the document containing
-    #   the meta-schema, and the meta-schema itself.
-    #   see {Schema#describes_schema!} param `schema_implementation_modules`.
+    # @param msn_dialect [Schema::Dialect]
     # @param metaschema_root_ptr [JSI::Ptr] ptr to the root of the meta-schema in the jsi_document
     # @param root_schema_ptr [JSI::Ptr] ptr to the schema describing the root of the jsi_document
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        schema_implementation_modules: ,
+        msn_dialect: ,
         metaschema_root_ptr: Ptr[],
         root_schema_ptr: Ptr[],
         jsi_schema_base_uri: nil,
@@ -59,7 +55,7 @@ module JSI
       @initialize_finished = false
       @to_initialize_finish = []
 
-      @schema_implementation_modules = schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
+      @msn_dialect = msn_dialect
       @metaschema_root_ptr = metaschema_root_ptr
       @root_schema_ptr = root_schema_ptr
 
@@ -69,10 +65,8 @@ module JSI
 
       #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
 
-      @extends = Set[]
-
       instance_for_schemas = jsi_document
-      bootstrap_schema_class = JSI::SchemaClasses.bootstrap_schema_class(schema_implementation_modules)
+      bootstrap_schema_class = msn_dialect.bootstrap_schema_class
       root_bootstrap_schema = bootstrap_schema_class.new(
         jsi_document,
         jsi_ptr: root_schema_ptr,
@@ -95,11 +89,8 @@ module JSI
       @bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema.jsi_ptr == metaschema_root_ptr
           # this is described by the meta-schema, i.e. this is a schema
-          schema_implementation_modules.each do |schema_implementation_module|
-            extend schema_implementation_module
-          end
+          define_singleton_method(:dialect) { msn_dialect }
           extend(Schema)
-          @extends += schema_implementation_modules
         end
       end
 
@@ -110,20 +101,17 @@ module JSI
 
     private def jsi_initialize_finish
       return if @initialize_finished
-      @initialize_finished = true
 
       @jsi_schemas = bootstrap_schemas_to_msn(@bootstrap_schemas)
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if jsi_ptr == metaschema_root_ptr
-        describes_schema!(schema_implementation_modules)
+        describes_schema!(msn_dialect)
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
-      @extends.merge(extends_for_instance)
-      @extends.freeze
 
-      conflicting_modules = Set[self.class] + @extends + @jsi_schemas.map(&:jsi_schema_module)
+      conflicting_modules = Set[self.class] + extends_for_instance + @jsi_schemas.map(&:jsi_schema_module)
       reader_modules = @jsi_schemas.map do |schema|
         JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
       end
@@ -141,15 +129,15 @@ module JSI
         extend schema.jsi_schema_module
       end
 
+      @initialize_finished = true
       while !@to_initialize_finish.empty?
         node = @to_initialize_finish.shift
         node.send(:jsi_initialize_finish)
       end
     end
 
-    # Set of modules to apply to schemas that are instances of (described by) the meta-schema
-    # @return [Set<Module>]
-    attr_reader :schema_implementation_modules
+    # @return [Schema::Dialect]
+    attr_reader(:msn_dialect)
 
     # ptr to the root of the meta-schema in the jsi_document
     # @return [JSI::Ptr]
@@ -226,7 +214,7 @@ module JSI
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
-        schema_implementation_modules: schema_implementation_modules,
+        msn_dialect: msn_dialect,
         metaschema_root_ptr: metaschema_root_ptr,
         root_schema_ptr: root_schema_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,
@@ -274,7 +262,4 @@ module JSI
       end
     end
   end
-
-  # @deprecated after v0.7.0, alias of {MetaSchemaNode}
-  MetaschemaNode = MetaSchemaNode
 end

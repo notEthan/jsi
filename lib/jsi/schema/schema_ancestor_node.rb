@@ -79,8 +79,8 @@ module JSI
       #chkbug     # pass
       #chkbug   elsif last_anc_ptr == anc.jsi_ptr
       #chkbug     fail(Bug, "duplicate ancestors in #{jsi_schema_resource_ancestors.pretty_inspect}")
-      #chkbug   elsif !last_anc_ptr.contains?(anc.jsi_ptr)
-      #chkbug     fail(Bug, "ancestor ptr #{anc.jsi_ptr} not contained by previous: #{last_anc_ptr} in #{jsi_schema_resource_ancestors.pretty_inspect}")
+      #chkbug   elsif !last_anc_ptr.ancestor_of?(anc.jsi_ptr)
+      #chkbug     fail(Bug, "ancestor ptr #{anc.jsi_ptr} not descendent of previous: #{last_anc_ptr} in #{jsi_schema_resource_ancestors.pretty_inspect}")
       #chkbug   end
       #chkbug   if anc.jsi_ptr == jsi_ptr
       #chkbug     fail(Bug, "ancestor is self")

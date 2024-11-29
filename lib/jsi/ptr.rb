@@ -190,11 +190,6 @@ module JSI
         tokens == other_ptr.tokens[0...tokens.size]
       end
 
-      # @deprecated
-      def contains?(other_ptr)
-        ancestor_of?(other_ptr)
-      end
-
       # part of this pointer relative to the given ancestor_ptr
       # @return [JSI::Ptr]
       # @raise [JSI::Ptr::Error] if the given ancestor_ptr is not an ancestor of this pointer

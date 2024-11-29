@@ -12,6 +12,8 @@ module JSI
       class UndefinedAttributeKey < AttrStructError
       end
 
+      include(Util::Pretty)
+
       class << self
         # creates a AttrStruct subclass with the given attribute keys.
         # @param attribute_keys [Enumerable<String, Symbol>]
@@ -91,32 +93,16 @@ module JSI
         @attributes[key] = value
       end
 
-      # @return [String]
-      def inspect
-        -"\#<#{self.class.name}#{@attributes.map { |k, v| " #{k}: #{v.inspect}" }.join(',')}>"
-      end
-
-      def to_s
-        inspect
-      end
-
       # pretty-prints a representation of self to the given printer
       # @return [void]
       def pretty_print(q)
-        q.text '#<'
-        q.text self.class.name
-        q.group(2) {
-            q.breakable(' ') if !@attributes.empty?
+        jsi_pp_object_group(q, empty: @attributes.empty?) do
             q.seplist(@attributes, nil, :each_pair) { |k, v|
-              q.group {
                 q.text k
                 q.text ': '
                 q.pp v
-              }
             }
-        }
-        q.breakable('') if !@attributes.empty?
-        q.text '>'
+        end
       end
 
       # (see AttrStruct.attribute_keys)

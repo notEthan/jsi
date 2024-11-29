@@ -75,8 +75,8 @@ describe 'unsupported behavior' do
           # the schema that describes subject[0] is both a schema and a 'properties' object
           assert_schemas(
             [
-              JSI::JSONSchemaOrgDraft07.schema,
-              JSI::JSONSchemaOrgDraft07.schema.properties['properties'],
+              JSI::JSONSchemaDraft07.schema,
+              JSI::JSONSchemaDraft07.schema.properties['properties'],
             ],
             subject[0].jsi_schemas.first
           )
@@ -87,8 +87,8 @@ describe 'unsupported behavior' do
           # the schema that describes subject[0]['x'] is both a schema and a 'const' value
           assert_schemas(
             [
-              JSI::JSONSchemaOrgDraft07.schema,
-              JSI::JSONSchemaOrgDraft07.schema.properties['const'],
+              JSI::JSONSchemaDraft07.schema,
+              JSI::JSONSchemaDraft07.schema.properties['const'],
             ],
             subject[0]['x'].jsi_schemas.first
           )

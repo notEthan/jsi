@@ -44,12 +44,16 @@ module JSI
       end
 
       resource.jsi_each_descendent_schema do |node|
-        node.schema_absolute_uris.each do |uri|
-          internal_store(uri, node)
-        end
+        register_immediate(node)
       end
+    end
 
-      nil
+    # @param schema [Schema]
+    # @return [void]
+    def register_immediate(schema)
+      schema.schema_absolute_uris.each do |uri|
+        internal_store(uri, schema)
+      end
     end
 
     # takes a URI identifying a resource to be loaded by the given block
@@ -147,12 +151,8 @@ module JSI
 
     def dup
       self.class.new.tap do |reg|
-        @resources.each do |uri, resource|
-          reg.internal_store(uri, resource)
-        end
-        @autoload_uris.each do |uri, autoload|
-          reg.autoload_uri(uri, &autoload)
-        end
+        reg.instance_variable_get(:@resources).update(@resources)
+        reg.instance_variable_get(:@autoload_uris).update(@autoload_uris)
       end
     end
 

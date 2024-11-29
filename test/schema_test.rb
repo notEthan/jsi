@@ -125,7 +125,7 @@ describe JSI::Schema do
               }
             }
           }
-        })))
+        }), freeze: true))
       end
 
       it 'has the specified uris' do
@@ -190,7 +190,7 @@ describe JSI::Schema do
               "id": "some://where.else/completely#"
             }
           }
-        })))
+        }), freeze: true))
       end
 
       it 'has the specified uris' do
@@ -252,7 +252,7 @@ describe JSI::Schema do
               "$id": "urn:uuid:ee564b8a-7a87-4125-8c96-e9f123d6766f"
             }
           }
-        })))
+        }), freeze: true))
       end
 
       it 'has the specified uris' do
@@ -345,22 +345,7 @@ describe JSI::Schema do
         assert_nil(schema.items.schema_absolute_uri)
         assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
-      it 'nested schema with anchor id on the base' do
-        schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_anchor_on_base',
-          'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_anchor_on_base#nested_anchor'},
-        })
-        assert_nil(schema.items.schema_absolute_uri)
-        assert_enum_equal(['nested_anchor'], schema.items.anchors)
-      end
-      it 'nested schema with anchor id on the base after resolution' do
-        schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_anchor_on_base_rel',
-          'items' => {'id' => 'nested_w_anchor_on_base_rel#nested_anchor'},
-        })
-        assert_nil(schema.items.schema_absolute_uri)
-        assert_enum_equal(['nested_anchor'], schema.items.anchors)
-      end
+
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
           'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag_base',
@@ -399,6 +384,35 @@ describe JSI::Schema do
           assert_uri('http://jsi/test/d4/external_uri/nested_relative', schema.properties['relative'].schema_absolute_uri)
           assert_uri('http://jsi/test/d4/ignore_external_uri/nested_absolute', schema.properties['absolute'].schema_absolute_uri)
           assert_nil(schema.properties['none'].schema_absolute_uri)
+        end
+
+        it("root with only externally supplied uri") do
+          schema = metaschema.new_schema({
+            'properties' => {
+              'relative' => {'id' => 'nested_relative'},
+              'absolute' => {'id' => 'http://jsi/3aza'},
+              'none' => {},
+            },
+          }, uri: 'http://jsi/3az9/root')
+          assert_uris(['http://jsi/3az9/root'], schema.schema_absolute_uris)
+          assert_uris(['http://jsi/3az9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
+          assert_uris(['http://jsi/3aza'], schema.properties['absolute'].schema_absolute_uris)
+          assert_uris([], schema.properties['none'].schema_absolute_uris)
+        end
+
+        it("schema with same id as externally supplied") do
+          schema = metaschema.new_schema({
+            'id' => 'http://jsi/3bz9/root',
+            'properties' => {
+              'relative' => {'id' => 'nested_relative'},
+              'absolute' => {'id' => 'http://jsi/3bza'},
+              'none' => {},
+            },
+          }, uri: 'http://jsi/3bz9/root')
+          assert_uris(['http://jsi/3bz9/root'], schema.schema_absolute_uris)
+          assert_uris(['http://jsi/3bz9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
+          assert_uris(['http://jsi/3bza'], schema.properties['absolute'].schema_absolute_uris)
+          assert_uris([], schema.properties['none'].schema_absolute_uris)
         end
       end
       describe 'relative id uri with no base' do
@@ -467,22 +481,7 @@ describe JSI::Schema do
         assert_nil(schema.items.schema_absolute_uri)
         assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
-      it 'nested schema with anchor id on the base' do
-        schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_on_base',
-          'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_on_base#nested_anchor'},
-        })
-        assert_nil(schema.items.schema_absolute_uri)
-        assert_enum_equal(['nested_anchor'], schema.items.anchors)
-      end
-      it 'nested schema with anchor id on the base after resolution' do
-        schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_on_base_rel',
-          'items' => {'$id' => 'nested_w_anchor_on_base_rel#nested_anchor'},
-        })
-        assert_nil(schema.items.schema_absolute_uri)
-        assert_enum_equal(['nested_anchor'], schema.items.anchors)
-      end
+
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
           '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag_base',
@@ -521,6 +520,35 @@ describe JSI::Schema do
           assert_uri('http://jsi/test/d6/external_uri/nested_relative', schema.properties['relative'].schema_absolute_uri)
           assert_uri('http://jsi/test/d6/ignore_external_uri/nested_absolute', schema.properties['absolute'].schema_absolute_uri)
           assert_nil(schema.properties['none'].schema_absolute_uri)
+        end
+
+        it("root with only externally supplied uri") do
+          schema = metaschema.new_schema({
+            'properties' => {
+              'relative' => {'$id' => 'nested_relative'},
+              'absolute' => {'$id' => 'http://jsi/3aya'},
+              'none' => {},
+            },
+          }, uri: 'http://jsi/3ay9/root')
+          assert_uris(['http://jsi/3ay9/root'], schema.schema_absolute_uris)
+          assert_uris(['http://jsi/3ay9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
+          assert_uris(['http://jsi/3aya'], schema.properties['absolute'].schema_absolute_uris)
+          assert_uris([], schema.properties['none'].schema_absolute_uris)
+        end
+
+        it("schema with same id as externally supplied") do
+          schema = metaschema.new_schema({
+            '$id' => 'http://jsi/3by9/root',
+            'properties' => {
+              'relative' => {'$id' => 'nested_relative'},
+              'absolute' => {'$id' => 'http://jsi/3bya'},
+              'none' => {},
+            },
+          }, uri: 'http://jsi/3by9/root')
+          assert_uris(['http://jsi/3by9/root'], schema.schema_absolute_uris)
+          assert_uris(['http://jsi/3by9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
+          assert_uris(['http://jsi/3bya'], schema.properties['absolute'].schema_absolute_uris)
+          assert_uris([], schema.properties['none'].schema_absolute_uris)
         end
       end
       describe 'relative id uri with no base' do

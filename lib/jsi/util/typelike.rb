@@ -93,34 +93,22 @@ module JSI
       end
     end
 
-    # basically the same #inspect as Hash, but has the class name and, if responsive,
-    # self's #jsi_object_group_text
-    # @return [String]
-    def inspect
-      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
-      -"\#{<#{object_group_str}>#{map { |k, v| " #{k.inspect} => #{v.inspect}" }.join(',')}}"
-    end
-
-    def to_s
-      inspect
-    end
-
     # pretty-prints a representation of this hashlike to the given printer
     # @return [void]
     def pretty_print(q)
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#{<#{object_group_str}>"
-      q.group(2) {
+      q.group {
+        q.nest(2) {
           q.breakable ' ' if !empty?
           q.seplist(self, nil, :each_pair) { |k, v|
-            q.group {
               q.pp k
               q.text ' => '
               q.pp v
-            }
           }
+        }
+        q.breakable('') if !empty?
       }
-      q.breakable '' if !empty?
       q.text '}'
     end
   end
@@ -199,30 +187,20 @@ module JSI
       detect { |e| e.respond_to?(:to_ary) and e[1] == obj }
     end
 
-    # basically the same #inspect as Array, but has the class name and, if responsive,
-    # self's #jsi_object_group_text
-    # @return [String]
-    def inspect
-      object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
-      -"\#[<#{object_group_str}>#{map { |e| ' ' + e.inspect }.join(',')}]"
-    end
-
-    def to_s
-      inspect
-    end
-
     # pretty-prints a representation of this arraylike to the given printer
     # @return [void]
     def pretty_print(q)
       object_group_str = (respond_to?(:jsi_object_group_text, true) ? jsi_object_group_text : [self.class]).join(' ')
       q.text "\#[<#{object_group_str}>"
-      q.group(2) {
+      q.group {
+        q.nest(2) {
           q.breakable ' ' if !empty?
           q.seplist(self, nil, :each) { |e|
             q.pp e
           }
+        }
+        q.breakable('') if !empty?
       }
-      q.breakable '' if !empty?
       q.text ']'
     end
   end

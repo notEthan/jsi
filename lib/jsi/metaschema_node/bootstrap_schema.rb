@@ -8,24 +8,25 @@ module JSI
   # Schema#subschema and Schema#resource_root_subschema are the intended mechanisms to instantiate subschemas
   # and resolve references. #[] and #jsi_root_node are not implemented.
   #
-  # schema implementation modules are included on generated subclasses of BootstrapSchema by
-  # {SchemaClasses.bootstrap_schema_class}. that subclass is instantiated with a document and
+  # #dialect is defined on generated subclasses of BootstrapSchema by
+  # {Schema::Dialect#bootstrap_schema_class}. that subclass is instantiated with a document and
   # pointer, representing a schema.
   #
   # BootstrapSchema does not support mutation; its document must be immutable.
   #
   # @api private
   class MetaSchemaNode::BootstrapSchema
-    include Util::FingerprintHash
+    include(Util::FingerprintHash::Immutable)
     include Schema::SchemaAncestorNode
     include Schema
+    include(Util::Pretty)
 
     class << self
       def inspect
         if self == MetaSchemaNode::BootstrapSchema
           name.freeze
         else
-          -"#{name || MetaSchemaNode::BootstrapSchema.name} (#{schema_implementation_modules.map(&:inspect).join(', ')})"
+          -"#{name || MetaSchemaNode::BootstrapSchema.name} (#{described_dialect})"
         end
       end
 
@@ -43,7 +44,7 @@ module JSI
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_registry: nil
     )
-      fail(Bug, "no #schema_implementation_modules") unless respond_to?(:schema_implementation_modules)
+      fail(Bug, "no #dialect") unless respond_to?(:dialect)
 
       self.jsi_ptr = jsi_ptr
       self.jsi_document = jsi_document
@@ -115,26 +116,12 @@ module JSI
       jsi_subschema_resource_ancestors.last
     end
 
-    # @return [String]
-    def inspect
-      -"\#<#{jsi_object_group_text.join(' ')} #{schema_content.inspect}>"
-    end
-
-    def to_s
-      inspect
-    end
-
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)
-      q.text '#<'
-      q.text jsi_object_group_text.join(' ')
-      q.group(2) {
-          q.breakable ' '
+      jsi_pp_object_group(q, jsi_object_group_text) do
           q.pp schema_content
-      }
-      q.breakable ''
-      q.text '>'
+      end
     end
 
     # @private
@@ -142,9 +129,9 @@ module JSI
     def jsi_object_group_text
       [
         self.class.name || MetaSchemaNode::BootstrapSchema.name,
-        -"(#{schema_implementation_modules.map(&:inspect).join(', ')})",
+        dialect.id ? -"(#{dialect.id})" : nil,
         jsi_ptr.uri,
-      ].freeze
+      ].compact.freeze
     end
 
     # see {Util::Private::FingerprintHash}

@@ -24,6 +24,9 @@ module JSI
         element.add_action(:inplace_applicate) do
       if keyword?('if')
         if subschema(['if']).instance_valid?(instance)
+          if collect_evaluated
+            inplace_subschema_applicate(['if'], applicate: false)
+          end
           if keyword?('then')
             inplace_subschema_applicate(['then'])
           end
@@ -41,6 +44,10 @@ module JSI
             # This validation outcome of this keyword's subschema has no direct effect on the overall validation
             # result. Rather, it controls which of the "then" or "else" keywords are evaluated.
             if_result = inplace_subschema_validate(['if'])
+
+            if if_result.valid?
+              result.evaluated_tokens.merge(if_result.evaluated_tokens)
+            end
 
             if if_result.valid?
               if keyword?('then')

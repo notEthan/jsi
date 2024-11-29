@@ -102,8 +102,15 @@ module JSI
       else
         raise(URIError, "URI is not a string: #{uri.inspect}")
       end
-      if yabs && (!auri.scheme || auri.fragment)
-        raise(URIError, "URI must be an absolute URI with no fragment. got: #{uri.inspect}")
+      if yabs && !auri.scheme
+        raise(URIError, "URI must be an absolute URI. got: #{uri.inspect}")
+      end
+      if yabs && auri.fragment
+        if auri.fragment.empty?
+          auri = auri.merge(fragment: nil).freeze
+        else
+          raise(URIError, "URI must have no fragment. got: #{uri.inspect}")
+        end
       end
       if ynorm && uri.to_str != auri.normalize.to_s
         raise(URIError, "URI must be in normalized form. got: #{uri.inspect}; normalized: #{auri.normalize.to_s.inspect}")

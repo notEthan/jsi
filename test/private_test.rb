@@ -5,13 +5,9 @@ require_relative 'test_helper'
 # tests of private APIs. although private methods are usually tested indirectly, called by public APIs they
 # exist to support, some code paths for development or debugging are not.
 
-module TestSchemaImplModule
-  dialect = JSI::Schema::Dialect.new(vocabularies: [])
-  define_method(:dialect) { dialect }
-end
-
 describe(JSI::MetaSchemaNode::BootstrapSchema) do
-  let(:bootstrap_schema_class) { JSI::SchemaClasses.bootstrap_schema_class([TestSchemaImplModule]) }
+  let(:dialect) { JSI::Schema::Dialect.new(id: 'tag:dialect:dqzk', vocabularies: []) }
+  let(:bootstrap_schema_class) { dialect.bootstrap_schema_class }
   let(:document) do
     JSI::DEFAULT_CONTENT_TO_IMMUTABLE[{
       "properties" => {
@@ -29,16 +25,16 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
   it 'is pretty' do
     schema = bootstrap_schema_class.new(document)
 
-    inspect = -%Q(#<JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule) # #{document.inspect}>)
+    inspect = -%Q(#<JSI::MetaSchemaNode::BootstrapSchema (tag:dialect:dqzk) # #{document.inspect}>)
     assert_equal(inspect, schema.inspect)
 
     assert_equal(schema.inspect, schema.to_s)
-    assert_match(%r(\A#<JSI::MetaSchemaNode::BootstrapSchema \(TestSchemaImplModule\) #\n  .*\n>\Z)m, schema.pretty_inspect)
+    assert_match(%r(\A#<JSI::MetaSchemaNode::BootstrapSchema \(tag:dialect:dqzk\) #\n  .*\n>\Z)m, schema.pretty_inspect)
   end
 
   it 'has a named class' do
     assert_equal('JSI::MetaSchemaNode::BootstrapSchema', JSI::MetaSchemaNode::BootstrapSchema.inspect)
-    assert_equal('JSI::MetaSchemaNode::BootstrapSchema (TestSchemaImplModule)', bootstrap_schema_class.inspect)
+    assert_equal('JSI::MetaSchemaNode::BootstrapSchema (#<JSI::Schema::Dialect id: <tag:dialect:dqzk>>)', bootstrap_schema_class.inspect)
   end
 end
 

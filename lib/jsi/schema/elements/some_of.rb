@@ -38,7 +38,7 @@ module JSI
                 "instance is not valid against all `allOf` schemas",
                 keyword: 'allOf',
                 results: allOf_results,
-                allOf_indexes_valid: allOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
+                allOf_indexes_valid: allOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i => r.valid?}) }.freeze,
               )
             end
           end
@@ -96,7 +96,7 @@ module JSI
                 keyword: 'anyOf',
                 results: anyOf_results,
                 # when invalid these are all false, but included for consistency with allOf/oneOf
-                anyOf_indexes_valid: anyOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
+                anyOf_indexes_valid: anyOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i => r.valid?}) }.freeze,
               )
             end
           end
@@ -154,7 +154,7 @@ module JSI
                   "instance is not valid against any `oneOf` schema",
                   keyword: 'oneOf',
                   results: oneOf_results,
-                  oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
+                  oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i => r.valid?}) }.freeze,
                 )
               else
                 inplace_results_validate(
@@ -163,7 +163,7 @@ module JSI
                   "instance is valid against multiple `oneOf` schemas",
                   keyword: 'oneOf',
                   results: oneOf_results,
-                  oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i.to_s => r.valid?}) }.freeze,
+                  oneOf_indexes_valid: oneOf_results.each_with_index.inject({}) { |h, (r, i)| h.update({i => r.valid?}) }.freeze,
                 )
               end
             end

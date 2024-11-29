@@ -8,7 +8,7 @@ require "pathname"
 require "bigdecimal"
 require "addressable/uri"
 
-module JSI
+module JSI::Error
   # generally put in code paths that are not expected to be valid control flow paths.
   # rather a NotImplementedCorrectlyError. but that's too long.
   #
@@ -22,13 +22,19 @@ module JSI
   # @private TODO remove, any ruby without this is already long EOL
   FrozenError = Object.const_defined?(:FrozenError) ? ::FrozenError : Class.new(StandardError)
 
+  class BlockGivenError < ArgumentError
+    def initialize(msg = "Block given to a method that does not yield", *)
+      super
+    end
+  end
+
   # A reference or pointer cannot be resolved
   class ResolutionError < StandardError
     # @param msg [String, Array]
     # @param uri [Addressable::URI, nil]
     def initialize(msg = nil, *a, uri: nil)
       super([*msg].compact.join("\n"), *a)
-      @uri = Util.uri(uri, nnil: false)
+      @uri = JSI::Util.uri(uri, nnil: false)
     end
 
     # @return [Addressable::URI, nil]
@@ -39,6 +45,12 @@ module JSI
   # when it's required, relative when it must be absolute, etc.
   class URIError < Addressable::URI::InvalidURIError
   end
+end
+
+module JSI
+  include(Error)
+  # include(Error) doesn't make its constants available in nested namespaces; fix
+  Error.constants.each { |n| const_set(n, const_get(n)) }
 
   # @private
   ROOT_PATH = Pathname.new(__FILE__).dirname.parent.expand_path
@@ -75,9 +87,6 @@ module JSI
   autoload :JSONSchemaDraft04, 'schemas/json-schema.org/draft-04/schema'
   autoload :JSONSchemaDraft06, 'schemas/json-schema.org/draft-06/schema'
   autoload :JSONSchemaDraft07, 'schemas/json-schema.org/draft-07/schema'
-  autoload :JSONSchemaOrgDraft04, 'schemas/json-schema.org/draft-04/schema'
-  autoload :JSONSchemaOrgDraft06, 'schemas/json-schema.org/draft-06/schema'
-  autoload :JSONSchemaOrgDraft07, 'schemas/json-schema.org/draft-07/schema'
 
   autoload :SimpleWrap, 'jsi/simple_wrap'
 
@@ -93,19 +102,19 @@ module JSI
   # Instantiates the given document as a JSI Meta-Schema.
   #
   # @param metaschema_document an object to be instantiated as a JSI Meta-Schema
-  # @param schema_implementation_modules (see MetaSchemaNode#initialize)
+  # @param dialect (see MetaSchemaNode#initialize)
   # @param to_immutable (see SchemaSet#new_jsi)
   # @yield (see Schema::MetaSchema#new_schema)
   # @return [JSI::MetaSchemaNode + JSI::Schema::MetaSchema + JSI::Schema]
   def self.new_metaschema(metaschema_document,
-      schema_implementation_modules: ,
+      dialect: ,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
       &block
   )
     metaschema_document = to_immutable.call(metaschema_document) if to_immutable
 
     metaschema = MetaSchemaNode.new(metaschema_document,
-      schema_implementation_modules: schema_implementation_modules,
+      msn_dialect: dialect,
       jsi_content_to_immutable: to_immutable,
     )
 

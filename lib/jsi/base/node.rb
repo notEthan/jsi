@@ -53,6 +53,7 @@ module JSI
 
     # See {Base#[]}
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
+      raise(BlockGivenError) if block_given?
       if jsi_node_content_hash_pubsend(:key?, token)
         jsi_child(token, as_jsi: as_jsi)
       else
@@ -181,6 +182,7 @@ module JSI
 
     # See {Base#[]}
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
+      raise(BlockGivenError) if block_given?
       size = jsi_node_content_ary_pubsend(:size)
       if token.is_a?(Integer)
         if token < 0

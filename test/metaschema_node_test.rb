@@ -10,10 +10,6 @@ BASIC_DIALECT = JSI::Schema::Dialect.new(
   ],
 )
 
-module BasicMetaSchemaImplementation
-  define_method(:dialect) { BASIC_DIALECT }
-end
-
 BasicMetaSchema = JSI.new_metaschema_module(
   YAML.load(<<~YAML
     "$id": "tag:named-basic-meta-schema"
@@ -26,21 +22,18 @@ BasicMetaSchema = JSI.new_metaschema_module(
       "$ref": {}
     YAML
   ),
-  schema_implementation_modules: [BasicMetaSchemaImplementation],
+  dialect: BASIC_DIALECT,
 )
 
 describe(JSI::MetaSchemaNode) do
-  let(:schema_implementation_modules) do
-    [BasicMetaSchemaImplementation]
-  end
-
+  let(:dialect) { BASIC_DIALECT }
   let(:metaschema_root_ptr) { JSI::Ptr[] }
   let(:root_schema_ptr) { JSI::Ptr[] }
   let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
     JSI::MetaSchemaNode.new(to_immutable[jsi_document],
-      schema_implementation_modules: schema_implementation_modules,
+      msn_dialect: dialect,
       metaschema_root_ptr: metaschema_root_ptr,
       root_schema_ptr: root_schema_ptr,
       jsi_content_to_immutable: to_immutable,

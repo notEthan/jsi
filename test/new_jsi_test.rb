@@ -135,7 +135,7 @@ describe 'new_jsi, new_schema' do
     it('resolves $schema using the specified registry') do
       uri = 'http://jsi/schema_registry/kzwz'
       metaschema_document = JSI::JSONSchemaDraft07.schema.jsi_node_content.merge({'$id' => uri, '$schema' => uri})
-      metaschema = JSI.new_metaschema(metaschema_document, schema_implementation_modules: [JSI::Schema::Draft07])
+      metaschema = JSI.new_metaschema(metaschema_document, dialect: JSI::Schema::Draft07::DIALECT)
       other_schema_registry.register(metaschema)
 
       assert_raises(JSI::ResolutionError) { JSI.new_schema({'$schema' => uri}) }

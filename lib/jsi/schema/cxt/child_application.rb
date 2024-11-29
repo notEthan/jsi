@@ -5,8 +5,16 @@ module JSI
     ChildApplication = Block.subclass(*%w(
       instance
       token
+      collect_evaluated
+      evaluated
     ))
 
+    # @!attribute collect_evaluated
+    #   Does application need to collect successful child evaluation?
+    #   @return [Boolean]
+    # @!attribute evaluated
+    #   Was the child successfully evaluated by a child applicator?
+    #   @return [Boolean]
     class ChildApplication
       # @param subschema_ptr [Ptr, #to_ary]
       def child_subschema_applicate(subschema_ptr)
@@ -15,6 +23,10 @@ module JSI
 
       # @param child_applicator_schema [Schema]
       def child_schema_applicate(child_applicator_schema)
+        if collect_evaluated
+          self.evaluated ||= child_applicator_schema.instance_valid?(instance[token])
+        end
+
         cxt_yield(child_applicator_schema)
       end
     end

@@ -22,6 +22,7 @@ module JSI
     autoload(:Immutable, 'jsi/base/mutability')
 
     include Schema::SchemaAncestorNode
+    include(Util::Pretty)
 
     # An exception raised when attempting to access a child of a node which cannot have children.
     # A complex node can have children, a simple node cannot.
@@ -153,7 +154,7 @@ module JSI
 
     # @!method jsi_schemas
     #   The set of schemas that describe this instance.
-    #   These are the applicator schemas that apply to this instance, the result of inplace application
+    #   These are the applicator schemas that apply to this instance, the result of in-place application
     #   of our {#jsi_indicated_schemas}.
     #   @return [JSI::SchemaSet]
     # note: defined on subclasses by JSI::SchemaClasses.class_for_schemas
@@ -188,12 +189,12 @@ module JSI
       jsi_node_content
     end
 
-    # the schemas indicated as describing this instance, prior to inplace application.
+    # The schemas indicated as describing this instance, prior to in-place application.
     #
-    # this is different from {#jsi_schemas}, which are the inplace applicator schemas
+    # This is different from {#jsi_schemas}, which are the in-place applicator schemas
     # which describe this instance. for most purposes, `#jsi_schemas` is more relevant.
     #
-    # `jsi_indicated_schemas` does not include inplace applicator schemas, such as the
+    # `jsi_indicated_schemas` does not include in-place applicator schemas, such as the
     # subschemas of `allOf`, whereas `#jsi_schemas` does.
     #
     # this does include indicated schemas which do not apply themselves, such as `$ref`
@@ -355,8 +356,8 @@ module JSI
     # @param ptr [JSI::Ptr, #to_ary]
     # @return [JSI::Base]
     def jsi_descendent_node(ptr)
-      descendent = Ptr.ary_ptr(ptr).evaluate(self, as_jsi: true)
-      descendent
+      tokens = Ptr.ary_ptr(ptr).resolve_against(jsi_node_content).tokens
+      tokens.inject(self, &:jsi_child_node)
     end
 
     # A shorthand alias for {#jsi_descendent_node}.
@@ -415,12 +416,16 @@ module JSI
     end
 
     # A child JSI node, or the child of our {#jsi_instance}, identified by the given token.
-    # The token must identify an existing child; behavior if the child does not exist is undefined.
     #
     # @param token (see Base#[])
     # @param as_jsi (see Base#[])
     # @return [JSI::Base, Object]
+    # @raise [Base::ChildNotPresent]
     def jsi_child(token, as_jsi: )
+      if !jsi_child_token_present?(token)
+        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
+      end
+
       child_content = jsi_node_content_child(token)
 
       child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
@@ -441,9 +446,6 @@ module JSI
     # @return [JSI::Base]
     # @raise [Base::ChildNotPresent]
     def jsi_child_node(token)
-      if !jsi_child_token_present?(token)
-        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
-      end
       jsi_child(token, as_jsi: true)
     end
 
@@ -521,6 +523,7 @@ module JSI
     #   unspecified behavior.)
     # @return [Base, Object, Array, nil] the child or children identified by `token`
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
+      raise(BlockGivenError) if block_given?
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
     end
@@ -673,33 +676,16 @@ module JSI
       jsi_modified_copy(&:dup)
     end
 
-    # A string indicating this JSI's schemas, briefly, and its content.
+    # Prints a string indicating this JSI's schemas, briefly, and its content.
     #
     # If described by a schema with a named schema module, that is shown.
     # The number of schemas describing this JSI is indicated.
     #
     # If this JSI is a simple type, the node's content is inspected; if complex, its children are inspected.
-    # @return [String]
-    def inspect
-      -"\#<#{jsi_object_group_text.join(' ')} #{jsi_instance.inspect}>"
-    end
-
-    # See #inspect
-    def to_s
-      inspect
-    end
-
-    # pretty-prints a representation of this JSI to the given printer
-    # @return [void]
     def pretty_print(q)
-      q.text '#<'
-      q.text jsi_object_group_text.join(' ')
-      q.group(2) {
-          q.breakable ' '
+      jsi_pp_object_group(q, jsi_object_group_text) do
           q.pp jsi_instance
-      }
-      q.breakable ''
-      q.text '>'
+      end
     end
 
     # @private
@@ -776,6 +762,13 @@ module JSI
       Util.to_json(jsi_instance, options)
     end
 
+    # Psych/YAML .dump calls this method; dumping a JSI as YAML will dump its instance.
+    # @param coder [Psych::Coder]
+    def encode_with(coder)
+      coder.represent_object(nil, jsi_node_content)
+      nil
+    end
+
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
@@ -785,7 +778,7 @@ module JSI
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
-        jsi_resource_ancestor_uri: jsi_resource_ancestor_uri,
+        jsi_schema_base_uri: jsi_schema_base_uri,
         # different registries mean references may resolve to different resources so must not be equal
         jsi_schema_registry: jsi_schema_registry,
       }.freeze
@@ -823,7 +816,7 @@ module JSI
     end
 
     def jsi_child_indicated_schemas_compute(token: , content: )
-      if jsi_indicated_schemas.any? { |is| is.dialect_invoke_each(:application_requires_evaluated).any? }
+      if jsi_indicated_schemas.any?(&:application_requires_evaluated)
         # if application_requires_evaluated, in-place application needs to collect token evaluation
         # recursively to inform child application, so must be recomputed.
         jsi_indicated_schemas.each_yield_set do |is, y|

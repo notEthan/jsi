@@ -24,7 +24,7 @@ module JSI
           #> value MUST be an array or a valid JSON Schema.
           schema_content['dependencies'].each_pair do |property_name, dependency|
             if dependency.respond_to?(:to_ary)
-              # noop: array-form dependencies has no inplace applicator schema
+              # noop: array-form dependencies has no in-place applicator schema
             else
               # If the dependency value is a subschema, and the dependency key is a
               # property in the instance, the entire instance must validate against

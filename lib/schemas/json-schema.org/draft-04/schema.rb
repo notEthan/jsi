@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
 module JSI
-  metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read)
+  metaschema_document = JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read, freeze: true)
   JSONSchemaDraft04 = JSI.new_metaschema_module(metaschema_document,
-    schema_implementation_modules: [JSI::Schema::Draft04],
+    dialect: JSI::Schema::Draft04::DIALECT,
   )
 
   # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
   # properties/additionalProperties and properties/additionalItems.
   # these still describe schemas, despite not being described by the meta-schema.
-  JSONSchemaDraft04.schema["properties"]["additionalProperties"]["anyOf"][0].describes_schema!([JSI::Schema::Draft04])
-  JSONSchemaDraft04.schema["properties"]["additionalItems"]["anyOf"][0].describes_schema!([JSI::Schema::Draft04])
+  JSONSchemaDraft04.schema["properties"]["additionalProperties"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
+  JSONSchemaDraft04.schema["properties"]["additionalItems"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
 
   # the JSI schema module for `http://json-schema.org/draft-04/schema`
   module JSONSchemaDraft04
@@ -155,11 +155,5 @@ module JSI
     end
     module StringItem
     end
-  end
-
-  JSONSchemaOrgDraft04 = JSONSchemaDraft04
-
-  # @deprecated after v0.7.0, alias of {JSONSchemaDraft04}
-  module JSONSchemaOrgDraft04
   end
 end

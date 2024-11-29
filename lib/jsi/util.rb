@@ -5,6 +5,42 @@ module JSI
   module Util
     autoload :Private, 'jsi/util/private'
 
+    # common methods of inspecting / pretty-printing
+    # @private (not in Util::Private due to dependency order)
+    module Pretty
+      # @return [String]
+      def inspect
+        out = String.new
+        PP.singleline_pp(self, out)
+        out.freeze
+      end
+
+      # @return [String]
+      def to_s
+        inspect
+      end
+
+      private
+
+      def jsi_pp_object_group(q, pres = [self.class.name].freeze, empty: false)
+        q.text('#<')
+        pres.each_with_index do |pre, i|
+          q.text(' ') if i != 0
+          q.text(pre.to_s)
+        end
+        if block_given? && !empty
+          q.group do
+            q.nest(2) do
+              q.breakable(' ')
+              yield
+            end
+            q.breakable('')
+          end
+        end
+        q.text('>')
+      end
+    end
+
     include Private
 
     extend self

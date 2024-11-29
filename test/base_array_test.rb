@@ -10,7 +10,7 @@ describe 'JSI::Base array' do
         ["negative at size",     0,   -> (m) { -size }],
         ["negative within size", -1,  -> (m) { -m }],
         ["zero",                 0,   -> (m) { 0 }],
-        (["nil",                 0,   -> (m) { nil }] if (0..nil rescue false)), # compatibility: skip on ancient ruby versions without beginless/endless ranges
+        (["nil",                 0,   -> (m) { nil }] if (nil..0 rescue false)), # compatibility: skip on ancient ruby versions without beginless/endless ranges
         ["positive within size", 1,   -> (m) { m }],
         ["positive at size",     0,   -> (m) { size }],
         ["positive beyond size", 1,   -> (m) { size + m }],

@@ -41,28 +41,6 @@ module JSI
     # an exception raised when we are unable to resolve a schema reference
     ReferenceError = ResolutionError
 
-    # @private
-    module IntegerAllows0Fraction
-      # is `value` an integer?
-      # @private
-      # @param value
-      # @return [Boolean]
-      def internal_integer?(value)
-        value.is_a?(Integer) || (value.is_a?(Numeric) && value % 1.0 == 0.0)
-      end
-    end
-
-    # @private
-    module IntegerDisallows0Fraction
-      # is `value` an integer?
-      # @private
-      # @param value
-      # @return [Boolean]
-      def internal_integer?(value)
-        value.is_a?(Integer)
-      end
-    end
-
     # This module extends any JSI Schema that is a meta-schema, i.e. it describes schemas.
     #
     # Examples of a meta-schema include the JSON Schema meta-schemas and
@@ -74,8 +52,8 @@ module JSI
     #
     # A schema is indicated as describing other schemas using the {Schema#describes_schema!} method.
     module MetaSchema
-      # @return [Set<Module>]
-      attr_reader(:schema_implementation_modules)
+      # @return [Schema::Dialect]
+      attr_reader(:described_dialect)
 
       # Instantiates the given schema content as a JSI Schema.
       #
@@ -116,7 +94,7 @@ module JSI
       # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
-      #   the given `schema_content` and whose schemas are this schema's inplace applicators.
+      #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
       def new_schema(schema_content,
           uri: nil,
           register: true,
@@ -148,12 +126,27 @@ module JSI
       end
     end
 
-    class << self
+    # @private
+    module ExtendedInitialize
       def extended(o)
         super
         o.send(:jsi_schema_initialize)
       end
+
+      def included(m)
+        super
+        return if m.is_a?(Class)
+
+        # if a module (m) includes Schema, and an object (o) is extended with m,
+        # then o should have #jsi_schema_initialize called, but Schema.extended is not called,
+        # so m needs its own .extended method to call jsi_schema_initialize.
+        # note: including a module with #extended on m's singleton, rather than m.define_singleton_method(:extended),
+        # avoids possibly clobbering an existing singleton .extended method the module has defined.
+        m.singleton_class.send(:include, ExtendedInitialize)
+      end
     end
+
+    extend(ExtendedInitialize)
   end
 
   class << self
@@ -230,7 +223,7 @@ module JSI
       # @param to_immutable (see Schema::DescribesSchema#new_schema)
       # @yield (see Schema::MetaSchema#new_schema)
       # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
-      #   the given `schema_content` and whose schemas are inplace applicators of the indicated meta-schema
+      #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
       def new_schema(schema_content,
           default_metaschema: nil,
           # params of Schema::MetaSchema#new_schema have their default values repeated here. delegating in a splat
@@ -416,13 +409,17 @@ module JSI
 
     # @yield [Addressable::URI]
     private def schema_absolute_uris_compute
+      root_uri = jsi_schema_base_uri if jsi_ptr.root?
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
         if jsi_schema_base_uri
-          yield(jsi_schema_base_uri.join(id_without_fragment).freeze)
+          uri = jsi_schema_base_uri.join(id_without_fragment).freeze
+          root_uri = nil if root_uri == uri
+          yield(uri)
         elsif id_without_fragment.absolute?
           yield(id_without_fragment)
         end
       end
+      yield(root_uri) if root_uri
     end
 
     # a nonrelative URI which refers to this schema.
@@ -503,16 +500,16 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name_from_ancestor
-      @jsi_schema_module && @jsi_schema_module.name_from_ancestor
+      is_a?(Base) ? jsi_schema_module.name_from_ancestor : nil
     end
 
     # Instantiates a new JSI whose content comes from the given `instance` param.
-    # This schema indicates the schemas of the JSI - its schemas are inplace
+    # This schema indicates the schemas of the JSI - its schemas are in-place
     # applicators of this schema which apply to the given instance.
     #
     # @param (see SchemaSet#new_jsi)
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
-    #   inplace applicators of this schema.
+    #   in-place applicators of this schema.
     def new_jsi(instance, **kw)
       SchemaSet[self].new_jsi(instance, **kw)
     end
@@ -540,31 +537,30 @@ module JSI
     # Indicates that this schema describes schemas, i.e. it is a meta-schema.
     # this schema is extended with {Schema::MetaSchema} and its {#jsi_schema_module} is extended
     # with {SchemaModule::MetaSchemaModule}, and the JSI Schema Module will include
-    # JSI::Schema and the given modules.
+    # JSI::Schema.
     #
-    # @param schema_implementation_modules [Enumerable<Module>] modules which implement the functionality of
-    #   the schema to extend schemas described by this schema.
+    # @param dialect [Schema::Dialect]
     # @return [void]
-    def describes_schema!(schema_implementation_modules)
-      schema_implementation_modules = Util.ensure_module_set(schema_implementation_modules)
+    def describes_schema!(dialect)
+      # TODO rm bridge code hax
+      dialect = dialect.first::DIALECT if dialect.is_a?(Array) && dialect.size == 1
+      raise(TypeError) if !dialect.is_a?(Schema::Dialect)
 
       if jsi_schema_module <= Schema
         # this schema has already had describes_schema! called on it.
         # this is to be avoided, but is not particularly a problem.
-        # it is a bug if it was called different times with different schema_implementation_modules, though.
-        unless @schema_implementation_modules == schema_implementation_modules
-          raise(ArgumentError, "this schema already describes a schema with different schema_implementation_modules")
+        # it is a bug if it was called different times with different dialect, though.
+        if @described_dialect != dialect
+          raise(ArgumentError, "this schema already describes a schema with different dialect")
         end
       else
         jsi_schema_module.include(Schema)
-        schema_implementation_modules.each do |mod|
-          jsi_schema_module.include(mod)
-        end
+        jsi_schema_module.send(:define_method, :dialect) { dialect }
         proc { |metaschema| jsi_schema_module.send(:define_method, :metaschema) { metaschema } }[self]
         jsi_schema_module.extend(SchemaModule::MetaSchemaModule)
       end
 
-      @schema_implementation_modules = schema_implementation_modules
+      @described_dialect = dialect
       extend(Schema::MetaSchema)
 
       nil
@@ -637,7 +633,7 @@ module JSI
       dialect_invoke_each(:subschema) { |ptr| yield(Ptr.ary_ptr(ptr)) }
     end
 
-    # yields each inplace applicator schema which applies to the given instance.
+    # Yields each in-place applicator schema which applies to the given instance.
     #
     # @param instance [Object] the instance to check any applicators against
     # @param visited_refs [Enumerable<JSI::Schema::Ref>]
@@ -652,10 +648,11 @@ module JSI
         Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
-      ) do |schema, ref: nil|
+        collect_evaluated: false, # child application is not invoked so no evaluated children to collect
+      ) do |schema, ref: nil, applicate: true|
         if schema.equal?(self) && !ref
           yield(self)
-        else
+        elsif applicate
           schema.each_inplace_applicator_schema(
             instance,
             visited_refs: Util.add_visited_ref(visited_refs, ref),
@@ -677,48 +674,68 @@ module JSI
         Cxt::ChildApplication,
         instance: instance,
         token: token,
+        collect_evaluated: false,
+        evaluated: false,
         &block
       )
     end
 
+    # For each in-place applicator schema that applies to the given instance, yields each child applicator
+    # of that schema that applies to the child of the instance on the given token.
+    #
     # @param token [Object] array index or hash/object property name
     # @param instance [Object]
+    # @param collect_evaluated [Boolean] collect successful child evaluation?
     # @yield [Schema]
+    # @return [Boolean] if `collect_evaluated` is true, whether the child was successfully evaluated
+    #   by a child applicator schema. if `collect_evaluated` is false, undefined/void.
     def each_inplace_child_applicator_schema(
         token,
         instance,
         visited_refs: Util::EMPTY_ARY,
+        collect_evaluated: false,
         &block
     )
+      collect_evaluated ||= application_requires_evaluated
+      inplace_child_evaluated = false
       applicate_self = false
 
       dialect_invoke_each(:inplace_applicate,
         Cxt::InplaceApplication,
         instance: instance,
         visited_refs: visited_refs,
-      ) do |schema, ref: nil|
+        collect_evaluated: collect_evaluated,
+      ) do |schema, ref: nil, applicate: true|
         if schema.equal?(self) && !ref
           applicate_self = true
-        else
-          schema.each_inplace_child_applicator_schema(
+        elsif applicate || (collect_evaluated && !inplace_child_evaluated)
+          schema_evaluated = schema.each_inplace_child_applicator_schema(
             token,
             instance,
             visited_refs: ref ? visited_refs.dup.push(ref).freeze : visited_refs,
-            &block
+            collect_evaluated: collect_evaluated && !inplace_child_evaluated,
+            # the `if` keyword needs to yield to here because it does affect `evaluated`,
+            # but it does not apply itself/its applicators, so is not passed to our given block.
+            &(applicate ? block : proc { })
           )
+          inplace_child_evaluated ||= collect_evaluated && schema_evaluated && schema.instance_valid?(instance)
         end
       end
 
       if applicate_self
-        dialect.invoke(:child_applicate, Cxt::ChildApplication.new(
+        child_application = dialect.invoke(:child_applicate, Cxt::ChildApplication.new(
           schema: self,
           token: token,
           instance: instance,
+          collect_evaluated: collect_evaluated,
+          evaluated: inplace_child_evaluated,
           block: block,
         ))
-      end
 
-      nil
+        child_application.evaluated
+      else
+        inplace_child_evaluated
+      end
     end
 
     # any object property names this schema indicates may be present on its instances.
@@ -833,9 +850,18 @@ module JSI
       end
     end
 
+    # Does application require collection of evaluated children?
+    # (i.e. does the schema contain `unevaluatedItems` / `unevaluatedProperties`?)
+    # @private
+    # @return [Boolean]
+    attr_reader(:application_requires_evaluated)
+
     private
 
     def jsi_schema_initialize
+      # guard against being called twice on MetaSchemaNode, first from extend(Schema) then extend(jsi_schema_module) that includes Schema.
+      # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
+      instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
       @jsi_schema_module = nil
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
@@ -843,6 +869,7 @@ module JSI
       @schema_absolute_uris_map = jsi_memomap { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(&method(:described_object_property_names_compute))
+      @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
     end
   end
 end

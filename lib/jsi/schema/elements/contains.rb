@@ -48,7 +48,7 @@ module JSI
                 keyword: 'contains',
                 child_results: results,
                 # when invalid these are all false, but included for consistency with `contains` with min/max
-                instance_indexes_valid: results.inject({}) { |h, (i, r)| h.update({i.to_s => r.valid?}) }.freeze,
+                instance_indexes_valid: results.inject({}) { |h, (i, r)| h.update({i => r.valid?}) }.freeze,
               )
             end
           end

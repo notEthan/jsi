@@ -3,7 +3,7 @@ require_relative '../test_helper'
 $test_report_time["json_schema_test_suite/suite_test loading"]
 
 test_schema_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-schema.json')
-JSONSchemaTestSchema = JSI::JSONSchemaOrgDraft07.new_schema(JSON.parse(test_schema_path.open('r:UTF-8').read))
+JSONSchemaTestSchema = JSI::JSONSchemaDraft07.new_schema(JSON.parse(test_schema_path.open('r:UTF-8').read))
 $test_report_time["JSONSchemaTestSchema set up"]
 
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
@@ -11,7 +11,7 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
 
   Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
     Dir.glob('**/*.json').each do |subpath|
-      remote_content = ::JSON.parse(File.open(subpath, 'r:UTF-8', &:read))
+      remote_content = JSON.parse(File.open(subpath, 'r:UTF-8', &:read), freeze: true)
       uri = File.join('http://localhost:1234/', subpath)
       jsts_schema_registry.autoload_uri(uri) do |schema_registry: |
         if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
@@ -53,7 +53,7 @@ describe 'JSON Schema Test Suite' do
             path = base.join(subpath)
             describe(subpath) do
               begin
-                tests_desc_object = ::JSON.parse(path.open('r:UTF-8', &:read))
+                tests_desc_object = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
               rescue JSON::ParserError => e
                 # :nocov:
                 # known json/pure issue https://github.com/flori/json/pull/483
@@ -71,7 +71,6 @@ describe 'JSON Schema Test Suite' do
                 )
 
                 describe(tests_desc.description) do
-                  let(:schema_registry) { desc_schema_registry }
                   let(:schema) { desc_schema }
                   let(:optional) { subpath.split('/').include?('optional') }
 
@@ -88,7 +87,7 @@ describe 'JSON Schema Test Suite' do
                       it(test.description) do
                         begin
                           jsi = schema.new_jsi(test.jsi_instance['data'], schema_registry: nil)
-                        rescue JSI::SchemaRegistry::ResourceNotFound => e
+                        rescue JSI::ResolutionError => e
                           raise unless e.uri.to_s == 'https://json-schema.org/draft/2019-09/schema'
                           skip("unsupported URI: #{e.uri}")
                         end
@@ -124,7 +123,7 @@ describe 'JSON Schema Test Suite' do
                           end
 
                           regexs = schema.jsi_each_descendent_node.select do |node|
-                            node.jsi_schemas.any? { |s| s['format'] == 'regex' }
+                            node.jsi_schemas.any? { |s| s.keyword?('format') && s['format'] == 'regex' }
                           end.map(&:jsi_node_content)
                           schema.jsi_each_descendent_node do |node|
                             if node.is_a?(JSI::Schema) && node.respond_to?(:to_hash) && node.key?('patternProperties')

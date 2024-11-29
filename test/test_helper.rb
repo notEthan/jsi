@@ -263,6 +263,11 @@ class JSISpec < Minitest::Spec
     assert_predicate(act, :frozen?)
   end
 
+  def assert_uris(exp, act)
+    assert_equal(exp.map { |u| JSI::Util.uri(u) }, act.map { |u| JSI::Util.uri(u) })
+    act.each { |u| assert_predicate(u, :frozen?) }
+  end
+
   before do
     JSI.schema_registry = JSI::DEFAULT_SCHEMA_REGISTRY.dup
   end

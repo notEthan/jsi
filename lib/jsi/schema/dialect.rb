@@ -3,11 +3,14 @@
 module JSI
   module Schema
     class Dialect
+      include(Util::Pretty)
+
       # @param id [#to_str, nil]
       # @param vocabularies [Enumerable<Schema::Vocabulary>]
-      def initialize(id: nil, vocabularies: )
+      def initialize(id: nil, vocabularies: , **config)
         @id = Util.uri(id, nnil: false, yabs: true, ynorm: true)
         @vocabularies = Set.new(vocabularies).freeze
+        @config = config.freeze
 
         elements = vocabularies.map(&:elements).inject(Set.new, &:merge)
 
@@ -44,6 +47,8 @@ module JSI
         end
         @elements_performing.freeze
 
+        @bootstrap_schema_class = bootstrap_schema_class_compute
+
         freeze
       end
 
@@ -53,8 +58,16 @@ module JSI
       # @return [Set<Schema::Vocabulary>]
       attr_reader(:vocabularies)
 
+      # @return [Hash]
+      attr_reader(:config)
+
       # @return [Array<Schema::Element>]
       attr_reader(:elements)
+
+      # a subclass of {MetaSchemaNode::BootstrapSchema} for this Dialect
+      # @api private
+      # @return [Class subclass of MetaSchemaNode::BootstrapSchema]
+      attr_reader(:bootstrap_schema_class)
 
       # Invoke the indicated action of each Element on the given context
       # @param action_name [Symbol]
@@ -73,25 +86,23 @@ module JSI
         cxt
       end
 
-      # @return [String]
-      def inspect
-        -%Q(\#<#{self.class.name}#{" id: <#{id}>" if id}>)
-      end
-
-      # @return [String]
-      def to_s
-        inspect
-      end
-
       # @param q
       def pretty_print(q)
-        q.text('#<')
-        q.text(self.class.name)
-        if id
-          q.text(' ')
-          q.text("id: <#{id}>")
+        pres = [self.class.name]
+        pres.push(-"id: <#{id}>") if id
+        jsi_pp_object_group(q, pres.freeze)
+      end
+
+      private
+
+      def bootstrap_schema_class_compute
+        dialect = self
+        Class.new(MetaSchemaNode::BootstrapSchema) do
+          define_singleton_method(:described_dialect) { dialect }
+          define_method(:dialect) { dialect }
+
+          self
         end
-        q.text('>')
       end
     end
   end

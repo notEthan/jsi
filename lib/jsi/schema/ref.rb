@@ -4,6 +4,8 @@ module JSI
   # A JSI::Schema::Ref is a reference to a schema identified by a URI, typically from
   # a `$ref` keyword of a schema.
   class Schema::Ref
+    include(Util::Pretty)
+
     # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
     # @param ref_schema [JSI::Schema] A schema from which the reference originated.
     #
@@ -158,23 +160,10 @@ module JSI
       return @deref_schema = result_schema
     end
 
-    # @return [String]
-    def inspect
-      -%Q(\#<#{self.class.name} #{ref}>)
-    end
-
-    def to_s
-      inspect
-    end
-
     # pretty-prints a representation of self to the given printer
     # @return [void]
     def pretty_print(q)
-      q.text '#<'
-      q.text self.class.name
-      q.text ' '
-      q.text ref
-      q.text '>'
+      jsi_pp_object_group(q, [self.class.name, ref].freeze)
     end
 
     # see {Util::Private::FingerprintHash}

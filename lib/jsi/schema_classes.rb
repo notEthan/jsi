@@ -47,7 +47,7 @@ module JSI
     #
     # @param (see JSI::Schema#new_jsi)
     # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
-    #   inplace applicators of this module's schema.
+    #   in-place applicators of this module's schema.
     def new_jsi(instance, **kw)
       schema.new_jsi(instance, **kw)
     end
@@ -77,7 +77,7 @@ module JSI
     # @param (see Schema::MetaSchema#new_schema)
     # @yield (see Schema::MetaSchema#new_schema)
     # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
-    #   the given `schema_content` and whose schemas are inplace applicators of this module's schema
+    #   the given `schema_content` and whose schemas are in-place applicators of this module's schema.
     def new_schema(schema_content, **kw, &block)
       schema.new_schema(schema_content, **kw, &block)
     end
@@ -87,9 +87,9 @@ module JSI
       schema.new_schema(schema_content, **kw, &block).jsi_schema_module
     end
 
-    # @return [Set<Module>]
-    def schema_implementation_modules
-      schema.schema_implementation_modules
+    # @return [Schema::Dialect]
+    def described_dialect
+      schema.described_dialect
     end
   end
 
@@ -154,26 +154,6 @@ module JSI
             schema_modules.to_a.reverse_each { |m| include(m) }
             jsi_class = self
             define_method(:jsi_class) { jsi_class }
-
-            self
-          end
-      end
-
-      # a subclass of MetaSchemaNode::BootstrapSchema with the given modules included
-      # @api private
-      # @param modules [Set<Module>] schema implementation modules
-      # @return [Class subclass of JSI::MetaSchemaNode::BootstrapSchema]
-      def bootstrap_schema_class(modules)
-        @bootstrap_schema_class_map[
-          modules: Util.ensure_module_set(modules),
-        ]
-      end
-
-      private def bootstrap_schema_class_compute(modules: )
-          Class.new(MetaSchemaNode::BootstrapSchema) do
-            define_singleton_method(:schema_implementation_modules) { modules }
-            define_method(:schema_implementation_modules) { modules }
-            modules.each { |mod| include(mod) }
 
             self
           end
@@ -249,7 +229,6 @@ module JSI
     end
 
     @class_for_schemas_map          = Hash.new { |h, k| h[k] = class_for_schemas_compute(**k) }
-    @bootstrap_schema_class_map      = Hash.new { |h, k| h[k] = bootstrap_schema_class_compute(**k) }
     @schema_property_reader_module_map = Hash.new { |h, k| h[k] = schema_property_reader_module_compute(**k) }
     @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(**k) }
   end
@@ -298,7 +277,7 @@ module JSI
         sub.jsi_schema_module_exec(&block) if block
         sub.jsi_schema_module
       elsif block
-        raise(ArgumentError, "block given but token #{token.inspect} does not identify a schema")
+        raise(BlockGivenError, "block given but token #{token.inspect} does not identify a schema")
       elsif sub.is_a?(JSI::Base)
         SchemaModule::Connection.new(sub)
       else

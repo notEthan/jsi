@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module JSI
-  metaschema_document = ::JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-06/schema.json').read)
+  metaschema_document = JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-06/schema.json').read, freeze: true)
   JSONSchemaDraft06 = JSI.new_metaschema_module(metaschema_document,
-    schema_implementation_modules: [JSI::Schema::Draft06],
+    dialect: JSI::Schema::Draft06::DIALECT,
   )
 
   # the JSI schema module for `http://json-schema.org/draft-06/schema`
@@ -161,11 +161,5 @@ module JSI
     end
     module StringItem
     end
-  end
-
-  JSONSchemaOrgDraft06 = JSONSchemaDraft06
-
-  # @deprecated after v0.7.0, alias of {JSONSchemaDraft06}
-  module JSONSchemaOrgDraft06
   end
 end

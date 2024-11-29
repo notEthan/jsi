@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-describe 'JSI Schema inplace application' do
+describe("JSI Schema in-place application") do
   let(:schema) { metaschema.new_schema(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
 
@@ -49,7 +49,7 @@ describe 'JSI Schema inplace application' do
     draft06: JSI::JSONSchemaDraft06,
     draft07: JSI::JSONSchemaDraft07,
   }.each do |name, metaschema|
-    describe "#{name} inplace $ref application" do
+    describe("#{name} in-place $ref application") do
       let(:metaschema) { metaschema }
       describe '$ref' do
         let(:schema_content) do
@@ -136,7 +136,7 @@ describe 'JSI Schema inplace application' do
     draft06: JSI::JSONSchemaDraft06,
     draft07: JSI::JSONSchemaDraft07,
   }.each do |name, metaschema|
-    describe "#{name} inplace allOf, anyOf, oneOf application" do
+    describe("#{name} in-place allOf, anyOf, oneOf application") do
       let(:metaschema) { metaschema }
       describe 'allOf' do
         let(:schema_content) do
@@ -351,7 +351,7 @@ describe 'JSI Schema inplace application' do
     draft06: JSI::JSONSchemaDraft06,
     draft07: JSI::JSONSchemaDraft07,
   }.each do |name, metaschema|
-    describe "#{name} inplace dependencies application" do
+    describe("#{name} in-place dependencies application") do
       let(:metaschema) { metaschema }
       describe 'dependencies' do
         let(:schema_content) do
@@ -436,7 +436,7 @@ describe 'JSI Schema inplace application' do
   {
     draft07: JSI::JSONSchemaDraft07,
   }.each do |name, metaschema|
-    describe "#{name} inplace if/then/else application" do
+    describe("#{name} in-place if/then/else application") do
       let(:metaschema) { metaschema }
       describe 'if/then' do
         let(:schema_content) do

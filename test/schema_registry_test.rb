@@ -184,17 +184,17 @@ describe 'JSI::SchemaRegistry' do
     it 'tries to autoload / find a URI that is relative' do
       uri = '/schema_registry/4ppr'
       err = assert_raises(JSI::URIError) { schema_registry.autoload_uri(uri) }
-      assert_equal(%q(URI must be an absolute URI with no fragment. got: "/schema_registry/4ppr"), err.message)
+      assert_equal(%q(URI must be an absolute URI. got: "/schema_registry/4ppr"), err.message)
       err = assert_raises(JSI::URIError) { schema_registry.find(uri) }
-      assert_equal(%q(URI must be an absolute URI with no fragment. got: "/schema_registry/4ppr"), err.message)
+      assert_equal(%q(URI must be an absolute URI. got: "/schema_registry/4ppr"), err.message)
     end
 
     it 'tries to autoload / find a URI with a fragment' do
       uri = 'http://jsi/schema_registry/8wtm#foo'
       err = assert_raises(JSI::URIError) { schema_registry.autoload_uri(uri) }
-      assert_equal(%q(URI must be an absolute URI with no fragment. got: "http://jsi/schema_registry/8wtm#foo"), err.message)
+      assert_equal(%q(URI must have no fragment. got: "http://jsi/schema_registry/8wtm#foo"), err.message)
       err = assert_raises(JSI::URIError) { schema_registry.find(uri) }
-      assert_equal(%q(URI must be an absolute URI with no fragment. got: "http://jsi/schema_registry/8wtm#foo"), err.message)
+      assert_equal(%q(URI must have no fragment. got: "http://jsi/schema_registry/8wtm#foo"), err.message)
     end
 
     it "registers a URI with two different autoloads" do

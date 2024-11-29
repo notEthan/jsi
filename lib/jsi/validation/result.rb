@@ -45,6 +45,9 @@ module JSI
 
         # @param results [Enumerable<Validation::Result>]
         def inplace_results_validate(*a, results: , **kw)
+          results.select(&:valid?).each do |inplace_result|
+            result.evaluated_tokens.merge(inplace_result.evaluated_tokens)
+          end
           validate(*a, **kw,
             results: results,
           )
@@ -52,6 +55,7 @@ module JSI
 
         # @param child_results [Hash<Object, Validation::Result>] token => child result
         def child_results_validate(*a, child_results: , **kw)
+          result.evaluated_tokens.merge(child_results.each_key.select { |t| child_results[t].valid? })
           validate(*a, **kw,
             results: child_results.each_value,
           )
@@ -99,6 +103,7 @@ module JSI
     class Result::Full
       def initialize
         @immediate_validation_errors = Set.new
+        @evaluated_tokens = Set.new
       end
 
       # @return [Set<Validation::Error>]
@@ -113,18 +118,23 @@ module JSI
         nil
       end
 
+      # @return [Set]
+      attr_reader(:evaluated_tokens)
+
       def valid?
         immediate_validation_errors.empty?
       end
 
       def freeze
         @immediate_validation_errors.freeze
+        @evaluated_tokens.freeze
         super
       end
 
       def merge(result)
         raise(TypeError, "not a #{Result::Full}: #{result.pretty_inspect.chomp}") unless result.is_a?(Result::Full)
         immediate_validation_errors.merge(result.immediate_validation_errors)
+        evaluated_tokens.merge(result.evaluated_tokens)
         self
       end
 
@@ -134,6 +144,7 @@ module JSI
         {
           class: self.class,
           immediate_validation_errors: immediate_validation_errors,
+          evaluated_tokens: evaluated_tokens,
         }.freeze
       end
     end
@@ -159,10 +170,19 @@ module JSI
 
     class Result::Valid
       def initialize
+        @evaluated_tokens = Set.new
       end
+
+      # @return [Set]
+      attr_reader(:evaluated_tokens)
 
       def valid?
         true
+      end
+
+      def freeze
+        @evaluated_tokens.freeze
+        super
       end
 
       # see {Util::Private::FingerprintHash}
@@ -170,6 +190,7 @@ module JSI
       def jsi_fingerprint
         {
           class: self.class,
+          evaluated_tokens: evaluated_tokens,
         }.freeze
       end
     end
