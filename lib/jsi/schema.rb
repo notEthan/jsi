@@ -826,6 +826,11 @@ module JSI
       end.freeze
     end
 
+    # See {Base#jsi_as_child_default_as_jsi}. true for Schema, including boolean schemas.
+    def jsi_as_child_default_as_jsi
+      true
+    end
+
     # @param action_name [Symbol]
     # @param cxt_class [Class]
     # @yield

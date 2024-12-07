@@ -546,7 +546,18 @@ module JSI
       jsi_simple_node_child_error(token)
     end
 
+    # When accessing this node as a child (from {#[]} or a property reader), should the result
+    # by default be a JSI node (this node), or its node content?
+    # This default may be overridden using the `as_jsi` parameter calling the parent's {#[]}.
+    # @return [Boolean]
+    def jsi_as_child_default_as_jsi
+      # base default is false, for simple types. overridden by complex types (HashNode, ArrayNode), Schema, and others.
+      false
+    end
+
     # The default value for the param `as_jsi` of {#[]}, controlling whether a child is returned as a JSI instance.
+    # @deprecated after v0.8. This is the parent node's preference whether its children are returned as JSIs, but it
+    #   is better for a child to indicate whether it should be a JSI by overriding {#jsi_as_child_default_as_jsi}.
     # @return [:auto, true, false] a valid value of the `as_jsi` param of {#[]}
     def jsi_child_as_jsi_default
       :auto
@@ -895,9 +906,7 @@ module JSI
       if [true, false].include?(as_jsi)
         child_as_jsi = as_jsi
       elsif as_jsi == :auto
-        child_is_complex = child_node.jsi_hash? || child_node.jsi_array?
-        child_is_schema = child_node.jsi_is_schema?
-        child_as_jsi = child_is_complex || child_is_schema
+        child_as_jsi = child_node.jsi_as_child_default_as_jsi
       else
         raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
       end
