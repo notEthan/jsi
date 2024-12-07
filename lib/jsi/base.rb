@@ -449,15 +449,14 @@ module JSI
 
       child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
       child_applied_schemas = @child_applied_schemas_map[token: token, child_indicated_schemas: child_indicated_schemas, child_content: child_content]
-
-      jsi_child_as_jsi(child_content, child_applied_schemas, as_jsi) do
+      child_node =
         @child_node_map[
           token: token,
           child_indicated_schemas: child_indicated_schemas,
           child_applied_schemas: child_applied_schemas,
           includes: SchemaClasses.includes_for(child_content),
         ]
-      end
+      jsi_child_as_jsi(child_node, as_jsi)
     end
     private :jsi_child # internals for #[] but idk, could be public
 
@@ -492,11 +491,11 @@ module JSI
 
       if defaults.size == 1
         # use the default value
-        jsi_child_as_jsi(defaults.first, child_applied_schemas, as_jsi) do
+        default_child_node =
           jsi_modified_copy do |i|
             i.dup.tap { |i_dup| i_dup[token] = defaults.first }
           end.jsi_child_node(token)
-        end
+        jsi_child_as_jsi(default_child_node, as_jsi)
       else
         child_content
       end
@@ -892,21 +891,21 @@ module JSI
       end
     end
 
-    def jsi_child_as_jsi(child_content, child_schemas, as_jsi)
+    def jsi_child_as_jsi(child_node, as_jsi)
       if [true, false].include?(as_jsi)
         child_as_jsi = as_jsi
       elsif as_jsi == :auto
-        child_is_complex = child_content.respond_to?(:to_hash) || child_content.respond_to?(:to_ary)
-        child_is_schema = child_schemas.any?(&:describes_schema?)
+        child_is_complex = child_node.jsi_hash? || child_node.jsi_array?
+        child_is_schema = child_node.jsi_is_schema?
         child_as_jsi = child_is_complex || child_is_schema
       else
         raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
       end
 
       if child_as_jsi
-        yield
+        child_node
       else
-        child_content
+        child_node.jsi_node_content
       end
     end
 
