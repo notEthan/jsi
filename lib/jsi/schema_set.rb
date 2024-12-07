@@ -120,7 +120,7 @@ module JSI
         jsi_indicated_schemas: self,
         jsi_schema_base_uri: uri,
         jsi_conf: conf,
-      )
+      ).send(:jsi_initialized)
 
       conf.registry.register(jsi) if register && conf.registry
 
