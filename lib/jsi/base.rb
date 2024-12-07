@@ -35,6 +35,7 @@ module JSI
 
     Conf = Struct.subclass(*%i(
       registry
+      after_initialize
       to_immutable
     ))
 
@@ -50,6 +51,9 @@ module JSI
     #
     #   Default: {JSI.registry}
     #   @return [Registry, nil]
+    # @!attribute after_initialize
+    #   _EXPERIMENTAL_ - a callback that is called with each JSI node in the document after the node is initialized.
+    #   @return [#call, nil]
     # @!attribute to_immutable
     #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.
     #
@@ -671,6 +675,7 @@ module JSI
           register: false, # default is already false but this is a place to be explicit
           mutable: jsi_mutable?,
           **jsi_conf.to_h,
+          after_initialize: nil, # a new root is out of the expected scope of after_initialize
         )
         modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
         modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
@@ -975,8 +980,13 @@ module JSI
       ].join("\n"))
     end
 
+    # Note that #initialize does not invoke the jsi_conf.after_initialize callback, because
+    # the node is not finished initializing when #initialize returns; other included modules
+    # or subclasses with #initialize methods calling super still need to finish.
+    # Places where Base is directly instantiated must call #jsi_initialized.
     # @return [self]
     def jsi_initialized
+      jsi_conf.after_initialize.call(self) if jsi_conf.after_initialize
       self
     end
   end
