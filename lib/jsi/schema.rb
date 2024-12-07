@@ -337,7 +337,7 @@ module JSI
               jsi_schema_dynamic_anchor_map: schema.jsi_schema_dynamic_anchor_map,
               jsi_conf: schema.equal?(schema.jsi_root_node) ? schema.jsi_conf : nil,
               jsi_root_node: schema.equal?(schema.jsi_root_node) ? nil : schema.jsi_root_node, # bad
-            )
+            ).send(:jsi_initialized)
           else
             msg = []
             msg.concat([*(block_given? ? yield : "indicated object is not a schema:")])

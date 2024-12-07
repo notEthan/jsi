@@ -191,6 +191,8 @@ module JSI
         node = @to_initialize_finish.shift
         node.send(:jsi_initialize_finish)
       end
+
+      jsi_initialized
     end
 
     # @return [Schema::Dialect]

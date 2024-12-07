@@ -767,7 +767,7 @@ module JSI
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
         jsi_root_node: jsi_root_node,
-      )
+      ).send(:jsi_initialized)
     end
 
     # A JSI whose node content is a duplicate of this JSI's (using its #dup).
@@ -927,7 +927,7 @@ module JSI
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
           jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token]),
           jsi_root_node: @jsi_root_node,
-        )
+        ).send(:jsi_initialized)
     end
 
     def jsi_child_indicated_schemas_compute(token: , content: )
@@ -973,6 +973,11 @@ module JSI
         "using token: #{token.inspect}",
         "instance: #{jsi_instance.pretty_inspect.chomp}",
       ].join("\n"))
+    end
+
+    # @return [self]
+    def jsi_initialized
+      self
     end
   end
 end
