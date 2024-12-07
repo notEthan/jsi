@@ -320,13 +320,13 @@ module JSI
     #
     # @return [Array<JSI::Base>]
     def jsi_parent_nodes
-      parent = jsi_root_node
-
-      jsi_ptr.tokens.map do |token|
-        parent.tap do
-          parent = parent.jsi_child_node(token)
-        end
-      end.reverse!.freeze
+      parent_nodes = []
+      ptr = jsi_ptr
+      while !ptr.root?
+        ptr = ptr.parent
+        parent_nodes.push(jsi_root_node.jsi_descendent_node(ptr))
+      end
+      parent_nodes.freeze
     end
 
     # the immediate parent of this JSI. nil if there is no parent.
