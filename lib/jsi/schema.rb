@@ -385,6 +385,12 @@ module JSI
       schema_content.respond_to?(:to_hash) && schema_content.key?(keyword)
     end
 
+    # Does this schema contain the given keyword with the given value?
+    # @return [Boolean]
+    def keyword_value?(keyword, value)
+      keyword?(keyword) && schema_content[keyword] == value
+    end
+
     # the string contents of an `$id`/`id` keyword, or nil
     # @return [#to_str, nil]
     def id
