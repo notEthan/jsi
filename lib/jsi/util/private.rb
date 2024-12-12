@@ -70,7 +70,7 @@ module JSI
 
     def const_name_from_parts(parts, join: '')
       parts = parts.map do |part|
-        part = part.dup
+        part = part.to_str.dup
         part[/\A[^a-zA-Z]*/] = ''
         part[0] = part[0].upcase if part[0]
         part.gsub!(RUBY_REJECT_NAME_RE, '_')
