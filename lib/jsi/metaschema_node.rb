@@ -279,8 +279,8 @@ module JSI
           jsi_ptr: ptr,
           jsi_schema_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
           jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
-          jsi_root_node: jsi_root_node,
           initialize_finish: false,
+          jsi_root_node: jsi_root_node,
         )
       end
     end
