@@ -120,7 +120,7 @@ module JSI
   # @api private
   # @param metaschema_document
   # @param dialect (see MetaSchemaNode#initialize)
-  # @param conf_kw (see SchemaSet#new_jsi)
+  # @param conf_kw Passed to initialize a {MetaSchemaNode::Conf} for {Base#jsi_conf}.
   # @return [MetaSchemaNode]
   def self.new_metaschema_node(metaschema_document,
       dialect: ,
@@ -129,10 +129,10 @@ module JSI
     raise(BlockGivenError) if block_given?
 
     # temp
-    init_kw = conf_kw.reject { |k, _| Base::Conf.members.include?(k) }
-    conf_kw = conf_kw.select { |k, _| Base::Conf.members.include?(k) }
+    init_kw = conf_kw.reject { |k, _| MetaSchemaNode::Conf.members.include?(k) }
+    conf_kw = conf_kw.select { |k, _| MetaSchemaNode::Conf.members.include?(k) }
 
-    conf = Base::Conf.new(
+    conf = MetaSchemaNode::Conf.new(
       **conf_kw,
     )
 

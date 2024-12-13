@@ -23,6 +23,14 @@ module JSI
 
     include(Base::Immutable)
 
+    Conf = Base::Conf.subclass(*%i(
+    ))
+
+    # {Base::Conf} with additional configuration for MetaSchemaNode.
+    #
+    class Conf < Base::Conf
+    end
+
     # See {JSI.new_metaschema_node} to instantiate.
     # @api private
     # @param jsi_document the document containing the meta-schema.
