@@ -33,6 +33,18 @@ module JSI
     class ChildNotPresent < StandardError
     end
 
+    Conf = Struct.subclass(*%i(
+      _
+    ))
+
+    # Configuration, shared across all nodes of a document. A JSI's {Base#jsi_conf}.
+    #
+    # Configuration parameters are set from `**conf_kw` params passed to {SchemaSet#new_jsi #new_jsi},
+    # {Schema::MetaSchema#new_schema #new_schema} and related methods.
+    #
+    class Conf
+    end
+
     class << self
       # A string indicating the schema module name
       # and/or schema URI of each schema the class represents.
@@ -116,6 +128,7 @@ module JSI
     # @param jsi_schema_base_uri [URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
+    # @param jsi_conf [Base::Conf]
     # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     def initialize(jsi_document,
         jsi_ptr: Ptr[],
@@ -125,10 +138,13 @@ module JSI
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         jsi_registry: ,
         jsi_content_to_immutable: ,
+        jsi_conf: nil,
         jsi_root_node: nil
     )
       #chkbug fail(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
+      #chkbug fail(Bug) if !jsi_root_node ^ jsi_conf
+      @jsi_conf = jsi_conf || jsi_root_node.jsi_conf
       self.jsi_document = jsi_document
       self.jsi_ptr = jsi_ptr
       self.jsi_indicated_schemas = jsi_indicated_schemas
@@ -172,6 +188,9 @@ module JSI
     # Immutable JSIs use this when instantiating a modified copy so its instance is also immutable.
     # @return [#call, nil]
     attr_reader(:jsi_content_to_immutable)
+
+    # @return [Base::Conf]
+    attr_reader(:jsi_conf)
 
     # the JSI at the root of this JSI's document
     # @return [JSI::Base]

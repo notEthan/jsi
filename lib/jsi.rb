@@ -129,12 +129,16 @@ module JSI
   )
     raise(BlockGivenError) if block_given?
 
+    conf = Base::Conf.new(
+    )
+
     metaschema_document = to_immutable.call(metaschema_document) if to_immutable
 
     MetaSchemaNode.new(metaschema_document,
       msn_dialect: dialect,
       jsi_content_to_immutable: to_immutable,
       **init_kw,
+      jsi_conf: conf,
     )
   end
 
