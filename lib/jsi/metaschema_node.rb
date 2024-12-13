@@ -46,6 +46,7 @@ module JSI
         bootstrap_registry: nil,
         jsi_content_to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         initialize_finish: true,
+        jsi_conf: nil,
         jsi_root_node: nil
     )
       super(jsi_document,
@@ -57,6 +58,7 @@ module JSI
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         jsi_registry: jsi_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
+        jsi_conf: jsi_conf,
         jsi_root_node: jsi_root_node,
       )
 
@@ -209,7 +211,7 @@ module JSI
       if equal?(jsi_root_node)
         modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
         modified_document = jsi_content_to_immutable.call(modified_document) if jsi_content_to_immutable
-        modified_copy = MetaSchemaNode.new(modified_document, **our_initialize_params)
+        modified_copy = MetaSchemaNode.new(modified_document, **our_initialize_params, jsi_conf: jsi_conf)
       else
         modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
           jsi_ptr.modified_document_copy(root, &block)
@@ -250,7 +252,7 @@ module JSI
       end
     end
 
-    # note: does not include jsi_root_node
+    # note: does not include jsi_root_node or jsi_conf
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
@@ -332,6 +334,7 @@ module JSI
             jsi_schema_base_uri: nil,
             jsi_schema_dynamic_anchor_map: dynamic_anchor_map, # TODO does root need this? (if ever !bootstrap_schema.jsi_ptr.root?)
             initialize_finish: false,
+            jsi_conf: jsi_conf,
           ))
           root.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
         end

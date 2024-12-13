@@ -106,6 +106,9 @@ module JSI
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         mutable: false
     )
+      conf = Base::Conf.new(
+      )
+
       instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
       instance = to_immutable.call(instance) if !mutable && to_immutable
@@ -126,6 +129,7 @@ module JSI
         jsi_schema_base_uri: uri,
         jsi_registry: registry,
         jsi_content_to_immutable: to_immutable,
+        jsi_conf: conf,
       )
 
       registry.register(jsi) if register && registry
