@@ -77,7 +77,7 @@ module JSI
     #   [^1]: (ref: the JSON Schema spec states, "Schema objects that produce a false assertion result MUST
     #   NOT produce any annotation results, whether from their own keywords or from keywords in subschemas.")
     #
-    #   Default: true
+    #   Default: false
     #   @return [Boolean]
     # @!attribute reinstantiate_nonschemas
     #   _private, not officially supported_. whether Schema#resource_root_subschema reinstantiates.
@@ -105,7 +105,7 @@ module JSI
     class Conf
       def initialize(
           registry: JSI.registry,
-          application_collect_evaluated_validate: true,
+          application_collect_evaluated_validate: false,
           child_as_jsi: false,
           child_use_default: false,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,

@@ -744,7 +744,7 @@ module JSI
         instance: instance,
         token: token,
         collect_evaluated: false,
-        collect_evaluated_validate: true,
+        collect_evaluated_validate: false,
         evaluated: false,
         &block
       )
@@ -771,7 +771,7 @@ module JSI
         instance,
         visited_refs: Util::EMPTY_ARY,
         collect_evaluated: false,
-        collect_evaluated_validate: true,
+        collect_evaluated_validate: false,
         &block
     )
       collect_evaluated ||= application_requires_evaluated
