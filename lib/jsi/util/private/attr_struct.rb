@@ -77,7 +77,7 @@ module JSI
         end
         bad = @attributes.each_key.reject { |k| class_attribute_keys.include?(k) }
         unless bad.empty?
-          raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
+          raise(UndefinedAttributeKey, "undefined attribute keys for #{self.class}: #{bad.map(&:inspect).join(', ')}")
         end
       end
 
