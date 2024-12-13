@@ -744,6 +744,7 @@ module JSI
         instance: instance,
         token: token,
         collect_evaluated: false,
+        collect_evaluated_validate: true,
         evaluated: false,
         &block
       )
@@ -761,6 +762,7 @@ module JSI
     # @param collect_evaluated [Boolean] Does the caller need this method to collect successful child evaluation?
     #   Note: this method will still collect child evaluation if this schema needs it; this only needs to be
     #   passed true when called by an in-place applicator schema that needs it (i.e. contains `unevaluated*`).
+    # @param collect_evaluated_validate [Boolean] See {Base::Conf#application_collect_evaluated_validate}
     # @yield [Schema]
     # @return [Boolean] if `collect_evaluated` is true, whether the child was successfully evaluated
     #   by a child applicator schema. if `collect_evaluated` is false, undefined/void.
@@ -769,6 +771,7 @@ module JSI
         instance,
         visited_refs: Util::EMPTY_ARY,
         collect_evaluated: false,
+        collect_evaluated_validate: true,
         &block
     )
       collect_evaluated ||= application_requires_evaluated
@@ -788,11 +791,12 @@ module JSI
             instance,
             visited_refs: Util.add_visited_ref(visited_refs, ref),
             collect_evaluated: collect_evaluated && !inplace_child_evaluated,
+            collect_evaluated_validate: collect_evaluated_validate,
             # the `if` keyword needs to yield to here because it does affect `evaluated`,
             # but it does not applicate itself/its applicators, so does not yield to the given block.
             &(applicate ? block : proc { })
           )
-          inplace_child_evaluated ||= collect_evaluated && schema_evaluated && schema.instance_valid?(instance)
+          inplace_child_evaluated ||= collect_evaluated && schema_evaluated && (!collect_evaluated_validate || schema.instance_valid?(instance))
         end
       end
 
@@ -803,6 +807,7 @@ module JSI
           token: token,
           instance: instance,
           collect_evaluated: collect_evaluated,
+          collect_evaluated_validate: collect_evaluated_validate,
           evaluated: inplace_child_evaluated,
           block: block,
         ))

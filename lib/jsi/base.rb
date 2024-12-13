@@ -35,6 +35,7 @@ module JSI
 
     Conf = Struct.subclass(*%i(
       registry
+      application_collect_evaluated_validate
       reinstantiate_nonschemas
       after_initialize
       child_as_jsi
@@ -54,6 +55,30 @@ module JSI
     #
     #   Default: {JSI.registry}
     #   @return [Registry, nil]
+    # @!attribute application_collect_evaluated_validate
+    #   Shall schema application perform validation when collecting child evaluation
+    #   (for `unevaluatedProperties`, `unevaluatedItems`)?
+    #
+    #   A child should not be considered evaluated by a schema when it fails to validate[^1].
+    #   This means that `unevaluatedItems` or `unevaluatedProperties` should
+    #   only apply to a child if no other applicator schema validates the child.
+    #   The computational cost of this validation is significant, however, and may be unacceptable for performance.
+    #
+    #   Set to `true`, child evaluation will perform validation, and `unevaluated*` will applicate
+    #   correctly, at some cost in CPU time.
+    #
+    #   Set to `false`, a child will be considered evaluated when a child applicator schema applies to it,
+    #   regardless of validity, which will result in an `unevaluated*` schema incorrectly failing to
+    #   applicate when the child is not valid.
+    #
+    #   The default is false. It is expected that application of `unevaluated*` schemas to such children
+    #   is not typically relied on, so validation is not typically worth the cost of its computation.
+    #
+    #   [^1]: (ref: the JSON Schema spec states, "Schema objects that produce a false assertion result MUST
+    #   NOT produce any annotation results, whether from their own keywords or from keywords in subschemas.")
+    #
+    #   Default: true
+    #   @return [Boolean]
     # @!attribute reinstantiate_nonschemas
     #   _private, not officially supported_. whether Schema#resource_root_subschema reinstantiates.
     # @!attribute after_initialize
@@ -80,6 +105,7 @@ module JSI
     class Conf
       def initialize(
           registry: JSI.registry,
+          application_collect_evaluated_validate: true,
           child_as_jsi: false,
           child_use_default: false,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
@@ -87,6 +113,7 @@ module JSI
       )
         super(
           registry: registry,
+          application_collect_evaluated_validate: application_collect_evaluated_validate,
           child_as_jsi: child_as_jsi,
           child_use_default: child_use_default,
           to_immutable: to_immutable,
@@ -1008,7 +1035,10 @@ module JSI
         # if application_requires_evaluated, in-place application needs to collect token evaluation
         # recursively to inform child application, so must be recomputed.
         jsi_indicated_schemas.each_yield_set do |is, y|
-          is.each_inplace_child_applicator_schema(token, content, &y)
+          is.each_inplace_child_applicator_schema(token, content,
+            collect_evaluated_validate: jsi_conf.application_collect_evaluated_validate,
+            &y
+          )
         end
       else
         # if token evaluation does not need to be collected, use our already-computed #jsi_schemas.

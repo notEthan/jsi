@@ -136,7 +136,10 @@ module JSI
       root_bootstrap_schema = bootstrap_schema_from_ref[jsi_conf.root_schema_ref]
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
         child_indicated_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
-          is.each_inplace_child_applicator_schema(tok, instance_for_schemas, &y)
+          is.each_inplace_child_applicator_schema(tok, instance_for_schemas,
+            collect_evaluated_validate: jsi_conf.application_collect_evaluated_validate,
+            &y
+          )
         end
         instance_for_schemas = instance_for_schemas[tok]
         child_indicated_schemas
