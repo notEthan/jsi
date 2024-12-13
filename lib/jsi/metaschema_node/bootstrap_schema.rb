@@ -52,7 +52,7 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
-      self.jsi_registry = jsi_registry
+      @jsi_registry = jsi_registry
 
       @memos = {}
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
@@ -66,6 +66,9 @@ module JSI
 
     # JSI::Ptr pointing to this schema within the document
     attr_reader :jsi_ptr
+
+    # @return [Registry, nil]
+    attr_reader(:jsi_registry)
 
     attr_reader(:jsi_node_content)
 

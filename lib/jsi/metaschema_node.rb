@@ -42,9 +42,7 @@ module JSI
         root_schema_ref: metaschema_root_ref,
         jsi_schema_base_uri: nil,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
-        jsi_registry: nil,
         bootstrap_registry: nil,
-        jsi_content_to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         initialize_finish: true,
         jsi_conf: nil,
         jsi_root_node: nil
@@ -56,8 +54,6 @@ module JSI
         # MSN doesn't track schema_resource_ancestors through descendents, but the root is included when appropriate
         jsi_schema_resource_ancestors: jsi_ptr.root? || !jsi_root_node.is_a?(Schema) ? Util::EMPTY_ARY : [jsi_root_node].freeze,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        jsi_registry: jsi_registry,
-        jsi_content_to_immutable: jsi_content_to_immutable,
         jsi_conf: jsi_conf,
         jsi_root_node: jsi_root_node,
       )
@@ -238,6 +234,7 @@ module JSI
       {
         class: self.class,
         jsi_document: jsi_document,
+        jsi_registry: jsi_registry,
       }.merge(our_initialize_params).freeze
     end
 
@@ -264,9 +261,7 @@ module JSI
         root_schema_ref: root_schema_ref,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        jsi_registry: jsi_registry,
         bootstrap_registry: bootstrap_registry,
-        jsi_content_to_immutable: jsi_content_to_immutable,
       }.freeze
     end
 
