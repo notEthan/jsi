@@ -39,7 +39,7 @@ describe(JSI::MetaSchemaNode) do
       dialect: dialect,
       metaschema_root_ref: metaschema_root_ref,
       root_schema_ref: root_schema_ref,
-      jsi_registry: registry,
+      registry: registry,
       bootstrap_registry: bootstrap_registry,
     )
   end

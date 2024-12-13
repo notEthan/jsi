@@ -20,7 +20,7 @@ module JSI
 
   JSONSchemaDraft202012 = JSI.new_metaschema_node(metaschema_document,
     dialect: dialect,
-    jsi_registry: jsi_registry,
+    registry: jsi_registry,
     bootstrap_registry: bootstrap_registry,
     metaschema_root_ref: 'https://json-schema.org/draft/2020-12/schema',
   ).jsi_schema_module

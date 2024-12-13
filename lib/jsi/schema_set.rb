@@ -109,6 +109,8 @@ module JSI
         **conf_kw
     )
       conf = Base::Conf.new(
+        registry: registry,
+        to_immutable: to_immutable,
         **conf_kw,
       )
 
@@ -130,8 +132,6 @@ module JSI
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
         jsi_schema_base_uri: uri,
-        jsi_registry: registry,
-        jsi_content_to_immutable: to_immutable,
         jsi_conf: conf,
       )
 

@@ -32,10 +32,6 @@ module JSI
     # @api private
     attr_reader(:jsi_schema_dynamic_anchor_map)
 
-    # See {SchemaSet#new_jsi} param `registry`
-    # @return [Registry, nil]
-    attr_reader(:jsi_registry)
-
     # @deprecated after v0.8
     def jsi_schema_registry
       jsi_registry
@@ -108,8 +104,6 @@ module JSI
       #chkbug fail if dynamic_anchor_map != dynamic_anchor_map.without_node(self)
       @jsi_schema_dynamic_anchor_map = dynamic_anchor_map
     end
-
-    attr_writer(:jsi_registry)
 
     def jsi_anchor_subschemas_compute(anchor: )
       SchemaSet.new(jsi_each_descendent_schema_same_resource.select do |schema|
