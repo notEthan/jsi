@@ -683,9 +683,15 @@ module JSI
     # For each in-place applicator schema that applies to the given instance, yields each child applicator
     # of that schema that applies to the child of the instance on the given token.
     #
+    # This method handles collection of whether the child was evaluated by any applicator
+    # when that evaluation is needed by either this schema or the caller (per param `collect_evaluated`).
+    # This is relevant to schemas containing `unevaluatedProperties` or `unevaluatedItems`.
+    #
     # @param token [Object] array index or hash/object property name
     # @param instance [Object]
-    # @param collect_evaluated [Boolean] collect successful child evaluation?
+    # @param collect_evaluated [Boolean] Does the caller need this method to collect successful child evaluation?
+    #   Note: this method will still collect child evaluation if this schema needs it; this only needs to be
+    #   passed true when called by an in-place applicator schema that needs it (i.e. contains `unevaluated*`).
     # @yield [Schema]
     # @return [Boolean] if `collect_evaluated` is true, whether the child was successfully evaluated
     #   by a child applicator schema. if `collect_evaluated` is false, undefined/void.
