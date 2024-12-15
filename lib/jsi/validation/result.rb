@@ -16,7 +16,8 @@ module JSI
       # context to build a Validation::Result
       class Builder
         def instance
-          instance_ptr.evaluate(instance_document)
+          return @instance if instance_variable_defined?(:@instance)
+          @instance = instance_ptr.evaluate(instance_document)
         end
 
         # @param subschema_ptr [JSI::Ptr, #to_ary]
