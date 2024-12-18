@@ -404,7 +404,7 @@ module JSI
 
     # @return [Enumerable<Addressable::URI>]
     def schema_absolute_uris
-      @schema_absolute_uris_map[]
+      @schema_absolute_uris_map[schema_content: schema_content]
     end
 
     # @yield [Addressable::URI]
@@ -433,7 +433,7 @@ module JSI
     # nonrelative URIs (that is, absolute, but possibly with a fragment) which refer to this schema
     # @return [Array<Addressable::URI>]
     def schema_uris
-      @schema_uris_map[]
+      @schema_uris_map[schema_content: schema_content]
     end
 
     # @yield [Addressable::URI]
@@ -743,7 +743,7 @@ module JSI
     # array of "required" property keys.
     # @return [Set]
     def described_object_property_names
-      @described_object_property_names_map[]
+      @described_object_property_names_map[schema_content: schema_content]
     end
 
     # Validates the given instance against this schema, returning a result with each validation error.
@@ -847,6 +847,8 @@ module JSI
 
     private
 
+    KEY_BY_NONE = proc { nil }
+
     def jsi_schema_initialize
       # guard against being called twice on MetaSchemaNode, first from extend(Schema) then extend(jsi_schema_module) that includes Schema.
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
@@ -855,9 +857,9 @@ module JSI
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end
-      @schema_absolute_uris_map = jsi_memomap { to_enum(:schema_absolute_uris_compute).to_a.freeze }
-      @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
-      @described_object_property_names_map = jsi_memomap do
+      @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
+      @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
+      @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
         dialect_invoke_each(:described_object_property_names).to_set.freeze
       end
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
