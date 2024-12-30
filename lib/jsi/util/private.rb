@@ -5,7 +5,6 @@ module JSI
   #
   # @api private
   module Util::Private
-    autoload :AttrStruct, 'jsi/util/private/attr_struct'
     autoload :MemoMap, 'jsi/util/private/memo_map'
 
     extend self
