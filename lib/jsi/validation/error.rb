@@ -2,7 +2,7 @@
 
 module JSI
   module Validation
-    Error = Util::AttrStruct[*%w(
+    Error = Struct.subclass(*%i(
       message
       keyword
       additional
@@ -10,7 +10,7 @@ module JSI
       instance_ptr
       instance_document
       nested_errors
-    )]
+    ))
 
     # a validation error of a schema instance against a schema
     #

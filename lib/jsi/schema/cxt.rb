@@ -2,10 +2,10 @@
 
 module JSI
   module Schema
-    Cxt = Util::AttrStruct[*%w(
+    Cxt = Struct.subclass(*%i(
       schema
       abort
-    )]
+    ))
 
     # @!attribute schema
     #   The schema invoking an action in this context
@@ -84,7 +84,7 @@ module JSI
       autoload(:ChildApplication, 'jsi/schema/cxt/child_application')
     end
 
-    Cxt::Block = Cxt.subclass('block')
+    Cxt::Block = Cxt.subclass(:block)
 
     # @!attribute block
     #   @return [#call]

@@ -2,7 +2,7 @@
 
 module JSI
   class Schema::Cxt
-    InplaceApplication = Block.subclass(*%w(
+    InplaceApplication = Block.subclass(*%i(
       instance
       visited_refs
       collect_evaluated

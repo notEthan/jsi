@@ -2,7 +2,7 @@
 
 module JSI
   class Schema::Cxt
-    ChildApplication = Block.subclass(*%w(
+    ChildApplication = Block.subclass(*%i(
       instance
       token
       collect_evaluated

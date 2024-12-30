@@ -4,7 +4,7 @@ module JSI
   module Validation
     # a result of validating an instance against schemas which describe it.
     class Result
-      Builder = Schema::Cxt.subclass(*%w(
+      Builder = Schema::Cxt.subclass(*%i(
         result
         instance_ptr
         instance_document
