@@ -25,15 +25,6 @@ module JSI
     end
 
     class MemoMap::Mutable < MemoMap
-      Result = AttrStruct[*%w(
-        value
-        inputs
-        inputs_hash
-      )]
-
-      class Result
-      end
-
       def [](**inputs)
         key = key_for(inputs)
 
@@ -43,11 +34,12 @@ module JSI
 
         result_mutex.synchronize do
           inputs_hash = inputs.hash
-          if @results.key?(key) && inputs_hash == @results[key].inputs_hash && inputs == @results[key].inputs
-            @results[key].value
+          result_value, result_inputs, result_inputs_hash = @results[key]
+          if inputs_hash == result_inputs_hash && inputs == result_inputs
+            result_value
           else
             value = @block.call(**inputs)
-            @results[key] = Result.new(value: value, inputs: inputs, inputs_hash: inputs_hash)
+            @results[key] = [value, inputs, inputs_hash]
             value
           end
         end
