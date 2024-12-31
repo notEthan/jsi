@@ -10,8 +10,26 @@ module JSI
   class Struct < ::Struct
     include(Util::Pretty)
 
+    STRUCT_NEW = Struct.singleton_class.instance_method(:new)
+    private_constant(:STRUCT_NEW)
+
     HAS_KEYWORD_INIT = Struct.new(:_, keyword_init: true) && true rescue false
     private_constant(:HAS_KEYWORD_INIT)
+
+    class << self
+      # @return [Class]
+      def subclass(*members)
+        self_members = self.members rescue [] # NoMethodError on mri, NameError on truffle
+        # Struct does not enable adding members to subclasses of its generated classes,
+        # but that is still possible by binding Struct.new to the class and calling
+        # that with both existing and new members.
+        if HAS_KEYWORD_INIT
+          STRUCT_NEW.bind(self).call(*self_members, *members, keyword_init: true)
+        else
+          STRUCT_NEW.bind(self).call(*self_members, *members)
+        end
+      end
+    end
 
     if !HAS_KEYWORD_INIT
       def initialize(h = {})
