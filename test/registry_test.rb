@@ -223,7 +223,9 @@ describe("JSI::Registry") do
       inspect = <<~str
       #<JSI::Registry
         resources (0)
-        autoload (0)
+        resources autoload (0)
+        vocabularies (0)
+        vocabularies autoload (0)
       >
       str
       assert_equal(inspect.chomp, JSI::Registry.new.inspect)

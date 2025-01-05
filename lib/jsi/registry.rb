@@ -14,6 +14,8 @@ module JSI
     def initialize
       @resources = {}
       @resource_autoloaders = {}
+      @vocabularies = {}
+      @vocabulary_autoloaders = {}
       @mutex = Mutex.new
     end
 
@@ -141,7 +143,12 @@ module JSI
     def inspect
       [
         "#<#{self.class}",
-        *[['resources', @resources.keys], ['autoload', @resource_autoloaders.keys]].map do |label, uris|
+        *[
+          ['resources', @resources.keys],
+          ['resources autoload', @resource_autoloaders.keys],
+          ['vocabularies', @vocabularies.keys],
+          ['vocabularies autoload', @vocabulary_autoloaders.keys],
+        ].map do |label, uris|
           [
             "  #{label} (#{uris.size})#{uris.empty? ? "" : ":"}",
             *uris.map do |uri|
@@ -161,12 +168,16 @@ module JSI
       self.class.new.tap do |reg|
         reg.instance_variable_get(:@resources).update(@resources)
         reg.instance_variable_get(:@resource_autoloaders).update(@resource_autoloaders)
+        reg.instance_variable_get(:@vocabularies).update(@vocabularies)
+        reg.instance_variable_get(:@vocabulary_autoloaders).update(@vocabulary_autoloaders)
       end
     end
 
     def freeze
       @resources.freeze
       @resource_autoloaders.freeze
+      @vocabularies.freeze
+      @vocabulary_autoloaders.freeze
       @mutex = nil
       super
     end
