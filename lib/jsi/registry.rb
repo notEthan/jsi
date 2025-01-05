@@ -13,7 +13,7 @@ module JSI
 
     def initialize
       @resources = {}
-      @autoload_uris = {}
+      @resource_autoloaders = {}
       @resources_mutex = Mutex.new
     end
 
@@ -80,10 +80,10 @@ module JSI
       unless block
         raise(ArgumentError, ["#{Registry}#autoload_uri must be invoked with a block", "URI: #{uri}"].join("\n"))
       end
-      if @autoload_uris.key?(uri)
-        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{@autoload_uris[uri]}"].join("\n"))
+      if @resource_autoloaders.key?(uri)
+        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{@resource_autoloaders[uri]}"].join("\n"))
       end
-      @autoload_uris[uri] = block
+      @resource_autoloaders[uri] = block
       nil
     end
 
@@ -92,21 +92,21 @@ module JSI
     # @raise [ResolutionError]
     def find(uri)
       uri = registration_uri(uri)
-      if @autoload_uris.key?(uri)
+      if @resource_autoloaders.key?(uri)
         autoload_param = {
           registry: self,
           uri: uri,
         }
         # remove params the autoload proc does not accept
         autoload_param.select! do |name, _|
-          @autoload_uris[uri].parameters.any? do |type, pname|
+          @resource_autoloaders[uri].parameters.any? do |type, pname|
             # dblsplat (**k) ||   required (k: )  || optional (k: nil)
             type == :keyrest || ((type == :keyreq || type == :key) && pname == name)
           end
         end
-        autoloaded = @autoload_uris[uri].call(**autoload_param)
+        autoloaded = @resource_autoloaders[uri].call(**autoload_param)
         register(autoloaded)
-        @autoload_uris.delete(uri)
+        @resource_autoloaders.delete(uri)
       end
       if !@resources.key?(uri)
         if autoloaded
@@ -116,7 +116,7 @@ module JSI
             autoloaded.pretty_inspect.chomp,
           ]
         else
-          msg = ["URI #{uri} is not registered. registered URIs:", *(@resources.keys | @autoload_uris.keys)]
+          msg = ["URI #{uri} is not registered. registered URIs:", *(@resources.keys | @resource_autoloaders.keys)]
         end
         raise(ResolutionError.new(msg, uri: uri))
       end
@@ -127,13 +127,13 @@ module JSI
     # @return [Boolean]
     def registered?(uri)
       uri = registration_uri(uri)
-      @resources.key?(uri) || @autoload_uris.key?(uri)
+      @resources.key?(uri) || @resource_autoloaders.key?(uri)
     end
 
     def inspect
       [
         "#<#{self.class}",
-        *[['resources', @resources.keys], ['autoload', @autoload_uris.keys]].map do |label, uris|
+        *[['resources', @resources.keys], ['autoload', @resource_autoloaders.keys]].map do |label, uris|
           [
             "  #{label} (#{uris.size})#{uris.empty? ? "" : ":"}",
             *uris.map do |uri|
@@ -152,13 +152,13 @@ module JSI
     def dup
       self.class.new.tap do |reg|
         reg.instance_variable_get(:@resources).update(@resources)
-        reg.instance_variable_get(:@autoload_uris).update(@autoload_uris)
+        reg.instance_variable_get(:@resource_autoloaders).update(@resource_autoloaders)
       end
     end
 
     def freeze
       @resources.freeze
-      @autoload_uris.freeze
+      @resource_autoloaders.freeze
       @resources_mutex = nil
       super
     end
