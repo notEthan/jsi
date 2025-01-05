@@ -11,17 +11,17 @@ module JSI
 
   jsi_registry = Registry.new
   bootstrap_registry = Registry.new
-  bootstrap_metaschema = dialect.bootstrap_schema(metaschema_document, jsi_schema_registry: bootstrap_registry)
+  bootstrap_metaschema = dialect.bootstrap_schema(metaschema_document, jsi_registry: bootstrap_registry)
   bootstrap_registry.register(bootstrap_metaschema)
   vocabulary_schema_documents.each do |vocabulary_schema_document|
-    bootstrap_vocabulary_schema = dialect.bootstrap_schema(vocabulary_schema_document, jsi_schema_registry: bootstrap_registry)
+    bootstrap_vocabulary_schema = dialect.bootstrap_schema(vocabulary_schema_document, jsi_registry: bootstrap_registry)
     bootstrap_registry.register(bootstrap_vocabulary_schema)
   end
 
   JSONSchemaDraft202012 = MetaSchemaNode.new(metaschema_document,
     msn_dialect: dialect,
-    jsi_schema_registry: jsi_registry,
-    bootstrap_schema_registry: bootstrap_registry,
+    jsi_registry: jsi_registry,
+    bootstrap_registry: bootstrap_registry,
     metaschema_root_ref: 'https://json-schema.org/draft/2020-12/schema',
   ).jsi_schema_module
 

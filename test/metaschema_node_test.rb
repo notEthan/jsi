@@ -39,8 +39,8 @@ describe(JSI::MetaSchemaNode) do
       msn_dialect: dialect,
       metaschema_root_ref: metaschema_root_ref,
       root_schema_ref: root_schema_ref,
-      jsi_schema_registry: registry,
-      bootstrap_schema_registry: bootstrap_registry,
+      jsi_registry: registry,
+      bootstrap_registry: bootstrap_registry,
       jsi_content_to_immutable: to_immutable,
     )
   end
@@ -58,7 +58,7 @@ describe(JSI::MetaSchemaNode) do
     dialect.bootstrap_schema(
       schema_content,
       jsi_schema_base_uri: JSI::Util.uri(base_uri, nnil: false),
-      jsi_schema_registry: registry,
+      jsi_registry: registry,
     )
   end
 

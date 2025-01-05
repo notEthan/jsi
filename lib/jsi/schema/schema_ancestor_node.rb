@@ -34,7 +34,7 @@ module JSI
 
     # See {SchemaSet#new_jsi} param `registry`
     # @return [Registry, nil]
-    attr_reader(:jsi_schema_registry)
+    attr_reader(:jsi_registry)
 
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
@@ -104,7 +104,7 @@ module JSI
       @jsi_schema_dynamic_anchor_map = dynamic_anchor_map
     end
 
-    attr_writer(:jsi_schema_registry)
+    attr_writer(:jsi_registry)
 
     def jsi_anchor_subschemas_compute(anchor: )
       jsi_each_descendent_schema_same_resource.select do |schema|

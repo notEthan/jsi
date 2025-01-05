@@ -122,7 +122,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
-        jsi_schema_registry: ,
+        jsi_registry: ,
         jsi_content_to_immutable: ,
         jsi_root_node: nil
     )
@@ -134,7 +134,7 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
-      self.jsi_schema_registry = jsi_schema_registry
+      self.jsi_registry = jsi_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
       #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
       @jsi_root_node = jsi_root_node || self
@@ -617,7 +617,7 @@ module JSI
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
           uri: @jsi_root_node.jsi_schema_base_uri,
           register: false, # default is already false but this is a place to be explicit
-          registry: jsi_schema_registry,
+          registry: jsi_registry,
           mutable: jsi_mutable?,
           to_immutable: jsi_content_to_immutable,
         )
@@ -706,7 +706,7 @@ module JSI
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
         jsi_root_node: jsi_root_node,
       )
@@ -829,7 +829,7 @@ module JSI
         # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         # different registries mean references may resolve to different resources so must not be equal
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
       }.freeze
     end
 
@@ -865,7 +865,7 @@ module JSI
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
           jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token]),
-          jsi_schema_registry: jsi_schema_registry,
+          jsi_registry: jsi_registry,
           jsi_content_to_immutable: @jsi_content_to_immutable,
           jsi_root_node: @jsi_root_node,
         )

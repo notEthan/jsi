@@ -106,7 +106,7 @@ module JSI
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
         jsi_schema_base_uri: uri,
-        jsi_schema_registry: registry,
+        jsi_registry: registry,
         jsi_content_to_immutable: to_immutable,
       )
 
