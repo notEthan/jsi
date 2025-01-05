@@ -36,6 +36,11 @@ module JSI
     # @return [Registry, nil]
     attr_reader(:jsi_registry)
 
+    # @deprecated after v0.8
+    def jsi_schema_registry
+      jsi_registry
+    end
+
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
     # If this node is a schema with an id, this is its absolute URI; otherwise an ancestor resource's URI,
