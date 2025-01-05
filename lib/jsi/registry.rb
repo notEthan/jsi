@@ -95,36 +95,40 @@ module JSI
     # @return [JSI::Base]
     # @raise [ResolutionError]
     def find(uri)
+      internal_find(uri, @resources, @resource_autoloaders, proc { |r, _| register(r) })
+    end
+
+    private def internal_find(uri, store, autoloaders, registerer)
       uri = registration_uri(uri)
-      if @resource_autoloaders.key?(uri)
+      if autoloaders.key?(uri)
         autoload_param = {
           registry: self,
           uri: uri,
         }
         # remove params the autoload proc does not accept
         autoload_param.select! do |name, _|
-          @resource_autoloaders[uri].parameters.any? do |type, pname|
+          autoloaders[uri].parameters.any? do |type, pname|
             # dblsplat (**k) ||   required (k: )  || optional (k: nil)
             type == :keyrest || ((type == :keyreq || type == :key) && pname == name)
           end
         end
-        autoloaded = @resource_autoloaders[uri].call(**autoload_param)
-        register(autoloaded)
-        @resource_autoloaders.delete(uri)
+        autoloaded = autoloaders[uri].call(**autoload_param)
+        registerer[autoloaded, uri]
+        autoloaders.delete(uri)
       end
-      if !@resources.key?(uri)
+      if !store.key?(uri)
         if autoloaded
           msg = [
-            "URI #{uri} was registered with autoload_uri but the result did not contain a resource with that URI.",
-            "the resource resulting from autoload_uri was:",
+            "URI #{uri} was registered for autoload but the result did not contain an entity with that URI.",
+            "autoload result was:",
             autoloaded.pretty_inspect.chomp,
           ]
         else
-          msg = ["URI #{uri} is not registered. registered URIs:", *(@resources.keys | @resource_autoloaders.keys)]
+          msg = ["URI #{uri} is not registered. registered URIs:", *(store.keys | autoloaders.keys)]
         end
         raise(ResolutionError.new(msg, uri: uri))
       end
-      @resources[uri]
+      store[uri]
     end
 
     # @param uri [#to_str]
