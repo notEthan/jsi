@@ -166,6 +166,9 @@ module JSI
     registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/meta-data")        { JSI::JSONSchemaDraft202012::MetaData.schema }
     registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-annotation") { JSI::JSONSchemaDraft202012::FormatAnnotation.schema }
     registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/content")          { JSI::JSONSchemaDraft202012::Content.schema }
+    registry.autoload_dialect_uri("http://json-schema.org/draft-04/schema") { Schema::Draft04::DIALECT }
+    registry.autoload_dialect_uri("http://json-schema.org/draft-06/schema") { Schema::Draft06::DIALECT }
+    registry.autoload_dialect_uri("http://json-schema.org/draft-07/schema") { Schema::Draft07::DIALECT }
   end.freeze
 
   self.registry = DEFAULT_REGISTRY.dup
