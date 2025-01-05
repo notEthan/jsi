@@ -144,6 +144,11 @@ module JSI
     @registry
   end
 
+  # @deprecated after v0.8
+  def self.schema_registry
+    @registry
+  end
+
   # @param registry [Registry]
   def self.registry=(registry)
     @registry = registry
