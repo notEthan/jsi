@@ -75,15 +75,19 @@ module JSI
     # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
+      internal_autoload(@resource_autoloaders, uri, block)
+    end
+
+    private def internal_autoload(autoloaders, uri, block)
       uri = registration_uri(uri)
       mutating
       unless block
-        raise(ArgumentError, ["#{Registry}#autoload_uri must be invoked with a block", "URI: #{uri}"].join("\n"))
+        raise(ArgumentError, ["#{Registry} autoload must be invoked with a block", "URI: #{uri}"].join("\n"))
       end
-      if @resource_autoloaders.key?(uri)
-        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{@resource_autoloaders[uri]}"].join("\n"))
+      if autoloaders.key?(uri)
+        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{autoloaders[uri]}"].join("\n"))
       end
-      @resource_autoloaders[uri] = block
+      autoloaders[uri] = block
       nil
     end
 

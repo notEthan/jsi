@@ -213,7 +213,7 @@ describe("JSI::Registry") do
       uri = 'http://jsi/registry/j0s5'
       err = assert_raises(ArgumentError) { registry.autoload_uri(uri) }
       msg = <<~MSG
-        JSI::Registry#autoload_uri must be invoked with a block
+        JSI::Registry autoload must be invoked with a block
         URI: http://jsi/registry/j0s5
         MSG
       assert_equal(msg.chomp, err.message)
