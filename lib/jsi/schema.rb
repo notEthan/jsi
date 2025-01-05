@@ -59,8 +59,8 @@ module JSI
 
       # Instantiates the given schema content as a JSI Schema.
       #
-      # By default, the schema will be registered with the {JSI.schema_registry}.
-      # This can be controlled by params `register` and `schema_registry`.
+      # By default, the schema will be registered with the {JSI.registry}.
+      # This can be controlled by params `register` and `registry`.
       #
       # By default, the `schema_content` will have any Symbol keys of Hashes replaced with Strings
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
@@ -71,7 +71,7 @@ module JSI
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [#to_str, URI] The retrieval URI of the schema document.
       #   If specified, the root schema will be identified by this URI, in addition
-      #   to any absolute URI declared with an id keyword, for resolution in the `schema_registry`.
+      #   to any absolute URI declared with an id keyword, for resolution in the `registry`.
       #
       #   It is rare that this needs to be specified. Most schemas, if they use absolute URIs, will
       #   use the `$id` keyword (`id` in draft 4) to specify this. A different retrieval URI is useful
@@ -81,10 +81,10 @@ module JSI
       #       ancestor schema - these will be resolved relative to this URI
       #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
       #       rather than an id declared in the schema - the schema is resolvable by this URI in the
-      #       `schema_registry`.
+      #       `registry`.
       # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
-      #   will be registered in the schema registry indicated by param `schema_registry`.
-      # @param schema_registry [Registry, nil] The registry this schema will use.
+      #   will be registered in the schema registry indicated by param `registry`.
+      # @param registry [Registry, nil] The registry this schema will use.
       #
       #   - The schema and subschemas will be registered here with any declared URI,
       #     unless the `register` param is false.
@@ -100,7 +100,7 @@ module JSI
       def new_schema(schema_content,
           uri: nil,
           register: true,
-          schema_registry: JSI.schema_registry,
+          registry: JSI.registry,
           stringify_symbol_keys: true,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           &block
@@ -108,7 +108,7 @@ module JSI
         schema_jsi = new_jsi(schema_content,
           uri: uri,
           register: register,
-          schema_registry: schema_registry,
+          registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
           to_immutable: to_immutable,
           mutable: false,
@@ -176,8 +176,8 @@ module JSI
       #
       # The meta-schema that describes the schema must be indicated:
       #
-      # - If the schema object has a `$schema` property, that URI is resolved using the `schema_registry`
-      #   param (by default {JSI.schema_registry}), and that meta-schema is used. For example:
+      # - If the schema object has a `$schema` property, that URI is resolved using the `registry`
+      #   param (by default {JSI.registry}), and that meta-schema is used. For example:
       #
       #   ```ruby
       #   JSI.new_schema({
@@ -220,7 +220,7 @@ module JSI
       #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::MetaSchema#new_schema)
       # @param register (see Schema::MetaSchema#new_schema)
-      # @param schema_registry (see Schema::MetaSchema#new_schema)
+      # @param registry (see Schema::MetaSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
       # @param to_immutable (see Schema::DescribesSchema#new_schema)
       # @yield (see Schema::MetaSchema#new_schema)
@@ -232,7 +232,7 @@ module JSI
           # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
           register: true,
-          schema_registry: JSI.schema_registry,
+          registry: JSI.registry,
           stringify_symbol_keys: true,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           &block
@@ -240,13 +240,13 @@ module JSI
         new_schema_params = {
           uri: uri,
           register: register,
-          schema_registry: schema_registry,
+          registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
           to_immutable: to_immutable,
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
-            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", schema_registry: schema_registry)
+            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", registry: registry)
           elsif self.default_metaschema
             self.default_metaschema
           else
@@ -279,7 +279,7 @@ module JSI
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
-            metaschema = Schema.ensure_metaschema(id, name: '$schema', schema_registry: schema_registry)
+            metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: registry)
             metaschema.new_schema(schema_content, **new_schema_params, &block)
           else
             default_metaschema_new_schema.call
@@ -345,9 +345,9 @@ module JSI
       # @param metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
       # @raise [TypeError] if the param does not indicate a meta-schema
       # @return [Base + Schema + Schema::MetaSchema]
-      def ensure_metaschema(metaschema, name: nil, schema_registry: JSI.schema_registry)
+      def ensure_metaschema(metaschema, name: nil, registry: JSI.registry)
         if metaschema.respond_to?(:to_str)
-          schema = Schema::Ref.new(metaschema, schema_registry: schema_registry).deref_schema
+          schema = Schema::Ref.new(metaschema, registry: registry).deref_schema
           if !schema.describes_schema?
             raise(NotAMetaSchemaError, [name, "URI indicates a schema that is not a meta-schema: #{metaschema.pretty_inspect.chomp}"].compact.join(" "))
           end

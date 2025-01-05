@@ -61,7 +61,7 @@ module JSI
     #
     # for example:
     #
-    #     JSI.schema_registry.autoload_uri('http://example.com/schema.json') do
+    #     JSI.registry.autoload_uri('http://example.com/schema.json') do
     #       JSI.new_schema({
     #         '$schema' => 'http://json-schema.org/draft-07/schema#',
     #         '$id' => 'http://example.com/schema.json',
@@ -94,7 +94,7 @@ module JSI
       uri = registration_uri(uri)
       if @autoload_uris.key?(uri)
         autoload_param = {
-          schema_registry: self,
+          registry: self,
           uri: uri,
         }
         # remove params the autoload proc does not accept

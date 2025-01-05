@@ -32,7 +32,7 @@ module JSI
     # @api private
     attr_reader(:jsi_schema_dynamic_anchor_map)
 
-    # See {SchemaSet#new_jsi} param `schema_registry`
+    # See {SchemaSet#new_jsi} param `registry`
     # @return [Registry, nil]
     attr_reader(:jsi_schema_registry)
 

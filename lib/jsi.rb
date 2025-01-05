@@ -136,34 +136,34 @@ module JSI
     new_metaschema(metaschema_document, **kw, &block).jsi_schema_module
   end
 
-  # `JSI.schema_registry` is the default {JSI::Registry} in which schemas are registered and from
+  # `JSI.registry` is the default {JSI::Registry} in which schemas are registered and from
   # which they resolve references.
   #
   # @return [Registry]
-  def self.schema_registry
-    @schema_registry
+  def self.registry
+    @registry
   end
 
-  # @param schema_registry [Registry]
-  def self.schema_registry=(schema_registry)
-    @schema_registry = schema_registry
+  # @param registry [Registry]
+  def self.registry=(registry)
+    @registry = registry
   end
 
-  DEFAULT_SCHEMA_REGISTRY = Registry.new.tap do |schema_registry|
-    schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaDraft04.schema }
-    schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaDraft06.schema }
-    schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaDraft07.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/schema") { JSI::JSONSchemaDraft202012.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/core")         { JSI::JSONSchemaDraft202012::Core.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/applicator")    { JSI::JSONSchemaDraft202012::Applicator.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/unevaluated")    { JSI::JSONSchemaDraft202012::Unevaluated.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/validation")      { JSI::JSONSchemaDraft202012::Validation.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/meta-data")        { JSI::JSONSchemaDraft202012::MetaData.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-annotation") { JSI::JSONSchemaDraft202012::FormatAnnotation.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/content")          { JSI::JSONSchemaDraft202012::Content.schema }
+  DEFAULT_REGISTRY = Registry.new.tap do |registry|
+    registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaDraft04.schema }
+    registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaDraft06.schema }
+    registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaDraft07.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/schema") { JSI::JSONSchemaDraft202012.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/core")         { JSI::JSONSchemaDraft202012::Core.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/applicator")    { JSI::JSONSchemaDraft202012::Applicator.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/unevaluated")    { JSI::JSONSchemaDraft202012::Unevaluated.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/validation")      { JSI::JSONSchemaDraft202012::Validation.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/meta-data")        { JSI::JSONSchemaDraft202012::MetaData.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-annotation") { JSI::JSONSchemaDraft202012::FormatAnnotation.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/content")          { JSI::JSONSchemaDraft202012::Content.schema }
   end.freeze
 
-  self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup
+  self.registry = DEFAULT_REGISTRY.dup
 
   # translation
   # @param key [String]

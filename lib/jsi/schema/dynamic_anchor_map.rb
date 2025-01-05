@@ -28,7 +28,7 @@ module JSI
     # we remove such anchors from the dynamic_anchor_map it will be instantiated with.
     # The node's #jsi_next_schema_dynamic_anchor_map will remap such anchors to the node again.
     # @return [Schema::DynamicAnchorMap]
-    def without_node(node, document: node.jsi_document, ptr: node.jsi_ptr, schema_registry: node.jsi_schema_registry)
+    def without_node(node, document: node.jsi_document, ptr: node.jsi_ptr, registry: node.jsi_schema_registry)
       dynamic_anchor_map = self
       dynamic_anchor_map.each do |anchor, (anchor_root, anchor_ptrs)|
         # Determine whether this anchor maps to the indicated node.
@@ -39,7 +39,7 @@ module JSI
         # Realistically document+ptr is sufficient and correct outside of implausible edge cases.
         maps_to_node = anchor_root.jsi_document == document &&
           anchor_ptrs.inject(anchor_root.jsi_ptr, &:+) == ptr &&
-          anchor_root.jsi_schema_registry == schema_registry
+          anchor_root.jsi_schema_registry == registry
         if maps_to_node
           dynamic_anchor_map = dynamic_anchor_map.dup
           dynamic_anchor_map.delete(anchor)

@@ -262,9 +262,9 @@ If you are parsing with JSON.parse or YAML.load, it is recommended to pass the `
 
 ## Registration
 
-In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry (a {JSI::Registry}) which associates URIs with schemas (or resources containing schemas). The default registry is accessible on {JSI.schema_registry}.
+In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry (a {JSI::Registry}) which associates URIs with schemas (or resources containing schemas). The default registry is accessible on {JSI.registry}.
 
-Schemas instantiated with `.new_schema`, and their subschemas, are by default registered with `JSI.schema_registry` if they are identified by an absolute URI. This can be controlled by params `register` and `schema_registry`.
+Schemas instantiated with `.new_schema`, and their subschemas, are by default registered with `JSI.registry` if they are identified by an absolute URI. This can be controlled by params `register` and `registry`.
 
 Schemas can automatically be lazily loaded by registering a block which instantiates them with {JSI::Registry#autoload_uri} (see its documentation).
 

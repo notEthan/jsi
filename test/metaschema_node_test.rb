@@ -30,8 +30,8 @@ describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
   let(:metaschema_root_ref) { '#' }
   let(:root_schema_ref) { metaschema_root_ref }
-  let(:schema_registry) { nil }
-  let(:bootstrap_schema_registry) { nil }
+  let(:registry) { nil }
+  let(:bootstrap_registry) { nil }
   let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
@@ -39,8 +39,8 @@ describe(JSI::MetaSchemaNode) do
       msn_dialect: dialect,
       metaschema_root_ref: metaschema_root_ref,
       root_schema_ref: root_schema_ref,
-      jsi_schema_registry: schema_registry,
-      bootstrap_schema_registry: bootstrap_schema_registry,
+      jsi_schema_registry: registry,
+      bootstrap_schema_registry: bootstrap_registry,
       jsi_content_to_immutable: to_immutable,
     )
   end
@@ -50,7 +50,7 @@ describe(JSI::MetaSchemaNode) do
       root_node.jsi_descendent_node(JSI::Ptr.from_fragment(metaschema_root_ref.fragment))
     else
       root_node
-      JSI::Schema::Ref.new(metaschema_root_ref, schema_registry: schema_registry).deref_schema
+      JSI::Schema::Ref.new(metaschema_root_ref, registry: registry).deref_schema
     end
   end
 
@@ -208,11 +208,11 @@ describe(JSI::MetaSchemaNode) do
 
       let(:metaschema_root_ref) { "tag:7bg7:meta" }
 
-      let(:schema_registry) do
+      let(:registry) do
         JSI::Registry.new
       end
 
-      let(:bootstrap_schema_registry) do
+      let(:bootstrap_registry) do
         registry = JSI::Registry.new
         registry.register(bootstrap_schema(metaschema_document, registry: registry))
         registry.register(bootstrap_schema(applicator_document, registry: registry))
@@ -221,7 +221,7 @@ describe(JSI::MetaSchemaNode) do
 
       let(:applicator_schema) do
         metaschema
-        schema_registry.find("tag:7bg7:applicator")
+        registry.find("tag:7bg7:applicator")
       end
 
       it("acts like a meta-schema") do
@@ -303,7 +303,7 @@ describe(JSI::MetaSchemaNode) do
 
         schema_by_uri = JSI.new_schema(
           {"$schema" => "tag:7bg7:meta"},
-          schema_registry: schema_registry,
+          registry: registry,
         )
         assert_schemas([metaschema, applicator_schema], schema_by_uri)
 
