@@ -40,7 +40,7 @@ module JSI
       # allow for registration of resources at the root of a document whether or not they are schemas.
       # jsi_schema_base_uri at the root comes from the `uri` parameter to new_jsi / new_schema.
       if resource.jsi_schema_base_uri && resource.jsi_ptr.root?
-        internal_store(resource.jsi_schema_base_uri, resource)
+        internal_store(@resources, resource.jsi_schema_base_uri, resource)
       end
 
       resource.jsi_each_descendent_schema do |node|
@@ -52,7 +52,7 @@ module JSI
     # @return [void]
     def register_immediate(schema)
       schema.schema_absolute_uris.each do |uri|
-        internal_store(uri, schema)
+        internal_store(@resources, uri, schema)
       end
     end
 
@@ -164,19 +164,20 @@ module JSI
     end
 
     protected
+    # @param store [Hash]
     # @param uri [URI]
-    # @param resource [JSI::Base]
+    # @param entity
     # @return [void]
-    def internal_store(uri, resource)
+    def internal_store(store, uri, entity)
       mutating
       @mutex.synchronize do
         uri = registration_uri(uri)
-        if @resources.key?(uri)
-          if !@resources[uri].equal?(resource)
-            raise(Collision, "URI collision on #{uri}.\nexisting:\n#{@resources[uri].pretty_inspect.chomp}\nnew:\n#{resource.pretty_inspect.chomp}")
+        if store.key?(uri)
+          if !store[uri].equal?(entity)
+            raise(Collision, "URI collision on #{uri}.\nexisting:\n#{store[uri].pretty_inspect.chomp}\nnew:\n#{entity.pretty_inspect.chomp}")
           end
         else
-          @resources[uri] = resource
+          store[uri] = entity
         end
       end
       nil
