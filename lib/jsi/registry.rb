@@ -14,7 +14,7 @@ module JSI
     def initialize
       @resources = {}
       @resource_autoloaders = {}
-      @resources_mutex = Mutex.new
+      @mutex = Mutex.new
     end
 
     # registers the given resource and/or schema resources it contains in the registry.
@@ -159,7 +159,7 @@ module JSI
     def freeze
       @resources.freeze
       @resource_autoloaders.freeze
-      @resources_mutex = nil
+      @mutex = nil
       super
     end
 
@@ -169,7 +169,7 @@ module JSI
     # @return [void]
     def internal_store(uri, resource)
       mutating
-      @resources_mutex.synchronize do
+      @mutex.synchronize do
         uri = registration_uri(uri)
         if @resources.key?(uri)
           if !@resources[uri].equal?(resource)
