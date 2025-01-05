@@ -16,6 +16,8 @@ module JSI
       @resource_autoloaders = {}
       @vocabularies = {}
       @vocabulary_autoloaders = {}
+      @dialects = {}
+      @dialect_autoloaders = {}
       @mutex = Mutex.new
     end
 
@@ -169,6 +171,35 @@ module JSI
       @vocabularies.key?(uri) || @vocabulary_autoloaders.key?(uri)
     end
 
+    # @param dialect [Schema::Dialect]
+    # @param uri [#to_str]
+    # @return [void]
+    def register_dialect(dialect, uri: dialect.id)
+      raise(ArgumentError, "not a #{Schema::Dialect}: #{dialect.inspect}") if !dialect.is_a?(Schema::Dialect)
+      internal_store(@dialects, uri, dialect)
+    end
+
+    # @param uri [#to_str]
+    # @yieldreturn [Schema::Dialect]
+    # @return [void]
+    def autoload_dialect_uri(uri, &block)
+      internal_autoload(@dialect_autoloaders, uri, block)
+    end
+
+    # @param uri [#to_str]
+    # @return [Schema::Dialect]
+    # @raise [ResolutionError]
+    def find_dialect(uri)
+      internal_find(uri, @dialects, @dialect_autoloaders, proc { |v, uri| register_dialect(v, uri: uri) })
+    end
+
+    # @param uri [#to_str]
+    # @return [Boolean]
+    def dialect_registered?(uri)
+      uri = registration_uri(uri)
+      @dialects.key?(uri) || @dialect_autoloaders.key?(uri)
+    end
+
     def inspect
       [
         "#<#{self.class}",
@@ -177,6 +208,8 @@ module JSI
           ['resources autoload', @resource_autoloaders.keys],
           ['vocabularies', @vocabularies.keys],
           ['vocabularies autoload', @vocabulary_autoloaders.keys],
+          ['dialects', @dialects.keys],
+          ['dialects autoload', @dialect_autoloaders.keys],
         ].map do |label, uris|
           [
             "  #{label} (#{uris.size})#{uris.empty? ? "" : ":"}",
@@ -199,6 +232,8 @@ module JSI
         reg.instance_variable_get(:@resource_autoloaders).update(@resource_autoloaders)
         reg.instance_variable_get(:@vocabularies).update(@vocabularies)
         reg.instance_variable_get(:@vocabulary_autoloaders).update(@vocabulary_autoloaders)
+        reg.instance_variable_get(:@dialects).update(@dialects)
+        reg.instance_variable_get(:@dialect_autoloaders).update(@dialect_autoloaders)
       end
     end
 
@@ -207,6 +242,8 @@ module JSI
       @resource_autoloaders.freeze
       @vocabularies.freeze
       @vocabulary_autoloaders.freeze
+      @dialects.freeze
+      @dialect_autoloaders.freeze
       @mutex = nil
       super
     end

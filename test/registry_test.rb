@@ -226,6 +226,8 @@ describe("JSI::Registry") do
         resources autoload (0)
         vocabularies (0)
         vocabularies autoload (0)
+        dialects (0)
+        dialects autoload (0)
       >
       str
       assert_equal(inspect.chomp, JSI::Registry.new.inspect)
