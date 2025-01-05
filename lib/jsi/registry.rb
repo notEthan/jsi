@@ -140,6 +140,35 @@ module JSI
       @resources.key?(uri) || @resource_autoloaders.key?(uri)
     end
 
+    # @param vocabulary [Schema::Vocabulary]
+    # @param uri [#to_str]
+    # @return [void]
+    def register_vocabulary(vocabulary, uri: vocabulary.id)
+      raise(ArgumentError, "not a #{Schema::Vocabulary}: #{vocabulary.inspect}") if !vocabulary.is_a?(Schema::Vocabulary)
+      internal_store(@vocabularies, uri, vocabulary)
+    end
+
+    # @param uri [#to_str]
+    # @yieldreturn [Schema::Vocabulary]
+    # @return [void]
+    def autoload_vocabulary_uri(uri, &block)
+      internal_autoload(@vocabulary_autoloaders, uri, block)
+    end
+
+    # @param uri [#to_str]
+    # @return [Schema::Vocabulary]
+    # @raise [ResolutionError]
+    def find_vocabulary(uri)
+      internal_find(uri, @vocabularies, @vocabulary_autoloaders, proc { |v, uri| register_vocabulary(v, uri: uri) })
+    end
+
+    # @param uri [#to_str]
+    # @return [Boolean]
+    def vocabulary_registered?(uri)
+      uri = registration_uri(uri)
+      @vocabularies.key?(uri) || @vocabulary_autoloaders.key?(uri)
+    end
+
     def inspect
       [
         "#<#{self.class}",
