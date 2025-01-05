@@ -209,11 +209,11 @@ describe(JSI::MetaSchemaNode) do
       let(:metaschema_root_ref) { "tag:7bg7:meta" }
 
       let(:schema_registry) do
-        JSI::SchemaRegistry.new
+        JSI::Registry.new
       end
 
       let(:bootstrap_schema_registry) do
-        registry = JSI::SchemaRegistry.new
+        registry = JSI::Registry.new
         registry.register(bootstrap_schema(metaschema_document, registry: registry))
         registry.register(bootstrap_schema(applicator_document, registry: registry))
         registry

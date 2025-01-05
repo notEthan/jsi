@@ -82,6 +82,7 @@ module JSI
   autoload(:MetaSchemaNode, 'jsi/metaschema_node')
   autoload :SchemaModule, 'jsi/schema_classes'
   autoload :SchemaClasses, 'jsi/schema_classes'
+  autoload(:Registry, 'jsi/registry')
   autoload(:SchemaRegistry, 'jsi/registry')
   autoload :Validation, 'jsi/validation'
   autoload :JSICoder, 'jsi/jsi_coder'
@@ -135,20 +136,20 @@ module JSI
     new_metaschema(metaschema_document, **kw, &block).jsi_schema_module
   end
 
-  # `JSI.schema_registry` is the default {JSI::SchemaRegistry} in which schemas are registered and from
+  # `JSI.schema_registry` is the default {JSI::Registry} in which schemas are registered and from
   # which they resolve references.
   #
-  # @return [JSI::SchemaRegistry]
+  # @return [Registry]
   def self.schema_registry
     @schema_registry
   end
 
-  # @param schema_registry [JSI::SchemaRegistry]
+  # @param schema_registry [Registry]
   def self.schema_registry=(schema_registry)
     @schema_registry = schema_registry
   end
 
-  DEFAULT_SCHEMA_REGISTRY = SchemaRegistry.new.tap do |schema_registry|
+  DEFAULT_SCHEMA_REGISTRY = Registry.new.tap do |schema_registry|
     schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaDraft04.schema }
     schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaDraft06.schema }
     schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaDraft07.schema }

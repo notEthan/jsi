@@ -65,7 +65,7 @@ module JSI
     #   This is only useful when the JSI is a schema or contains schemas.
     #   The JSI's root will be registered with the `uri` param, if specified, whether or not the
     #   root is a schema.
-    # @param schema_registry [SchemaRegistry, nil] The registry to use for references to other schemas and,
+    # @param schema_registry [Registry, nil] The registry to use for references to other schemas and,
     #    depending on `register` and `uri` params, to register this JSI and/or any contained schemas with
     #    declared URIs.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes

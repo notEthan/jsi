@@ -84,7 +84,7 @@ module JSI
       #       `schema_registry`.
       # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
       #   will be registered in the schema registry indicated by param `schema_registry`.
-      # @param schema_registry [SchemaRegistry, nil] The registry this schema will use.
+      # @param schema_registry [Registry, nil] The registry this schema will use.
       #
       #   - The schema and subschemas will be registered here with any declared URI,
       #     unless the `register` param is false.

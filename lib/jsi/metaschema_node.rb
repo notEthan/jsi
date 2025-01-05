@@ -31,7 +31,7 @@ module JSI
     #   The default resolves to the root of the given document.
     # @param root_schema_ref [#to_str] URI reference to the schema describing the root of the jsi_document.
     #   When schemas of the meta-schema are in multiple documents, this describes the roots of all instantiated documents.
-    # @param bootstrap_schema_registry [SchemaRegistry, nil]
+    # @param bootstrap_schema_registry [Registry, nil]
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
@@ -174,7 +174,7 @@ module JSI
     # @return [Addressable::URI]
     attr_reader(:root_schema_ref)
 
-    # @return [SchemaRegistry, nil]
+    # @return [Registry, nil]
     attr_reader(:bootstrap_schema_registry)
 
     # JSI Schemas describing this MetaSchemaNode

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  class SchemaRegistry
+  class Registry
     # an exception raised when an attempt is made to register a resource using a URI which is already
     # registered with another resource
     class Collision < StandardError
@@ -78,7 +78,7 @@ module JSI
       uri = registration_uri(uri)
       mutating
       unless block
-        raise(ArgumentError, ["#{SchemaRegistry}#autoload_uri must be invoked with a block", "URI: #{uri}"].join("\n"))
+        raise(ArgumentError, ["#{Registry}#autoload_uri must be invoked with a block", "URI: #{uri}"].join("\n"))
       end
       if @autoload_uris.key?(uri)
         raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{@autoload_uris[uri]}"].join("\n"))
@@ -202,4 +202,7 @@ module JSI
       end
     end
   end
+
+  # @deprecated after v0.8
+  SchemaRegistry = Registry
 end

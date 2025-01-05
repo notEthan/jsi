@@ -9,8 +9,8 @@ module JSI
     JSON.parse(path.join(schema['$ref'] + '.json').read, freeze: true)
   end
 
-  jsi_schema_registry = SchemaRegistry.new
-  bootstrap_schema_registry = SchemaRegistry.new
+  jsi_schema_registry = Registry.new
+  bootstrap_schema_registry = Registry.new
   bootstrap_metaschema = dialect.bootstrap_schema(metaschema_document, jsi_schema_registry: bootstrap_schema_registry)
   bootstrap_schema_registry.register(bootstrap_metaschema)
   vocabulary_schema_documents.each do |vocabulary_schema_document|

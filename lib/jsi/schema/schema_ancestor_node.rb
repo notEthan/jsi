@@ -33,7 +33,7 @@ module JSI
     attr_reader(:jsi_schema_dynamic_anchor_map)
 
     # See {SchemaSet#new_jsi} param `schema_registry`
-    # @return [SchemaRegistry, nil]
+    # @return [Registry, nil]
     attr_reader(:jsi_schema_registry)
 
     # the URI of the resource containing this node.

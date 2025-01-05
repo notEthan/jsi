@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-describe 'JSI::SchemaRegistry' do
+describe("JSI::Registry") do
   let(:schema_registry) { JSI::DEFAULT_SCHEMA_REGISTRY.dup }
 
   describe 'operation' do
@@ -69,7 +69,7 @@ describe 'JSI::SchemaRegistry' do
       uri = 'http://jsi/schema_registry/r3fi'
       schema = JSI::JSONSchemaDraft07.new_schema({'$id' => uri}, register: false)
       schema_registry.register(schema)
-      assert_raises(JSI::SchemaRegistry::Collision) do
+      assert_raises(JSI::Registry::Collision) do
         schema_registry.register(JSI::JSONSchemaDraft07.new_schema({'$id' => uri}))
       end
     end
@@ -80,7 +80,7 @@ describe 'JSI::SchemaRegistry' do
       res1 = JSI::JSONSchemaDraft07.new_jsi({'$id' => uri, 'title' => 'res1'})
       res2 = JSI::JSONSchemaDraft07.new_jsi({'$id' => uri, 'title' => 'res2'})
       schema_registry.register(res1)
-      err = assert_raises(JSI::SchemaRegistry::Collision) do
+      err = assert_raises(JSI::Registry::Collision) do
         schema_registry.register(res2)
       end
       msg = <<~MSG
@@ -200,7 +200,7 @@ describe 'JSI::SchemaRegistry' do
     it "registers a URI with two different autoloads" do
       uri = 'http://jsi/schema_registry/rz4l'
       schema_registry.autoload_uri(uri) { x }
-      err = assert_raises(JSI::SchemaRegistry::Collision) { schema_registry.autoload_uri(uri) { y } }
+      err = assert_raises(JSI::Registry::Collision) { schema_registry.autoload_uri(uri) { y } }
       msg = <<~MSG
         already registered URI for autoload
         URI: http://jsi/schema_registry/rz4l
@@ -213,7 +213,7 @@ describe 'JSI::SchemaRegistry' do
       uri = 'http://jsi/schema_registry/j0s5'
       err = assert_raises(ArgumentError) { schema_registry.autoload_uri(uri) }
       msg = <<~MSG
-        JSI::SchemaRegistry#autoload_uri must be invoked with a block
+        JSI::Registry#autoload_uri must be invoked with a block
         URI: http://jsi/schema_registry/j0s5
         MSG
       assert_equal(msg.chomp, err.message)
@@ -221,12 +221,12 @@ describe 'JSI::SchemaRegistry' do
 
     it '#inspect' do
       inspect = <<~str
-      #<JSI::SchemaRegistry
+      #<JSI::Registry
         resources (0)
         autoload (0)
       >
       str
-      assert_equal(inspect.chomp, JSI::SchemaRegistry.new.inspect)
+      assert_equal(inspect.chomp, JSI::Registry.new.inspect)
     end
 
     it 'dups' do
