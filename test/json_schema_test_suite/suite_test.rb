@@ -50,15 +50,7 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
           )
 
           if remote_content['$vocabulary']
-            vocabularies = Set[]
-            remote_content['$vocabulary'].each do |vocabulary_uri, required|
-              if required || jsts_registry.vocabulary_registered?(vocabulary_uri)
-                vocabularies << jsts_registry.find_vocabulary(vocabulary_uri)
-              end
-            end
-
-            dialect = JSI::Schema::Dialect.new(vocabularies: vocabularies)
-            schema.describes_schema!(dialect)
+            schema.describes_schema!
           end
 
           schema
