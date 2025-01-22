@@ -39,7 +39,7 @@ module JSI
             resolved_schema = initial_resolution
           end
 
-          [ref, resolved_schema.jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)]
+          [ref, resolved_schema.with_dynamic_scope_from(schema)]
         end
 
         element.add_action(:inplace_applicate) do
