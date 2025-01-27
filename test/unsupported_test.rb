@@ -369,10 +369,6 @@ describe 'unsupported behavior' do
         @ary.each_index(&b)
       end
 
-      def keys
-        @ary.each_index.to_a
-      end
-
       def each_key(&b)
         @ary.each_index(&b)
       end
