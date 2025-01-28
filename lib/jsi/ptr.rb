@@ -61,9 +61,9 @@ module JSI
       #     => JSI::Ptr["foo bar"]
       #
       # Note: A fragment does not include a leading '#'. The string "#/foo" is a URI containing the
-      # fragment "/foo", which should be parsed by `Addressable::URI` before passing to this method, e.g.:
+      # fragment "/foo", which should be parsed by `JSI::URI` before passing to this method, e.g.:
       #
-      #     JSI::Ptr.from_fragment(Addressable::URI.parse("#/foo").fragment)
+      #     JSI::Ptr.from_fragment(JSI::URI["#/foo"].fragment)
       #     => JSI::Ptr["foo"]
       #
       # @param fragment [String] a fragment containing a pointer
@@ -71,7 +71,7 @@ module JSI
       # @raise [JSI::Ptr::PointerSyntaxError] when the fragment does not contain a pointer with
       #   valid pointer syntax
       def self.from_fragment(fragment)
-        from_pointer(Addressable::URI.unescape(fragment))
+        from_pointer(URI.unescape(fragment))
       end
 
       # parse a pointer string and instantiate as a JSI::Ptr
@@ -153,13 +153,13 @@ module JSI
       # the fragment string representation of this pointer
       # @return [String]
       def fragment
-        Addressable::URI.escape(pointer).freeze
+        URI.escape(pointer).freeze
       end
 
       # a URI consisting of a fragment containing this pointer's fragment string representation
-      # @return [Addressable::URI]
+      # @return [URI]
       def uri
-        Addressable::URI.new(fragment: fragment).freeze
+        URI.new(fragment: fragment)
       end
 
       # whether this pointer is empty, i.e. it has no tokens

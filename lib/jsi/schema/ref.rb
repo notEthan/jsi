@@ -29,7 +29,7 @@ module JSI
     # @return [String]
     attr_reader :ref
 
-    # @return [Addressable::URI]
+    # @return [URI]
     attr_reader :ref_uri
 
     # @return [Schema, nil]
@@ -55,7 +55,7 @@ module JSI
         end
       }
 
-      ref_uri_nofrag = ref_uri.merge(fragment: nil).freeze
+      ref_uri_nofrag = ref_uri.merge(fragment: nil)
 
       if ref_uri_nofrag.empty?
         unless ref_schema
@@ -76,7 +76,7 @@ module JSI
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
         elsif ref_schema && ref_schema.jsi_resource_ancestor_uri
-          ref_abs_uri = ref_schema.jsi_resource_ancestor_uri.join(ref_uri_nofrag).freeze
+          ref_abs_uri = ref_schema.jsi_resource_ancestor_uri.join(ref_uri_nofrag)
         else
           ref_abs_uri = nil
         end
@@ -95,7 +95,7 @@ module JSI
           # HAX for how google does refs and ids
           if ref_schema && ref_schema.jsi_document.respond_to?(:to_hash) && ref_schema.jsi_document['schemas'].respond_to?(:to_hash)
             ref_schema.jsi_document['schemas'].each do |k, v|
-              if Addressable::URI.parse(v['id']) == ref_uri_nofrag
+              if URI[v['id']] == ref_uri_nofrag
                 schema_resource_root = ref_schema.resource_root_subschema(['schemas', k])
               end
             end

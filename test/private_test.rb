@@ -7,7 +7,6 @@ require_relative 'test_helper'
 
 describe(JSI::MetaSchemaNode::BootstrapSchema) do
   let(:dialect) { JSI::Schema::Dialect.new(id: 'tag:dialect:dqzk', vocabularies: []) }
-  let(:bootstrap_schema_class) { dialect.bootstrap_schema_class }
   let(:document) do
     JSI::DEFAULT_CONTENT_TO_IMMUTABLE[{
       "properties" => {
@@ -23,7 +22,7 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
   end
 
   it 'is pretty' do
-    schema = bootstrap_schema_class.new(document)
+    schema = dialect.bootstrap_schema(document)
 
     inspect = -%Q(#<JSI::MetaSchemaNode::BootstrapSchema (tag:dialect:dqzk) # #{document.inspect}>)
     assert_equal(inspect, schema.inspect)
@@ -32,9 +31,9 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
     assert_match(%r(\A#<JSI::MetaSchemaNode::BootstrapSchema \(tag:dialect:dqzk\) #\n  .*\n>\Z)m, schema.pretty_inspect)
   end
 
-  it 'has a named class' do
+  it('class inspect') do
     assert_equal('JSI::MetaSchemaNode::BootstrapSchema', JSI::MetaSchemaNode::BootstrapSchema.inspect)
-    assert_equal('JSI::MetaSchemaNode::BootstrapSchema (#<JSI::Schema::Dialect id: <tag:dialect:dqzk>>)', bootstrap_schema_class.inspect)
+    assert_equal('JSI::MetaSchemaNode::BootstrapSchema (#<JSI::Schema::Dialect id: <tag:dialect:dqzk>>)', dialect.bootstrap_schema_class.inspect)
   end
 end
 

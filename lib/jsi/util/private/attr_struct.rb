@@ -77,7 +77,7 @@ module JSI
         end
         bad = @attributes.each_key.reject { |k| class_attribute_keys.include?(k) }
         unless bad.empty?
-          raise UndefinedAttributeKey, "undefined attribute keys: #{bad.map(&:inspect).join(', ')}"
+          raise(UndefinedAttributeKey, "undefined attribute keys for #{self.class}: #{bad.map(&:inspect).join(', ')}")
         end
       end
 
@@ -97,7 +97,7 @@ module JSI
       # @return [void]
       def pretty_print(q)
         jsi_pp_object_group(q, empty: @attributes.empty?) do
-            q.seplist(@attributes, nil, :each_pair) { |k, v|
+            q.seplist(@attributes) { |k, v|
                 q.text k
                 q.text ': '
                 q.pp v

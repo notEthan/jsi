@@ -35,7 +35,7 @@ describe("JSON Referencing Test Suite") do
               base_uri = init_test['base_uri']
               curr_test = init_test
               while curr_test
-                ref_uri = base_uri ? JSI::Util.uri(base_uri).join(curr_test['ref']).freeze : curr_test['ref']
+                ref_uri = base_uri ? JSI::Util.uri(base_uri).join(curr_test['ref']) : curr_test['ref']
                 ref = JSI::Schema::Ref.new(ref_uri, schema_registry: schema_registry)
                 if curr_test['error']
                   fail(Bug) if curr_test['then']

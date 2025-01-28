@@ -112,7 +112,7 @@ module JSI
     # @api private
     # @param jsi_document [Object] the document containing the instance
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
-    # @param jsi_schema_base_uri [Addressable::URI] see {SchemaSet#new_jsi} param uri
+    # @param jsi_schema_base_uri [URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
@@ -316,13 +316,13 @@ module JSI
     #
     # @return [Array<JSI::Base>]
     def jsi_parent_nodes
-      parent = jsi_root_node
-
-      jsi_ptr.tokens.map do |token|
-        parent.tap do
-          parent = parent.jsi_child_node(token)
-        end
-      end.reverse!.freeze
+      parent_nodes = []
+      ptr = jsi_ptr
+      while !ptr.root?
+        ptr = ptr.parent
+        parent_nodes.push(jsi_root_node.jsi_descendent_node(ptr))
+      end
+      parent_nodes.freeze
     end
 
     # the immediate parent of this JSI. nil if there is no parent.
@@ -356,7 +356,7 @@ module JSI
       tokens.inject(self, &:jsi_child_node)
     end
 
-    # A shorthand alias for {#jsi_descendent_node}.
+    # The descendent node at the given {Ptr}, token array, or pointer string.
     #
     # Note that, though more convenient to type, using an operator whose meaning may not be intuitive
     # to a reader could impair readability of code.
@@ -365,13 +365,14 @@ module JSI
     #
     #     my_jsi / ['foo', 'bar']
     #     my_jsi / %w(foo bar)
+    #     my_jsi / '/foo/bar'
     #     my_schema / JSI::Ptr['additionalProperties']
     #     my_schema / %w(properties foo items additionalProperties)
     #
-    # @param (see #jsi_descendent_node)
+    # @param ptr [JSI::Ptr, #to_ary, #to_str]
     # @return (see #jsi_descendent_node)
     def /(ptr)
-      jsi_descendent_node(ptr)
+      jsi_descendent_node(ptr.respond_to?(:to_str) ? Ptr.from_pointer(ptr) : ptr)
     end
 
     # yields each token (array index or hash key) identifying a child node.
@@ -398,6 +399,15 @@ module JSI
       false
     end
 
+    # @api private
+    # @return [nil]
+    def jsi_child_ensure_present(token)
+      if !jsi_child_token_present?(token)
+        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
+      end
+      nil
+    end
+
     # The child of the {#jsi_node_content} identified by the given token,
     # or `nil` if the token does not identify an existing child.
     #
@@ -418,9 +428,7 @@ module JSI
     # @return [JSI::Base, Object]
     # @raise [Base::ChildNotPresent]
     def jsi_child(token, as_jsi: )
-      if !jsi_child_token_present?(token)
-        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
-      end
+      jsi_child_ensure_present(token)
 
       child_content = jsi_node_content_child(token)
 

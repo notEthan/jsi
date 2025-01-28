@@ -158,7 +158,7 @@ describe JSI::Schema do
           ],
         }
         all_act_uris = all_exp_uris.each_key.map do |uri|
-          subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
+          subschema = JSI::Ptr.from_fragment(JSI::URI[uri].fragment).evaluate(schema)
           {uri => subschema.schema_uris.map(&:to_s)}
         end.inject({}, &:update)
         assert_equal(all_exp_uris, all_act_uris)
@@ -227,7 +227,7 @@ describe JSI::Schema do
           ],
         }
         all_act_uris = all_exp_uris.each_key.map do |uri|
-          subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
+          subschema = JSI::Ptr.from_fragment(JSI::URI[uri].fragment).evaluate(schema)
           {uri => subschema.schema_uris.map(&:to_s)}
         end.inject({}, &:update)
         assert_equal(all_exp_uris, all_act_uris)
@@ -288,7 +288,7 @@ describe JSI::Schema do
           ],
         }
         all_act_uris = all_exp_uris.each_key.map do |uri|
-          subschema = JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(schema)
+          subschema = JSI::Ptr.from_fragment(JSI::URI[uri].fragment).evaluate(schema)
           {uri => subschema.schema_uris.map(&:to_s)}
         end.inject({}, &:update)
         assert_equal(all_exp_uris, all_act_uris)

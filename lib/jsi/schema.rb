@@ -68,7 +68,7 @@ module JSI
       # the `to_immutable` param.
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
-      # @param uri [#to_str, Addressable::URI] The retrieval URI of the schema document.
+      # @param uri [#to_str, URI] The retrieval URI of the schema document.
       #   If specified, the root schema will be identified by this URI, in addition
       #   to any absolute URI declared with an id keyword, for resolution in the `schema_registry`.
       #
@@ -387,6 +387,12 @@ module JSI
       schema_content.respond_to?(:to_hash) && schema_content.key?(keyword)
     end
 
+    # Does this schema contain the given keyword with the given value?
+    # @return [Boolean]
+    def keyword_value?(keyword, value)
+      keyword?(keyword) && schema_content[keyword] == value
+    end
+
     # the string contents of an `$id`/`id` keyword, or nil
     # @return [#to_str, nil]
     def id
@@ -402,22 +408,22 @@ module JSI
     end
 
     # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
-    # @return [Addressable::URI, nil]
+    # @return [URI, nil]
     def schema_absolute_uri
       schema_absolute_uris.first
     end
 
-    # @return [Enumerable<Addressable::URI>]
+    # @return [Enumerable<URI>]
     def schema_absolute_uris
-      @schema_absolute_uris_map[]
+      @schema_absolute_uris_map[schema_content: schema_content]
     end
 
-    # @yield [Addressable::URI]
+    # @yield [URI]
     private def schema_absolute_uris_compute
       root_uri = jsi_schema_base_uri if jsi_ptr.root?
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
         if jsi_schema_base_uri
-          uri = jsi_schema_base_uri.join(id_without_fragment).freeze
+          uri = jsi_schema_base_uri.join(id_without_fragment)
           root_uri = nil if root_uri == uri
           yield(uri)
         elsif id_without_fragment.absolute?
@@ -430,25 +436,25 @@ module JSI
     # a nonrelative URI which refers to this schema.
     # `nil` if no ancestor of this schema defines an id.
     # see {#schema_uris} for all URIs known to refer to this schema.
-    # @return [Addressable::URI, nil]
+    # @return [URI, nil]
     def schema_uri
       schema_uris.first
     end
 
     # nonrelative URIs (that is, absolute, but possibly with a fragment) which refer to this schema
-    # @return [Array<Addressable::URI>]
+    # @return [Array<URI>]
     def schema_uris
-      @schema_uris_map[]
+      @schema_uris_map[schema_content: schema_content]
     end
 
-    # @yield [Addressable::URI]
+    # @yield [URI]
     private def schema_uris_compute(&block)
       schema_absolute_uris.each(&block)
 
       if schema_resource_root
         anchors.each do |anchor|
           schema_resource_root.schema_absolute_uris.each do |uri|
-            yield(uri.merge(fragment: anchor).freeze)
+            yield(uri.merge(fragment: anchor))
           end
         end
       end
@@ -456,7 +462,7 @@ module JSI
       jsi_subschema_resource_ancestors.reverse_each do |ancestor_schema|
         relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
         ancestor_schema.schema_absolute_uris.each do |uri|
-          yield(uri.merge(fragment: relative_ptr.fragment).freeze)
+          yield(uri.merge(fragment: relative_ptr.fragment))
         end
       end
 
@@ -688,9 +694,15 @@ module JSI
     # For each in-place applicator schema that applies to the given instance, yields each child applicator
     # of that schema that applies to the child of the instance on the given token.
     #
+    # This method handles collection of whether the child was evaluated by any applicator
+    # when that evaluation is needed by either this schema or the caller (per param `collect_evaluated`).
+    # This is relevant to schemas containing `unevaluatedProperties` or `unevaluatedItems`.
+    #
     # @param token [Object] array index or hash/object property name
     # @param instance [Object]
-    # @param collect_evaluated [Boolean] collect successful child evaluation?
+    # @param collect_evaluated [Boolean] Does the caller need this method to collect successful child evaluation?
+    #   Note: this method will still collect child evaluation if this schema needs it; this only needs to be
+    #   passed true when called by an in-place applicator schema that needs it (i.e. contains `unevaluated*`).
     # @yield [Schema]
     # @return [Boolean] if `collect_evaluated` is true, whether the child was successfully evaluated
     #   by a child applicator schema. if `collect_evaluated` is false, undefined/void.
@@ -748,7 +760,7 @@ module JSI
     # array of "required" property keys.
     # @return [Set]
     def described_object_property_names
-      @described_object_property_names_map[]
+      @described_object_property_names_map[schema_content: schema_content]
     end
 
     # Validates the given instance against this schema, returning a result with each validation error.
@@ -892,6 +904,8 @@ module JSI
 
     private
 
+    KEY_BY_NONE = proc { nil }
+
     def jsi_schema_initialize
       # guard against being called twice on MetaSchemaNode, first from extend(Schema) then extend(jsi_schema_module) that includes Schema.
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
@@ -900,9 +914,9 @@ module JSI
       @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
         Schema::Ref.new(value, ref_schema: self)
       end
-      @schema_absolute_uris_map = jsi_memomap { to_enum(:schema_absolute_uris_compute).to_a.freeze }
-      @schema_uris_map = jsi_memomap { to_enum(:schema_uris_compute).to_a.freeze }
-      @described_object_property_names_map = jsi_memomap do
+      @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
+      @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
+      @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
         dialect_invoke_each(:described_object_property_names).to_set.freeze
       end
       if dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }

@@ -82,7 +82,7 @@ module JSI
       type_err = proc { raise(TypeError, "cannot express object as json: #{object.pretty_inspect.chomp}") }
       if object.respond_to?(:as_json)
         options.empty? ? object.as_json : object.as_json(**options) # TODO remove eventually (keyword argument compatibility)
-      elsif object.is_a?(Addressable::URI)
+      elsif object.is_a?(URI)
         object.to_s
       elsif object.respond_to?(:to_hash) && (object_to_hash = object.to_hash).is_a?(Hash)
         result = {}
@@ -103,7 +103,7 @@ module JSI
         object
       elsif object.is_a?(Symbol)
         object.to_s
-      elsif object.is_a?(Set)
+      elsif object.is_a?(::Set)
         as_json(object.to_a, **options)
       elsif object.respond_to?(:to_str) && (object_to_str = object.to_str).is_a?(String)
         object_to_str
@@ -161,7 +161,7 @@ module JSI
     end
 
     def deep_stringify_symbol_keys(object)
-      if object.respond_to?(:to_hash) && !object.is_a?(Addressable::URI)
+      if object.respond_to?(:to_hash) && !object.is_a?(URI)
         JSI::Util.modified_copy(object) do |hash|
           out = {}
           (hash.respond_to?(:each) ? hash : hash.to_hash).each do |k, v|

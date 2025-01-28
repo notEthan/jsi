@@ -118,6 +118,12 @@ module JSI
         nil
       end
 
+      # @deprecated after v0.8
+      # iterating (recursively) is better done with #each_validation_error
+      def validation_errors
+        each_validation_error.to_set
+      end
+
       # @return [Set]
       attr_reader(:evaluated_tokens)
 

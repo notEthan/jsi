@@ -60,7 +60,7 @@ jobs:
     - run: bundle exec ruby readme.rb
 
     - name: Report to Coveralls
-      uses: coverallsapp/github-action@v2.3.4
+      uses: coverallsapp/github-action@v2.3.6
       with:
         github-token: ${{ secrets.github_token }}
         flag-name: "test ruby: ${{ matrix.ruby-version }} os: ${{ matrix.runs-on }}"
@@ -72,7 +72,7 @@ jobs:
     steps:
 
     - name: Report completion to Coveralls
-      uses: coverallsapp/github-action@v2.3.4
+      uses: coverallsapp/github-action@v2.3.6
       with:
         github-token: ${{ secrets.github_token }}
         parallel-finished: true

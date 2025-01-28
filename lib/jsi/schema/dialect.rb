@@ -52,7 +52,7 @@ module JSI
         freeze
       end
 
-      # @return [Addressable::URI, nil]
+      # @return [URI, nil]
       attr_reader(:id)
 
       # @return [Set<Schema::Vocabulary>]
@@ -68,6 +68,12 @@ module JSI
       # @api private
       # @return [Class subclass of MetaSchemaNode::BootstrapSchema]
       attr_reader(:bootstrap_schema_class)
+
+      # @api private
+      # @return [MetaSchemaNode::BootstrapSchema]
+      def bootstrap_schema(document, **kw)
+        bootstrap_schema_class.new(document, **kw)
+      end
 
       # Invoke the indicated action of each Element on the given context
       # @param action_name [Symbol]

@@ -80,7 +80,7 @@ describe JSI::Ptr do
         '#/m~0n',       8,
       ]
       evaluations.each_slice(2) do |uri, value|
-        assert_equal(value, JSI::Ptr.from_fragment(Addressable::URI.parse(uri).fragment).evaluate(document))
+        assert_equal(value, JSI::Ptr.from_fragment(JSI::URI[uri].fragment).evaluate(document))
       end
     end
 
