@@ -6,7 +6,6 @@ describe(JSI::MetaSchemaNode) do
   let(:root_schema_ref) { metaschema_root_ref }
   let(:registry) { nil }
   let(:bootstrap_registry) { nil }
-  let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
     JSI.new_metaschema_node(metaschema_document,
