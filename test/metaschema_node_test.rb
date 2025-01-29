@@ -35,13 +35,12 @@ describe(JSI::MetaSchemaNode) do
   let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
-    JSI.new_metaschema_node(to_immutable[metaschema_document],
+    JSI.new_metaschema_node(metaschema_document,
       dialect: dialect,
       metaschema_root_ref: metaschema_root_ref,
       root_schema_ref: root_schema_ref,
       jsi_registry: registry,
       bootstrap_registry: bootstrap_registry,
-      jsi_content_to_immutable: to_immutable,
     )
   end
   let(:metaschema) do
