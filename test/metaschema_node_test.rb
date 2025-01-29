@@ -6,7 +6,6 @@ describe(JSI::MetaSchemaNode) do
   let(:root_schema_ref) { metaschema_root_ref }
   let(:registry) { nil }
   let(:bootstrap_registry) { nil }
-  let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
     JSI.new_metaschema_node(metaschema_document,
@@ -29,7 +28,7 @@ describe(JSI::MetaSchemaNode) do
 
   def bootstrap_schema(schema_content, registry: nil, base_uri: nil)
     dialect.bootstrap_schema(
-      schema_content,
+      JSI::DEFAULT_CONTENT_TO_IMMUTABLE[schema_content],
       jsi_schema_base_uri: JSI::Util.uri(base_uri, nnil: false),
       jsi_registry: registry,
     )
@@ -150,7 +149,7 @@ describe(JSI::MetaSchemaNode) do
       end
 
       let(:metaschema_document) do
-        to_immutable[YAML.load(<<~YAML
+        YAML.load(<<~YAML
           $id: "tag:7bg7:meta"
           allOf:
             - "$ref": "tag:7bg7:applicator"
@@ -158,11 +157,11 @@ describe(JSI::MetaSchemaNode) do
             "$id": {}
             "$ref": {}
           YAML
-        )]
+        )
       end
 
       let(:applicator_document) do
-        to_immutable[YAML.load(<<~YAML
+        YAML.load(<<~YAML
           $id: "tag:7bg7:applicator"
           properties:
             properties:
@@ -176,7 +175,7 @@ describe(JSI::MetaSchemaNode) do
               items:
                 "$ref": "tag:7bg7:meta"
           YAML
-        )]
+        )
       end
 
       let(:metaschema_root_ref) { "tag:7bg7:meta" }
