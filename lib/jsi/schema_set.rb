@@ -5,6 +5,9 @@ module JSI
   #
   # any schema instance is described by a set of schemas.
   class SchemaSet < Set
+    COMPARE_BY_IDENTITY_DEFINED = method_defined?(:compare_by_identity)
+    private_constant(:COMPARE_BY_IDENTITY_DEFINED)
+
     class << self
       # Builds a SchemaSet, yielding a yielder to be called with each schema of the SchemaSet.
       #
@@ -38,7 +41,20 @@ module JSI
         raise(ArgumentError, "#{SchemaSet} initialized with non-Enumerable: #{enum.pretty_inspect.chomp}")
       end
 
-      super
+      super(&nil) # note super() does implicitly pass block without &nil
+      if COMPARE_BY_IDENTITY_DEFINED
+        compare_by_identity
+      else
+        # TODO rm when Set#compare_by_identity is universally available.
+        # note does not work on JRuby, but JRuby has Set#compare_by_identity.
+        @hash.compare_by_identity
+      end
+
+      if block
+        enum.each_entry { |o| add(block[o]) }
+      else
+        merge(enum)
+      end
 
       not_schemas = reject { |s| s.is_a?(Schema) }
       if !not_schemas.empty?
