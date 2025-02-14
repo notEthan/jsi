@@ -107,9 +107,9 @@ module JSI
     attr_writer(:jsi_schema_registry)
 
     def jsi_anchor_subschemas_compute(anchor: )
-      jsi_each_descendent_schema_same_resource.select do |schema|
+      SchemaSet.new(jsi_each_descendent_schema_same_resource.select do |schema|
         schema.anchors.include?(anchor)
-      end.to_set.freeze
+      end)
     end
 
     # @return [Util::MemoMap]
