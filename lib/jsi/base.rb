@@ -740,33 +740,36 @@ module JSI
     def jsi_object_group_text
       jsi_schemas = self.jsi_schemas || Util::EMPTY_SET # for debug during MSN initialize, may not be set yet
       schemas_priorities = jsi_schemas.each_with_index.map do |schema, i|
-        if schema.describes_schema?
-          [0, i, schema]
-        elsif schema.jsi_schema_module_name
-          [1, i, schema]
-        elsif schema.jsi_schema_module_name_from_ancestor
-          [2, i, schema]
-        elsif schema.schema_absolute_uri
-          [3, i, schema]
-        elsif schema.schema_uri
-          [4, i, schema]
-        elsif !schema.respond_to?(:to_hash)
-          # boolean
-          [9, i, schema]
-        elsif schema.empty?
-          [8, i, schema]
-        elsif schema.all? { |k, _| k == '$ref' || k == '$dynamicRef' }
-          [7, i, schema]
-        else
-          [5, i, schema]
-        end
+        priority = [
+          schema.describes_schema? ? 0 : 1,
+
+          schema.jsi_schema_module_name ?
+            0
+          : schema.jsi_schema_module_name_from_ancestor ?
+            1
+          : schema.schema_absolute_uri ?
+            2
+          : schema.schema_uri ?
+            3
+          : 5,
+
+          !schema.respond_to?(:to_hash) ?
+            # boolean
+            9
+          : schema.empty? ?
+            8
+          : schema.all? { |k, _| k == '$ref' || k == '$dynamicRef' } ?
+            7
+          : 5,
+        ]
+        [priority, i, schema]
       end.sort
 
       schema_names = []
       schemas_priorities.each do |(priority, _idx, schema)|
-        if priority == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
+        if priority[0] == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
           name = schema.jsi_schema_module_name_from_ancestor || schema.schema_uri
-          name ||= schema.jsi_ptr.uri if priority == 0
+          name ||= schema.jsi_ptr.uri if priority[0] == 0
           schema_names << name if name
         end
       end
