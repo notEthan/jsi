@@ -62,8 +62,8 @@ module JSI
       @to_initialize_finish = []
 
       @msn_dialect = msn_dialect
-      @metaschema_root_ref = metaschema_root_ref = Util.uri(metaschema_root_ref)
-      @root_schema_ref     = root_schema_ref     = Util.uri(root_schema_ref)
+      @metaschema_root_ref = metaschema_root_ref = Util.uri(metaschema_root_ref, nnil: true)
+      @root_schema_ref     = root_schema_ref     = Util.uri(root_schema_ref, nnil: true)
       @bootstrap_schema_registry = bootstrap_schema_registry
 
       if jsi_ptr.root? && jsi_schema_base_uri

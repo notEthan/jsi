@@ -89,7 +89,7 @@ module JSI
     # @param ynorm must be normalized
     # @param tonorm normalize returned URI
     # @return [URI, nil]
-    def uri(uri, nnil: true, yabs: false, ynorm: false, tonorm: false)
+    def uri(uri, nnil: false, yabs: false, ynorm: false, tonorm: false)
       return nil if !nnil && uri.nil?
       if uri.is_a?(URI)
         auri = uri

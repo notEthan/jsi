@@ -18,7 +18,7 @@ module JSI
     def initialize(ref, ref_schema: nil, schema_registry: (schema_registry_undefined = true))
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
-      @ref_uri = Util.uri(ref)
+      @ref_uri = Util.uri(ref, nnil: true)
       @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
       @schema_registry = !schema_registry_undefined ? schema_registry
       : ref_schema ? ref_schema.jsi_schema_registry
