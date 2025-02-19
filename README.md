@@ -163,11 +163,13 @@ JSI supports these JSON Schema specification versions:
 | Draft 4 | `http://json-schema.org/draft-04/schema#` | {JSI::JSONSchemaDraft04} |
 | Draft 6 | `http://json-schema.org/draft-06/schema#` | {JSI::JSONSchemaDraft06} |
 | Draft 7 | `http://json-schema.org/draft-07/schema#` | {JSI::JSONSchemaDraft07} |
+| Draft 2020-12 | `https://json-schema.org/draft/2020-12/schema` | {JSI::JSONSchemaDraft202012} |
 
 Caveats:
 
 - Regular expressions are interpreted by Ruby's Regexp class, whereas JSON Schema recommends interpreting these as ECMA 262 regular expressions. Certain expressions behave differently, particularly `^` and `$`.
 - The `format` keyword does not perform validation. This may be implemented in the future.
+- Draft 2020-12: `$schema` has no effect except at the document root ([#341](https://github.com/notEthan/jsi/issues/341))
 - Draft 7: Keywords `contentMediaType` and `contentEncoding` do not perform validation.
 - Draft 4: `$ref` is only used as a reference from schemas - it will not be followed when used on objects that are not schemas. This is consistent with specifications since Draft 4, but in Draft 4 the [JSON Reference](https://datatracker.ietf.org/doc/html/draft-pbryan-zyp-json-ref-03) specification would allow `$ref` to be used anywhere. JSI does not do this.
 
