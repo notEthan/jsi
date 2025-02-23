@@ -159,7 +159,7 @@ module JSI
       ))
     end
 
-    MetaSchemaNode.new(metaschema_document, jsi_conf: conf)
+    MetaSchemaNode.new(metaschema_document, jsi_conf: conf).jsi_initialize_finish
   end
 
   # `JSI.registry` is the default {JSI::Registry} in which schemas are registered and from

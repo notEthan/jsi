@@ -81,6 +81,8 @@ module JSI
     end
 
     # See {JSI.new_metaschema_node} to instantiate.
+    #
+    # Note: when instantiating MetaSchemaNode directly, the caller must invoke #jsi_initialize_finish.
     # @api private
     # @param jsi_document the document containing the meta-schema.
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
@@ -88,7 +90,6 @@ module JSI
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        initialize_finish: true,
         jsi_root_node: nil,
         **kw
     )
@@ -161,12 +162,11 @@ module JSI
           end
         end
       end
-
-      jsi_initialize_finish if initialize_finish
     end
 
-    private def jsi_initialize_finish
-      return if @initialize_finish_started
+    # @api private
+    def jsi_initialize_finish
+      return self if @initialize_finish_started
       @initialize_finish_started = true
 
       @jsi_schemas = SchemaSet.new(@bootstrap_schemas) { |s| bootstrap_schema_to_msn(s) }
@@ -199,7 +199,7 @@ module JSI
       @initialize_finished = true
       while !@to_initialize_finish.empty?
         node = @to_initialize_finish.shift
-        node.send(:jsi_initialize_finish)
+        node.jsi_initialize_finish
       end
 
       jsi_initialized
@@ -300,7 +300,6 @@ module JSI
           jsi_ptr: ptr,
           jsi_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
           jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
-          initialize_finish: false,
           jsi_root_node: jsi_root_node,
         )
       end
@@ -318,7 +317,7 @@ module JSI
 
     def to_initialize_finish(node)
       if @initialize_finished
-        node.send(:jsi_initialize_finish)
+        node.jsi_initialize_finish
       else
         @to_initialize_finish.push(node)
       end
@@ -353,7 +352,6 @@ module JSI
             **our_initialize_params,
             jsi_ptr: Ptr[],
             jsi_base_uri: nil,
-            initialize_finish: false,
             jsi_conf: jsi_conf,
           ))
           root.jsi_descendent_node(bootstrap_schema.jsi_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
