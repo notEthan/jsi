@@ -16,6 +16,7 @@ module JSI
       #chkbug   @current_element = nil
       #chkbug end
 
+
       def subschema(subptr)
         schema.subschema(subptr)
       end
@@ -33,6 +34,7 @@ module JSI
       #chkbug     @current_element = nil
       #chkbug   end
       #chkbug end
+
 
       def keyword?(keyword)
         #chkbug unless @current_element.keywords.include?(keyword)
