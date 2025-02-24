@@ -36,8 +36,6 @@ end
 
 require_relative 'jsi_helper'
 
-require 'yaml'
-
 # NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
 
