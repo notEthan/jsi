@@ -1,31 +1,5 @@
 require_relative 'test_helper'
 
-BASIC_DIALECT = JSI::Schema::Dialect.new(
-  vocabularies: [
-    JSI::Schema::Vocabulary.new(elements: [
-      JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: false],
-      JSI::Schema::Elements::REF[exclusive: true],
-      JSI::Schema::Elements::SELF[],
-      JSI::Schema::Elements::PROPERTIES[],
-    ]),
-  ],
-)
-
-BasicMetaSchema = JSI.new_metaschema_node(
-  YAML.load(<<~YAML
-    "$id": "tag:named-basic-meta-schema"
-    properties:
-      properties:
-        additionalProperties:
-          "$ref": "#"
-      additionalProperties:
-        "$ref": "#"
-      "$ref": {}
-    YAML
-  ),
-  dialect: BASIC_DIALECT,
-).jsi_schema_module
-
 describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
   let(:metaschema_root_ref) { '#' }

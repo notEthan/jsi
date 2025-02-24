@@ -19,12 +19,40 @@ if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'ruby-debug' }
 end
 # :nocov:
 
+require('yaml')
+
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
 
 module JSI
   TEST_RESOURCES_PATH = RESOURCES_PATH.join('test')
 end
+
+BASIC_DIALECT = JSI::Schema::Dialect.new(
+  vocabularies: [
+    JSI::Schema::Vocabulary.new(elements: [
+      JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: false],
+      JSI::Schema::Elements::REF[exclusive: true],
+      JSI::Schema::Elements::SELF[],
+      JSI::Schema::Elements::PROPERTIES[],
+    ]),
+  ],
+)
+
+BasicMetaSchema = JSI.new_metaschema_node(
+  YAML.load(<<~YAML
+    "$id": "tag:named-basic-meta-schema"
+    properties:
+      properties:
+        additionalProperties:
+          "$ref": "#"
+      additionalProperties:
+        "$ref": "#"
+      "$ref": {}
+    YAML
+  ),
+  dialect: BASIC_DIALECT,
+).jsi_schema_module
 
 # tests support of things that duck-type #to_hash
 class SortOfHash
