@@ -136,7 +136,8 @@ module JSI
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       self.jsi_schema_registry = jsi_schema_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
-      @jsi_root_node = jsi_root_node || (@jsi_ptr.root? ? self : fail(Bug))
+      #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
+      @jsi_root_node = jsi_root_node || self
 
       @jsi_is_orphan = nil
 
