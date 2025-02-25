@@ -7,10 +7,10 @@ module JSI
 
       # @param id [#to_str, nil]
       # @param vocabularies [Enumerable<Schema::Vocabulary>]
-      def initialize(id: nil, vocabularies: , **config)
+      def initialize(id: nil, vocabularies: , **conf)
         @id = Util.uri(id, nnil: false, yabs: true, ynorm: true)
         @vocabularies = Set.new(vocabularies).freeze
-        @config = config.freeze
+        @conf = conf.freeze
 
         elements = vocabularies.map(&:elements).inject(Set.new, &:merge)
 
@@ -59,7 +59,7 @@ module JSI
       attr_reader(:vocabularies)
 
       # @return [Hash]
-      attr_reader(:config)
+      attr_reader(:conf)
 
       # @return [Array<Schema::Element>]
       attr_reader(:elements)
