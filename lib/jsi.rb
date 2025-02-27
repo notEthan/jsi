@@ -75,6 +75,7 @@ module JSI
   autoload(:URI, 'jsi/uri')
   autoload :Util, 'jsi/util'
   autoload(:Set, 'jsi/set')
+  autoload(:Struct, 'jsi/struct')
   autoload :Ptr, 'jsi/ptr'
   autoload :Schema, 'jsi/schema'
   autoload :SchemaSet, 'jsi/schema_set'
