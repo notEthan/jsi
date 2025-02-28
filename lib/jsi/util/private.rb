@@ -83,6 +83,16 @@ module JSI
       end
     end
 
+    if JSON.parse('[]', freeze: true).frozen?
+      def json_parse_freeze(json)
+        JSON.parse(json, freeze: true)
+      end
+    else
+      def json_parse_freeze(json)
+        Util.deep_to_frozen(JSON.parse(json))
+      end
+    end
+
     # string or URI → frozen URI
     # @param nnil must not be nil
     # @param yabs must be absolute

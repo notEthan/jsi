@@ -4,9 +4,9 @@ module JSI
   dialect = Schema::Draft202012::DIALECT
 
   path = SCHEMAS_PATH.join('json-schema.org/draft/2020-12')
-  metaschema_document = JSON.parse(path.join('schema.json').read, freeze: true)
+  metaschema_document = Util.json_parse_freeze(path.join('schema.json').read)
   vocabulary_schema_documents = metaschema_document['allOf'].map do |schema|
-    JSON.parse(path.join(schema['$ref'] + '.json').read, freeze: true)
+    Util.json_parse_freeze(path.join(schema['$ref'] + '.json').read)
   end
 
   jsi_schema_registry = SchemaRegistry.new
