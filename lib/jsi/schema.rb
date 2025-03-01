@@ -742,6 +742,7 @@ module JSI
       if applicate_self
         child_application = dialect.invoke(:child_applicate, Cxt::ChildApplication.new(
           schema: self,
+          abort: false,
           token: token,
           instance: instance,
           collect_evaluated: collect_evaluated,
@@ -810,6 +811,7 @@ module JSI
       result_builder = result.class::Builder.new(
         result: result,
         schema: self,
+        abort: false,
         instance_ptr: instance_ptr,
         instance_document: instance_document,
         validate_only: validate_only,
@@ -836,6 +838,7 @@ module JSI
 
       cxt = cxt_class.new(
         schema: self,
+        abort: false,
         block: block,
         **cxt_param,
       )
