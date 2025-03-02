@@ -494,6 +494,7 @@ module JSI
     #
     # @return [SchemaModule]
     def jsi_schema_module
+      raise(BlockGivenError) if block_given?
       raise(TypeError, "non-Base schema may not have a schema module: #{self}") unless is_a?(Base)
       raise(TypeError, "mutable schema may not have a schema module: #{self}") if jsi_mutable?
       @jsi_schema_module ||= SchemaModule.new(self)
