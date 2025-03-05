@@ -612,7 +612,7 @@ module JSI
     #
     # @yield [Object] this JSI's instance. the block should result
     #   in a nondestructively modified copy of this.
-    # @return [JSI::Base subclass] the modified copy of self
+    # @return [Base] the modified copy of self
     def jsi_modified_copy(&block)
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,

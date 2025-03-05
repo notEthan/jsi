@@ -95,7 +95,7 @@ module JSI
       # @param to_immutable (see SchemaSet#new_jsi)
       # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
-      # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+      # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
       def new_schema(schema_content,
           uri: nil,
@@ -225,7 +225,7 @@ module JSI
       # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
       # @param to_immutable (see Schema::DescribesSchema#new_schema)
       # @yield (see Schema::MetaSchema#new_schema)
-      # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+      # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
       def new_schema(schema_content,
           default_metaschema: nil,
