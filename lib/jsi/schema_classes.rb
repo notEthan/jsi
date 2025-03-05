@@ -164,10 +164,8 @@ module JSI
   module SchemaModule::MetaSchemaModule
     # Instantiates the given schema content as a JSI Schema.
     #
-    # see {JSI::Schema::MetaSchema#new_schema}
+    # See {JSI::Schema::MetaSchema#new_schema}.
     #
-    # @param (see Schema::MetaSchema#new_schema)
-    # @yield (see Schema::MetaSchema#new_schema)
     # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
     #   the given `schema_content` and whose schemas are in-place applicators of this module's schema.
     def new_schema(schema_content, **kw, &block)
