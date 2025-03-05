@@ -176,6 +176,7 @@ module JSI
     registry.autoload_dialect_uri("http://json-schema.org/draft-04/schema") { Schema::Draft04::DIALECT }
     registry.autoload_dialect_uri("http://json-schema.org/draft-06/schema") { Schema::Draft06::DIALECT }
     registry.autoload_dialect_uri("http://json-schema.org/draft-07/schema") { Schema::Draft07::DIALECT }
+    registry.autoload_dialect_uri("https://json-schema.org/draft/2020-12/schema") { Schema::Draft202012::DIALECT }
   end.freeze
 
   self.registry = DEFAULT_REGISTRY.dup
