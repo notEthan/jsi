@@ -89,6 +89,7 @@ module JSI
         **kw,
       )
 
+      @initialize_finish_started = false
       @initialize_finished = false
       @to_initialize_finish = []
 
@@ -153,7 +154,8 @@ module JSI
     end
 
     private def jsi_initialize_finish
-      return if @initialize_finished
+      return if @initialize_finish_started
+      @initialize_finish_started = true
 
       @jsi_schemas = SchemaSet.new(@bootstrap_schemas) { |s| bootstrap_schema_to_msn(s) }
 
