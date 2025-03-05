@@ -284,11 +284,13 @@ module JSI
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap] must be `without_node(..., ptr: ptr)` or so
     # @return [MetaSchemaNode]
     protected def root_descendent_node(ptr, dynamic_anchor_map: )
-      node = @root_descendent_node_map[
+      to_initialize_finish(@root_descendent_node_map[
         ptr: ptr.resolve_against(jsi_document),
         dynamic_anchor_map: dynamic_anchor_map,
-      ]
+      ])
+    end
 
+    def to_initialize_finish(node)
       if @initialize_finished
         node.send(:jsi_initialize_finish)
       else
@@ -316,18 +318,19 @@ module JSI
         resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
         if jsi_registry.registered?(resource_uri)
           resource = jsi_registry.find(resource_uri)
-          resource.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
+          to_initialize_finish(resource.root_descendent_node_map[
+            ptr: bootstrap_schema.jsi_ptr,
+            dynamic_anchor_map: dynamic_anchor_map,
+          ])
         else
-          #chkbug fail if @initialize_finished
-          root = MetaSchemaNode.new(
+          root = to_initialize_finish(MetaSchemaNode.new(
             bootstrap_schema.jsi_document,
             **our_initialize_params,
             jsi_ptr: Ptr[],
             jsi_schema_base_uri: nil,
             jsi_schema_dynamic_anchor_map: dynamic_anchor_map, # TODO does root need this? (if ever !bootstrap_schema.jsi_ptr.root?)
             initialize_finish: false,
-          )
-          @to_initialize_finish.push(root)
+          ))
           root.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
         end
       end
