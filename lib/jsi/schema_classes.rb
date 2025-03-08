@@ -133,7 +133,7 @@ module JSI
       def class_for_schemas(schemas, includes: , mutable: )
         @class_for_schemas_map[
           schema_modules: schemas.map(&:jsi_schema_module).to_set.freeze,
-          includes: includes,
+          includes: includes.to_set.freeze,
           mutable: mutable,
         ]
       end
