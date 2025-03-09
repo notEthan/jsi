@@ -160,6 +160,9 @@ describe 'JSI::Base hash' do
         assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: "foo"\ninstance: nil), err.message)
       end
     end
+  end
+
+  describe("pretty") do
     describe '#inspect, #to_s' do
       it 'inspects' do
         assert_equal("\#{<JSI*1> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => #[<JSI*1> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
