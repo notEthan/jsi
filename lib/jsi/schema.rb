@@ -497,13 +497,13 @@ module JSI
       raise(BlockGivenError) if block_given?
       raise(TypeError, "non-Base schema may not have a schema module: #{self}") unless is_a?(Base)
       raise(TypeError, "mutable schema may not have a schema module: #{self}") if jsi_mutable?
-      @jsi_schema_module ||= SchemaModule.new(self)
+      @memos.fetch(:jsi_schema_module) { @memos[:jsi_schema_module] = SchemaModule.new(self) }
     end
 
     # @private
     # @return [Boolean]
     def jsi_schema_module_defined?
-      !!@jsi_schema_module
+      @memos.key?(:jsi_schema_module)
     end
 
     # Evaluates the given block in the context of this schema's JSI schema module.
@@ -518,7 +518,7 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name
-      @jsi_schema_module && @jsi_schema_module.name
+      @memos.key?(:jsi_schema_module) && @memos[:jsi_schema_module].name
     end
 
     # @return [String, nil]
@@ -992,7 +992,6 @@ module JSI
       # guard against being called twice on MetaSchemaNode, first from extend(Schema) then extend(jsi_schema_module) that includes Schema.
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
       instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
-      @jsi_schema_module = nil
       @schema_ref_map = Hash.new { |h, ref| h[ref] = Schema::Ref.new(ref, referrer: self) }
       @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
