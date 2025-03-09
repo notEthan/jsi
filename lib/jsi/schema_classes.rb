@@ -348,16 +348,16 @@ module JSI
     def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       @jsi_node.jsi_child_ensure_present(token)
-      sub = @jsi_node[token]
+      sub = @jsi_node.jsi_child_node(token)
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module_exec(&block) if block
         sub.jsi_schema_module
       elsif block
         raise(BlockGivenError, "block given but token #{token.inspect} does not identify a schema")
-      elsif sub.is_a?(JSI::Base)
+      elsif sub.jsi_hash? || sub.jsi_array?
         sub.jsi_schema_module_connection
       else
-        sub
+        sub.jsi_node_content
       end
     end
 
