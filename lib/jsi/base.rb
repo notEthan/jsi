@@ -1023,6 +1023,7 @@ module JSI
     # Places where Base is directly instantiated must call #jsi_initialized.
     # @return [self]
     def jsi_initialized
+      #chkbug fail if defined?(super) # this should be the last jsi_initialized in class ancestry
       jsi_conf.after_initialize.call(self) if jsi_conf.after_initialize
       self
     end
