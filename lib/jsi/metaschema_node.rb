@@ -23,6 +23,15 @@ module JSI
   class MetaSchemaNode < Base
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
 
+    # @private - experimental
+    # `self` is a MetaSchemaNode
+    # @param node [MetaSchemaNode, MetaSchemaNode::BootstrapSchema]
+    # @return [Boolean] is `node` a meta-schema?
+    DEFAULT_IS_METASCHEMA = proc do |node|
+      node.jsi_document.equal?(@bootstrap_metaschema.jsi_document) && node.jsi_ptr == @bootstrap_metaschema.jsi_ptr
+    end
+    private_constant(:DEFAULT_IS_METASCHEMA)
+
     include(Base::Immutable)
 
     Conf = Base::Conf.subclass(*%i(
@@ -30,6 +39,7 @@ module JSI
       metaschema_root_ref
       root_schema_ref
       bootstrap_registry
+      is_metaschema
     ))
 
     # {Base::Conf} with additional configuration for MetaSchemaNode.
@@ -56,6 +66,7 @@ module JSI
           metaschema_root_ref: '#',
           root_schema_ref: metaschema_root_ref,
           registry: nil, # overrides Base::Conf default value JSI.registry
+          is_metaschema: DEFAULT_IS_METASCHEMA,
           **kw
       )
         super(
@@ -63,6 +74,7 @@ module JSI
           metaschema_root_ref: Util.uri(metaschema_root_ref, nnil: true),
           root_schema_ref: Util.uri(root_schema_ref, nnil: true),
           registry: registry,
+          is_metaschema: is_metaschema,
           **kw,
         )
       end
@@ -136,7 +148,7 @@ module JSI
       end
 
       @bootstrap_schemas.each do |bootstrap_schema|
-        if bootstrap_schema == @bootstrap_metaschema
+        if instance_exec(bootstrap_schema, &jsi_conf.is_metaschema)
           # this is described by the meta-schema, i.e. this is a schema
           define_singleton_method(:dialect) { msn_dialect }
           extend(Schema)
@@ -158,7 +170,7 @@ module JSI
       @jsi_schemas = SchemaSet.new(@bootstrap_schemas) { |s| bootstrap_schema_to_msn(s) }
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
-      if jsi_ptr == @bootstrap_metaschema.jsi_ptr && jsi_document == @bootstrap_metaschema.jsi_document
+      if instance_exec(self, &jsi_conf.is_metaschema)
         describes_schema!(msn_dialect)
       end
 
