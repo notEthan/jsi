@@ -140,8 +140,6 @@ module JSI
       #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
       @jsi_root_node = jsi_root_node || self
 
-      @jsi_is_orphan = nil
-
       # @memos does not freeze if/when the node freezes
       @memos = {}
       jsi_memomaps_initialize
@@ -208,10 +206,10 @@ module JSI
     # is this node not a descendent of its root node?
     # @return [Boolean]
     def jsi_is_orphan?
-      if @jsi_is_orphan.nil?
-        @jsi_is_orphan = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr))
+      if @memos.key?(:is_orphan)
+        @memos[:is_orphan]
       else
-        @jsi_is_orphan
+        @memos[:is_orphan] = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr))
       end
     end
 
