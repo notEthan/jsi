@@ -307,11 +307,14 @@ describe(JSI::MetaSchemaNode) do
           'additionalProperties' => true,
         }),
         dialect: JSI::Schema::Draft04::DIALECT,
+        is_metaschema: proc do |node, msn|
+          [
+            JSI::Ptr['properties', 'additionalProperties', 'anyOf', 0],
+            JSI::Ptr['properties', 'additionalItems', 'anyOf', 0],
+            msn.bootstrap_metaschema.jsi_ptr,
+          ].include?(node.jsi_ptr)
+        end,
       )
-      # note: this still breaks if d4ms_with_bool.additionalProperties is accessed, i.e. computes its schemas,
-      # before the following line makes its schema describes_schema!
-      d4ms_with_bool["properties"]["additionalProperties"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
-      d4ms_with_bool["properties"]["additionalItems"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
 
       # check that, for an instance of that meta-schema, a node described by additionalProperties is correctly instantiated
       j = d4ms_with_bool.new_jsi({'x' => {}})

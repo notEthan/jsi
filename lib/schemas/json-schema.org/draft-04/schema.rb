@@ -4,13 +4,17 @@ module JSI
   metaschema_document = Util.json_parse_freeze(SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read)
   JSONSchemaDraft04 = JSI.new_metaschema_node(metaschema_document,
     dialect: JSI::Schema::Draft04::DIALECT,
+    # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
+    # properties/additionalProperties and properties/additionalItems.
+    # these still describe schemas, despite not being described by the meta-schema.
+    is_metaschema: proc do |node, msn|
+      [
+        Ptr['properties', 'additionalProperties', 'anyOf', 0],
+        Ptr['properties', 'additionalItems', 'anyOf', 0],
+        msn.bootstrap_metaschema.jsi_ptr,
+      ].include?(node.jsi_ptr)
+    end,
   ).jsi_schema_module
-
-  # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
-  # properties/additionalProperties and properties/additionalItems.
-  # these still describe schemas, despite not being described by the meta-schema.
-  JSONSchemaDraft04.properties["additionalProperties"].anyOf[0].describes_schema!(JSI::Schema::Draft04::DIALECT)
-  JSONSchemaDraft04.properties["additionalItems"].anyOf[0].describes_schema!(JSI::Schema::Draft04::DIALECT)
 
   # the JSI schema module for `http://json-schema.org/draft-04/schema`
   module JSONSchemaDraft04
