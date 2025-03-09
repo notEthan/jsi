@@ -934,8 +934,11 @@ describe JSI::Base do
     ms = JSI.new_schema({
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "tag:u20x",
-    })
-    ms.describes_schema!(JSI::Schema::Dialect.new(vocabularies: []))
+    },
+      after_initialize: proc do |node|
+        node.describes_schema!(JSI::Schema::Dialect.new(vocabularies: [])) if node.jsi_ptr.root?
+      end,
+    )
     assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft07) Meta-Schema> "$schema" => "http://json-schema.org/draft-07/schema#", "$id" => "tag:u20x"}), ms.inspect)
   end
 
