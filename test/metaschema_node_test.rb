@@ -306,12 +306,8 @@ describe(JSI::MetaSchemaNode) do
         JSON.parse(JSI::SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read).merge({
           'additionalProperties' => true,
         }),
-        dialect: JSI::Schema::Draft04::DIALECT,
+        **JSI::JSONSchemaDraft04.schema.jsi_conf.to_h,
       )
-      # note: this still breaks if d4ms_with_bool.additionalProperties is accessed, i.e. computes its schemas,
-      # before the following line makes its schema describes_schema!
-      d4ms_with_bool["properties"]["additionalProperties"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
-      d4ms_with_bool["properties"]["additionalItems"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
 
       # check that, for an instance of that meta-schema, a node described by additionalProperties is correctly instantiated
       j = d4ms_with_bool.new_jsi({'x' => {}})
