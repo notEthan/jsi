@@ -142,6 +142,8 @@ module JSI
 
       @jsi_is_orphan = nil
 
+      # @memos does not freeze if/when the node freezes
+      @memos = {}
       jsi_memomaps_initialize
       jsi_mutability_initialize
 
