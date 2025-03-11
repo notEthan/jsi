@@ -73,6 +73,14 @@ module JSI
     # applicators of this set's schemas which apply to the given instance.
     # The JSI's {Base#jsi_indicated_schemas} set is this set.
     #
+    # The resulting JSI is an instance of a number of modules:
+    #
+    # - The {SchemaModule JSI schema module} of each applicator schema.
+    # - {Base::HashNode}, {Base::ArrayNode}, or {Base::StringNode} if the instance is
+    #   a hash/object, array, or string.
+    # - A module defining readers for properties described by applicator schemas.
+    #   If the instance is mutable, writers as well.
+    #
     # @param instance [Object] the instance to be represented as a JSI
     # @param base_uri [#to_str, URI, nil]
     #   The base URI of the instance document. An absolute URI.
