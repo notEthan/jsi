@@ -186,7 +186,7 @@ module JSI
   end
 
   # this module is a namespace for building schema classes and schema modules.
-  # @api private
+  # @private
   module SchemaClasses
     class << self
       # @private
