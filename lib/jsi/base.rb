@@ -13,6 +13,7 @@ module JSI
   # - the {Schema#jsi_schema_module} of each schema which describes the instance
   # - {Base::HashNode}, {Base::ArrayNode}, or {Base::StringNode} if the instance is
   #   a hash/object, array, or string
+  # - {Base::Immutable} or {Base::Mutable}
   # - Modules defining accessor methods for property names described by the schemas
   class Base
     autoload :ArrayNode, 'jsi/base/node'
