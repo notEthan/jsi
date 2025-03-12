@@ -40,12 +40,12 @@ module JSI
 
         @elements.freeze
 
-        @elements_performing = Hash.new(Util::EMPTY_ARY)
-        action_names = @elements.map { |e| e.actions.each_key }.inject(Set.new, &:+).freeze
+        @actions = Hash.new(Util::EMPTY_ARY)
+        action_names = @elements.map { |e| e.actions.each_key }.inject(Set.new, &:merge).freeze
         action_names.each do |action_name|
-          @elements_performing[action_name] = @elements.select { |e| !e.actions[action_name].empty? }.freeze
+          @actions[action_name] = @elements.map { |e| e.actions[action_name] }.inject([], &:concat).freeze
         end
-        @elements_performing.freeze
+        @actions.freeze
 
         @bootstrap_schema_class = bootstrap_schema_class_compute
 
@@ -80,13 +80,9 @@ module JSI
       # @param cxt [Schema::Cxt] the `self` of the action
       # @return given `cxt`
       def invoke(action_name, cxt)
-        @elements_performing[action_name].each do |element|
-          #chkbug cxt.using_element(element) do
-          element.actions[action_name].each do |action|
+        @actions[action_name].each do |action|
             cxt.instance_exec(&action)
             return(cxt) if cxt.abort
-          end
-          #chkbug end
         end
 
         cxt
