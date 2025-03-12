@@ -11,7 +11,7 @@ module JSI
     #
     #   If the ref URI consists of only a fragment, it is resolved from the `ref_schema`'s
     #   {Schema#schema_resource_root}. Otherwise the resource is found in the `ref_schema`'s
-    #   {SchemaAncestorNode#jsi_registry #jsi_registry} (and any fragment is resolved from there).
+    #   `#jsi_registry` (and any fragment is resolved from there).
     # @param registry [Registry, nil] The registry in which the resource this ref refers to will be found.
     #   If `ref_schema` is specified and `registry` is not, defaults to its `#jsi_registry`.
     #   If neither is specified, {JSI.registry} is used.
