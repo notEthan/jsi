@@ -931,13 +931,13 @@ module JSI
 
     # @private
     def jsi_next_schema_dynamic_anchor_map
-      return(@next_schema_dynamic_anchor_map) if @next_schema_dynamic_anchor_map
+      return @memos[:next_schema_dynamic_anchor_map] if @memos.key?(:next_schema_dynamic_anchor_map)
 
       if !dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }
-        return @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+        return @memos[:next_schema_dynamic_anchor_map] = jsi_schema_dynamic_anchor_map
       end
 
-      @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+      map = jsi_schema_dynamic_anchor_map
 
       anchor_root = schema_resource_root.is_a?(Schema) ? schema_resource_root : self
       descendent_schemas = [[anchor_root, Util::EMPTY_ARY]]
@@ -946,8 +946,8 @@ module JSI
         descendent_schema, ptrs = *descendent_schemas.shift
 
         descendent_schema.dialect_invoke_each(:dynamicAnchor) do |anchor|
-          next if @next_schema_dynamic_anchor_map.key?(anchor)
-          @next_schema_dynamic_anchor_map = @next_schema_dynamic_anchor_map.merge({
+          next if map.key?(anchor)
+          map = map.merge({
             anchor => [anchor_root, ptrs].freeze,
           }).freeze
         end
@@ -970,7 +970,7 @@ module JSI
         end
       end
 
-      @next_schema_dynamic_anchor_map
+      @memos[:next_schema_dynamic_anchor_map] = map
     end
 
     # @private pending stronger stability of dynamic scope
@@ -998,7 +998,6 @@ module JSI
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
         dialect_invoke_each(:described_object_property_names).to_set.freeze
       end
-      @next_schema_dynamic_anchor_map = nil
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
       @inplace_application_requires_instance = dialect_invoke_each(:inplace_application_requires_instance).any?
       @immediate_inplace_applicators = nil
