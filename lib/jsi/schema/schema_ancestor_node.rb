@@ -50,13 +50,15 @@ module JSI
     #
     # @return [Set<JSI::Schema>]
     def jsi_anchor_subschemas(anchor)
-      @anchor_subschemas_map[anchor: anchor]
+      @anchor_subschemas_map[anchor: anchor, content: jsi_node_content]
     end
 
     private
 
+    BY_ANCHOR = proc { |i| i[:anchor] }
+
     def jsi_schema_ancestor_node_initialize
-      @anchor_subschemas_map = jsi_memomap(&method(:jsi_anchor_subschemas_compute))
+      @anchor_subschemas_map = jsi_memomap(key_by: BY_ANCHOR, &method(:jsi_anchor_subschemas_compute))
     end
 
     def jsi_schema_base_uri=(jsi_schema_base_uri)
@@ -98,7 +100,7 @@ module JSI
       @jsi_schema_dynamic_anchor_map = dynamic_anchor_map
     end
 
-    def jsi_anchor_subschemas_compute(anchor: )
+    def jsi_anchor_subschemas_compute(anchor: , content: )
       SchemaSet.new(jsi_each_descendent_schema_same_resource.select do |schema|
         schema.anchors.include?(anchor)
       end)
