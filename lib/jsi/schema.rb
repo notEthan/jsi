@@ -693,8 +693,8 @@ module JSI
         # for a very substantial performance gain.
         #
         # :inplace_applicate yields (schema, **keywords)
-        # so @immediate_inplace_applicators is a 2D Array of tuples (schema, keywords)
-        @immediate_inplace_applicators ||= begin
+        # so @memos[:immediate_inplace_applicators] is a 2D Array of tuples (schema, keywords)
+        @memos[:immediate_inplace_applicators] ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
             visited_refs: visited_refs,
@@ -704,7 +704,7 @@ module JSI
           immediate_inplace_applicators.freeze
         end
 
-        @immediate_inplace_applicators.each do |(s, kw)|
+        @memos[:immediate_inplace_applicators].each do |(s, kw)|
           yield(s, **kw)
         end
         nil
@@ -1000,7 +1000,6 @@ module JSI
       end
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
       @inplace_application_requires_instance = dialect_invoke_each(:inplace_application_requires_instance).any?
-      @immediate_inplace_applicators = nil
     end
   end
 end
