@@ -864,6 +864,10 @@ module JSI
     def jsi_next_schema_dynamic_anchor_map
       return(@next_schema_dynamic_anchor_map) if @next_schema_dynamic_anchor_map
 
+      if !dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }
+        return @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+      end
+
       @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
 
       anchor_root = schema_resource_root.is_a?(Schema) ? schema_resource_root : self
@@ -928,11 +932,7 @@ module JSI
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
         dialect_invoke_each(:described_object_property_names).to_set.freeze
       end
-      if dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }
-        @next_schema_dynamic_anchor_map = nil
-      else
-        @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
-      end
+      @next_schema_dynamic_anchor_map = nil
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
     end
   end
