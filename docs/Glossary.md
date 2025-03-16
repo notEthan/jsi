@@ -214,6 +214,40 @@ A meta-schema has a [dialect] that defines the functionality of the schemas it d
 In JSI, a meta-schema is a {JSI::Base} that is a {JSI::Schema::MetaSchema}. Its schema module is a {JSI::SchemaModule::MetaSchemaModule}, and includes {JSI::Schema}. See also {JSI::Schema#describes_schema?} and {JSI::Schema#describes_schema!}.
 
 
+### dialect
+
+[dialect]: #dialect
+
+A dialect defines all the keywords of a JSON Schema, how they operate, and any other aspects of schema behavior. It consists of a set of one or more [vocabularies][vocabulary]. Note that while not all specifications of dialects use the terms 'dialect' or 'vocabulary', JSI uses these abstractions for all supported specifications.
+
+Examples of dialects include:
+- Each published JSON Schema specification
+- variants of JSON Schema defined by OpenAPI 2.x and 3.x
+- custom dialects composed of vocabularies specified using the `$vocabulary` keyword
+
+A dialect defines some or all of:
+
+- a set of keywords
+- those keywords' behavior and interactions with other keywords
+- non-keyword behaviors of a schema (e.g. boolean schemas)
+- division of keywords into vocabularies
+- how vocabularies operate
+- a [meta-schema] that describes/validates instances of the schema the dialect defines
+
+Represented as a {JSI::Schema::Dialect}.
+
+
+### vocabulary
+
+[vocabulary]: #vocabulary
+
+A vocabulary is one part of a [dialect]'s definition of schema keywords and behaviors. Dialects are composed of one or more vocabularies.
+
+A dialect whose specification does not define vocabularies is implemented using one vocabulary. Vocabularies were not defined for JSON Schema up to draft 07.
+
+Represented as a {JSI::Schema::Vocabulary}.
+
+
 ### resource
 
 [resource]: #resource
