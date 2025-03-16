@@ -106,8 +106,6 @@ module JSI
         Class.new(MetaSchemaNode::BootstrapSchema) do
           define_singleton_method(:described_dialect) { dialect }
           define_method(:dialect) { dialect }
-
-          self
         end
       end
     end
