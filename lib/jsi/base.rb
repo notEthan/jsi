@@ -610,25 +610,26 @@ module JSI
     end
     private :jsi_default_child # internals for #[] but idk, could be public
 
-    # subscripts to return a child value identified by the given token.
+    # Returns a child or children identified by param `token`.
     #
     # @param token [String, Integer, Range, Object] Identifies the child or children to return.
     #   Typically an array index or hash key (JSON object property name) of the instance.
+    #
     #   For an array instance, this may also be a Range (in which case an Array of children is returned)
     #   or a negative index; these behave as Array#[] does.
-    # @param as_jsi [:auto, true, false] (default is `:auto`)
+    # @param as_jsi [:auto, true, false] (default is `:auto` or {Base::Conf#child_as_jsi conf child_as_jsi})
+    #
     #   Whether to return the child as a JSI. One of:
     #
     #   - `:auto`: By default a JSI will be returned when either:
     #
-    #     - the result is a complex value (responds to #to_ary or #to_hash)
-    #     - the result is a schema (including true/false schemas)
+    #     - the child is an array or hash
+    #     - the child is a schema (including true/false schemas)
     #
     #     The plain content is returned when it is a simple type.
     #
-    #   - true: the result value will always be returned as a JSI. the {#jsi_schemas} of the result may be
-    #     empty if no schemas describe the instance.
-    #   - false: the result value will always be the plain instance.
+    #   - true: the result will always be returned as a JSI.
+    #   - false: the result will always be the node's content.
     #
     #   note that nil is returned (regardless of as_jsi) when there is no value to return because the token
     #   is not a hash key or array index of the instance and no default value applies.
@@ -645,8 +646,6 @@ module JSI
     #
     #   if the child instance's schemas do not indicate a single default value (that is, if zero or multiple
     #   defaults are specified across those schemas), nil is returned.
-    #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
-    #   unspecified behavior.)
     # @return [Base, Object, Array, nil] the child or children identified by `token`
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       raise(BlockGivenError) if block_given?
@@ -680,10 +679,10 @@ module JSI
       jsi_conf.child_use_default
     end
 
-    # assigns the subscript of the instance identified by the given token to the given value.
-    # if the value is a JSI, its instance is assigned instead of the JSI value itself.
+    # Assigns a child identified by the given token to the given value.
+    # If the given value is a JSI node, its content is used; its {#jsi_schemas} are not.
     #
-    # @param token [String, Integer, Object] token identifying the subscript to assign
+    # @param token [String, Integer, Object] token identifying the child to assign
     # @param value [JSI::Base, Object] the value to be assigned
     def []=(token, value)
       unless jsi_array? || jsi_hash?
