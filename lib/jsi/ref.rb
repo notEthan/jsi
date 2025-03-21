@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module JSI
-  # A JSI::Schema::Ref is a reference to a schema identified by a URI, typically from
+  # A JSI::Ref is a reference to a schema identified by a URI, typically from
   # a `$ref` keyword of a schema.
-  class Schema::Ref
+  class Ref
     include(Util::Pretty)
 
     # @param ref [#to_str] A reference URI - typically the `$ref` value of the ref_schema

@@ -96,6 +96,7 @@ module JSI
   autoload :SchemaClasses, 'jsi/schema_classes'
   autoload(:Registry, 'jsi/registry')
   autoload(:SchemaRegistry, 'jsi/registry')
+  autoload(:Ref, 'jsi/ref')
   autoload :Validation, 'jsi/validation'
   autoload :JSICoder, 'jsi/jsi_coder'
 

@@ -19,7 +19,6 @@ module JSI
     autoload(:Elements, 'jsi/schema/elements')
 
     autoload :Issue, 'jsi/schema/issue'
-    autoload :Ref, 'jsi/schema/ref'
     autoload(:DynamicAnchorMap, 'jsi/schema/dynamic_anchor_map')
 
     autoload :SchemaAncestorNode, 'jsi/schema/schema_ancestor_node'
@@ -42,6 +41,9 @@ module JSI
     # @deprecated alias after v0.8
     # an exception raised when we are unable to resolve a schema reference
     ReferenceError = ResolutionError
+
+    class Ref < Ref
+    end
 
     # This module extends any JSI Schema that is a meta-schema, i.e. it describes schemas.
     #
