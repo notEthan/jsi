@@ -29,8 +29,8 @@ describe("application") do
           test.schemas.each do |instance_pointer, schema_refs|
             jsi_desc = jsi / instance_pointer
             expected_schemas = JSI::SchemaSet.new(schema_refs) do |ref_uri|
-              ref = JSI::Schema::Ref.new(ref_uri, ref_schema: schema)
-              ref.deref_schema
+              ref = JSI::Schema::Ref.new(ref_uri, referrer: schema)
+              ref.resolve
             end
 
             it([*test_descr, instance_pointer].join(' : ')) do

@@ -86,7 +86,7 @@ module JSI
         else
           # if not fragment-only, ref must be registered in the bootstrap_registry
           ref = Schema::Ref.new(ref_uri, registry: bootstrap_registry)
-          ref.deref_schema
+          ref.resolve
         end
       end
 

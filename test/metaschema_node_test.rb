@@ -50,7 +50,7 @@ describe(JSI::MetaSchemaNode) do
       root_node.jsi_descendent_node(JSI::Ptr.from_fragment(metaschema_root_ref.fragment))
     else
       root_node
-      JSI::Schema::Ref.new(metaschema_root_ref, registry: registry).deref_schema
+      JSI::Schema::Ref.new(metaschema_root_ref, registry: registry).resolve
     end
   end
 

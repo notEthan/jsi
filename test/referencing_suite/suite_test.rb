@@ -40,7 +40,7 @@ describe("JSON Referencing Test Suite") do
                 if curr_test['error']
                   fail(Bug) if curr_test['then']
                   begin
-                    resolved_schema = ref.deref_schema
+                    resolved_schema = ref.resolve
                     assert(false, [
                       "expected resolution to error",
                       "test: #{curr_test.pretty_inspect.chomp}",
@@ -50,7 +50,7 @@ describe("JSON Referencing Test Suite") do
                   rescue JSI::ResolutionError
                   end
                 else
-                  resolved_schema = ref.deref_schema
+                  resolved_schema = ref.resolve
                   assert_equal(curr_test['target'], resolved_schema.jsi_node_content)
                   base_uri = resolved_schema.jsi_resource_ancestor_uri
                 end

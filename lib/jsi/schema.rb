@@ -364,7 +364,7 @@ module JSI
       # @return [Base + Schema + Schema::MetaSchema]
       def ensure_metaschema(metaschema, name: nil, registry: JSI.registry)
         if metaschema.respond_to?(:to_str)
-          schema = Schema::Ref.new(metaschema, registry: registry).deref_schema
+          schema = Schema::Ref.new(metaschema, registry: registry).resolve
           if !schema.describes_schema?
             raise(NotAMetaSchemaError, [name, "URI indicates a schema that is not a meta-schema: #{metaschema.pretty_inspect.chomp}"].compact.join(" "))
           end
@@ -976,7 +976,7 @@ module JSI
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
       instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
       @jsi_schema_module = nil
-      @schema_ref_map = Hash.new { |h, ref| h[ref] = Schema::Ref.new(ref, ref_schema: self) }
+      @schema_ref_map = Hash.new { |h, ref| h[ref] = Schema::Ref.new(ref, referrer: self) }
       @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do

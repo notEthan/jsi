@@ -13,7 +13,7 @@ module JSI
           #> This initial resolution is safe to perform on schema load.
           ref = schema.schema_ref('$dynamicRef')
 
-          initial_resolution = ref.deref_schema
+          initial_resolution = ref.resolve
 
           #> If the initially resolved starting point URI includes a
           #> fragment that was created by the "$dynamicAnchor" keyword,
