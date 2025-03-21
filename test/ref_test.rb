@@ -1,6 +1,6 @@
 require_relative 'test_helper'
 
-describe JSI::Schema::Ref do
+describe("JSI::Ref, JSI::Schema::Ref") do
   let(:schema) do
     JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07)
   end
@@ -96,13 +96,13 @@ describe JSI::Schema::Ref do
       end
 
       it 'errors from the registry (no ref_schema)' do
-        err = assert_raises(JSI::ResolutionError) { JSI::Schema::Ref.new(uri).deref_schema  }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).deref_schema }
         assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
       end
 
       it("errors from the registry (no registry)") do
         schema_without_registry = JSI::JSONSchemaDraft07.new_schema(schema_content, registry: nil)
-        err = assert_raises(JSI::ResolutionError) { JSI::Schema::Ref.new(uri, ref_schema: schema_without_registry).deref_schema }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri, ref_schema: schema_without_registry).deref_schema }
         assert_match(%r(\Acould not resolve remote ref with no registry specified), err.message)
       end
     end
@@ -123,14 +123,14 @@ describe JSI::Schema::Ref do
       end
 
       it 'errors (no ref_schema)' do
-        err = assert_raises(JSI::ResolutionError) { JSI::Schema::Ref.new(uri).deref_schema  }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).deref_schema }
         assert_equal('cannot find schema by ref: no#x', err.message)
       end
     end
 
     describe 'pointer-only uri' do
       it 'errors (no ref_schema)' do
-        err = assert_raises(JSI::ResolutionError) { JSI::Schema::Ref.new('#/no').deref_schema  }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#/no').deref_schema }
         msg = <<~MSG
           cannot find schema by ref: #/no
           with no ref schema
@@ -141,7 +141,7 @@ describe JSI::Schema::Ref do
 
     describe 'anchor-only uri' do
       it 'errors (no ref_schema)' do
-        err = assert_raises(JSI::ResolutionError) { JSI::Schema::Ref.new('#no').deref_schema  }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#no').deref_schema }
         msg = <<~MSG
           cannot find schema by ref: #no
           with no ref schema
@@ -181,13 +181,13 @@ describe JSI::Schema::Ref do
     end
 
     it 'is pretty' do
-      ref_with_schema = JSI::Schema::Ref.new(uri, ref_schema: schema)
-      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_with_schema.inspect)
-      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_with_schema.pretty_inspect.chomp)
+      ref_with_schema = JSI::Ref.new(uri, ref_schema: schema)
+      assert_equal('#<JSI::Ref http://jsi/3tzc>', ref_with_schema.inspect)
+      assert_equal('#<JSI::Ref http://jsi/3tzc>', ref_with_schema.pretty_inspect.chomp)
       assert_equal(ref_with_schema.inspect, ref_with_schema.to_s)
-      ref_no_schema = JSI::Schema::Ref.new(uri)
-      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_no_schema.inspect)
-      assert_equal('#<JSI::Schema::Ref http://jsi/3tzc>', ref_no_schema.pretty_inspect.chomp)
+      ref_no_schema = JSI::Ref.new(uri)
+      assert_equal('#<JSI::Ref http://jsi/3tzc>', ref_no_schema.inspect)
+      assert_equal('#<JSI::Ref http://jsi/3tzc>', ref_no_schema.pretty_inspect.chomp)
       assert_equal(ref_no_schema.inspect, ref_no_schema.to_s)
     end
   end
