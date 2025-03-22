@@ -248,7 +248,7 @@ module JSI
 
       # note: this never yields self; if self is a Schema, Schema#jsi_each_descendent_schema overrides this method
       jsi_each_child_token do |token|
-        jsi_child(token, as_jsi: true).jsi_each_descendent_schema(&block)
+        jsi_child_node(token).jsi_each_descendent_schema(&block)
       end
     end
 
