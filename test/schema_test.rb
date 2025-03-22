@@ -937,7 +937,9 @@ describe JSI::Schema do
     it '#pretty_print' do
       pppath = JSI::TEST_RESOURCES_PATH.join('schema.thorough.pretty_print')
       if ENV['JSI_TEST_REGEN']
+        # :nocov:
         pppath.write(schema.pretty_inspect)
+        # :nocov:
       end
       assert_equal(pppath.read, schema.pretty_inspect)
     end
@@ -968,7 +970,7 @@ describe JSI::Schema do
             :additional => {},
             :schema => schema,
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
-            :child_errors => Set[],
+            :nested_errors => Set[],
           }),
         ], result.immediate_validation_errors)
       end

@@ -57,14 +57,14 @@ describe("JSI.translator = I18n.method(:translate)") do
           additional: {instance_properties_valid: {"i18n msg" => false, "i18n msg additional" => false, "default msg" => false}},
           schema: schema,
           instance_ptr: JSI::Ptr[], instance_document: instance,
-          child_errors: Set[
+          nested_errors: Set[
             JSI::Validation::Error.new({
               message: "i18n type not_match",
               keyword: "type",
               additional: {},
               schema: schema["properties"]["i18n msg"],
               instance_ptr: JSI::Ptr["i18n msg"], instance_document: instance,
-              child_errors: Set[],
+              nested_errors: Set[],
             }),
             JSI::Validation::Error.new({
               message: "i18n maxItems 1 is too many",
@@ -72,7 +72,7 @@ describe("JSI.translator = I18n.method(:translate)") do
               additional: {instance_size: 1},
               schema: schema["properties"]["i18n msg additional"],
               instance_ptr: JSI::Ptr["i18n msg additional"], instance_document: instance,
-              child_errors: Set[],
+              nested_errors: Set[],
             }),
             JSI::Validation::Error.new({
               message: "instance is not valid against `false` schema",
@@ -80,7 +80,7 @@ describe("JSI.translator = I18n.method(:translate)") do
               additional: {},
               schema: schema["properties"]["default msg"],
               instance_ptr: JSI::Ptr["default msg"], instance_document: instance,
-              child_errors: Set[],
+              nested_errors: Set[],
             })
           ],
         }),

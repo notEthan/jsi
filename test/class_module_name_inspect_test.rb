@@ -307,12 +307,14 @@ describe 'JSI Schema Class, JSI Schema Module' do
       end
 
       if ENV['JSI_TEST_REGEN']
+        # :nocov:
         test = File.read(__FILE__).split("\n", -1)
         new_test = test[0...(line_a + 3)] + actual_lines.map { |l| ' ' * 8 + l } + test[(line_b - 3)..-1]
         if new_test != test
           File.write(__FILE__, new_test.join("\n"))
           skip("regenerated examples")
         end
+        # :nocov:
       end
 
       actual

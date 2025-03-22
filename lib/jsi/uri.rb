@@ -5,6 +5,7 @@ module JSI
   #
   # - always immutable
   # - `JSI::URI["http://x"]` parses, and JSI::URI#inspect shows this form, copy/pastable
+  # @private
   class URI < Addressable::URI
     class << self
       # @param uri [#to_str]

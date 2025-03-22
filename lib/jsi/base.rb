@@ -84,7 +84,7 @@ module JSI
           elsif schema.schema_uri
             schema.schema_uri.to_s
           else
-            [alnum[schema.jsi_root_node.__id__], *schema.jsi_ptr.tokens].join('_')
+            [alnum[schema.jsi_ancestor_nodes.last.__id__], *schema.jsi_ptr.tokens].join('_')
           end
         end
         includes_names = jsi_class_includes.map { |m| m.name.sub(/\AJSI::Base::/, '').gsub(Util::RUBY_REJECT_NAME_RE, '_') }
@@ -136,7 +136,10 @@ module JSI
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       self.jsi_schema_registry = jsi_schema_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
-      @jsi_root_node = jsi_root_node || (@jsi_ptr.root? ? self : fail(Bug))
+      #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
+      @jsi_root_node = jsi_root_node || self
+
+      @jsi_is_orphan = nil
 
       jsi_memomaps_initialize
       jsi_mutability_initialize
@@ -198,6 +201,16 @@ module JSI
     #
     # @return [JSI::SchemaSet]
     attr_reader :jsi_indicated_schemas
+
+    # is this node not a descendent of its root node?
+    # @return [Boolean]
+    def jsi_is_orphan?
+      if @jsi_is_orphan.nil?
+        @jsi_is_orphan = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr))
+      else
+        @jsi_is_orphan
+      end
+    end
 
     # yields a JSI of each node at or below this one in this JSI's document.
     #
@@ -316,6 +329,7 @@ module JSI
     #
     # @return [Array<JSI::Base>]
     def jsi_parent_nodes
+      return Util::EMPTY_ARY if jsi_is_orphan?
       parent_nodes = []
       ptr = jsi_ptr
       while !ptr.root?
@@ -329,13 +343,14 @@ module JSI
     #
     # @return [JSI::Base, nil]
     def jsi_parent_node
-      jsi_ptr.root? ? nil : jsi_root_node.jsi_descendent_node(jsi_ptr.parent)
+      jsi_is_orphan? || jsi_ptr.root? ? nil : jsi_root_node.jsi_descendent_node(jsi_ptr.parent)
     end
 
     # ancestor JSI instances from this node up to the root. this node itself is always its own first ancestor.
     #
     # @return [Array<JSI::Base>]
     def jsi_ancestor_nodes
+      return [self].freeze if jsi_is_orphan?
       ancestors = []
       ancestor = jsi_root_node
       ancestors << ancestor

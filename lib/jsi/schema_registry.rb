@@ -193,7 +193,7 @@ module JSI
     # @param uri [#to_str]
     # @return [Addressable::URI]
     def registration_uri(uri)
-      Util.uri(uri, yabs: true, tonorm: true)
+      Util.uri(uri, nnil: true, yabs: true, tonorm: true)
     end
 
     def mutating

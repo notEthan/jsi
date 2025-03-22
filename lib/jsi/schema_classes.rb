@@ -71,6 +71,18 @@ module JSI
     def describes_schema!(dialect)
       schema.describes_schema!(dialect)
     end
+
+    # @private pending stronger stability of dynamic scope
+    # See {Schema#with_dynamic_scope_from}
+    def with_dynamic_scope_from(node)
+      node = node.jsi_node if node.is_a?(SchemaModule::Connects)
+      schema.jsi_with_schema_dynamic_anchor_map(node.jsi_next_schema_dynamic_anchor_map).jsi_schema_module
+    end
+
+    # `$defs` property reader
+    def defs
+      self['$defs']
+    end
   end
 
   # A module to extend the {SchemaModule} of a schema which describes other schemas (a {Schema::MetaSchema})

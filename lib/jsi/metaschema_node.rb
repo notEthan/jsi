@@ -50,6 +50,8 @@ module JSI
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: SchemaSet[],
         jsi_schema_base_uri: jsi_schema_base_uri,
+        # MSN doesn't track schema_resource_ancestors through descendents, but the root is included when appropriate
+        jsi_schema_resource_ancestors: jsi_ptr.root? || !jsi_root_node.is_a?(Schema) ? Util::EMPTY_ARY : [jsi_root_node].freeze,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         jsi_schema_registry: jsi_schema_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
@@ -60,8 +62,8 @@ module JSI
       @to_initialize_finish = []
 
       @msn_dialect = msn_dialect
-      @metaschema_root_ref = metaschema_root_ref = Util.uri(metaschema_root_ref)
-      @root_schema_ref     = root_schema_ref     = Util.uri(root_schema_ref)
+      @metaschema_root_ref = metaschema_root_ref = Util.uri(metaschema_root_ref, nnil: true)
+      @root_schema_ref     = root_schema_ref     = Util.uri(root_schema_ref, nnil: true)
       @bootstrap_schema_registry = bootstrap_schema_registry
 
       if jsi_ptr.root? && jsi_schema_base_uri
@@ -277,8 +279,8 @@ module JSI
           jsi_ptr: ptr,
           jsi_schema_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
           jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
-          jsi_root_node: jsi_root_node,
           initialize_finish: false,
+          jsi_root_node: jsi_root_node,
         )
       end
     end
@@ -312,7 +314,7 @@ module JSI
         }).freeze
       end
 
-      if bootstrap_schema.jsi_document == jsi_document
+      if bootstrap_schema.jsi_document.equal?(jsi_document)
         root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
       else
         bootstrap_resource = bootstrap_schema.schema_resource_root

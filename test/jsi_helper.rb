@@ -4,6 +4,7 @@ bundler_groups << :dev unless ENV['CI']
 bundler_groups << :extdep if ENV['JSI_TEST_EXTDEP']
 Bundler.setup(*bundler_groups)
 
+# :nocov:
 if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'debug' }
   require 'debug'
   Object.send(:alias_method, :dbg, :debugger)
@@ -16,6 +17,7 @@ if !ENV['CI'] && Bundler.load.specs.any? { |spec| spec.name == 'ruby-debug' }
   require 'ruby-debug'
   Object.send(:alias_method, :dbg, :debugger)
 end
+# :nocov:
 
 $LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
 require 'jsi'
@@ -72,10 +74,12 @@ class Module
     rescue NameError
     end
 
+    # :nocov:
     if method
       define_method(method_name, method, &block)
     else
       define_method(method_name, &block)
     end
+    # :nocov:
   end
 end

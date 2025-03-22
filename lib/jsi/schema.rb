@@ -743,6 +743,7 @@ module JSI
       if applicate_self
         child_application = dialect.invoke(:child_applicate, Cxt::ChildApplication.new(
           schema: self,
+          abort: false,
           token: token,
           instance: instance,
           collect_evaluated: collect_evaluated,
@@ -811,6 +812,7 @@ module JSI
       result_builder = result.class::Builder.new(
         result: result,
         schema: self,
+        abort: false,
         instance_ptr: instance_ptr,
         instance_document: instance_document,
         validate_only: validate_only,
@@ -837,6 +839,7 @@ module JSI
 
       cxt = cxt_class.new(
         schema: self,
+        abort: false,
         block: block,
         **cxt_param,
       )
@@ -882,7 +885,7 @@ module JSI
           # - check for $dynamicAnchor
           # can't use #subschema here (it would need to pass this method's result to instantiate the subschema);
           # a minimal bootstrap schema is used instead.
-          descendent_subschema = dialect.bootstrap_schema_class.new(
+          descendent_subschema = dialect.bootstrap_schema(
             jsi_document,
             jsi_ptr: descendent_schema.jsi_ptr + subptr,
             # note: same as anchor_root.jsi_resource_ancestor_uri since we don't cross resource boundaries.
@@ -895,6 +898,11 @@ module JSI
       end
 
       @next_schema_dynamic_anchor_map
+    end
+
+    # @private pending stronger stability of dynamic scope
+    def with_dynamic_scope_from(node)
+      jsi_with_schema_dynamic_anchor_map(node.jsi_next_schema_dynamic_anchor_map)
     end
 
     # Does application require collection of evaluated children?

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
+  # @private
   class Set < ::Set
     include(Util::Pretty)
 

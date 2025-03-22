@@ -63,7 +63,9 @@ describe JSI::JSICoder do
       end
       it 'dumps something else' do
         if Object.method_defined?(:as_json) && ENV['JSI_TEST_EXTDEP']
+          # :nocov:
           skip("external dependency defines Object#as_json")
+          # :nocov:
         end
         assert_raises(TypeError) do
           coder.dump(Object.new)

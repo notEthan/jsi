@@ -3,6 +3,7 @@ require_relative 'test_helper'
 BASIC_DIALECT = JSI::Schema::Dialect.new(
   vocabularies: [
     JSI::Schema::Vocabulary.new(elements: [
+      JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: false],
       JSI::Schema::Elements::REF[exclusive: true],
       JSI::Schema::Elements::SELF[],
       JSI::Schema::Elements::PROPERTIES[],
@@ -150,6 +151,11 @@ describe(JSI::MetaSchemaNode) do
       }
       str
       assert_equal(pretty, BasicMetaSchema.schema.pretty_inspect)
+    end
+
+    it("descendents have ids") do
+      uris = BasicMetaSchema.schema.properties['properties'].additionalProperties.schema_uris
+      assert_uris(['tag:named-basic-meta-schema#/properties/properties/additionalProperties'], uris)
     end
   end
 

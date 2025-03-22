@@ -29,7 +29,9 @@ describe JSI::Util do
       # if any dependency of JSI defines these, need to reconsider assumptions with Hash/Array as_json.
       # if a test dependency defines these, reconfigure tests to avoid that.
       if Hash.method_defined?(:as_json) && ENV['JSI_TEST_EXTDEP']
+        # :nocov:
         skip("external dependency defines Hash#as_json")
+        # :nocov:
       end
     end
 

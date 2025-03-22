@@ -128,7 +128,7 @@ module JSI
       new_dynamic_anchor_map = dynamic_anchor_map.without_node(self)
       return(self) if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
 
-      self.class.new(
+      dialect.bootstrap_schema(
         jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_schema_base_uri: jsi_schema_base_uri,

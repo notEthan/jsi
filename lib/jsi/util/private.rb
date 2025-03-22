@@ -70,7 +70,7 @@ module JSI
 
     def const_name_from_parts(parts, join: '')
       parts = parts.map do |part|
-        part = part.dup
+        part = part.to_str.dup
         part[/\A[^a-zA-Z]*/] = ''
         part[0] = part[0].upcase if part[0]
         part.gsub!(RUBY_REJECT_NAME_RE, '_')
@@ -89,7 +89,7 @@ module JSI
     # @param ynorm must be normalized
     # @param tonorm normalize returned URI
     # @return [URI, nil]
-    def uri(uri, nnil: true, yabs: false, ynorm: false, tonorm: false)
+    def uri(uri, nnil: false, yabs: false, ynorm: false, tonorm: false)
       return nil if !nnil && uri.nil?
       if uri.is_a?(URI)
         auri = uri
