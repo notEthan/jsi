@@ -443,20 +443,7 @@ module JSI
     # @return [JSI::Base, Object]
     # @raise [Base::ChildNotPresent]
     def jsi_child(token, as_jsi: )
-      jsi_child_ensure_present(token)
-
-      child_content = jsi_node_content_child(token)
-
-      child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
-      child_applied_schemas = @child_applied_schemas_map[token: token, child_indicated_schemas: child_indicated_schemas, child_content: child_content]
-      child_node =
-        @child_node_map[
-          token: token,
-          child_indicated_schemas: child_indicated_schemas,
-          child_applied_schemas: child_applied_schemas,
-          includes: SchemaClasses.includes_for(child_content),
-        ]
-      jsi_child_as_jsi(child_node, as_jsi)
+      jsi_child_as_jsi(jsi_child_node(token), as_jsi)
     end
     private :jsi_child # internals for #[] but idk, could be public
 
@@ -464,7 +451,18 @@ module JSI
     # @return [JSI::Base]
     # @raise [Base::ChildNotPresent]
     def jsi_child_node(token)
-      jsi_child(token, as_jsi: true)
+      jsi_child_ensure_present(token)
+
+      child_content = jsi_node_content_child(token)
+
+      child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
+      child_applied_schemas = @child_applied_schemas_map[token: token, child_indicated_schemas: child_indicated_schemas, child_content: child_content]
+      @child_node_map[
+          token: token,
+          child_indicated_schemas: child_indicated_schemas,
+          child_applied_schemas: child_applied_schemas,
+          includes: SchemaClasses.includes_for(child_content),
+      ]
     end
 
     # A default value for a child of this node identified by the given token, if schemas describing

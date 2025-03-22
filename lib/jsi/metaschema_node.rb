@@ -187,14 +187,11 @@ module JSI
       @indicated_schemas_map[]
     end
 
-    # see {Base#jsi_child}
-    def jsi_child(token, as_jsi: )
+    # see {Base#jsi_child_node}
+    def jsi_child_node(token)
       dynamic_anchor_map = jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token])
-      child_node = root_descendent_node(jsi_ptr[token], dynamic_anchor_map: dynamic_anchor_map)
-
-      jsi_child_as_jsi(child_node, as_jsi)
+      root_descendent_node(jsi_ptr[token], dynamic_anchor_map: dynamic_anchor_map)
     end
-    private :jsi_child
 
     # See {Base#jsi_default_child}
     def jsi_default_child(token, as_jsi: )
