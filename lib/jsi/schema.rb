@@ -111,6 +111,7 @@ module JSI
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
       # @param to_immutable (see SchemaSet#new_jsi)
+      # @param conf_kw (see SchemaSet#new_jsi)
       # @yield If a block is given, it is evaluated in the context of the schema's {Schema#jsi_schema_module JSI schema module}
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
@@ -121,6 +122,7 @@ module JSI
           registry: JSI.registry,
           stringify_symbol_keys: true,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
+          **conf_kw,
           &block
       )
         schema_jsi = new_jsi(schema_content,
@@ -130,6 +132,7 @@ module JSI
           stringify_symbol_keys: stringify_symbol_keys,
           to_immutable: to_immutable,
           mutable: false,
+          **conf_kw,
         )
 
         schema_jsi.jsi_schema_module_exec(&block) if block
@@ -242,6 +245,7 @@ module JSI
       # @param registry (see Schema::MetaSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
       # @param to_immutable (see Schema::DescribesSchema#new_schema)
+      # @param conf_kw (see SchemaSet#new_jsi)
       # @yield (see Schema::MetaSchema#new_schema)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
@@ -254,6 +258,7 @@ module JSI
           registry: JSI.registry,
           stringify_symbol_keys: true,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
+          **conf_kw,
           &block
       )
         new_schema_params = {
@@ -262,6 +267,7 @@ module JSI
           registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
           to_immutable: to_immutable,
+          **conf_kw,
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema

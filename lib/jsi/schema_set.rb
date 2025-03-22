@@ -96,6 +96,7 @@ module JSI
     #   guaranteed to be immutable, as well as any modified copies of the instance.
     # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
     #   The instance content will be transformed with `to_immutable` if the JSI will be immutable.
+    # @param conf_kw Additional keyword params are passed to initialize a {Base::Conf}, the JSI's {Base#jsi_conf}.
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of the schemas in this set.
     def new_jsi(instance,
@@ -104,9 +105,11 @@ module JSI
         registry: JSI.registry,
         stringify_symbol_keys: false,
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
-        mutable: false
+        mutable: false,
+        **conf_kw
     )
       conf = Base::Conf.new(
+        **conf_kw,
       )
 
       instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys

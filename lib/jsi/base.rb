@@ -658,6 +658,7 @@ module JSI
           registry: jsi_registry,
           mutable: jsi_mutable?,
           to_immutable: jsi_content_to_immutable,
+          **jsi_conf.to_h,
         )
         modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
         modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
