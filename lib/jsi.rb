@@ -121,15 +121,21 @@ module JSI
   # @param metaschema_document
   # @param dialect (see MetaSchemaNode#initialize)
   # @param to_immutable (see SchemaSet#new_jsi)
+  # @param conf_kw (see SchemaSet#new_jsi)
   # @return [MetaSchemaNode]
   def self.new_metaschema_node(metaschema_document,
       dialect: ,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
-      **init_kw
+      **conf_kw
   )
     raise(BlockGivenError) if block_given?
 
+    # temp
+    init_kw = conf_kw.reject { |k, _| Base::Conf.members.include?(k) }
+    conf_kw = conf_kw.select { |k, _| Base::Conf.members.include?(k) }
+
     conf = Base::Conf.new(
+      **conf_kw,
     )
 
     metaschema_document = to_immutable.call(metaschema_document) if to_immutable
