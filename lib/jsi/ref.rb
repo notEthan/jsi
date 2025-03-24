@@ -54,7 +54,7 @@ module JSI
       check_resource_root = proc {
         unless resource_root
           raise(ResolutionError.new([
-            "cannot find schema by ref: #{ref}",
+            "cannot resolve ref: #{ref}",
             ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
           ], uri: ref_uri))
         end
@@ -65,7 +65,7 @@ module JSI
       if ref_uri_nofrag.empty?
         unless ref_schema
           raise(ResolutionError.new([
-            "cannot find schema by ref: #{ref}",
+            "cannot resolve ref: #{ref}",
             "with no ref schema",
           ], uri: ref_uri))
         end
@@ -139,7 +139,7 @@ module JSI
           raise(ResolutionError.new([
             "could not resolve pointer: #{ptr_from_fragment.pointer.inspect}",
             ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
-            ("in schema resource root: #{resource_root.pretty_inspect.chomp}" if resource_root),
+            ("in resource root: #{resource_root.pretty_inspect.chomp}" if resource_root),
           ], uri: ref_uri))
         end
       elsif fragment.nil?
@@ -155,8 +155,8 @@ module JSI
           result_schema = result_schemas.first
         elsif result_schemas.size == 0
           raise(ResolutionError.new([
-            "could not find schema by fragment: #{fragment.inspect}",
-            "in schema resource root: #{resource_root.pretty_inspect.chomp}",
+            "could not resolve fragment: #{fragment.inspect}",
+            "in resource root: #{resource_root.pretty_inspect.chomp}",
           ], uri: ref_uri))
         else
           raise(ResolutionError.new([

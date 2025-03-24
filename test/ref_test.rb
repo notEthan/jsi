@@ -17,7 +17,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
           msg = <<~MSG
             could not resolve pointer: "/no"
             from: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}
-            in schema resource root: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}
+            in resource root: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}
             MSG
           assert_equal(msg.chomp, err.message)
         end
@@ -36,7 +36,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
           msg = <<~MSG
             could not resolve pointer: "/no"
             from: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}
-            in schema resource root: #[<JSI*1> \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}]
+            in resource root: #[<JSI*1> \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#/no"}]
             MSG
           assert_equal(msg.chomp, err.message)
         end
@@ -53,8 +53,8 @@ describe("JSI::Ref, JSI::Schema::Ref") do
       it 'finds none' do
         err = assert_raises(JSI::ResolutionError) { schema.new_jsi({}) }
         msg = <<~MSG
-          could not find schema by fragment: "no"
-          in schema resource root: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#no"}
+          could not resolve fragment: "no"
+          in resource root: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "#no"}
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -116,7 +116,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
       it 'errors' do
         err = assert_raises(JSI::ResolutionError) { schema.new_jsi({}) }
         msg = <<~MSG
-          cannot find schema by ref: no#x
+          cannot resolve ref: no#x
           from: \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$ref" => "no#x"}
           MSG
         assert_equal(msg.chomp, err.message)
@@ -124,7 +124,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
 
       it 'errors (no ref_schema)' do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).deref_schema }
-        assert_equal('cannot find schema by ref: no#x', err.message)
+        assert_equal('cannot resolve ref: no#x', err.message)
       end
     end
 
@@ -132,7 +132,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
       it 'errors (no ref_schema)' do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#/no').deref_schema }
         msg = <<~MSG
-          cannot find schema by ref: #/no
+          cannot resolve ref: #/no
           with no ref schema
           MSG
         assert_equal(msg.chomp, err.message)
@@ -143,7 +143,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
       it 'errors (no ref_schema)' do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#no').deref_schema }
         msg = <<~MSG
-          cannot find schema by ref: #no
+          cannot resolve ref: #no
           with no ref schema
           MSG
         assert_equal(msg.chomp, err.message)
