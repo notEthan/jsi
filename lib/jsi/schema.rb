@@ -42,6 +42,8 @@ module JSI
     # an exception raised when we are unable to resolve a schema reference
     ReferenceError = ResolutionError
 
+    # A reference to a schema identified by a given URI.
+    # {#resolve} will return a Schema, and param `referrer` must be a Schema.
     class Ref < Ref
       # @param ref_schema [Schema] deprecated; use `referrer`
       def initialize(ref, ref_schema: nil, **kw)

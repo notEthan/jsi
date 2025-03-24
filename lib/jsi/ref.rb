@@ -1,16 +1,16 @@
 # frozen_string_literal: true
 
 module JSI
-  # A JSI::Ref is a reference to a schema identified by a URI, typically from
-  # a `$ref` keyword of a schema.
+  # A reference to a JSI identified by a given URI.
   class Ref
     include(Util::Pretty)
 
-    # @param ref [#to_str] A reference URI - typically the `$ref` value of the referrer
-    # @param referrer [JSI::Schema] A schema from which the reference originated.
+    # @param ref [#to_str] A reference URI, e.g. a `$ref` value of a referrer schema
+    # @param referrer [Base] A JSI from which the reference originated.
     #
     #   If the ref URI consists of only a fragment, it is resolved from the `referrer`'s
-    #   {Schema#schema_resource_root}. Otherwise the resource is found in the `referrer`'s
+    #   root (its {Schema#schema_resource_root} if resolving a {Schema::Ref}; its document root if not).
+    #   Otherwise the resource is found in the `referrer`'s
     #   `#jsi_registry` (and any fragment is resolved from there).
     # @param registry [Registry, nil] The registry in which the resource this ref refers to will be found.
     #   If `referrer` is specified and `registry` is not, defaults to its `#jsi_registry`.
@@ -32,7 +32,7 @@ module JSI
     # @return [URI]
     attr_reader :ref_uri
 
-    # @return [Schema, nil]
+    # @return [Base, nil]
     attr_reader(:referrer)
 
     # @return [Registry, nil]
@@ -43,9 +43,9 @@ module JSI
       false
     end
 
-    # finds the schema this ref points to
-    # @return [JSI::Schema]
-    # @raise [JSI::Schema::NotASchemaError] when the thing this ref points to is not a schema
+    # Resolves the target of this reference.
+    # @return [JSI::Base]
+    # @raise [JSI::Schema::NotASchemaError] when the resolved target must be a Schema but is not
     # @raise [ResolutionError] when this reference cannot be resolved
     def resolve
       return @resolved if @resolved
