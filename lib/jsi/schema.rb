@@ -43,6 +43,10 @@ module JSI
     ReferenceError = ResolutionError
 
     class Ref < Ref
+      # @return [Boolean]
+      def resolve_schema?
+        true
+      end
     end
 
     # This module extends any JSI Schema that is a meta-schema, i.e. it describes schemas.

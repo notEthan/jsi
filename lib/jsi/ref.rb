@@ -19,7 +19,7 @@ module JSI
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Util.uri(ref, nnil: true)
-      @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
+      @ref_schema = ref_schema && resolve_schema? ? Schema.ensure_schema(ref_schema) : ref_schema
       @registry = !registry_undefined ? registry
       : ref_schema ? ref_schema.jsi_registry
       : JSI.registry
@@ -37,6 +37,11 @@ module JSI
 
     # @return [Registry, nil]
     attr_reader(:registry)
+
+    # @return [Boolean]
+    def resolve_schema?
+      false
+    end
 
     # finds the schema this ref points to
     # @return [JSI::Schema]
@@ -66,10 +71,15 @@ module JSI
         end
 
         # the URI only consists of a fragment (or is empty).
-        # for a fragment pointer, resolve using Schema#resource_root_subschema on the ref_schema.
-        # for a fragment anchor, use the ref_schema's schema_resource_root.
-        resource_root = ref_schema.schema_resource_root
-        resolve_fragment_ptr = ref_schema.method(:resource_root_subschema)
+        if resolve_schema?
+          # for a fragment pointer, resolve using Schema#resource_root_subschema on the ref_schema.
+          # for a fragment anchor, use the ref_schema's schema_resource_root.
+          resource_root = ref_schema.schema_resource_root # note: may be nil from bootstrap schema
+          resolve_fragment_ptr = ref_schema.method(:resource_root_subschema)
+        else
+          resource_root = ref_schema.jsi_root_node
+          resolve_fragment_ptr = resource_root.method(:jsi_descendent_node)
+        end
       else
         # find the resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.
 
@@ -91,7 +101,7 @@ module JSI
           resource_root = registry.find(ref_abs_uri)
         end
 
-        unless resource_root
+        if !resource_root && resolve_schema?
           # HAX for how google does refs and ids
           if ref_schema && ref_schema.jsi_document.respond_to?(:to_hash) && ref_schema.jsi_document['schemas'].respond_to?(:to_hash)
             ref_schema.jsi_document['schemas'].each do |k, v|
@@ -104,7 +114,7 @@ module JSI
 
         check_resource_root.call
 
-        if resource_root.is_a?(Schema)
+        if resolve_schema? && resource_root.is_a?(Schema)
           resolve_fragment_ptr = resource_root.method(:resource_root_subschema)
         else
           # Note: Schema#resource_root_subschema will reinstantiate nonschemas as schemas.
@@ -135,7 +145,7 @@ module JSI
       elsif fragment.nil?
         check_resource_root.call
         result_schema = resource_root
-      else
+      elsif resolve_schema?
         check_resource_root.call
 
         # find an anchor that resembles the fragment
@@ -154,9 +164,14 @@ module JSI
             *result_schemas.map { |s| s.pretty_inspect.chomp },
           ], uri: ref_uri))
         end
+      else
+        raise(ResolutionError.new([
+          "could not resolve fragment #{fragment.inspect}. fragment must be a pointer.",
+          ("in resource root: #{resource_root.pretty_inspect.chomp}" if resource_root),
+        ], uri: ref_uri))
       end
 
-      Schema.ensure_schema(result_schema) { "object identified by uri #{ref} is not a schema:" }
+      Schema.ensure_schema(result_schema) { "object identified by uri #{ref} is not a schema:" } if resolve_schema?
       return @deref_schema = result_schema
     end
 
