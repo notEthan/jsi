@@ -95,14 +95,14 @@ describe("JSI::Ref, JSI::Schema::Ref") do
         assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
       end
 
-      it 'errors from the registry (no ref_schema)' do
+      it("errors from the registry (no referrer)") do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).deref_schema }
         assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
       end
 
       it("errors from the registry (no registry)") do
         schema_without_registry = JSI::JSONSchemaDraft07.new_schema(schema_content, registry: nil)
-        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri, ref_schema: schema_without_registry).deref_schema }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri, referrer: schema_without_registry).deref_schema }
         assert_match(%r(\Acould not resolve remote ref with no registry specified), err.message)
       end
     end
@@ -122,29 +122,29 @@ describe("JSI::Ref, JSI::Schema::Ref") do
         assert_equal(msg.chomp, err.message)
       end
 
-      it 'errors (no ref_schema)' do
+      it("errors (no referrer)") do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).deref_schema }
         assert_equal('cannot resolve ref: no#x', err.message)
       end
     end
 
     describe 'pointer-only uri' do
-      it 'errors (no ref_schema)' do
+      it("errors (no referrer)") do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#/no').deref_schema }
         msg = <<~MSG
           cannot resolve ref: #/no
-          with no ref schema
+          with no referrer
           MSG
         assert_equal(msg.chomp, err.message)
       end
     end
 
     describe 'anchor-only uri' do
-      it 'errors (no ref_schema)' do
+      it("errors (no referrer)") do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#no').deref_schema }
         msg = <<~MSG
           cannot resolve ref: #no
-          with no ref schema
+          with no referrer
           MSG
         assert_equal(msg.chomp, err.message)
       end
@@ -181,7 +181,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
     end
 
     it 'is pretty' do
-      ref_with_schema = JSI::Ref.new(uri, ref_schema: schema)
+      ref_with_schema = JSI::Ref.new(uri, referrer: schema)
       assert_equal('#<JSI::Ref http://jsi/3tzc>', ref_with_schema.inspect)
       assert_equal('#<JSI::Ref http://jsi/3tzc>', ref_with_schema.pretty_inspect.chomp)
       assert_equal(ref_with_schema.inspect, ref_with_schema.to_s)

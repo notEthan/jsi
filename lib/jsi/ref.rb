@@ -6,22 +6,22 @@ module JSI
   class Ref
     include(Util::Pretty)
 
-    # @param ref [#to_str] A reference URI - typically the `$ref` value of the ref_schema
-    # @param ref_schema [JSI::Schema] A schema from which the reference originated.
+    # @param ref [#to_str] A reference URI - typically the `$ref` value of the referrer
+    # @param referrer [JSI::Schema] A schema from which the reference originated.
     #
-    #   If the ref URI consists of only a fragment, it is resolved from the `ref_schema`'s
-    #   {Schema#schema_resource_root}. Otherwise the resource is found in the `ref_schema`'s
+    #   If the ref URI consists of only a fragment, it is resolved from the `referrer`'s
+    #   {Schema#schema_resource_root}. Otherwise the resource is found in the `referrer`'s
     #   `#jsi_registry` (and any fragment is resolved from there).
     # @param registry [Registry, nil] The registry in which the resource this ref refers to will be found.
-    #   If `ref_schema` is specified and `registry` is not, defaults to its `#jsi_registry`.
+    #   If `referrer` is specified and `registry` is not, defaults to its `#jsi_registry`.
     #   If neither is specified, {JSI.registry} is used.
-    def initialize(ref, ref_schema: nil, registry: (registry_undefined = true))
+    def initialize(ref, referrer: nil, registry: (registry_undefined = true))
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Util.uri(ref, nnil: true)
-      @ref_schema = ref_schema && resolve_schema? ? Schema.ensure_schema(ref_schema) : ref_schema
+      @referrer = referrer && resolve_schema? ? Schema.ensure_schema(referrer) : referrer
       @registry = !registry_undefined ? registry
-      : ref_schema ? ref_schema.jsi_registry
+      : referrer ? referrer.jsi_registry
       : JSI.registry
       @deref_schema = nil
     end
@@ -33,7 +33,7 @@ module JSI
     attr_reader :ref_uri
 
     # @return [Schema, nil]
-    attr_reader :ref_schema
+    attr_reader(:referrer)
 
     # @return [Registry, nil]
     attr_reader(:registry)
@@ -55,7 +55,7 @@ module JSI
         unless resource_root
           raise(ResolutionError.new([
             "cannot resolve ref: #{ref}",
-            ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
+            ("from: #{referrer.pretty_inspect.chomp}" if referrer),
           ], uri: ref_uri))
         end
       }
@@ -63,21 +63,21 @@ module JSI
       ref_uri_nofrag = ref_uri.merge(fragment: nil)
 
       if ref_uri_nofrag.empty?
-        unless ref_schema
+        unless referrer
           raise(ResolutionError.new([
             "cannot resolve ref: #{ref}",
-            "with no ref schema",
+            "with no referrer",
           ], uri: ref_uri))
         end
 
         # the URI only consists of a fragment (or is empty).
         if resolve_schema?
-          # for a fragment pointer, resolve using Schema#resource_root_subschema on the ref_schema.
-          # for a fragment anchor, use the ref_schema's schema_resource_root.
-          resource_root = ref_schema.schema_resource_root # note: may be nil from bootstrap schema
-          resolve_fragment_ptr = ref_schema.method(:resource_root_subschema)
+          # for a fragment pointer, resolve using Schema#resource_root_subschema on the referrer.
+          # for a fragment anchor, use the referrer's schema_resource_root.
+          resource_root = referrer.schema_resource_root # note: may be nil from bootstrap schema
+          resolve_fragment_ptr = referrer.method(:resource_root_subschema)
         else
-          resource_root = ref_schema.jsi_root_node
+          resource_root = referrer.jsi_root_node
           resolve_fragment_ptr = resource_root.method(:jsi_descendent_node)
         end
       else
@@ -85,8 +85,8 @@ module JSI
 
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
-        elsif ref_schema && ref_schema.jsi_resource_ancestor_uri
-          ref_abs_uri = ref_schema.jsi_resource_ancestor_uri.join(ref_uri_nofrag)
+        elsif referrer && referrer.jsi_resource_ancestor_uri
+          ref_abs_uri = referrer.jsi_resource_ancestor_uri.join(ref_uri_nofrag)
         else
           ref_abs_uri = nil
         end
@@ -95,7 +95,7 @@ module JSI
             raise(ResolutionError.new([
               "could not resolve remote ref with no registry specified",
               "ref URI: #{ref_uri.to_s}",
-              ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
+              ("from: #{referrer.pretty_inspect.chomp}" if referrer),
             ], uri: ref_uri))
           end
           resource_root = registry.find(ref_abs_uri)
@@ -103,10 +103,10 @@ module JSI
 
         if !resource_root && resolve_schema?
           # HAX for how google does refs and ids
-          if ref_schema && ref_schema.jsi_document.respond_to?(:to_hash) && ref_schema.jsi_document['schemas'].respond_to?(:to_hash)
-            ref_schema.jsi_document['schemas'].each do |k, v|
+          if referrer && referrer.jsi_document.respond_to?(:to_hash) && referrer.jsi_document['schemas'].respond_to?(:to_hash)
+            referrer.jsi_document['schemas'].each do |k, v|
               if URI[v['id']] == ref_uri_nofrag
-                resource_root = ref_schema.resource_root_subschema(['schemas', k])
+                resource_root = referrer.resource_root_subschema(['schemas', k])
               end
             end
           end
@@ -138,7 +138,7 @@ module JSI
         rescue Ptr::ResolutionError
           raise(ResolutionError.new([
             "could not resolve pointer: #{ptr_from_fragment.pointer.inspect}",
-            ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
+            ("from: #{referrer.pretty_inspect.chomp}" if referrer),
             ("in resource root: #{resource_root.pretty_inspect.chomp}" if resource_root),
           ], uri: ref_uri))
         end
@@ -184,7 +184,7 @@ module JSI
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
-      {class: self.class, ref: ref, ref_schema: ref_schema}.freeze
+      {class: self.class, ref: ref, referrer: referrer}.freeze
     end
 
     include(Util::FingerprintHash::Immutable)
