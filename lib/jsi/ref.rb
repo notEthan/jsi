@@ -45,9 +45,9 @@ module JSI
     def deref_schema
       return @deref_schema if @deref_schema
 
-      schema_resource_root = nil
-      check_schema_resource_root = -> {
-        unless schema_resource_root
+      resource_root = nil
+      check_resource_root = proc {
+        unless resource_root
           raise(ResolutionError.new([
             "cannot find schema by ref: #{ref}",
             ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
@@ -68,10 +68,10 @@ module JSI
         # the URI only consists of a fragment (or is empty).
         # for a fragment pointer, resolve using Schema#resource_root_subschema on the ref_schema.
         # for a fragment anchor, use the ref_schema's schema_resource_root.
-        schema_resource_root = ref_schema.schema_resource_root
+        resource_root = ref_schema.schema_resource_root
         resolve_fragment_ptr = ref_schema.method(:resource_root_subschema)
       else
-        # find the schema_resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.
+        # find the resource_root from the non-fragment URI. we will resolve any fragment, either pointer or anchor, from there.
 
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
@@ -88,28 +88,28 @@ module JSI
               ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
             ], uri: ref_uri))
           end
-          schema_resource_root = registry.find(ref_abs_uri)
+          resource_root = registry.find(ref_abs_uri)
         end
 
-        unless schema_resource_root
+        unless resource_root
           # HAX for how google does refs and ids
           if ref_schema && ref_schema.jsi_document.respond_to?(:to_hash) && ref_schema.jsi_document['schemas'].respond_to?(:to_hash)
             ref_schema.jsi_document['schemas'].each do |k, v|
               if URI[v['id']] == ref_uri_nofrag
-                schema_resource_root = ref_schema.resource_root_subschema(['schemas', k])
+                resource_root = ref_schema.resource_root_subschema(['schemas', k])
               end
             end
           end
         end
 
-        check_schema_resource_root.call
+        check_resource_root.call
 
-        if schema_resource_root.is_a?(Schema)
-          resolve_fragment_ptr = schema_resource_root.method(:resource_root_subschema)
+        if resource_root.is_a?(Schema)
+          resolve_fragment_ptr = resource_root.method(:resource_root_subschema)
         else
           # Note: Schema#resource_root_subschema will reinstantiate nonschemas as schemas.
-          # not implemented for remote refs when the schema_resource_root is not a schema.
-          resolve_fragment_ptr = -> (ptr) { schema_resource_root.jsi_descendent_node(ptr) }
+          # not implemented for remote refs when the resource_root is not a schema.
+          resolve_fragment_ptr = proc { |ptr| resource_root.jsi_descendent_node(ptr) }
         end
       end
 
@@ -129,24 +129,24 @@ module JSI
           raise(ResolutionError.new([
             "could not resolve pointer: #{ptr_from_fragment.pointer.inspect}",
             ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
-            ("in schema resource root: #{schema_resource_root.pretty_inspect.chomp}" if schema_resource_root),
+            ("in schema resource root: #{resource_root.pretty_inspect.chomp}" if resource_root),
           ], uri: ref_uri))
         end
       elsif fragment.nil?
-        check_schema_resource_root.call
-        result_schema = schema_resource_root
+        check_resource_root.call
+        result_schema = resource_root
       else
-        check_schema_resource_root.call
+        check_resource_root.call
 
         # find an anchor that resembles the fragment
-        result_schemas = schema_resource_root.jsi_anchor_subschemas(fragment)
+        result_schemas = resource_root.jsi_anchor_subschemas(fragment)
 
         if result_schemas.size == 1
           result_schema = result_schemas.first
         elsif result_schemas.size == 0
           raise(ResolutionError.new([
             "could not find schema by fragment: #{fragment.inspect}",
-            "in schema resource root: #{schema_resource_root.pretty_inspect.chomp}",
+            "in schema resource root: #{resource_root.pretty_inspect.chomp}",
           ], uri: ref_uri))
         else
           raise(ResolutionError.new([
