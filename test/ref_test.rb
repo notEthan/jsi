@@ -96,13 +96,13 @@ describe("JSI::Ref, JSI::Schema::Ref") do
       end
 
       it("errors from the registry (no referrer)") do
-        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).deref_schema }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).resolve }
         assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
       end
 
       it("errors from the registry (no registry)") do
         schema_without_registry = JSI::JSONSchemaDraft07.new_schema(schema_content, registry: nil)
-        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri, referrer: schema_without_registry).deref_schema }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri, referrer: schema_without_registry).resolve }
         assert_match(%r(\Acould not resolve remote ref with no registry specified), err.message)
       end
     end
@@ -123,14 +123,14 @@ describe("JSI::Ref, JSI::Schema::Ref") do
       end
 
       it("errors (no referrer)") do
-        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).deref_schema }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).resolve }
         assert_equal('cannot resolve ref: no#x', err.message)
       end
     end
 
     describe 'pointer-only uri' do
       it("errors (no referrer)") do
-        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#/no').deref_schema }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#/no').resolve }
         msg = <<~MSG
           cannot resolve ref: #/no
           with no referrer
@@ -141,7 +141,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
 
     describe 'anchor-only uri' do
       it("errors (no referrer)") do
-        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#no').deref_schema }
+        err = assert_raises(JSI::ResolutionError) { JSI::Ref.new('#no').resolve }
         msg = <<~MSG
           cannot resolve ref: #no
           with no referrer

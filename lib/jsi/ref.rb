@@ -23,7 +23,7 @@ module JSI
       @registry = !registry_undefined ? registry
       : referrer ? referrer.jsi_registry
       : JSI.registry
-      @deref_schema = nil
+      @resolved = nil
     end
 
     # @return [#to_str]
@@ -47,8 +47,8 @@ module JSI
     # @return [JSI::Schema]
     # @raise [JSI::Schema::NotASchemaError] when the thing this ref points to is not a schema
     # @raise [ResolutionError] when this reference cannot be resolved
-    def deref_schema
-      return @deref_schema if @deref_schema
+    def resolve
+      return @resolved if @resolved
 
       resource_root = nil
       check_resource_root = proc {
@@ -134,7 +134,7 @@ module JSI
 
       if ptr_from_fragment
         begin
-          result_schema = resolve_fragment_ptr.call(ptr_from_fragment)
+          resolved = resolve_fragment_ptr.call(ptr_from_fragment)
         rescue Ptr::ResolutionError
           raise(ResolutionError.new([
             "could not resolve pointer: #{ptr_from_fragment.pointer.inspect}",
@@ -144,7 +144,7 @@ module JSI
         end
       elsif fragment.nil?
         check_resource_root.call
-        result_schema = resource_root
+        resolved = resource_root
       elsif resolve_schema?
         check_resource_root.call
 
@@ -152,7 +152,7 @@ module JSI
         result_schemas = resource_root.jsi_anchor_subschemas(fragment)
 
         if result_schemas.size == 1
-          result_schema = result_schemas.first
+          resolved = result_schemas.first
         elsif result_schemas.size == 0
           raise(ResolutionError.new([
             "could not resolve fragment: #{fragment.inspect}",
@@ -171,8 +171,8 @@ module JSI
         ], uri: ref_uri))
       end
 
-      Schema.ensure_schema(result_schema) { "object identified by uri #{ref} is not a schema:" } if resolve_schema?
-      return @deref_schema = result_schema
+      Schema.ensure_schema(resolved) { "object identified by uri #{ref} is not a schema:" } if resolve_schema?
+      return @resolved = resolved
     end
 
     # pretty-prints a representation of self to the given printer
