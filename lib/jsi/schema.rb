@@ -43,8 +43,9 @@ module JSI
     ReferenceError = ResolutionError
 
     class Ref < Ref
-      def initialize(ref, **kw)
-        super(ref, **kw)
+      # @param ref_schema [Schema] deprecated; use `referrer`
+      def initialize(ref, ref_schema: nil, **kw)
+        super(ref, referrer: ref_schema, **kw)
       end
 
       # @return [Boolean]
