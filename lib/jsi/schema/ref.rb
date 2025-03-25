@@ -6,7 +6,7 @@ module JSI
   class Schema::Ref
     include(Util::Pretty)
 
-    # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
+    # @param ref [#to_str] A reference URI - typically the `$ref` value of the ref_schema
     # @param ref_schema [JSI::Schema] A schema from which the reference originated.
     #
     #   If the ref URI consists of only a fragment, it is resolved from the `ref_schema`'s
@@ -26,7 +26,7 @@ module JSI
       @deref_schema = nil
     end
 
-    # @return [String]
+    # @return [#to_str]
     attr_reader :ref
 
     # @return [URI]
