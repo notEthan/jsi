@@ -43,6 +43,10 @@ module JSI
     ReferenceError = ResolutionError
 
     class Ref < Ref
+      def initialize(ref, **kw)
+        super(ref, **kw)
+      end
+
       # @return [Boolean]
       def resolve_schema?
         true
