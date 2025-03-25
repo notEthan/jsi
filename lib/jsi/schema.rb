@@ -531,7 +531,7 @@ module JSI
     # @raise [Base::ChildNotPresent]
     def schema_ref(keyword = "$ref")
       raise(Base::ChildNotPresent, "keyword not present: #{keyword}") unless keyword?(keyword)
-      @schema_ref_map[keyword: keyword, value: schema_content[keyword]]
+      @schema_ref_map[schema_content[keyword]]
     end
 
     # Does this schema itself describe a schema? I.e. is this schema a meta-schema?
@@ -924,9 +924,7 @@ module JSI
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
       instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
       @jsi_schema_module = nil
-      @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
-        Schema::Ref.new(value, ref_schema: self)
-      end
+      @schema_ref_map = Hash.new { |h, ref| h[ref] = Schema::Ref.new(ref, ref_schema: self) }
       @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
