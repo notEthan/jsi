@@ -52,6 +52,11 @@ module JSI
       def resolve_schema?
         true
       end
+
+      # @deprecated after v0.8
+      def deref_schema
+        resolve
+      end
     end
 
     # This module extends any JSI Schema that is a meta-schema, i.e. it describes schemas.
