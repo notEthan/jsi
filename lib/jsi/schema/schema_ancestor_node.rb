@@ -59,13 +59,6 @@ module JSI
       @anchor_subschemas_map = jsi_memomap(&method(:jsi_anchor_subschemas_compute))
     end
 
-    attr_writer :jsi_document
-
-    def jsi_ptr=(jsi_ptr)
-      #chkbug fail(Bug, "jsi_ptr not #{Ptr}: #{jsi_ptr}") unless jsi_ptr.is_a?(Ptr)
-      @jsi_ptr = jsi_ptr
-    end
-
     def jsi_schema_base_uri=(jsi_schema_base_uri)
       #chkbug fail(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.is_a?(URI)
       #chkbug fail(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.absolute?
