@@ -78,8 +78,8 @@ bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 print 'bad: '
 pp bad
 
-print 'bad.phone.jsi_validate: '
-pp bad.phone.jsi_validate
+print 'bad.phone[0].jsi_validate: '
+pp bad.phone[0].jsi_validate
 
 print 'bill.transform_values(&:size): '
 pp bill.transform_values(&:size) if Hash.method_defined?(:transform_values)

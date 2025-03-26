@@ -115,17 +115,28 @@ bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 #     }
 #   ]
 # }
-bad.phone.jsi_validate
-# => #<JSI::Validation::FullResult
-#  @validation_errors=
-#   #<Set: {#<JSI::Validation::Error
-#      message: "instance type does not match `type` value",
-#      keyword: "type",
-#      schema: #{<JSI (JSI::JSONSchemaDraft07) Schema> "type" => "string"},
-#      instance_ptr: JSI::Ptr["phone", 0, "number"],
-#      instance_document: {"phone"=>[{"number"=>[5, 5, 5]}]}
-#   >,
-#  ...
+bad.phone[0].jsi_validate
+# =>
+# #<JSI::Validation::Result::Full (INVALID)
+#   validation errors: JSI::Set[
+#     #<JSI::Validation::Error
+#       message: "instance object properties are not all valid against corresponding `properties` schemas",
+#       instance: {"number" => [5, 5, 5]},
+#       instance_ptr: JSI::Ptr["phone", 0],
+#       keyword: "properties",
+#       schema uri: JSI::URI["#/properties/phone/items"],
+#       nested_errors: JSI::Set[
+#         #<JSI::Validation::Error
+#           message: "instance type does not match `type` value",
+#           instance: [5, 5, 5],
+#           instance_ptr: JSI::Ptr["phone", 0, "number"],
+#           keyword: "type",
+#           schema uri: JSI::URI["#/properties/phone/items/properties/number"],
+#           nested_errors: JSI::Set[]
+#         >
+#       ]
+#     >
+#   ]
 # >
 ```
 
