@@ -104,11 +104,6 @@ module JSI
       )
     end
 
-    # @return [MetaschemaNode::BootstrapSchema, nil]
-    def schema_resource_root
-      jsi_subschema_resource_ancestors.last
-    end
-
     # @private
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [MetaSchemaNode::BootstrapSchema]

@@ -596,9 +596,10 @@ module JSI
     # If no ancestor schema has an absolute uri, the schema_resource_root is the {Base#jsi_root_node document's root node}.
     # In this case, the resource root may or may not be a schema itself.
     #
+    # @deprecated after v0.8
     # @return [JSI::Base] resource containing this schema
     def schema_resource_root
-      jsi_subschema_resource_ancestors.last || jsi_root_node
+      jsi_resource_root
     end
 
     # is this schema the root of a schema resource?

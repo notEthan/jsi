@@ -776,6 +776,15 @@ module JSI
       JMESPath.search(expression, self, **runtime_options)
     end
 
+    # The nearest ancestor (including this node) that is a resource root.
+    #
+    # A resource root is a schema with an absolute URI, or the {#jsi_root_node document's root node}
+    # (which might not be a schema and might not have an absolute URI).
+    # @return [Base]
+    def jsi_resource_root
+      super || jsi_root_node
+    end
+
     # @private
     # @return [SchemaModule::Connection]
     def jsi_schema_module_connection

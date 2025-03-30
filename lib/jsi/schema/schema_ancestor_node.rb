@@ -37,6 +37,13 @@ module JSI
       jsi_registry
     end
 
+    # See {Base#jsi_resource_root}
+    # @return [Schema::SchemaAncestorNode, nil]
+    def jsi_resource_root
+      # overridden by Base. may be nil from MetaSchemaNode::BootstrapSchema.
+      jsi_is_resource_root? ? self : jsi_schema_resource_ancestors.last
+    end
+
     # @return [Boolean]
     def jsi_is_resource_root?
       # overridden by Schema
