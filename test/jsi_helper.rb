@@ -31,10 +31,11 @@ end
 BASIC_DIALECT = JSI::Schema::Dialect.new(
   vocabularies: [
     JSI::Schema::Vocabulary.new(elements: [
-      JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: false],
+      JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: true],
       JSI::Schema::Elements::REF[exclusive: true],
       JSI::Schema::Elements::SELF[],
       JSI::Schema::Elements::PROPERTIES[],
+      JSI::Schema::Elements::DEFINITIONS[keyword: '$defs'],
     ]),
   ],
 )

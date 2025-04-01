@@ -393,8 +393,10 @@ describe(JSI::MetaSchemaNode) do
   describe('meta-schema outside the root, document is a schema') do
     let(:metaschema_document) do
       YAML.load(<<~YAML
+        $id: tag:ck6
         $defs:
           JsonSchema:
+            $id: "#0ek"
             properties:
               additionalProperties:
                 "$ref": "#/$defs/JsonSchema"
@@ -413,6 +415,18 @@ describe(JSI::MetaSchemaNode) do
       assert_schemas([metaschema.properties['$defs']], root_node['$defs'])
 
       assert_metaschema_behaves
+    end
+
+    it("$schema can reference the meta-schema by fragment") do
+      registry = JSI::Registry.new
+      registry.register(root_node)
+
+      schema_by_ptr = JSI.new_schema({"$schema" => "tag:ck6#/$defs/JsonSchema", "additionalProperties": {}}, registry: registry)
+      assert_schemas([metaschema], schema_by_ptr)
+      assert_schemas([metaschema], schema_by_ptr.additionalProperties)
+      schema_by_anchor = JSI.new_schema({"$schema" => "tag:ck6#0ek", "additionalProperties": {}}, registry: registry)
+      assert_schemas([metaschema], schema_by_anchor)
+      assert_schemas([metaschema], schema_by_anchor.additionalProperties)
     end
   end
   describe('meta-schema outside the root on schemas, document is a schema') do
