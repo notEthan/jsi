@@ -41,6 +41,14 @@ describe("JSI::Ref, JSI::Schema::Ref") do
           assert_equal(msg.chomp, err.message)
         end
       end
+
+      describe("from a non-schema") do
+        it("finds none") do
+          referrer = JSI::SchemaSet[].new_jsi({'a' => {'b' => {}}})
+          assert_raises(JSI::ResolutionError) { JSI::Ref.new('#/b', referrer: referrer).resolve }
+          assert_raises(JSI::ResolutionError) { JSI::Ref.new('#/b', referrer: referrer['a']).resolve }
+        end
+      end
     end
   end
 
@@ -79,6 +87,25 @@ describe("JSI::Ref, JSI::Schema::Ref") do
           \#{<JSI (JSI::JSONSchemaDraft07) Schema> "$id" => "#collide"}
           MSG
         assert_equal(msg.chomp, err.message)
+      end
+    end
+
+    describe("referrer not a schema") do
+      it("finds none") do
+        referrer = JSI::SchemaSet[].new_jsi({'a' => {'b' => {}}})
+        assert_raises(JSI::ResolutionError) { JSI::Ref.new('#a', referrer: referrer).resolve }
+        assert_raises(JSI::ResolutionError) { JSI::Ref.new('#a', referrer: referrer['a']).resolve }
+      end
+
+      it("does not find a schema with that anchor") do
+        referrer_schema = JSI::JSONSchemaDraft07.new_schema({"items" => {"$ref" => JSI::JSONSchemaDraft07.schema.id}})
+        referrer = referrer_schema.new_jsi([{"$id" => "#a"}, {}])
+        # from a non-schema
+        assert_raises(JSI::ResolutionError) { JSI::Ref.new('#a', referrer: referrer).resolve }
+        # from a schema
+        assert_raises(JSI::ResolutionError) { JSI::Ref.new('#a', referrer: referrer[1]).resolve }
+        # it does resolve as a schema ref though
+        assert_equal(referrer[0], JSI::Schema::Ref.new('#a', referrer: referrer[1]).resolve)
       end
     end
   end
@@ -125,6 +152,15 @@ describe("JSI::Ref, JSI::Schema::Ref") do
       it("errors (no referrer)") do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).resolve }
         assert_equal('cannot resolve ref: no#x', err.message)
+      end
+
+      it("resolves from non-schema") do
+        x = JSI::SchemaSet[].new_jsi({'a' => {}}, uri: 'tag:gb2/x', registry: JSI::Registry.new, register: true)
+        assert_equal(x, JSI::Ref.new('x', referrer: x['a']).resolve)
+        assert_equal(x['a'], JSI::Ref.new('x#/a', referrer: x['a']).resolve)
+        extreferrer = JSI::SchemaSet[].new_jsi({}, uri: 'tag:gb2/root', registry: x.jsi_schema_registry)
+        assert_equal(x, JSI::Ref.new('x', referrer: extreferrer).resolve)
+        assert_equal(x['a'], JSI::Ref.new('x#/a', referrer: extreferrer).resolve)
       end
     end
 
