@@ -177,6 +177,7 @@ module JSI
     @translator
   end
 
+  # e.g. `JSI.translator = I18n.method(:translate)`
   # @param translator [#call]
   def self.translator=(translator)
     @translator = translator
