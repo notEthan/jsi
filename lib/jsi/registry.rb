@@ -43,22 +43,18 @@ module JSI
         raise(ArgumentError, "undefined behavior: registration of a JSI which is not a schema and is not at the root of a document")
       end
 
-      # allow for registration of resources at the root of a document whether or not they are schemas.
-      # jsi_base_uri at the root comes from the `uri` parameter to new_jsi / new_schema.
-      if resource.jsi_base_uri && resource.jsi_ptr.root?
-        internal_store(@resources, resource.jsi_base_uri, resource)
-      end
+      register_immediate(resource) if !resource.is_a?(Schema)
 
       resource.jsi_each_descendent_schema do |node|
         register_immediate(node)
       end
     end
 
-    # @param schema [Schema]
+    # @param node [Base, Schema]
     # @return [void]
-    def register_immediate(schema)
-      schema.schema_absolute_uris.each do |uri|
-        internal_store(@resources, uri, schema)
+    def register_immediate(node)
+      node.jsi_resource_uris.each do |uri|
+        internal_store(@resources, uri, node)
       end
     end
 

@@ -55,6 +55,17 @@ module JSI
       jsi_ptr.root?
     end
 
+    # Absolute URIs identifying this node - typically one URI if this is a resource root, otherwise none.
+    # @return [Enumerable<URI>]
+    def jsi_resource_uris
+      @resource_uris_map[content: jsi_node_content]
+    end
+
+    # @yield [URI]
+    private def jsi_each_resource_uri_compute
+      yield jsi_base_uri if jsi_ptr.root? && jsi_base_uri
+    end
+
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
     # If this node is a schema with an id, this is its absolute URI; otherwise an ancestor resource's URI,
@@ -76,6 +87,7 @@ module JSI
     BY_ANCHOR = proc { |i| i[:anchor] }
 
     def jsi_schema_ancestor_node_initialize
+      @resource_uris_map = jsi_memomap(key_by: Schema::KEY_BY_NONE) { Set.new(to_enum(:jsi_each_resource_uri_compute)).freeze }
       @anchor_subschemas_map = jsi_memomap(key_by: BY_ANCHOR, &method(:jsi_anchor_subschemas_compute))
     end
 

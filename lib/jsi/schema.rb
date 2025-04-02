@@ -425,24 +425,22 @@ module JSI
       schema_absolute_uris.first
     end
 
+    # @deprecated after v0.8 - use `#jsi_resource_uris`
     # @return [Enumerable<URI>]
     def schema_absolute_uris
-      @schema_absolute_uris_map[schema_content: schema_content]
+      jsi_resource_uris
     end
 
     # @yield [URI]
-    private def schema_absolute_uris_compute
-      root_uri = jsi_base_uri if jsi_ptr.root?
+    private def jsi_each_resource_uri_compute
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
         if jsi_base_uri
-          uri = jsi_base_uri.join(id_without_fragment)
-          root_uri = nil if root_uri == uri
-          yield(uri)
+          yield(jsi_base_uri.join(id_without_fragment))
         elsif id_without_fragment.absolute?
           yield(id_without_fragment)
         end
       end
-      yield(root_uri) if root_uri
+      super
     end
 
     # a nonrelative URI which refers to this schema.
@@ -994,7 +992,6 @@ module JSI
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
       instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
       @schema_ref_map = Hash.new { |h, ref| h[ref] = Schema::Ref.new(ref, referrer: self) }
-      @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
         Set.new(dialect_invoke_each(:described_object_property_names)).freeze
