@@ -142,9 +142,9 @@ module JSI
         # if a module (m) includes Schema, and an object (o) is extended with m,
         # then o should have #jsi_schema_initialize called, but Schema.extended is not called,
         # so m needs its own .extended method to call jsi_schema_initialize.
-        # note: including a module with #extended on m's singleton, rather than m.define_singleton_method(:extended),
+        # note: extending m with ExtendedInitialize for .extended, rather than m.define_singleton_method(:extended),
         # avoids possibly clobbering an existing singleton .extended method the module has defined.
-        m.singleton_class.send(:include, ExtendedInitialize)
+        m.extend(ExtendedInitialize)
       end
     end
 
