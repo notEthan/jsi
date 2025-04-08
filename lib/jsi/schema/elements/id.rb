@@ -8,7 +8,7 @@ module JSI
 
         element.add_action(:id_without_fragment) do
           next if !keyword_value_str?(keyword)
-          id_without_fragment = Util.uri(schema_content[keyword]).merge(fragment: nil).freeze
+          id_without_fragment = Util.uri(schema_content[keyword]).merge(fragment: nil)
 
           if !id_without_fragment.empty?
             cxt_yield(id_without_fragment)
