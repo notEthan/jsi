@@ -620,7 +620,7 @@ module JSI
     # is this schema the root of a schema resource?
     # @return [Boolean]
     def schema_resource_root?
-      jsi_ptr.root? || schema_absolute_uris.any?
+      jsi_ptr.root? || @memos.fetch(:has_resource_id) { @memos[:has_resource_id] = dialect_invoke_each(:id_without_fragment).any? }
     end
 
     # a subschema of this Schema
