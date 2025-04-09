@@ -46,6 +46,7 @@ module JSI
     # @!attribute registry
     #   @return [Registry, nil]
     # @!attribute to_immutable
+    #   Immutable JSIs use this when instantiating a modified copy so its instance is also immutable.
     #   @return [#call, nil]
     class Conf
       def initialize(
@@ -195,14 +196,6 @@ module JSI
     # @return [Registry, nil]
     def jsi_registry
       jsi_conf.registry
-    end
-
-    # Comes from the param `to_immutable` of {SchemaSet#new_jsi} (or other `new_jsi` /
-    # `new_schema` / `new_schema_module` method).
-    # Immutable JSIs use this when instantiating a modified copy so its instance is also immutable.
-    # @return [#call, nil]
-    def jsi_content_to_immutable
-      jsi_conf.to_immutable
     end
 
     # @return [Base::Conf]
@@ -771,7 +764,7 @@ module JSI
     # Note that immutable JSIs are not made mutable with #dup.
     # The content's #dup may return an unfrozen copy, but instantiating a modified
     # copy of this JSI involves transforming the content to immutable again
-    # (using our {#jsi_content_to_immutable}).
+    # (using {Base::Conf conf} {Base::Conf#to_immutable to_immutable}).
     # @return [Base]
     def dup
       jsi_modified_copy(&:dup)

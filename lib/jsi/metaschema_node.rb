@@ -206,7 +206,7 @@ module JSI
     def jsi_modified_copy(&block)
       if equal?(jsi_root_node)
         modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
-        modified_document = jsi_content_to_immutable.call(modified_document) if jsi_content_to_immutable
+        modified_document = jsi_conf.to_immutable.call(modified_document) if jsi_conf.to_immutable
         modified_copy = MetaSchemaNode.new(modified_document, **our_initialize_params, jsi_conf: jsi_conf)
       else
         modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
