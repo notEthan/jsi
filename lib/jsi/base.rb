@@ -43,6 +43,12 @@ module JSI
     # {Schema::MetaSchema#new_schema #new_schema} and related methods.
     #
     class Conf
+      def initialize(
+          **
+      )
+        super
+        freeze
+      end
     end
 
     class << self
