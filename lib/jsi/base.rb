@@ -46,12 +46,16 @@ module JSI
     # @!attribute registry
     #   @return [Registry, nil]
     # @!attribute to_immutable
-    #   Immutable JSIs use this when instantiating a modified copy so its instance is also immutable.
-    #   A proc/callable which takes given instance content
-    #   and results in an immutable (i.e. deeply frozen) object equal to that.
+    #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.
+    #
+    #   Used when instantiating immutable JSIs and modified copies of them, so their content is immutable.
+    #
     #   If the instantiated JSI will be mutable, this is not used.
+    #
     #   Though not recommended, this may be nil with immutable JSIs if the instance content is otherwise
     #   guaranteed to be immutable, as well as any modified copies of the instance.
+    #
+    #   Default: {DEFAULT_CONTENT_TO_IMMUTABLE}
     #   @return [#call, nil]
     class Conf
       def initialize(
