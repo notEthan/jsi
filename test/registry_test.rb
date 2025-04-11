@@ -218,25 +218,41 @@ describe("JSI::Registry") do
         MSG
       assert_equal(msg.chomp, err.message)
     end
+  end
+
+  describe("pretty") do
+    let(:registry) do
+      JSI::Registry.new.tap do |registry|
+        registry.register(JSI::JSONSchemaDraft04.schema)
+        registry.autoload_uri("http://json-schema.org/draft-06/schema") { } # never mind the block, not actually loading
+        registry.autoload_uri("http://json-schema.org/draft-07/schema") { }
+        registry.autoload_dialect_uri("http://json-schema.org/draft-04/schema") { }
+      end
+    end
 
     it('#pretty_print') do
       pp = <<~PP
       #<JSI::Registry
-        resources (0)
-        resources autoload (0)
+        resources (1): <"http://json-schema.org/draft-04/schema">
+        resources autoload (2): <
+          "http://json-schema.org/draft-06/schema",
+          "http://json-schema.org/draft-07/schema"
+        >
         vocabularies (0)
         vocabularies autoload (0)
         dialects (0)
-        dialects autoload (0)
+        dialects autoload (1): <"http://json-schema.org/draft-04/schema">
       >
       PP
-      assert_equal(pp, JSI::Registry.new.pretty_inspect)
+      assert_equal(pp, registry.pretty_inspect)
     end
 
     it('#inspect') do
-      assert_equal(%q(#<JSI::Registry resources (0) resources autoload (0) vocabularies (0) vocabularies autoload (0) dialects (0) dialects autoload (0)>), JSI::Registry.new.inspect)
+      assert_equal(%q(#<JSI::Registry resources (1): <"http://json-schema.org/draft-04/schema"> resources autoload (2): <"http://json-schema.org/draft-06/schema", "http://json-schema.org/draft-07/schema"> vocabularies (0) vocabularies autoload (0) dialects (0) dialects autoload (1): <"http://json-schema.org/draft-04/schema">>), registry.inspect)
     end
+  end
 
+  describe("dup and freeze") do
     it 'dups' do
       register_uri = 'http://jsi/registry/p4z7'
       register_resource = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => register_uri})
