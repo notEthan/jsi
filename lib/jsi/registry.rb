@@ -305,7 +305,4 @@ module JSI
       end
     end
   end
-
-  # @deprecated after v0.8
-  SchemaRegistry = Registry
 end
