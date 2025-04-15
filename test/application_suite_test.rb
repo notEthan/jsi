@@ -10,7 +10,7 @@ describe("application") do
 
     application_test_set.each do |testitem|
       testitem.dialects.each do |dialect_id|
-        schema = JSI.schema_registry.find(dialect_id).new_schema(testitem.jsi_node_content['schema'])
+        schema = JSI.registry.find(dialect_id).new_schema(testitem.jsi_node_content['schema'])
 
         testitem.tests(use_default: true).each do |test|
           test_descr = [
