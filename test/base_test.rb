@@ -618,11 +618,10 @@ describe JSI::Base do
               validation errors: JSI::Set[
                 #<JSI::Validation::Error
                   message: "instance object properties are not all valid against corresponding `properties` schemas",
-                  instance: {"foo"=>[true], "bar"=>[9], "baz"=>{"x"=>"y"}, "more"=>{}},
+                  instance: \0,
                   instance_ptr: JSI::Ptr[],
                   keyword: "properties",
-                  additional: {:instance_properties_valid=>
-                    {"foo"=>false, "bar"=>true, "baz"=>false}},
+                  additional: \0,
                   schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
                   nested_errors: JSI::Set[
                     #<JSI::Validation::Error
@@ -636,7 +635,7 @@ describe JSI::Base do
                     >,
                     #<JSI::Validation::Error
                       message: "instance type does not match `type` value",
-                      instance: {"x"=>"y"},
+                      instance: \0,
                       instance_ptr: JSI::Ptr["baz"],
                       keyword: "type",
                       additional: {},
@@ -647,10 +646,10 @@ describe JSI::Base do
                 >,
                 #<JSI::Validation::Error
                   message: "instance object additional properties are not all valid against `additionalProperties` schema",
-                  instance: {"foo"=>[true], "bar"=>[9], "baz"=>{"x"=>"y"}, "more"=>{}},
+                  instance: \0,
                   instance_ptr: JSI::Ptr[],
                   keyword: "additionalProperties",
-                  additional: {:instance_properties_valid=>{"more"=>false}},
+                  additional: \0,
                   schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
                   nested_errors: JSI::Set[
                     #<JSI::Validation::Error
@@ -669,7 +668,9 @@ describe JSI::Base do
             ERR
 
           err = assert_raises(JSI::Invalid) { subject.jsi_valid! }
-          assert_equal(msg.chomp, err.message)
+          # pretty-printing of hashes changes at ruby 3.4, but this test doesn't care how hashes are printed.
+          # those have placeholders of \0 and a regex is constructed to compare the parts around.
+          assert_match(/\A#{msg.chomp.split("\0").map { |p| Regexp.escape(p) }.join(".*")}\Z/m, err.message)
         end
       end
     end
