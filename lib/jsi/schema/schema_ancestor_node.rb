@@ -39,11 +39,6 @@ module JSI
     # @api private
     attr_reader(:jsi_schema_dynamic_anchor_map)
 
-    # @deprecated after v0.8
-    def jsi_schema_registry
-      jsi_registry
-    end
-
     # See {Base#jsi_resource_root}
     # @return [Schema::SchemaAncestorNode, nil]
     def jsi_resource_root
