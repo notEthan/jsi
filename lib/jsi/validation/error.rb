@@ -2,7 +2,7 @@
 
 module JSI
   module Validation
-    Error = Util::AttrStruct[*%w(
+    Error = Struct.subclass(*%i(
       message
       keyword
       additional
@@ -10,7 +10,7 @@ module JSI
       instance_ptr
       instance_document
       nested_errors
-    )]
+    ))
 
     # a validation error of a schema instance against a schema
     #
@@ -47,6 +47,30 @@ module JSI
         nested_errors.each { |nested_error| nested_error.each_validation_error(&block) }
         yield(self)
         nil
+      end
+
+      # @return [Object]
+      def instance
+        instance_ptr.evaluate(instance_document)
+      end
+
+      def pretty_print(q)
+        info = {
+          message: message,
+          instance: instance,
+          instance_ptr: instance_ptr,
+          keyword: keyword,
+          additional: additional,
+          'schema uri': schema.schema_uri || schema.jsi_ptr.uri,
+          nested_errors: nested_errors,
+        }
+        jsi_pp_object_group(q) do
+          q.seplist(info) do |k, v|
+            q.text(k.to_s)
+            q.text(': ')
+            q.pp(v)
+          end
+        end
       end
     end
   end

@@ -23,19 +23,19 @@ all_vocabularies.add(
 
 all_vocabularies.freeze
 
-JSI.schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-assertion") do
+JSI.registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-assertion") do
   path = JSI::SCHEMAS_PATH.join('json-schema.org/draft/2020-12/meta/format-assertion.json')
-  JSI::JSONSchemaDraft202012.new_schema(JSON.parse(path.read, freeze: true), schema_registry: nil)
+  JSI::JSONSchemaDraft202012.new_schema(JSON.parse(path.read, freeze: true), registry: nil)
 end
 
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
-  jsts_schema_registry = JSI.schema_registry.dup
+  jsts_registry = JSI.registry.dup
 
   Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
     Dir.glob('**/*.json').each do |subpath|
       remote_content = JSON.parse(File.open(subpath, 'r:UTF-8', &:read), freeze: true)
       uri = File.join('http://localhost:1234/', subpath)
-      jsts_schema_registry.autoload_uri(uri) do |schema_registry: |
+      jsts_registry.autoload_uri(uri) do |registry: |
         if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
           subSchemas_schema = JSI.new_schema({
             '$schema' => 'http://json-schema.org/draft-07/schema',
@@ -43,13 +43,13 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
           })
           subSchemas_schema.new_jsi(remote_content,
             uri: uri,
-            schema_registry: schema_registry,
+            registry: registry,
           )
         else
           schema = JSI.new_schema(remote_content,
             uri: uri,
             default_metaschema: metaschema,
-            schema_registry: schema_registry,
+            registry: registry,
           )
 
           if remote_content['$vocabulary']
@@ -74,7 +74,7 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
   end
   $test_report_time["remotes set up"]
 
-  h[metaschema] = jsts_schema_registry
+  h[metaschema] = jsts_registry
 end
 
 describe 'JSON Schema Test Suite' do
@@ -104,18 +104,18 @@ describe 'JSON Schema Test Suite' do
                 # :nocov:
               end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
-                desc_schema_registry = JSTS_REGISTRIES[metaschema].dup
+                desc_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
-                  schema_registry: desc_schema_registry,
+                  registry: desc_registry,
                   default_metaschema: metaschema,
                 )
 
-                bootstrap_schema_registry = JSTS_REGISTRIES[metaschema].dup
+                bootstrap_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_bootstrap_schema = desc_schema.dialect.bootstrap_schema(
                   tests_desc.jsi_instance['schema'],
-                  jsi_schema_registry: bootstrap_schema_registry,
+                  jsi_registry: bootstrap_registry,
                 )
-                bootstrap_schema_registry.register(desc_bootstrap_schema)
+                bootstrap_registry.register(desc_bootstrap_schema)
 
                 describe(tests_desc.description) do
                   let(:schema) { desc_schema }
@@ -134,7 +134,7 @@ describe 'JSON Schema Test Suite' do
                   tests_desc.tests.each do |test|
                       it(test.description) do
                         begin
-                          jsi = schema.new_jsi(test.jsi_instance['data'], schema_registry: nil)
+                          jsi = schema.new_jsi(test.jsi_instance['data'], registry: nil)
                         rescue JSI::ResolutionError => e
                           raise unless e.uri.to_s == 'https://json-schema.org/draft/2019-09/schema'
                           skip("unsupported URI: #{e.uri}")

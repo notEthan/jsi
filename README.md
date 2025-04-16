@@ -1,6 +1,6 @@
 # JSI: JSON Schema Instantiation
 
-![Test CI Status](https://github.com/notEthan/jsi/actions/workflows/test.yml/badge.svg?branch=stable)
+![Test CI Status](https://github.com/notEthan/jsi/actions/workflows/test.yml/badge.svg?branch=main)
 [![Coverage Status](https://coveralls.io/repos/github/notEthan/jsi/badge.svg)](https://coveralls.io/github/notEthan/jsi)
 
 JSI offers an Object-Oriented representation for JSON data using JSON Schemas. Given your JSON Schemas, JSI constructs Ruby modules and classes which are used to instantiate your JSON data. These modules let you use JSON with all the niceties of OOP such as property accessors and application-defined instance methods.
@@ -115,17 +115,28 @@ bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 #     }
 #   ]
 # }
-bad.phone.jsi_validate
-# => #<JSI::Validation::FullResult
-#  @validation_errors=
-#   #<Set: {#<JSI::Validation::Error
-#      message: "instance type does not match `type` value",
-#      keyword: "type",
-#      schema: #{<JSI (JSI::JSONSchemaDraft07) Schema> "type" => "string"},
-#      instance_ptr: JSI::Ptr["phone", 0, "number"],
-#      instance_document: {"phone"=>[{"number"=>[5, 5, 5]}]}
-#   >,
-#  ...
+bad.phone[0].jsi_validate
+# =>
+# #<JSI::Validation::Result::Full (INVALID)
+#   validation errors: JSI::Set[
+#     #<JSI::Validation::Error
+#       message: "instance object properties are not all valid against corresponding `properties` schemas",
+#       instance: {"number" => [5, 5, 5]},
+#       instance_ptr: JSI::Ptr["phone", 0],
+#       keyword: "properties",
+#       schema uri: JSI::URI["#/properties/phone/items"],
+#       nested_errors: JSI::Set[
+#         #<JSI::Validation::Error
+#           message: "instance type does not match `type` value",
+#           instance: [5, 5, 5],
+#           instance_ptr: JSI::Ptr["phone", 0, "number"],
+#           keyword: "type",
+#           schema uri: JSI::URI["#/properties/phone/items/properties/number"],
+#           nested_errors: JSI::Set[]
+#         >
+#       ]
+#     >
+#   ]
 # >
 ```
 
@@ -148,7 +159,7 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 - `JSI::Base` is the base class for each JSI schema class representing instances of JSON Schemas.
 - a "JSI Schema" is a JSON Schema, instantiated as (usually) a JSI::Base described by a meta-schema (see the section on meta-schemas below). A JSI Schema is an instance of the module `JSI::Schema`.
 - a "JSI Schema Module" is a module which represents one schema, dynamically created by that Schema. Instances of that schema are extended with its JSI schema module. applications may reopen these modules to add functionality to JSI instances described by a given schema.
-- a "JSI schema class" is a subclass of `JSI::Base` representing one or more JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
+- a "JSI schema class" is a subclass of `JSI::Base` representing any number of JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
   - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_instance`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
@@ -262,11 +273,11 @@ If you are parsing with JSON.parse or YAML.load, it is recommended to pass the `
 
 ## Registration
 
-In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry (a {JSI::SchemaRegistry}) which associates URIs with schemas (or resources containing schemas). The default registry is accessible on {JSI.schema_registry}.
+In order for references across documents (generally from a `$ref` schema keyword) to resolve, JSI provides a registry (a {JSI::Registry}) which associates URIs with schemas (or resources containing schemas). The default registry is accessible on {JSI.registry}.
 
-Schemas instantiated with `.new_schema`, and their subschemas, are by default registered with `JSI.schema_registry` if they are identified by an absolute URI. This can be controlled by params `register` and `schema_registry`.
+Schemas instantiated with `.new_schema`, and their subschemas, are by default registered with `JSI.registry` if they are identified by an absolute URI. This can be controlled by params `register` and `registry`.
 
-Schemas can automatically be lazily loaded by registering a block which instantiates them with {JSI::SchemaRegistry#autoload_uri} (see its documentation).
+Schemas can automatically be lazily loaded by registering a block which instantiates them with {JSI::Registry#autoload_uri} (see its documentation).
 
 ## Validation
 

@@ -59,8 +59,8 @@ module JSI
 
       # Instantiates the given schema content as a JSI Schema.
       #
-      # By default, the schema will be registered with the {JSI.schema_registry}.
-      # This can be controlled by params `register` and `schema_registry`.
+      # By default, the schema will be registered with the {JSI.registry}.
+      # This can be controlled by params `register` and `registry`.
       #
       # By default, the `schema_content` will have any Symbol keys of Hashes replaced with Strings
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
@@ -71,7 +71,7 @@ module JSI
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [#to_str, URI] The retrieval URI of the schema document.
       #   If specified, the root schema will be identified by this URI, in addition
-      #   to any absolute URI declared with an id keyword, for resolution in the `schema_registry`.
+      #   to any absolute URI declared with an id keyword, for resolution in the `registry`.
       #
       #   It is rare that this needs to be specified. Most schemas, if they use absolute URIs, will
       #   use the `$id` keyword (`id` in draft 4) to specify this. A different retrieval URI is useful
@@ -81,10 +81,10 @@ module JSI
       #       ancestor schema - these will be resolved relative to this URI
       #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
       #       rather than an id declared in the schema - the schema is resolvable by this URI in the
-      #       `schema_registry`.
+      #       `registry`.
       # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
-      #   will be registered in the schema registry indicated by param `schema_registry`.
-      # @param schema_registry [SchemaRegistry, nil] The registry this schema will use.
+      #   will be registered in the schema registry indicated by param `registry`.
+      # @param registry [Registry, nil] The registry this schema will use.
       #
       #   - The schema and subschemas will be registered here with any declared URI,
       #     unless the `register` param is false.
@@ -95,12 +95,12 @@ module JSI
       # @param to_immutable (see SchemaSet#new_jsi)
       # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
-      # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+      # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
       def new_schema(schema_content,
           uri: nil,
           register: true,
-          schema_registry: JSI.schema_registry,
+          registry: JSI.registry,
           stringify_symbol_keys: true,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           &block
@@ -108,7 +108,7 @@ module JSI
         schema_jsi = new_jsi(schema_content,
           uri: uri,
           register: register,
-          schema_registry: schema_registry,
+          registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
           to_immutable: to_immutable,
           mutable: false,
@@ -176,8 +176,8 @@ module JSI
       #
       # The meta-schema that describes the schema must be indicated:
       #
-      # - If the schema object has a `$schema` property, that URI is resolved using the `schema_registry`
-      #   param (by default {JSI.schema_registry}), and that meta-schema is used. For example:
+      # - If the schema object has a `$schema` property, that URI is resolved using the `registry`
+      #   param (by default {JSI.registry}), and that meta-schema is used. For example:
       #
       #   ```ruby
       #   JSI.new_schema({
@@ -208,7 +208,8 @@ module JSI
       # specifying a `default_metaschema` is to call `new_schema` on the
       # {Schema::MetaSchema#new_schema meta-schema} or its
       # {SchemaModule::MetaSchemaModule#new_schema schema module}, e.g.
-      # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`
+      # `JSI::JSONSchemaDraft07.new_schema(my_schema_content)`. This will ignore any `$schema` keyword
+      # that may be present.
       #
       # Schemas instantiated with `new_schema` are immutable, their content transformed using
       # the `to_immutable` param.
@@ -220,11 +221,11 @@ module JSI
       #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::MetaSchema#new_schema)
       # @param register (see Schema::MetaSchema#new_schema)
-      # @param schema_registry (see Schema::MetaSchema#new_schema)
+      # @param registry (see Schema::MetaSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
       # @param to_immutable (see Schema::DescribesSchema#new_schema)
       # @yield (see Schema::MetaSchema#new_schema)
-      # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+      # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
       def new_schema(schema_content,
           default_metaschema: nil,
@@ -232,7 +233,7 @@ module JSI
           # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
           register: true,
-          schema_registry: JSI.schema_registry,
+          registry: JSI.registry,
           stringify_symbol_keys: true,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           &block
@@ -240,13 +241,13 @@ module JSI
         new_schema_params = {
           uri: uri,
           register: register,
-          schema_registry: schema_registry,
+          registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
           to_immutable: to_immutable,
         }
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
-            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", schema_registry: schema_registry)
+            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", registry: registry)
           elsif self.default_metaschema
             self.default_metaschema
           else
@@ -279,7 +280,7 @@ module JSI
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
-            metaschema = Schema.ensure_metaschema(id, name: '$schema', schema_registry: schema_registry)
+            metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: registry)
             metaschema.new_schema(schema_content, **new_schema_params, &block)
           else
             default_metaschema_new_schema.call
@@ -323,7 +324,7 @@ module JSI
               jsi_schema_base_uri: schema.jsi_schema_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
               jsi_schema_dynamic_anchor_map: schema.jsi_schema_dynamic_anchor_map,
-              jsi_schema_registry: schema.jsi_schema_registry,
+              jsi_registry: schema.jsi_registry,
               jsi_content_to_immutable: schema.jsi_content_to_immutable,
               jsi_root_node: schema.equal?(schema.jsi_root_node) ? nil : schema.jsi_root_node, # bad
             )
@@ -345,9 +346,9 @@ module JSI
       # @param metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
       # @raise [TypeError] if the param does not indicate a meta-schema
       # @return [Base + Schema + Schema::MetaSchema]
-      def ensure_metaschema(metaschema, name: nil, schema_registry: JSI.schema_registry)
+      def ensure_metaschema(metaschema, name: nil, registry: JSI.registry)
         if metaschema.respond_to?(:to_str)
-          schema = Schema::Ref.new(metaschema, schema_registry: schema_registry).deref_schema
+          schema = Schema::Ref.new(metaschema, registry: registry).deref_schema
           if !schema.describes_schema?
             raise(NotAMetaSchemaError, [name, "URI indicates a schema that is not a meta-schema: #{metaschema.pretty_inspect.chomp}"].compact.join(" "))
           end
@@ -470,17 +471,7 @@ module JSI
       nil
     end
 
-    # a module which extends all instances of this schema. this may be opened by the application to add
-    # methods to schema instances.
-    #
-    # some functionality is also defined on the module itself (its singleton class, not for its instances):
-    #
-    # - the module is extended with {JSI::SchemaModule}, which defines .new_jsi to instantiate instances
-    #   of this schema (see {#new_jsi}).
-    # - properties described by this schema's metaschema are defined as methods to get subschemas' schema
-    #   modules, so for example `schema.jsi_schema_module.items` returns the same module
-    #   as `schema.items.jsi_schema_module`.
-    # - method .schema which returns this schema.
+    # The JSI Schema Module for this schema. JSI instances described by this schema are instances of this module.
     #
     # @return [SchemaModule]
     def jsi_schema_module
@@ -531,7 +522,7 @@ module JSI
     # @raise [Base::ChildNotPresent]
     def schema_ref(keyword = "$ref")
       raise(Base::ChildNotPresent, "keyword not present: #{keyword}") unless keyword?(keyword)
-      @schema_ref_map[keyword: keyword, value: schema_content[keyword]]
+      @schema_ref_map[schema_content[keyword]]
     end
 
     # Does this schema itself describe a schema? I.e. is this schema a meta-schema?
@@ -645,6 +636,48 @@ module JSI
       dialect_invoke_each(:subschema) { |ptr| yield(Ptr.ary_ptr(ptr)) }
     end
 
+    # @private
+    # @yield each in-place applicator schema and params yielded from action :inplace_applicate
+    def each_immediate_inplace_applicator_schema(
+        instance: ,
+        visited_refs: ,
+        collect_evaluated: ,
+        &block
+    )
+      # if collect_evaluated, applicators must validate the instance to set `evaluated`
+      if collect_evaluated || @inplace_application_requires_instance
+        dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
+          instance: instance,
+          visited_refs: visited_refs,
+          collect_evaluated: collect_evaluated,
+          &block
+        )
+      else
+        # memoize: if the instance is not used by any in-place applicator present in this schema,
+        # the schema can do in-place application once instead of for every instance,
+        # for a very substantial performance gain.
+        #
+        # :inplace_applicate yields (schema, **keywords)
+        # so @immediate_inplace_applicators is a 2D Array of tuples (schema, keywords)
+        @immediate_inplace_applicators ||= begin
+          immediate_inplace_applicators = []
+          dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
+            instance: nil,
+            visited_refs: visited_refs,
+            collect_evaluated: false,
+          ) do |s, **kw|
+            immediate_inplace_applicators.push([s, kw])
+          end
+          immediate_inplace_applicators.freeze
+        end
+
+        @immediate_inplace_applicators.each do |(s, kw)|
+          yield(s, **kw)
+        end
+        nil
+      end
+    end
+
     # Yields each in-place applicator schema which applies to the given instance.
     #
     # @param instance [Object] the instance to check any applicators against
@@ -656,8 +689,7 @@ module JSI
         visited_refs: Util::EMPTY_ARY,
         &block
     )
-      dialect_invoke_each(:inplace_applicate,
-        Cxt::InplaceApplication,
+      each_immediate_inplace_applicator_schema(
         instance: instance,
         visited_refs: visited_refs,
         collect_evaluated: false, # child application is not invoked so no evaluated children to collect
@@ -718,8 +750,7 @@ module JSI
       inplace_child_evaluated = false
       applicate_self = false
 
-      dialect_invoke_each(:inplace_applicate,
-        Cxt::InplaceApplication,
+      each_immediate_inplace_applicator_schema(
         instance: instance,
         visited_refs: visited_refs,
         collect_evaluated: collect_evaluated,
@@ -826,6 +857,11 @@ module JSI
       end.freeze
     end
 
+    # See {Base#jsi_as_child_default_as_jsi}. true for Schema, including boolean schemas.
+    def jsi_as_child_default_as_jsi
+      true
+    end
+
     # @param action_name [Symbol]
     # @param cxt_class [Class]
     # @yield
@@ -863,6 +899,10 @@ module JSI
     # @private
     def jsi_next_schema_dynamic_anchor_map
       return(@next_schema_dynamic_anchor_map) if @next_schema_dynamic_anchor_map
+
+      if !dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }
+        return @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+      end
 
       @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
 
@@ -920,20 +960,16 @@ module JSI
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
       instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
       @jsi_schema_module = nil
-      @schema_ref_map = jsi_memomap(key_by: proc { |i| i[:keyword] }) do |keyword: , value: |
-        Schema::Ref.new(value, ref_schema: self)
-      end
+      @schema_ref_map = Hash.new { |h, ref| h[ref] = Schema::Ref.new(ref, ref_schema: self) }
       @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
         dialect_invoke_each(:described_object_property_names).to_set.freeze
       end
-      if dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }
-        @next_schema_dynamic_anchor_map = nil
-      else
-        @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
-      end
+      @next_schema_dynamic_anchor_map = nil
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
+      @inplace_application_requires_instance = dialect_invoke_each(:inplace_application_requires_instance).any?
+      @immediate_inplace_applicators = nil
     end
   end
 end

@@ -31,7 +31,7 @@ module JSI
     #   The default resolves to the root of the given document.
     # @param root_schema_ref [#to_str] URI reference to the schema describing the root of the jsi_document.
     #   When schemas of the meta-schema are in multiple documents, this describes the roots of all instantiated documents.
-    # @param bootstrap_schema_registry [SchemaRegistry, nil]
+    # @param bootstrap_registry [Registry, nil]
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
@@ -40,8 +40,8 @@ module JSI
         root_schema_ref: metaschema_root_ref,
         jsi_schema_base_uri: nil,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
-        jsi_schema_registry: nil,
-        bootstrap_schema_registry: nil,
+        jsi_registry: nil,
+        bootstrap_registry: nil,
         jsi_content_to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         initialize_finish: true,
         jsi_root_node: nil
@@ -53,7 +53,7 @@ module JSI
         # MSN doesn't track schema_resource_ancestors through descendents, but the root is included when appropriate
         jsi_schema_resource_ancestors: jsi_ptr.root? || !jsi_root_node.is_a?(Schema) ? Util::EMPTY_ARY : [jsi_root_node].freeze,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
         jsi_root_node: jsi_root_node,
       )
@@ -64,7 +64,7 @@ module JSI
       @msn_dialect = msn_dialect
       @metaschema_root_ref = metaschema_root_ref = Util.uri(metaschema_root_ref, nnil: true)
       @root_schema_ref     = root_schema_ref     = Util.uri(root_schema_ref, nnil: true)
-      @bootstrap_schema_registry = bootstrap_schema_registry
+      @bootstrap_registry = bootstrap_registry
 
       if jsi_ptr.root? && jsi_schema_base_uri
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on meta-schema document root")
@@ -81,11 +81,11 @@ module JSI
             jsi_document,
             jsi_ptr: ptr,
             jsi_schema_base_uri: nil, # not supported
-            jsi_schema_registry: bootstrap_schema_registry,
+            jsi_registry: bootstrap_registry,
           )
         else
-          # if not fragment-only, ref must be registered in the bootstrap_schema_registry
-          ref = Schema::Ref.new(ref_uri, schema_registry: bootstrap_schema_registry)
+          # if not fragment-only, ref must be registered in the bootstrap_registry
+          ref = Schema::Ref.new(ref_uri, registry: bootstrap_registry)
           ref.deref_schema
         end
       end
@@ -106,7 +106,7 @@ module JSI
       end
 
       @bootstrap_schemas = our_bootstrap_indicated_schemas.each_yield_set do |is, y|
-        is.each_inplace_applicator_schema(instance_for_schemas, &y)
+        is.each_inplace_applicator_schema(instance_for_schemas, &y) # note: instance_for_schemas == jsi_node_content now
       end
 
       @bootstrap_schemas.each do |bootstrap_schema|
@@ -115,8 +115,8 @@ module JSI
           define_singleton_method(:dialect) { msn_dialect }
           extend(Schema)
 
-          if jsi_schema_registry && schema_absolute_uris.any? { |uri| !jsi_schema_registry.registered?(uri) }
-            jsi_schema_registry.register_immediate(self)
+          if jsi_registry && schema_absolute_uris.any? { |uri| !jsi_registry.registered?(uri) }
+            jsi_registry.register_immediate(self)
           end
         end
       end
@@ -174,8 +174,8 @@ module JSI
     # @return [Addressable::URI]
     attr_reader(:root_schema_ref)
 
-    # @return [SchemaRegistry, nil]
-    attr_reader(:bootstrap_schema_registry)
+    # @return [Registry, nil]
+    attr_reader(:bootstrap_registry)
 
     # JSI Schemas describing this MetaSchemaNode
     # @return [JSI::SchemaSet]
@@ -187,16 +187,11 @@ module JSI
       @indicated_schemas_map[]
     end
 
-    # see {Base#jsi_child}
-    def jsi_child(token, as_jsi: )
+    # see {Base#jsi_child_node}
+    def jsi_child_node(token)
       dynamic_anchor_map = jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token])
-      child_node = root_descendent_node(jsi_ptr[token], dynamic_anchor_map: dynamic_anchor_map)
-
-      jsi_child_as_jsi(child_node.jsi_node_content, child_node.jsi_schemas, as_jsi) do
-        child_node
-      end
+      root_descendent_node(jsi_ptr[token], dynamic_anchor_map: dynamic_anchor_map)
     end
-    private :jsi_child
 
     # See {Base#jsi_default_child}
     def jsi_default_child(token, as_jsi: )
@@ -262,8 +257,8 @@ module JSI
         root_schema_ref: root_schema_ref,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        jsi_schema_registry: jsi_schema_registry,
-        bootstrap_schema_registry: bootstrap_schema_registry,
+        jsi_registry: jsi_registry,
+        bootstrap_registry: bootstrap_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
       }.freeze
     end
@@ -319,8 +314,8 @@ module JSI
       else
         bootstrap_resource = bootstrap_schema.schema_resource_root
         resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
-        if jsi_schema_registry.registered?(resource_uri)
-          resource = jsi_schema_registry.find(resource_uri)
+        if jsi_registry.registered?(resource_uri)
+          resource = jsi_registry.find(resource_uri)
           resource.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
         else
           #chkbug fail if @initialize_finished

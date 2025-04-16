@@ -5,6 +5,9 @@ module JSI
   #
   # any schema instance is described by a set of schemas.
   class SchemaSet < Set
+    COMPARE_BY_IDENTITY_DEFINED = method_defined?(:compare_by_identity)
+    private_constant(:COMPARE_BY_IDENTITY_DEFINED)
+
     class << self
       # Builds a SchemaSet, yielding a yielder to be called with each schema of the SchemaSet.
       #
@@ -38,7 +41,20 @@ module JSI
         raise(ArgumentError, "#{SchemaSet} initialized with non-Enumerable: #{enum.pretty_inspect.chomp}")
       end
 
-      super
+      super(&nil) # note super() does implicitly pass block without &nil
+      if COMPARE_BY_IDENTITY_DEFINED
+        compare_by_identity
+      else
+        # TODO rm when Set#compare_by_identity is universally available.
+        # note does not work on JRuby, but JRuby has Set#compare_by_identity.
+        @hash.compare_by_identity
+      end
+
+      if block
+        enum.each_entry { |o| add(block[o]) }
+      else
+        merge(enum)
+      end
 
       not_schemas = reject { |s| s.is_a?(Schema) }
       if !not_schemas.empty?
@@ -61,11 +77,11 @@ module JSI
     #   It is rare that this needs to be specified, and only useful for instances which contain schemas.
     #   See {Schema::MetaSchema#new_schema}'s `uri` param documentation.
     # @param register [Boolean] Whether schema resources in the instantiated JSI will be registered
-    #   in the schema registry indicated by param `schema_registry`.
+    #   in the schema registry indicated by param `registry`.
     #   This is only useful when the JSI is a schema or contains schemas.
     #   The JSI's root will be registered with the `uri` param, if specified, whether or not the
     #   root is a schema.
-    # @param schema_registry [SchemaRegistry, nil] The registry to use for references to other schemas and,
+    # @param registry [Registry, nil] The registry to use for references to other schemas and,
     #    depending on `register` and `uri` params, to register this JSI and/or any contained schemas with
     #    declared URIs.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
@@ -83,7 +99,7 @@ module JSI
     def new_jsi(instance,
         uri: nil,
         register: false,
-        schema_registry: JSI.schema_registry,
+        registry: JSI.registry,
         stringify_symbol_keys: false,
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         mutable: false
@@ -106,11 +122,11 @@ module JSI
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
         jsi_schema_base_uri: uri,
-        jsi_schema_registry: schema_registry,
+        jsi_registry: registry,
         jsi_content_to_immutable: to_immutable,
       )
 
-      schema_registry.register(jsi) if register && schema_registry
+      registry.register(jsi) if register && registry
 
       jsi
     end

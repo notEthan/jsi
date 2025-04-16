@@ -2,12 +2,12 @@
 
 module JSI
   module Schema
-    Issue = Util::AttrStruct[*%w(
+    Issue = Struct.subclass(*%i(
       level
       message
       keyword
       schema
-    )]
+    ))
 
     # an issue or problem with a schema.
     #

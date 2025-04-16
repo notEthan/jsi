@@ -43,7 +43,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
-        jsi_schema_registry: nil
+        jsi_registry: nil
     )
       fail(Bug, "no #dialect") unless respond_to?(:dialect)
 
@@ -52,7 +52,7 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
-      self.jsi_schema_registry = jsi_schema_registry
+      self.jsi_registry = jsi_registry
 
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
       #chkbug fail(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
@@ -76,7 +76,7 @@ module JSI
         jsi_schema_base_uri: jsi_resource_ancestor_uri,
         jsi_schema_resource_ancestors: jsi_subschema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr + subptr),
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
       )
     end
 
@@ -111,7 +111,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: ptr),
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
       )
     end
 
@@ -134,7 +134,7 @@ module JSI
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: new_dynamic_anchor_map,
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
       )
     end
 
@@ -164,7 +164,7 @@ module JSI
         jsi_ptr: @jsi_ptr,
         jsi_document: @jsi_document,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
       }.freeze
     end
 

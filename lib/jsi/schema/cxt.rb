@@ -2,21 +2,15 @@
 
 module JSI
   module Schema
-    Cxt = Util::AttrStruct[*%w(
+    Cxt = Struct.subclass(*%i(
       schema
       abort
-    )]
+    ))
 
     # @!attribute schema
     #   The schema invoking an action in this context
     #   @return [JSI::Schema]
     class Cxt
-      #chkbug def initialize(attributes = {})
-      #chkbug   super
-      #chkbug   @current_element = nil
-      #chkbug end
-
-
       def subschema(subptr)
         schema.subschema(subptr)
       end
@@ -25,21 +19,7 @@ module JSI
         schema.jsi_node_content
       end
 
-      #chkbug def using_element(element)
-      #chkbug   raise if @current_element
-      #chkbug   @current_element = element
-      #chkbug   begin
-      #chkbug     return yield
-      #chkbug   ensure
-      #chkbug     @current_element = nil
-      #chkbug   end
-      #chkbug end
-
-
       def keyword?(keyword)
-        #chkbug unless @current_element.keywords.include?(keyword)
-        #chkbug   raise(Bug, "Element using undeclared keyword: #{keyword.inspect}")
-        #chkbug end
         schema.keyword?(keyword)
       end
 
@@ -71,7 +51,7 @@ module JSI
       # is `value` an integer?
       # @return [Boolean]
       def internal_integer?(value)
-        if schema.dialect.config[:integer_disallows_0_fraction]
+        if schema.dialect.conf[:integer_disallows_0_fraction]
           value.is_a?(Integer)
         else
           value.is_a?(Integer) || (value.is_a?(Numeric) && value % 1.0 == 0.0)
@@ -84,7 +64,7 @@ module JSI
       autoload(:ChildApplication, 'jsi/schema/cxt/child_application')
     end
 
-    Cxt::Block = Cxt.subclass('block')
+    Cxt::Block = Cxt.subclass(:block)
 
     # @!attribute block
     #   @return [#call]

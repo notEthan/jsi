@@ -27,8 +27,15 @@ module JSI
           end
         end
 
+        element.add_action(:inplace_application_requires_instance) do
+          next if !keyword_value_hash?('dependencies')
+          next if schema_content['dependencies'].each_value.all? { |dependency| dependency.respond_to?(:to_ary) }
+          cxt_yield(true)
+        end
+
         element.add_action(:inplace_applicate) do
           next if !keyword_value_hash?('dependencies')
+          next if schema_content['dependencies'].each_value.all? { |dependency| dependency.respond_to?(:to_ary) }
           next if !instance.respond_to?(:to_hash)
           #> This keyword's value MUST be an object. Each property specifies a dependency.  Each dependency
           #> value MUST be an array or a valid JSON Schema.

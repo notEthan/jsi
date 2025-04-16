@@ -107,36 +107,6 @@ describe JSI::Util do
       assert_equal('cannot make immutable copy of a Hash with default_proc', e.message)
     end
   end
-
-  describe 'AttrStruct' do
-    Foo = JSI::Util::AttrStruct[*%w(bar)]
-    it 'structs' do
-      foo = Foo.new(bar: 'bar')
-      assert_equal('bar', foo.bar)
-      assert_equal('bar', foo['bar'])
-      assert_equal('bar', foo[:bar])
-      foo.bar = 'baar'
-      assert_equal('baar', foo.bar)
-      foo['bar'] = 'baaar'
-      assert_equal('baaar', foo.bar)
-      foo[:bar] = 'baaaar'
-      assert_equal('baaaar', foo.bar)
-      assert_equal(foo, Foo.new(bar: foo.bar))
-      refute_equal(foo, Foo.new(bar: 'who'))
-    end
-    it 'errors' do
-      assert_raises(ArgumentError) { JSI::Util::AttrStruct[3] }
-      assert_raises(TypeError) { Foo.new(3) }
-      assert_raises(JSI::Util::AttrStruct::UndefinedAttributeKey) { Foo.new(x: 'y') }
-      assert_raises(JSI::Util::AttrStruct::UndefinedAttributeKey) { Foo.new[:x] = 'y' }
-    end
-    it 'is pretty' do
-      foo = Foo.new(bar: {'foo' => 'foooooooooooooooooooooo', 'bar' => [3.14159], 'baz' => true, 'qux' => []})
-      assert_equal(-%Q(#<Foo bar: #{foo.bar.inspect}>), foo.inspect)
-      assert_equal(foo.inspect, foo.to_s)
-      assert_match(%r(\A#<Foo\n  bar:.*\n>\Z)m, foo.pretty_inspect)
-    end
-  end
 end
 
 $test_report_file_loaded[__FILE__]

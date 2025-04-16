@@ -1,0 +1,50 @@
+$schema: http://json-schema.org/draft-07/schema
+$id: tag:jsi:test:application/root
+
+type: array
+default: []
+items: {$ref: testitem}
+
+definitions:
+  testitem:
+    $id: testitem
+    type: object
+    properties:
+      description: {type: string}
+      comment: {type: string}
+      dialects:
+        type: array
+        items:
+          format: uri-reference
+      schema: {$ref: schema}
+      tests:
+        type: array
+        default: []
+        items: {$ref: test}
+  test:
+    $id: test
+    properties:
+      description: {type: string}
+      comment: {type: string}
+      instance: {$ref: instance}
+      schemas:
+        type: object
+        propertyNames: {$ref: pointer}
+        additionalProperties: {$ref: schema_refs}
+  schema:
+    $id: schema
+  instance:
+    $id: instance
+  pointer:
+    $id: pointer
+    description: either a pointer string, or array of pointer tokens
+    type: [string, array]
+    stringFormat: json-pointer
+    items:
+      description: token
+  schema_refs:
+    $id: schema_refs
+    type: array
+    items:
+      description: schema URI, usually a fragment with a pointer, resolved from test schema
+      format: uri-reference

@@ -60,6 +60,8 @@ module JSI
           end
         end # element.add_action(:subschema)
 
+        element.add_action(:inplace_application_requires_instance) { cxt_yield(true) if keyword?('anyOf') }
+
         element.add_action(:inplace_applicate) do
       if keyword?('anyOf') && schema_content['anyOf'].respond_to?(:to_ary)
         anyOf = schema_content['anyOf'].each_index.map { |i| subschema(['anyOf', i]) }
@@ -117,6 +119,8 @@ module JSI
             end
           end
         end # element.add_action(:subschema)
+
+        element.add_action(:inplace_application_requires_instance) { cxt_yield(true) if keyword?('oneOf') }
 
         element.add_action(:inplace_applicate) do
       if keyword?('oneOf') && schema_content['oneOf'].respond_to?(:to_ary)

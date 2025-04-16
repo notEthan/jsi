@@ -286,7 +286,7 @@ class JSISpec < Minitest::Spec
   end
 
   before do
-    JSI.schema_registry = JSI::DEFAULT_SCHEMA_REGISTRY.dup
+    JSI.registry = JSI::DEFAULT_REGISTRY.dup
   end
 end
 

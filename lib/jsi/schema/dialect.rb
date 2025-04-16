@@ -7,10 +7,10 @@ module JSI
 
       # @param id [#to_str, nil]
       # @param vocabularies [Enumerable<Schema::Vocabulary>]
-      def initialize(id: nil, vocabularies: , **config)
+      def initialize(id: nil, vocabularies: , **conf)
         @id = Util.uri(id, nnil: false, yabs: true, ynorm: true)
         @vocabularies = Set.new(vocabularies).freeze
-        @config = config.freeze
+        @conf = conf.freeze
 
         elements = vocabularies.map(&:elements).inject(Set.new, &:merge)
 
@@ -40,14 +40,27 @@ module JSI
 
         @elements.freeze
 
-        @elements_performing = Hash.new(Util::EMPTY_ARY)
-        action_names = @elements.map { |e| e.actions.each_key }.inject(Set.new, &:+).freeze
+        @actions = Hash.new(Util::EMPTY_ARY)
+        action_names = @elements.map { |e| e.actions.each_key }.inject(Set.new, &:merge).freeze
         action_names.each do |action_name|
-          @elements_performing[action_name] = @elements.select { |e| !e.actions[action_name].empty? }.freeze
+          @actions[action_name] = @elements.map { |e| e.actions[action_name] }.inject([], &:concat).freeze
         end
-        @elements_performing.freeze
+        @actions.freeze
 
         @bootstrap_schema_class = bootstrap_schema_class_compute
+
+        # Bootstrap schemas are memoized in nested hashes.
+        # The outer hash is keyed by document, compared by identity, because hashing the document
+        # is expensive and there aren't typically multiple instances of the same document
+        # (and if there are, it is no problem for them to map to different bootstrap schemas).
+        # The inner hash is keyed by other keyword params to MetaSchemaNode::BootstrapSchema#initialize,
+        # not by identity, as those use different instances but are cheaper to hash.
+        @bootstrap_schema_map = Hash.new do |dochash, document|
+          dochash[document] = Hash.new do |paramhash, kw|
+            paramhash[kw] = bootstrap_schema_class.new(document, **kw)
+          end
+        end
+        @bootstrap_schema_map.compare_by_identity
 
         freeze
       end
@@ -59,7 +72,7 @@ module JSI
       attr_reader(:vocabularies)
 
       # @return [Hash]
-      attr_reader(:config)
+      attr_reader(:conf)
 
       # @return [Array<Schema::Element>]
       attr_reader(:elements)
@@ -72,7 +85,7 @@ module JSI
       # @api private
       # @return [MetaSchemaNode::BootstrapSchema]
       def bootstrap_schema(document, **kw)
-        bootstrap_schema_class.new(document, **kw)
+        @bootstrap_schema_map[document][kw]
       end
 
       # Invoke the indicated action of each Element on the given context
@@ -80,13 +93,9 @@ module JSI
       # @param cxt [Schema::Cxt] the `self` of the action
       # @return given `cxt`
       def invoke(action_name, cxt)
-        @elements_performing[action_name].each do |element|
-          #chkbug cxt.using_element(element) do
-          element.actions[action_name].each do |action|
+        @actions[action_name].each do |action|
             cxt.instance_exec(&action)
             return(cxt) if cxt.abort
-          end
-          #chkbug end
         end
 
         cxt
@@ -106,8 +115,6 @@ module JSI
         Class.new(MetaSchemaNode::BootstrapSchema) do
           define_singleton_method(:described_dialect) { dialect }
           define_method(:dialect) { dialect }
-
-          self
         end
       end
     end

@@ -2,6 +2,81 @@
 
 module JSI
   # A Module associated with a JSI Schema. See {Schema#jsi_schema_module}.
+  #
+  # This module may be opened by the application to define methods for instances described by its schema.
+  #
+  # The schema module can also be used in some of the same ways as its schema:
+  # JSI instances of the schema can be instantiated using {#new_jsi}, or instances
+  # can be validated with {#instance_valid?} or {#instance_validate}.
+  # Often the schema module is the more convenient object to work with with than the JSI Schema.
+  #
+  # Naming the schema module (assigning it to a constant) can be useful in a few ways.
+  #
+  # - When inspected, instances of a schema with a named schema module will show that name.
+  # - Naming the module allows it to be opened with Ruby's `module` syntax. Any schema module
+  #   can be opened with [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec)
+  #   (or from the Schema with {Schema#jsi_schema_module_exec jsi_schema_module_exec})
+  #   but the `module` syntax can be more convenient, especially for assigning or accessing constants.
+  #
+  # The schema module makes it straightforward to access the schema modules of the schema's subschemas.
+  # It defines readers for schema properties (keywords) on its singleton (that is,
+  # called on the module itself, not on instances of it) to access these.
+  # The {SchemaModule::Connects#[] #[]} method can also be used.
+  #
+  # For example, given a schema with an `items` subschema, then `schema.items.jsi_schema_module`
+  # and `schema.jsi_schema_module.items` both refer to the same module.
+  # Subscripting with {SchemaModule::Connects#[] #[]} can refer to subschemas on properties
+  # that can have any name, e.g. `schema.properties['foo'].jsi_schema_module` is the same as
+  # `schema.jsi_schema_module.properties['foo']`.
+  #
+  # Schema module property readers and `#[]` can also take a block, which is passed to `module_exec`.
+  #
+  # Putting the above together, here is example usage with the schema module of the Contact
+  # schema used in the README:
+  #
+  # ```ruby
+  # Contact = JSI.new_schema_module({
+  #   "$schema" => "http://json-schema.org/draft-07/schema",
+  #   "type" => "object",
+  #   "properties" => {
+  #     "name" => {"type" => "string"},
+  #     "phone" => {
+  #       "type" => "array",
+  #       "items" => {
+  #         "type" => "object",
+  #         "properties" => {
+  #           "location" => {"type" => "string"},
+  #           "number" => {"type" => "string"}
+  #         }
+  #       }
+  #     }
+  #   }
+  # })
+  #
+  # module Contact
+  #   # name a subschema's schema module
+  #   PhoneNumber = properties['phone'].items
+  #
+  #   # open a subschema's schema module to define methods
+  #   properties['phone'] do
+  #     def numbers
+  #       map(&:number)
+  #     end
+  #   end
+  # end
+  #
+  # bill = Contact.new_jsi({"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}]})
+  # #> #{<JSI (Contact)>
+  # #>   "name" => "bill",
+  # #>   "phone" => #[<JSI (Contact.properties["phone"])>
+  # #>     #{<JSI (Contact::PhoneNumber)> "location" => "home", "number" => "555"}
+  # #>   ],
+  # #>   "nickname" => "big b"
+  # #> }
+  # ```
+  #
+  # Note that when `bill` is inspected, schema module names `Contact`, `Contact.properties["phone"]`,
+  # and `Contact::PhoneNumber` are informatively shown on respective instances.
   class SchemaModule < Module
     # @private
     def initialize(schema, &block)
@@ -46,7 +121,7 @@ module JSI
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given parameters.
     #
     # @param (see JSI::Schema#new_jsi)
-    # @return [JSI::Base subclass] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this module's schema.
     def new_jsi(instance, **kw)
       schema.new_jsi(instance, **kw)
@@ -89,11 +164,9 @@ module JSI
   module SchemaModule::MetaSchemaModule
     # Instantiates the given schema content as a JSI Schema.
     #
-    # see {JSI::Schema::MetaSchema#new_schema}
+    # See {JSI::Schema::MetaSchema#new_schema}.
     #
-    # @param (see Schema::MetaSchema#new_schema)
-    # @yield (see Schema::MetaSchema#new_schema)
-    # @return [JSI::Base subclass + JSI::Schema] a JSI which is a {JSI::Schema} whose content comes from
+    # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
     #   the given `schema_content` and whose schemas are in-place applicators of this module's schema.
     def new_schema(schema_content, **kw, &block)
       schema.new_schema(schema_content, **kw, &block)
@@ -111,7 +184,7 @@ module JSI
   end
 
   # this module is a namespace for building schema classes and schema modules.
-  # @api private
+  # @private
   module SchemaClasses
     class << self
       # @private
@@ -133,7 +206,7 @@ module JSI
       def class_for_schemas(schemas, includes: , mutable: )
         @class_for_schemas_map[
           schema_modules: schemas.map(&:jsi_schema_module).to_set.freeze,
-          includes: includes,
+          includes: includes.to_set.freeze,
           mutable: mutable,
         ]
       end
@@ -169,10 +242,6 @@ module JSI
 
             includes.each { |m| include(m) }
             schema_modules.to_a.reverse_each { |m| include(m) }
-            jsi_class = self
-            define_method(:jsi_class) { jsi_class }
-
-            self
           end
       end
 

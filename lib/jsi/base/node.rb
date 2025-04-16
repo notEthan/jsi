@@ -62,6 +62,11 @@ module JSI
       end
     end
 
+    # See {Base#jsi_as_child_default_as_jsi}. true for HashNode.
+    def jsi_as_child_default_as_jsi
+      true
+    end
+
     # yields each Hash key (JSON object property name) and value of this node.
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
@@ -254,6 +259,11 @@ module JSI
           "token: #{token.inspect}",
         ].join("\n"))
       end
+    end
+
+    # See {Base#jsi_as_child_default_as_jsi}. true for ArrayNode.
+    def jsi_as_child_default_as_jsi
+      true
     end
 
     # yields each array element of this node.

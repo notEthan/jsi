@@ -45,6 +45,17 @@ module JSI::Error
   # when it's required, relative when it must be absolute, etc.
   class URIError < Addressable::URI::InvalidURIError
   end
+
+  # A schema instance is not valid against schemas that describe it
+  class Invalid < StandardError
+    # @param result [Validation::Result]
+    def initialize(result, *a, &b)
+      @result = result
+      super(result.pretty_inspect.chomp, *a, &b)
+    end
+
+    attr_reader(:result)
+  end
 end
 
 module JSI
@@ -75,6 +86,7 @@ module JSI
   autoload(:URI, 'jsi/uri')
   autoload :Util, 'jsi/util'
   autoload(:Set, 'jsi/set')
+  autoload(:Struct, 'jsi/struct')
   autoload :Ptr, 'jsi/ptr'
   autoload :Schema, 'jsi/schema'
   autoload :SchemaSet, 'jsi/schema_set'
@@ -82,7 +94,8 @@ module JSI
   autoload(:MetaSchemaNode, 'jsi/metaschema_node')
   autoload :SchemaModule, 'jsi/schema_classes'
   autoload :SchemaClasses, 'jsi/schema_classes'
-  autoload :SchemaRegistry, 'jsi/schema_registry'
+  autoload(:Registry, 'jsi/registry')
+  autoload(:SchemaRegistry, 'jsi/registry')
   autoload :Validation, 'jsi/validation'
   autoload :JSICoder, 'jsi/jsi_coder'
 
@@ -135,34 +148,50 @@ module JSI
     new_metaschema(metaschema_document, **kw, &block).jsi_schema_module
   end
 
-  # `JSI.schema_registry` is the default {JSI::SchemaRegistry} in which schemas are registered and from
+  # `JSI.registry` is the default {JSI::Registry} in which schemas are registered and from
   # which they resolve references.
   #
-  # @return [JSI::SchemaRegistry]
+  # @return [Registry]
+  def self.registry
+    @registry
+  end
+
+  # @deprecated after v0.8
   def self.schema_registry
-    @schema_registry
+    @registry
   end
 
-  # @param schema_registry [JSI::SchemaRegistry]
-  def self.schema_registry=(schema_registry)
-    @schema_registry = schema_registry
+  # @param registry [Registry]
+  def self.registry=(registry)
+    @registry = registry
   end
 
-  DEFAULT_SCHEMA_REGISTRY = SchemaRegistry.new.tap do |schema_registry|
-    schema_registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaDraft04.schema }
-    schema_registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaDraft06.schema }
-    schema_registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaDraft07.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/schema") { JSI::JSONSchemaDraft202012.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/core")         { JSI::JSONSchemaDraft202012::Core.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/applicator")    { JSI::JSONSchemaDraft202012::Applicator.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/unevaluated")    { JSI::JSONSchemaDraft202012::Unevaluated.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/validation")      { JSI::JSONSchemaDraft202012::Validation.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/meta-data")        { JSI::JSONSchemaDraft202012::MetaData.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-annotation") { JSI::JSONSchemaDraft202012::FormatAnnotation.schema }
-    schema_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/content")          { JSI::JSONSchemaDraft202012::Content.schema }
+  DEFAULT_REGISTRY = Registry.new.tap do |registry|
+    registry.autoload_uri("http://json-schema.org/draft-04/schema") { JSI::JSONSchemaDraft04.schema }
+    registry.autoload_uri("http://json-schema.org/draft-06/schema") { JSI::JSONSchemaDraft06.schema }
+    registry.autoload_uri("http://json-schema.org/draft-07/schema") { JSI::JSONSchemaDraft07.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/schema") { JSI::JSONSchemaDraft202012.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/core")         { JSI::JSONSchemaDraft202012::Core.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/applicator")    { JSI::JSONSchemaDraft202012::Applicator.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/unevaluated")    { JSI::JSONSchemaDraft202012::Unevaluated.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/validation")      { JSI::JSONSchemaDraft202012::Validation.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/meta-data")        { JSI::JSONSchemaDraft202012::MetaData.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-annotation") { JSI::JSONSchemaDraft202012::FormatAnnotation.schema }
+    registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/content")          { JSI::JSONSchemaDraft202012::Content.schema }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/core")            { JSI::Schema::Draft202012::Vocab::CORE }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/unevaluated")      { JSI::Schema::Draft202012::Vocab::UNEVALUATED }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/format-annotation") { JSI::Schema::Draft202012::Vocab::FORMAT_ANNOTATION }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/validation")       { JSI::Schema::Draft202012::Vocab::VALIDATION }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/content")         { JSI::Schema::Draft202012::Vocab::CONTENT }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/applicator")     { JSI::Schema::Draft202012::Vocab::APPLICATOR }
+    registry.autoload_vocabulary_uri("https://json-schema.org/draft/2020-12/vocab/meta-data")     { JSI::Schema::Draft202012::Vocab::METADATA }
+    registry.autoload_dialect_uri("http://json-schema.org/draft-04/schema") { Schema::Draft04::DIALECT }
+    registry.autoload_dialect_uri("http://json-schema.org/draft-06/schema") { Schema::Draft06::DIALECT }
+    registry.autoload_dialect_uri("http://json-schema.org/draft-07/schema") { Schema::Draft07::DIALECT }
+    registry.autoload_dialect_uri("https://json-schema.org/draft/2020-12/schema") { Schema::Draft202012::DIALECT }
   end.freeze
 
-  self.schema_registry = DEFAULT_SCHEMA_REGISTRY.dup
+  self.registry = DEFAULT_REGISTRY.dup
 
   # translation
   # @param key [String]
@@ -177,6 +206,7 @@ module JSI
     @translator
   end
 
+  # e.g. `JSI.translator = I18n.method(:translate)`
   # @param translator [#call]
   def self.translator=(translator)
     @translator = translator

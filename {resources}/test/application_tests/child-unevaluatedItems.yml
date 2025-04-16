@@ -1,0 +1,714 @@
+- description: "immediate child applicators : prefixItems"
+  comment: >
+    prefixItems always applies at /0.
+    unevaluatedItems applies at /0 when prefixItems fails to validate and always applies at /1.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    prefixItems: [{type: "array"}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "immediate child applicators : two prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    prefixItems: [{type: "array"}, {type: "array"}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], [], []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], [], {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], {}, []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], {}, {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, [], []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, [], {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, {}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, {}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+
+- description: "immediate child applicators : items"
+  comment: >
+    items always applies to all children.
+    unevaluatedItems applies to children where items fails to validate.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    items: {type: "array"}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/items"], /1: ["#/items"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/items"], /1: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/items", "#/unevaluatedItems"], /1: ["#/items"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/items", "#/unevaluatedItems"], /1: ["#/items", "#/unevaluatedItems"]}
+
+- description: "immediate child applicators : prefixItems + items"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    prefixItems: [{type: "array"}, {type: "array"}]
+    items: {type: "boolean"}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], [], [], []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], [], [], {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], [], [], true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [[], [], {}, []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], [], {}, {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], [], {}, true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [[], [], true, []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], [], true, {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], [], true, true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items"]}
+    - instance: [[], {}, [], []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], {}, [], {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], {}, [], true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [[], {}, {}, []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], {}, {}, {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], {}, {}, true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [[], {}, true, []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], {}, true, {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], {}, true, true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items"]}
+    - instance: [[], true, [], []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], true, [], {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], true, [], true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [[], true, {}, []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], true, {}, {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], true, {}, true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [[], true, true, []]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], true, true, {}]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [[], true, true, true]
+      schemas: {/0: ["#/prefixItems/0"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items"]}
+    - instance: [{}, [], [], []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, [], [], {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, [], [], true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [{}, [], {}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, [], {}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, [], {}, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [{}, [], true, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, [], true, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, [], true, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items"]}
+    - instance: [{}, {}, [], []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}, [], {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}, [], true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [{}, {}, {}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}, {}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}, {}, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [{}, {}, true, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}, true, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}, true, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items"]}
+    - instance: [{}, true, [], []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, true, [], {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, true, [], true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [{}, true, {}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, true, {}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, true, {}, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [{}, true, true, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, true, true, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [{}, true, true, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items"]}
+    - instance: [true, [], [], []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, [], [], {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, [], [], true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [true, [], {}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, [], {}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, [], {}, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [true, [], true, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, [], true, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, [], true, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1"], /2: ["#/items"], /3: ["#/items"]}
+    - instance: [true, {}, [], []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, {}, [], {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, {}, [], true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [true, {}, {}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, {}, {}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, {}, {}, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [true, {}, true, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, {}, true, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, {}, true, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items"]}
+    - instance: [true, true, [], []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, true, [], {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, true, [], true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [true, true, {}, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, true, {}, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, true, {}, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items", "#/unevaluatedItems"], /3: ["#/items"]}
+    - instance: [true, true, true, []]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, true, true, {}]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items", "#/unevaluatedItems"]}
+    - instance: [true, true, true, true]
+      schemas: {/0: ["#/prefixItems/0", "#/unevaluatedItems"], /1: ["#/prefixItems/1", "#/unevaluatedItems"], /2: ["#/items"], /3: ["#/items"]}
+
+- description: "immediate child applicators : contains"
+  comment: >
+    contains applies at any index where it validates.
+    it applies to all children when no child validates (invalid application).
+    unevaluatedItems applies at any index where contains fails to validate.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    contains: {type: "array"}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/contains"], /1: ["#/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/contains", "#/unevaluatedItems"], /1: ["#/contains", "#/unevaluatedItems"]}
+
+- description: "immediate child applicators : contains + minContains"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    contains: {type: "array"}
+    minContains: 2
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], [], []]
+      schemas: {/0: ["#/contains"], /1: ["#/contains"], /2: ["#/contains"]}
+    - instance: [[], [], {}]
+      schemas: {/0: ["#/contains"], /1: ["#/contains"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], {}, []]
+      schemas: {/0: ["#/contains"], /1: ["#/unevaluatedItems"], /2: ["#/contains"]}
+    - instance: [[], {}, {}]
+      schemas: {/0: ["#/contains"], /1: ["#/contains", "#/unevaluatedItems"], /2: ["#/contains", "#/unevaluatedItems"]}
+    - instance: [{}, [], []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/contains"], /2: ["#/contains"]}
+    - instance: [{}, [], {}]
+      schemas: {/0: ["#/contains", "#/unevaluatedItems"], /1: ["#/contains"], /2: ["#/contains", "#/unevaluatedItems"]}
+    - instance: [{}, {}, []]
+      schemas: {/0: ["#/contains", "#/unevaluatedItems"], /1: ["#/contains", "#/unevaluatedItems"], /2: ["#/contains"]}
+    - instance: [{}, {}, {}]
+      schemas: {/0: ["#/contains", "#/unevaluatedItems"], /1: ["#/contains", "#/unevaluatedItems"], /2: ["#/contains", "#/unevaluatedItems"]}
+
+- description: "immediate child applicators : contains + maxContains"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    contains: {type: "array"}
+    maxContains: 1
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/contains"], /1: ["#/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/contains", "#/unevaluatedItems"], /1: ["#/contains", "#/unevaluatedItems"]}
+
+- description: "immediate child applicators : contains + minContains 0"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    contains: {type: "array"}
+    minContains: 0
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/contains"], /1: ["#/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "immediate child applicators : contains + minContains 0 + maxContains"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    contains: {type: "array"}
+    minContains: 0
+    maxContains: 1
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/contains"], /1: ["#/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+
+- description: "unconditional in-place child applicators : prefixItems"
+  comment: >
+    allOf's prefixItems always applies at /0.
+    unevaluatedItems applies at /0 when allOf's prefixItems fails to validate and always applies at /1.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{prefixItems: [{type: "array"}]}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "unconditional in-place child applicators : two prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{prefixItems: [{type: "array"}, {type: "array"}]}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], [], []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0"], /1: ["#/allOf/0/prefixItems/1"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], [], {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0"], /1: ["#/allOf/0/prefixItems/1"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], {}, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [[], {}, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, [], []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, [], {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, {}, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+    - instance: [{}, {}, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/allOf/0/prefixItems/1", "#/unevaluatedItems"], /2: ["#/unevaluatedItems"]}
+
+- description: "unconditional in-place child applicators : items"
+  comment: >
+    allOf's items always applies to all children.
+    unevaluatedItems applies to all children when allOf/0 fails to validate (a failing allOf applicator schema does not evaluate any children).
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{items: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/items"], /1: ["#/allOf/0/items"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/items", "#/unevaluatedItems"], /1: ["#/allOf/0/items", "#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/allOf/0/items", "#/unevaluatedItems"], /1: ["#/allOf/0/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/items", "#/unevaluatedItems"], /1: ["#/allOf/0/items", "#/unevaluatedItems"]}
+
+- description: "unconditional in-place child applicators : contains"
+  comment: >
+    allOf's contains applies at any index where it validates.
+    it applies to all children when no child validates (invalid application).
+    when allOf/0 validates, unevaluatedItems applies at any index where contains does not validate the child.
+    unevaluatedItems applies to all children when contains keyword fails to validate.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{contains: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/contains"], /1: ["#/allOf/0/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/allOf/0/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/contains", "#/unevaluatedItems"], /1: ["#/allOf/0/contains", "#/unevaluatedItems"]}
+
+- description: "unconditional in-place child applicators : unevaluatedItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf: [{unevaluatedItems: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/unevaluatedItems"], /1: ["#/allOf/0/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/unevaluatedItems", "#/unevaluatedItems"], /1: ["#/allOf/0/unevaluatedItems", "#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/allOf/0/unevaluatedItems", "#/unevaluatedItems"], /1: ["#/allOf/0/unevaluatedItems", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/unevaluatedItems", "#/unevaluatedItems"], /1: ["#/allOf/0/unevaluatedItems", "#/unevaluatedItems"]}
+
+- description: "unconditional in-place child applicators, mix valid/invalid : items + prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    allOf:
+      - {prefixItems: [{type: "array"}]}
+      - {items: {type: boolean}}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [[], true]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+      comment: /0 is evaluated by /allOf/0/prefixItems/0. /1 is not evaluated by /allOf/1/items because / is not valid aginst /allOf/1
+    - instance: [{}, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, true]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, []]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, {}]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items", "#/unevaluatedItems"], /1: ["#/allOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, true]
+      schemas: {/0: ["#/allOf/0/prefixItems/0", "#/allOf/1/items"], /1: ["#/allOf/1/items"]}
+
+- description: "conditional in-place child applicators : prefixItems"
+  comment: >
+    allOf's prefixItems always applies at /0.
+    unevaluatedItems applies at /0 when prefixItems fails to validate and always applies at /1.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf: [{prefixItems: [{type: "array"}]}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "conditional in-place child applicators : items"
+  comment: >
+    anyOf's items always applies to all children.
+    unevaluatedItems applies to all children when anyOf/0 fails to validate (a failing anyOf applicator schema does not evaluate any children).
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf: [{items: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/items"], /1: ["#/anyOf/0/items"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/items", "#/unevaluatedItems"], /1: ["#/anyOf/0/items", "#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/anyOf/0/items", "#/unevaluatedItems"], /1: ["#/anyOf/0/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/items", "#/unevaluatedItems"], /1: ["#/anyOf/0/items", "#/unevaluatedItems"]}
+
+- description: "conditional in-place child applicators : contains"
+  comment: >
+    anyOf's contains applies at any index where it validates.
+    it applies to all children when no child validates (invalid application).
+    when anyOf/0 validates, unevaluatedItems applies at any index where contains does not validate the child.
+    unevaluatedItems applies to all children when contains keyword fails to validate.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf: [{contains: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/contains"], /1: ["#/anyOf/0/contains"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/contains"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/anyOf/0/contains"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/contains", "#/unevaluatedItems"], /1: ["#/anyOf/0/contains", "#/unevaluatedItems"]}
+
+- description: "conditional in-place child applicators : unevaluatedItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf: [{unevaluatedItems: {type: "array"}}]
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/unevaluatedItems"], /1: ["#/anyOf/0/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/unevaluatedItems", "#/unevaluatedItems"], /1: ["#/anyOf/0/unevaluatedItems", "#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/anyOf/0/unevaluatedItems", "#/unevaluatedItems"], /1: ["#/anyOf/0/unevaluatedItems", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/unevaluatedItems", "#/unevaluatedItems"], /1: ["#/anyOf/0/unevaluatedItems", "#/unevaluatedItems"]}
+
+- description: "conditional in-place child applicators, mix valid/invalid : items + prefixItems"
+  comment: >
+    if /0 is array then /anyOf/0 applies to the instance, /anyOf/0/prefixItems/0 applies to /0. /anyOf/1 does not apply.
+    if both are boolean, /anyOf/1 applies, /0 and /1 are /anyOf/1/items. /anyOf/0 does not apply.
+    otherwise, both /anyOf/* apply (invalid application). neither /anyOf/* evaluates children, so all are unevaluated.
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    anyOf:
+      - {prefixItems: [{type: "array"}]}
+      - {items: {type: boolean}}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], true]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, true]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, []]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, {}]
+      schemas: {/0: ["#/anyOf/0/prefixItems/0", "#/anyOf/1/items", "#/unevaluatedItems"], /1: ["#/anyOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, true]
+      schemas: {/0: ["#/anyOf/1/items"], /1: ["#/anyOf/1/items"]}
+
+- description: "in-place oneOf, mix valid/invalid : items + prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    oneOf:
+      - {prefixItems: [{type: "array"}]}
+      - {items: {type: ["array", "boolean"]}}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/oneOf/0/prefixItems/0", "#/oneOf/1/items"], /1: ["#/oneOf/1/items"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/oneOf/0/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], true]
+      schemas: {/0: ["#/oneOf/0/prefixItems/0", "#/oneOf/1/items"], /1: ["#/oneOf/1/items"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/oneOf/0/prefixItems/0", "#/oneOf/1/items", "#/unevaluatedItems"], /1: ["#/oneOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/oneOf/0/prefixItems/0", "#/oneOf/1/items", "#/unevaluatedItems"], /1: ["#/oneOf/1/items", "#/unevaluatedItems"]}
+    - instance: [{}, true]
+      schemas: {/0: ["#/oneOf/0/prefixItems/0", "#/oneOf/1/items", "#/unevaluatedItems"], /1: ["#/oneOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, []]
+      schemas: {/0: ["#/oneOf/1/items"], /1: ["#/oneOf/1/items"]}
+    - instance: [true, {}]
+      schemas: {/0: ["#/oneOf/0/prefixItems/0", "#/oneOf/1/items", "#/unevaluatedItems"], /1: ["#/oneOf/1/items", "#/unevaluatedItems"]}
+    - instance: [true, true]
+      schemas: {/0: ["#/oneOf/1/items"], /1: ["#/oneOf/1/items"]}
+
+- description: "`if` child applicators : prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    if: {prefixItems: [{type: "array"}]}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: [], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: [], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "`if` child applicators : items"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    if: {items: {type: "array"}}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: [], /1: []}
+    - instance: [[], {}]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "`if` child applicators : contains"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    if: {contains: {type: "array"}}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: [], /1: []}
+    - instance: [[], {}]
+      schemas: {/0: [], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: []}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+- description: "`if` child applicators : unevaluatedItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    if: {unevaluatedItems: {type: "array"}}
+    unevaluatedItems: {type: "object"}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: [], /1: []}
+    - instance: [[], {}]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+
+
+- description: "`if`+`then`+`else` child applicators : prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    if: {prefixItems: [{type: ["array", "boolean"]}]}
+    then: {prefixItems: [{type: ["boolean"]}]}
+    else: {prefixItems: [{type: ["array"]}]}
+    unevaluatedItems: {type: ["object", "boolean"]}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], true]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/else/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/else/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, true]
+      schemas: {/0: ["#/else/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [true, []]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [true, {}]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [true, true]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+
+- description: "`if`+`then`+`else` child applicators : prefixItems"
+  dialects:
+    - https://json-schema.org/draft/2020-12/schema
+  schema:
+    if: {prefixItems: [{type: ["array", "boolean"]}]}
+    then: {prefixItems: [false]}
+    else: {prefixItems: [false]}
+    unevaluatedItems: {type: ["object", "boolean"]}
+  tests:
+    - instance: [[], []]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], {}]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [[], true]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, []]
+      schemas: {/0: ["#/else/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, {}]
+      schemas: {/0: ["#/else/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [{}, true]
+      schemas: {/0: ["#/else/prefixItems/0", "#/unevaluatedItems"], /1: ["#/unevaluatedItems"]}
+    - instance: [true, []]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [true, {}]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}
+    - instance: [true, true]
+      schemas: {/0: ["#/then/prefixItems/0"], /1: ["#/unevaluatedItems"]}

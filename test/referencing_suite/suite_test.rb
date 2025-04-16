@@ -17,15 +17,15 @@ describe("JSON Referencing Test Suite") do
       path = base.join(subpath)
       describe(subpath) do
         ref_tests = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
-        desc_schema_registry = JSI.schema_registry.dup
+        descr_registry = JSI.registry.dup
         ref_tests['registry'].each_key do |uri|
           schema_content = ref_tests['registry'][uri]
           auri = JSI::Util.uri(uri)
           auri = auri.merge(fragment: nil) if auri.fragment == ''
-          metaschema.new_schema(schema_content, uri: auri, schema_registry: desc_schema_registry)
+          metaschema.new_schema(schema_content, uri: auri, registry: descr_registry)
         end
 
-        let(:schema_registry) { desc_schema_registry }
+        let(:registry) { descr_registry }
 
         ref_tests['tests'].each do |init_test|
           describe("resolving #{init_test['ref']}") do
@@ -36,7 +36,7 @@ describe("JSON Referencing Test Suite") do
               curr_test = init_test
               while curr_test
                 ref_uri = base_uri ? JSI::Util.uri(base_uri).join(curr_test['ref']) : curr_test['ref']
-                ref = JSI::Schema::Ref.new(ref_uri, schema_registry: schema_registry)
+                ref = JSI::Schema::Ref.new(ref_uri, registry: registry)
                 if curr_test['error']
                   fail(Bug) if curr_test['then']
                   begin

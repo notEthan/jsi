@@ -100,10 +100,10 @@ describe JSI::Schema::Ref do
         assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
       end
 
-      it('errors from the registry (no schema_registry)') do
-        schema_without_registry = JSI::JSONSchemaDraft07.new_schema(schema_content, schema_registry: nil)
+      it("errors from the registry (no registry)") do
+        schema_without_registry = JSI::JSONSchemaDraft07.new_schema(schema_content, registry: nil)
         err = assert_raises(JSI::ResolutionError) { JSI::Schema::Ref.new(uri, ref_schema: schema_without_registry).deref_schema }
-        assert_match(%r(\Acould not resolve remote ref with no schema_registry specified), err.message)
+        assert_match(%r(\Acould not resolve remote ref with no registry specified), err.message)
       end
     end
 
@@ -159,7 +159,7 @@ describe JSI::Schema::Ref do
       end
 
       it 'finds a thing that is not a schema' do
-        JSI.schema_registry.autoload_uri(uri) do
+        JSI.registry.autoload_uri(uri) do
           JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, uri: uri)
         end
 

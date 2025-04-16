@@ -13,6 +13,7 @@ module JSI
   # - the {Schema#jsi_schema_module} of each schema which describes the instance
   # - {Base::HashNode}, {Base::ArrayNode}, or {Base::StringNode} if the instance is
   #   a hash/object, array, or string
+  # - {Base::Immutable} or {Base::Mutable}
   # - Modules defining accessor methods for property names described by the schemas
   class Base
     autoload :ArrayNode, 'jsi/base/node'
@@ -122,7 +123,7 @@ module JSI
         jsi_schema_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
-        jsi_schema_registry: ,
+        jsi_registry: ,
         jsi_content_to_immutable: ,
         jsi_root_node: nil
     )
@@ -134,7 +135,7 @@ module JSI
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
-      self.jsi_schema_registry = jsi_schema_registry
+      self.jsi_registry = jsi_registry
       @jsi_content_to_immutable = jsi_content_to_immutable
       #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
       @jsi_root_node = jsi_root_node || self
@@ -325,7 +326,7 @@ module JSI
       end
     end
 
-    # an array of JSI instances above this one in the document.
+    # JSI nodes above this one in the document.
     #
     # @return [Array<JSI::Base>]
     def jsi_parent_nodes
@@ -443,21 +444,7 @@ module JSI
     # @return [JSI::Base, Object]
     # @raise [Base::ChildNotPresent]
     def jsi_child(token, as_jsi: )
-      jsi_child_ensure_present(token)
-
-      child_content = jsi_node_content_child(token)
-
-      child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
-      child_applied_schemas = @child_applied_schemas_map[token: token, child_indicated_schemas: child_indicated_schemas, child_content: child_content]
-
-      jsi_child_as_jsi(child_content, child_applied_schemas, as_jsi) do
-        @child_node_map[
-          token: token,
-          child_indicated_schemas: child_indicated_schemas,
-          child_applied_schemas: child_applied_schemas,
-          includes: SchemaClasses.includes_for(child_content),
-        ]
-      end
+      jsi_child_as_jsi(jsi_child_node(token), as_jsi)
     end
     private :jsi_child # internals for #[] but idk, could be public
 
@@ -465,7 +452,18 @@ module JSI
     # @return [JSI::Base]
     # @raise [Base::ChildNotPresent]
     def jsi_child_node(token)
-      jsi_child(token, as_jsi: true)
+      jsi_child_ensure_present(token)
+
+      child_content = jsi_node_content_child(token)
+
+      child_indicated_schemas = @child_indicated_schemas_map[token: token, content: jsi_node_content]
+      child_applied_schemas = @child_applied_schemas_map[token: token, child_indicated_schemas: child_indicated_schemas, child_content: child_content]
+      @child_node_map[
+          token: token,
+          child_indicated_schemas: child_indicated_schemas,
+          child_applied_schemas: child_applied_schemas,
+          includes: SchemaClasses.includes_for(child_content),
+      ]
     end
 
     # A default value for a child of this node identified by the given token, if schemas describing
@@ -492,11 +490,11 @@ module JSI
 
       if defaults.size == 1
         # use the default value
-        jsi_child_as_jsi(defaults.first, child_applied_schemas, as_jsi) do
+        default_child_node =
           jsi_modified_copy do |i|
             i.dup.tap { |i_dup| i_dup[token] = defaults.first }
           end.jsi_child_node(token)
-        end
+        jsi_child_as_jsi(default_child_node, as_jsi)
       else
         child_content
       end
@@ -547,7 +545,18 @@ module JSI
       jsi_simple_node_child_error(token)
     end
 
+    # When accessing this node as a child (from {#[]} or a property reader), should the result
+    # by default be a JSI node (this node), or its node content?
+    # This default may be overridden using the `as_jsi` parameter calling the parent's {#[]}.
+    # @return [Boolean]
+    def jsi_as_child_default_as_jsi
+      # base default is false, for simple types. overridden by complex types (HashNode, ArrayNode), Schema, and others.
+      false
+    end
+
     # The default value for the param `as_jsi` of {#[]}, controlling whether a child is returned as a JSI instance.
+    # @deprecated after v0.8. This is the parent node's preference whether its children are returned as JSIs, but it
+    #   is better for a child to indicate whether it should be a JSI by overriding {#jsi_as_child_default_as_jsi}.
     # @return [:auto, true, false] a valid value of the `as_jsi` param of {#[]}
     def jsi_child_as_jsi_default
       :auto
@@ -611,13 +620,13 @@ module JSI
     #
     # @yield [Object] this JSI's instance. the block should result
     #   in a nondestructively modified copy of this.
-    # @return [JSI::Base subclass] the modified copy of self
+    # @return [Base] the modified copy of self
     def jsi_modified_copy(&block)
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
           uri: @jsi_root_node.jsi_schema_base_uri,
           register: false, # default is already false but this is a place to be explicit
-          schema_registry: jsi_schema_registry,
+          registry: jsi_registry,
           mutable: jsi_mutable?,
           to_immutable: jsi_content_to_immutable,
         )
@@ -668,6 +677,15 @@ module JSI
       jsi_indicated_schemas.instance_valid?(self)
     end
 
+    # Asserts that this JSI is valid against its schemas.
+    # {JSI::Invalid} is raised if it is not.
+    #
+    # @raise [Invalid]
+    # @return [nil]
+    def jsi_valid!
+      jsi_validate.valid!
+    end
+
     # queries this JSI using the [JMESPath Ruby](https://rubygems.org/gems/jmespath) gem.
     # see [https://jmespath.org/](https://jmespath.org/) to learn the JMESPath query language.
     #
@@ -706,7 +724,7 @@ module JSI
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
         jsi_content_to_immutable: jsi_content_to_immutable,
         jsi_root_node: jsi_root_node,
       )
@@ -740,33 +758,36 @@ module JSI
     def jsi_object_group_text
       jsi_schemas = self.jsi_schemas || Util::EMPTY_SET # for debug during MSN initialize, may not be set yet
       schemas_priorities = jsi_schemas.each_with_index.map do |schema, i|
-        if schema.describes_schema?
-          [0, i, schema]
-        elsif schema.jsi_schema_module_name
-          [1, i, schema]
-        elsif schema.jsi_schema_module_name_from_ancestor
-          [2, i, schema]
-        elsif schema.schema_absolute_uri
-          [3, i, schema]
-        elsif schema.schema_uri
-          [4, i, schema]
-        elsif !schema.respond_to?(:to_hash)
-          # boolean
-          [9, i, schema]
-        elsif schema.empty?
-          [8, i, schema]
-        elsif schema.all? { |k, _| k == '$ref' || k == '$dynamicRef' }
-          [7, i, schema]
-        else
-          [5, i, schema]
-        end
+        priority = [
+          schema.describes_schema? ? 0 : 1,
+
+          schema.jsi_schema_module_name ?
+            0
+          : schema.jsi_schema_module_name_from_ancestor ?
+            1
+          : schema.schema_absolute_uri ?
+            2
+          : schema.schema_uri ?
+            3
+          : 5,
+
+          !schema.respond_to?(:to_hash) ?
+            # boolean
+            9
+          : schema.empty? ?
+            8
+          : schema.all? { |k, _| k == '$ref' || k == '$dynamicRef' } ?
+            7
+          : 5,
+        ]
+        [priority, i, schema]
       end.sort
 
       schema_names = []
       schemas_priorities.each do |(priority, _idx, schema)|
-        if priority == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
+        if priority[0] == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
           name = schema.jsi_schema_module_name_from_ancestor || schema.schema_uri
-          name ||= schema.jsi_ptr.uri if priority == 0
+          name ||= schema.jsi_ptr.uri if priority[0] == 0
           schema_names << name if name
         end
       end
@@ -829,7 +850,7 @@ module JSI
         # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         # different registries mean references may resolve to different resources so must not be equal
-        jsi_schema_registry: jsi_schema_registry,
+        jsi_registry: jsi_registry,
       }.freeze
     end
 
@@ -865,7 +886,7 @@ module JSI
           jsi_schema_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
           jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token]),
-          jsi_schema_registry: jsi_schema_registry,
+          jsi_registry: jsi_registry,
           jsi_content_to_immutable: @jsi_content_to_immutable,
           jsi_root_node: @jsi_root_node,
         )
@@ -892,21 +913,19 @@ module JSI
       end
     end
 
-    def jsi_child_as_jsi(child_content, child_schemas, as_jsi)
+    def jsi_child_as_jsi(child_node, as_jsi)
       if [true, false].include?(as_jsi)
         child_as_jsi = as_jsi
       elsif as_jsi == :auto
-        child_is_complex = child_content.respond_to?(:to_hash) || child_content.respond_to?(:to_ary)
-        child_is_schema = child_schemas.any?(&:describes_schema?)
-        child_as_jsi = child_is_complex || child_is_schema
+        child_as_jsi = child_node.jsi_as_child_default_as_jsi
       else
         raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
       end
 
       if child_as_jsi
-        yield
+        child_node
       else
-        child_content
+        child_node.jsi_node_content
       end
     end
 

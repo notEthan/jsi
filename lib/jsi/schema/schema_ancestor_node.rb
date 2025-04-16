@@ -32,9 +32,14 @@ module JSI
     # @api private
     attr_reader(:jsi_schema_dynamic_anchor_map)
 
-    # See {SchemaSet#new_jsi} param `schema_registry`
-    # @return [SchemaRegistry, nil]
-    attr_reader(:jsi_schema_registry)
+    # See {SchemaSet#new_jsi} param `registry`
+    # @return [Registry, nil]
+    attr_reader(:jsi_registry)
+
+    # @deprecated after v0.8
+    def jsi_schema_registry
+      jsi_registry
+    end
 
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
@@ -104,12 +109,12 @@ module JSI
       @jsi_schema_dynamic_anchor_map = dynamic_anchor_map
     end
 
-    attr_writer(:jsi_schema_registry)
+    attr_writer(:jsi_registry)
 
     def jsi_anchor_subschemas_compute(anchor: )
-      jsi_each_descendent_schema_same_resource.select do |schema|
+      SchemaSet.new(jsi_each_descendent_schema_same_resource.select do |schema|
         schema.anchors.include?(anchor)
-      end.to_set.freeze
+      end)
     end
 
     # @return [Util::MemoMap]

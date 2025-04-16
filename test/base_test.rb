@@ -458,6 +458,28 @@ describe JSI::Base do
       it '#jsi_valid?' do
         assert_equal(false, subject.jsi_valid?)
       end
+
+      it("#jsi_valid!") do
+        msg = <<~ERR
+          #<JSI::Validation::Result::Full (INVALID)
+            validation errors: JSI::Set[
+              #<JSI::Validation::Error
+                message: "instance type does not match `type` value",
+                instance: "this is a string",
+                instance_ptr: JSI::Ptr[],
+                keyword: "type",
+                additional: {},
+                schema uri: JSI::URI["http://jsi/base/validation/with errors"],
+                nested_errors: JSI::Set[]
+              >
+            ]
+          >
+          ERR
+
+        err = assert_raises(JSI::Invalid) { subject.jsi_valid! }
+        assert_equal(msg.chomp, err.message)
+      end
+
       it '#jsi_validate' do
         result = subject.jsi_validate
         assert_equal(false, result.valid?)
@@ -588,6 +610,67 @@ describe JSI::Base do
           assert_equal(false, subject.baz.jsi_valid?)
           assert_equal(false, subject['more'].jsi_valid?)
           assert_equal(false, subject.jsi_valid?)
+        end
+
+        it("jsi_valid!") do
+          msg = <<~ERR
+            #<JSI::Validation::Result::Full (INVALID)
+              validation errors: JSI::Set[
+                #<JSI::Validation::Error
+                  message: "instance object properties are not all valid against corresponding `properties` schemas",
+                  instance: \0,
+                  instance_ptr: JSI::Ptr[],
+                  keyword: "properties",
+                  additional: \0,
+                  schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
+                  nested_errors: JSI::Set[
+                    #<JSI::Validation::Error
+                      message: "instance type does not match `type` value",
+                      instance: [true],
+                      instance_ptr: JSI::Ptr["foo"],
+                      keyword: "type",
+                      additional: {},
+                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/foo"],
+                      nested_errors: JSI::Set[]
+                    >,
+                    #<JSI::Validation::Error
+                      message: "instance type does not match `type` value",
+                      instance: \0,
+                      instance_ptr: JSI::Ptr["baz"],
+                      keyword: "type",
+                      additional: {},
+                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/baz"],
+                      nested_errors: JSI::Set[]
+                    >
+                  ]
+                >,
+                #<JSI::Validation::Error
+                  message: "instance object additional properties are not all valid against `additionalProperties` schema",
+                  instance: \0,
+                  instance_ptr: JSI::Ptr[],
+                  keyword: "additionalProperties",
+                  additional: \0,
+                  schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
+                  nested_errors: JSI::Set[
+                    #<JSI::Validation::Error
+                      message: "instance is valid against `not` schema",
+                      instance: {},
+                      instance_ptr: JSI::Ptr["more"],
+                      keyword: "not",
+                      additional: {},
+                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/additionalProperties"],
+                      nested_errors: JSI::Set[]
+                    >
+                  ]
+                >
+              ]
+            >
+            ERR
+
+          err = assert_raises(JSI::Invalid) { subject.jsi_valid! }
+          # pretty-printing of hashes changes at ruby 3.4, but this test doesn't care how hashes are printed.
+          # those have placeholders of \0 and a regex is constructed to compare the parts around.
+          assert_match(/\A#{msg.chomp.split("\0").map { |p| Regexp.escape(p) }.join(".*")}\Z/m, err.message)
         end
       end
     end

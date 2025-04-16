@@ -805,7 +805,7 @@ describe JSI::Schema do
   describe 'stringification, thorough for draft 7' do
     let(:recursive_default_child_as_jsi_true) do
       JSI::SimpleWrap::METASCHEMA.new_schema(:recursive_default_child_as_jsi_true) do
-        redef_method(:jsi_child_as_jsi_default) { true }
+        redef_method(:jsi_as_child_default_as_jsi) { true }
       end
     end
 

@@ -6,27 +6,27 @@ module JSI
   class Schema::Ref
     include(Util::Pretty)
 
-    # @param ref [String] A reference URI - typically the `$ref` value of the ref_schema
+    # @param ref [#to_str] A reference URI - typically the `$ref` value of the ref_schema
     # @param ref_schema [JSI::Schema] A schema from which the reference originated.
     #
     #   If the ref URI consists of only a fragment, it is resolved from the `ref_schema`'s
     #   {Schema#schema_resource_root}. Otherwise the resource is found in the `ref_schema`'s
-    #   {SchemaAncestorNode#jsi_schema_registry #jsi_schema_registry} (and any fragment is resolved from there).
-    # @param schema_registry [SchemaRegistry, nil] The registry in which the resource this ref refers to will be found.
-    #   If `ref_schema` is specified and `schema_registry` is not, defaults to its `#jsi_schema_registry`.
-    #   If neither is specified, {JSI.schema_registry} is used.
-    def initialize(ref, ref_schema: nil, schema_registry: (schema_registry_undefined = true))
+    #   {SchemaAncestorNode#jsi_registry #jsi_registry} (and any fragment is resolved from there).
+    # @param registry [Registry, nil] The registry in which the resource this ref refers to will be found.
+    #   If `ref_schema` is specified and `registry` is not, defaults to its `#jsi_registry`.
+    #   If neither is specified, {JSI.registry} is used.
+    def initialize(ref, ref_schema: nil, registry: (registry_undefined = true))
       raise(ArgumentError, "ref is not a string") unless ref.respond_to?(:to_str)
       @ref = ref
       @ref_uri = Util.uri(ref, nnil: true)
       @ref_schema = ref_schema ? Schema.ensure_schema(ref_schema) : nil
-      @schema_registry = !schema_registry_undefined ? schema_registry
-      : ref_schema ? ref_schema.jsi_schema_registry
-      : JSI.schema_registry
+      @registry = !registry_undefined ? registry
+      : ref_schema ? ref_schema.jsi_registry
+      : JSI.registry
       @deref_schema = nil
     end
 
-    # @return [String]
+    # @return [#to_str]
     attr_reader :ref
 
     # @return [URI]
@@ -35,8 +35,8 @@ module JSI
     # @return [Schema, nil]
     attr_reader :ref_schema
 
-    # @return [SchemaRegistry, nil]
-    attr_reader(:schema_registry)
+    # @return [Registry, nil]
+    attr_reader(:registry)
 
     # finds the schema this ref points to
     # @return [JSI::Schema]
@@ -81,14 +81,14 @@ module JSI
           ref_abs_uri = nil
         end
         if ref_abs_uri
-          unless schema_registry
+          unless registry
             raise(ResolutionError.new([
-              "could not resolve remote ref with no schema_registry specified",
+              "could not resolve remote ref with no registry specified",
               "ref URI: #{ref_uri.to_s}",
               ("from: #{ref_schema.pretty_inspect.chomp}" if ref_schema),
             ], uri: ref_uri))
           end
-          schema_resource_root = schema_registry.find(ref_abs_uri)
+          schema_resource_root = registry.find(ref_abs_uri)
         end
 
         unless schema_resource_root

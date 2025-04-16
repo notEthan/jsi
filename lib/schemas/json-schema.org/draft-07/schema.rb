@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  metaschema_document = JSON.parse(SCHEMAS_PATH.join('json-schema.org/draft-07/schema.json').read, freeze: true)
+  metaschema_document = Util.json_parse_freeze(SCHEMAS_PATH.join('json-schema.org/draft-07/schema.json').read)
   JSONSchemaDraft07 = JSI.new_metaschema_module(metaschema_document,
     dialect: JSI::Schema::Draft07::DIALECT,
   )

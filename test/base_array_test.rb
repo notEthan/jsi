@@ -248,6 +248,9 @@ describe 'JSI::Base array' do
         assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: 2\ninstance: nil), err.message)
       end
     end
+  end
+
+  describe("pretty") do
     describe '#inspect, #to_s' do
       it 'inspects' do
         assert_equal("#[<JSI*1> \"foo\", \#{<JSI*1> \"lamp\" => #[<JSI*0> 3]}, #[<JSI*1> \"q\", \"r\"], \#{<JSI*0> \"four\" => 4}]", subject.inspect)
