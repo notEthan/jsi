@@ -19,6 +19,7 @@ module JSI
     class << self
       # @return [Class]
       def subclass(*members)
+        #chkbug fail if !members.all? { |m| m.is_a?(Symbol) }
         self_members = self.members rescue [] # NoMethodError on mri, NameError on truffle
         # Struct does not enable adding members to subclasses of its generated classes,
         # but that is still possible by binding Struct.new to the class and calling
