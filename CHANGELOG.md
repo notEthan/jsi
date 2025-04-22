@@ -1,3 +1,12 @@
+# v0.9.0
+
+- JSON Schema draft 2020-12 (JSI::JSONSchemaDraft202012)
+- new architecture for Schema with Dialect, Vocabulary, Element
+- Base#jsi_conf / Base::Conf
+- JSI.translator
+- Base#jsi_valid!, Schema#instance_valid!
+- much more
+
 # v0.8.1
 
 - JSIs are immutable by default
