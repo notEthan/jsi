@@ -38,19 +38,9 @@ module JSI
     # A reference to a schema identified by a given URI.
     # {#resolve} will return a Schema, and param `referrer` must be a Schema.
     class Ref < Ref
-      # @param ref_schema [Schema] deprecated; use `referrer`
-      def initialize(ref, ref_schema: nil, **kw)
-        super(ref, referrer: ref_schema, **kw)
-      end
-
       # @return [Boolean]
       def resolve_schema?
         true
-      end
-
-      # @deprecated after v0.8
-      def deref_schema
-        resolve
       end
     end
 
