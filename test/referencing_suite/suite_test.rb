@@ -7,6 +7,7 @@ describe("JSON Referencing Test Suite") do
     {name: '04', metaschema: JSI::JSONSchemaDraft04.schema},
     {name: '06', metaschema: JSI::JSONSchemaDraft06.schema},
     {name: '07', metaschema: JSI::JSONSchemaDraft07.schema},
+    {name: '2020-12', metaschema: JSI::JSONSchemaDraft202012.schema},
   ]
   drafts.each do |draft|
     name = draft[:name]
