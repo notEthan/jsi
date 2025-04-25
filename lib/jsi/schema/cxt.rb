@@ -7,6 +7,7 @@ module JSI
       abort
     ))
 
+    # A Schema::Cxt is the `self` of a {Schema::Element} action.
     # @!attribute schema
     #   The schema invoking an action in this context
     #   @return [JSI::Schema]
