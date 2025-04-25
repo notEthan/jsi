@@ -158,7 +158,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
         x = JSI::SchemaSet[].new_jsi({'a' => {}}, uri: 'tag:gb2/x', registry: JSI::Registry.new, register: true)
         assert_equal(x, JSI::Ref.new('x', referrer: x['a']).resolve)
         assert_equal(x['a'], JSI::Ref.new('x#/a', referrer: x['a']).resolve)
-        extreferrer = JSI::SchemaSet[].new_jsi({}, uri: 'tag:gb2/root', registry: x.jsi_schema_registry)
+        extreferrer = JSI::SchemaSet[].new_jsi({}, uri: 'tag:gb2/root', registry: x.jsi_registry)
         assert_equal(x, JSI::Ref.new('x', referrer: extreferrer).resolve)
         assert_equal(x['a'], JSI::Ref.new('x#/a', referrer: extreferrer).resolve)
       end
