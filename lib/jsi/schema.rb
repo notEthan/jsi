@@ -627,7 +627,7 @@ module JSI
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
           Schema.ensure_schema(jsi_resource_root.jsi_descendent_node(ptr),
-            reinstantiate_as: jsi_schemas.select(&:describes_schema?)
+            reinstantiate_as: jsi_conf.reinstantiate_nonschemas && jsi_schemas.select(&:describes_schema?),
           )
     end
 

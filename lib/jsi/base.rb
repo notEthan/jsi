@@ -35,6 +35,7 @@ module JSI
 
     Conf = Struct.subclass(*%i(
       registry
+      reinstantiate_nonschemas
       after_initialize
       child_as_jsi
       child_use_default
@@ -53,6 +54,8 @@ module JSI
     #
     #   Default: {JSI.registry}
     #   @return [Registry, nil]
+    # @!attribute reinstantiate_nonschemas
+    #   _private, not officially supported_. whether Schema#resource_root_subschema reinstantiates.
     # @!attribute after_initialize
     #   _EXPERIMENTAL_ - a callback that is called with each JSI node in the document after the node is initialized.
     #   @return [#call, nil]

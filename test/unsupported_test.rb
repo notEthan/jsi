@@ -17,6 +17,7 @@ describe 'unsupported behavior' do
     # support it. the spec states that the behavior is undefined, and the code implementing it is brittle,
     # ugly, and prone to breakage, particularly with $id.
     describe 'reinstantiation' do
+      let(:schema_opt) { {reinstantiate_nonschemas: true} }
       describe 'below another schema' do
         yaml(:schema_content, <<~YAML
             definitions:
@@ -99,7 +100,7 @@ describe 'unsupported behavior' do
           schema_doc = schema_doc_schema.new_jsi({
             'schema' => {'$ref' => '#/unknown'},
             'unknown' => {},
-          })
+          }, reinstantiate_nonschemas: true)
           subject = schema_doc.schema.new_jsi({})
           assert_equal(
             [JSI::Ptr["unknown"]],

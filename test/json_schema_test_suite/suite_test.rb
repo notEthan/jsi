@@ -93,6 +93,7 @@ describe 'JSON Schema Test Suite' do
                 desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
                   registry: desc_registry,
                   default_metaschema: metaschema,
+                  reinstantiate_nonschemas: File.basename(subpath) == 'refOfUnknownKeyword.json',
                 )
 
                 dialect = desc_schema.dialect # typically metaschema.described_dialect but $schema can override
