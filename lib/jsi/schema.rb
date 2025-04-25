@@ -332,7 +332,7 @@ module JSI
             result_schema_class.new(schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,
               jsi_indicated_schemas: result_schema_indicated_schemas,
-              jsi_schema_base_uri: schema.jsi_schema_base_uri,
+              jsi_base_uri: schema.jsi_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
               jsi_schema_dynamic_anchor_map: schema.jsi_schema_dynamic_anchor_map,
               jsi_conf: schema.equal?(schema.jsi_root_node) ? schema.jsi_conf : nil,
@@ -419,7 +419,7 @@ module JSI
       anchors.freeze
     end
 
-    # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_schema_base_uri`
+    # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_base_uri`
     # @return [URI, nil]
     def schema_absolute_uri
       schema_absolute_uris.first
@@ -432,10 +432,10 @@ module JSI
 
     # @yield [URI]
     private def schema_absolute_uris_compute
-      root_uri = jsi_schema_base_uri if jsi_ptr.root?
+      root_uri = jsi_base_uri if jsi_ptr.root?
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
-        if jsi_schema_base_uri
-          uri = jsi_schema_base_uri.join(id_without_fragment)
+        if jsi_base_uri
+          uri = jsi_base_uri.join(id_without_fragment)
           root_uri = nil if root_uri == uri
           yield(uri)
         elsif id_without_fragment.absolute?
@@ -955,7 +955,7 @@ module JSI
             jsi_document,
             jsi_ptr: descendent_schema.jsi_ptr + subptr,
             # note: same as anchor_root.jsi_resource_ancestor_uri since we don't cross resource boundaries.
-            jsi_schema_base_uri: descendent_schema.jsi_resource_ancestor_uri,
+            jsi_base_uri: descendent_schema.jsi_resource_ancestor_uri,
           )
           if !descendent_subschema.schema_resource_root?
             descendent_schemas.push([descendent_subschema, ptrs.dup.push(subptr).freeze])

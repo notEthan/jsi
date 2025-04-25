@@ -21,7 +21,7 @@ module JSI
     # This may be the absolute schema URI of an ancestor schema or the URI from which the document was retrieved.
     # @api private
     # @return [URI, nil]
-    attr_reader :jsi_schema_base_uri
+    attr_reader(:jsi_base_uri)
 
     # resources which are ancestors of this JSI in the document. this does not include self.
     # @api private
@@ -43,7 +43,7 @@ module JSI
     # or nil if not contained by a resource with a URI.
     # @return [URI, nil]
     def jsi_resource_ancestor_uri
-      (is_a?(Schema) && schema_absolute_uri) || jsi_schema_base_uri
+      (is_a?(Schema) && schema_absolute_uri) || jsi_base_uri
     end
 
     # All schemas at or below this node with the given anchor.
@@ -61,12 +61,12 @@ module JSI
       @anchor_subschemas_map = jsi_memomap(key_by: BY_ANCHOR, &method(:jsi_anchor_subschemas_compute))
     end
 
-    def jsi_schema_base_uri=(jsi_schema_base_uri)
-      #chkbug fail(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.is_a?(URI)
-      #chkbug fail(Bug) if jsi_schema_base_uri && !jsi_schema_base_uri.absolute?
-      #chkbug fail(Bug) if jsi_schema_base_uri && jsi_schema_base_uri.fragment
+    def jsi_base_uri=(jsi_base_uri)
+      #chkbug fail(Bug) if jsi_base_uri && !jsi_base_uri.is_a?(URI)
+      #chkbug fail(Bug) if jsi_base_uri && !jsi_base_uri.absolute?
+      #chkbug fail(Bug) if jsi_base_uri && jsi_base_uri.fragment
 
-      @jsi_schema_base_uri = jsi_schema_base_uri
+      @jsi_base_uri = jsi_base_uri
     end
 
     def jsi_schema_resource_ancestors=(jsi_schema_resource_ancestors)
