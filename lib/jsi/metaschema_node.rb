@@ -92,8 +92,8 @@ module JSI
       @initialize_finished = false
       @to_initialize_finish = []
 
-      if jsi_ptr.root? && jsi_schema_base_uri
-        raise(NotImplementedError, "unsupported jsi_schema_base_uri on meta-schema document root")
+      if jsi_ptr.root? && jsi_base_uri
+        raise(NotImplementedError, "unsupported jsi_base_uri on meta-schema document root")
       end
 
       #chkbug fail(Bug, 'MetaSchemaNode instance must be frozen') unless jsi_node_content.frozen?
@@ -106,7 +106,7 @@ module JSI
           msn_dialect.bootstrap_schema(
             jsi_document,
             jsi_ptr: ptr,
-            jsi_schema_base_uri: nil, # not supported
+            jsi_base_uri: nil, # not supported
             jsi_registry: jsi_conf.bootstrap_registry,
           )
         else
@@ -279,7 +279,7 @@ module JSI
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
-        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_base_uri: jsi_base_uri,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
       }.freeze
     end
@@ -293,7 +293,7 @@ module JSI
         MetaSchemaNode.new(jsi_document,
           **our_initialize_params,
           jsi_ptr: ptr,
-          jsi_schema_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
+          jsi_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
           jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
           initialize_finish: false,
           jsi_root_node: jsi_root_node,
@@ -346,7 +346,7 @@ module JSI
             bootstrap_schema.jsi_document,
             **our_initialize_params,
             jsi_ptr: Ptr[],
-            jsi_schema_base_uri: nil,
+            jsi_base_uri: nil,
             initialize_finish: false,
             jsi_conf: jsi_conf,
           ))

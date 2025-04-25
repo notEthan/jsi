@@ -120,7 +120,7 @@ module JSI
       )
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
-        jsi_schema_base_uri: uri,
+        jsi_base_uri: uri,
         jsi_conf: conf,
       ).send(:jsi_initialized)
 
