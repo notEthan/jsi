@@ -2,6 +2,11 @@
 
 module JSI
   module Schema
+    # A JSI schema element is part of the implementation of a schema specification or dialect.
+    #
+    # Elements primarily define actions: an action is essentially a method whose `self` is a {Schema::Cxt}
+    #
+    # Most elements implement the functionality of one or more keywords.
     class Element
       # @yield [Schema::Element] self
       def initialize(keyword: nil, keywords: Util::EMPTY_SET)
