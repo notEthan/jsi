@@ -51,7 +51,7 @@ describe JSI::Base do
 
   describe 'class for schema .jsi_class_schemas' do
     it '.jsi_class_schemas' do
-      assert_equal(Set[schema], schema.new_jsi({}).class.jsi_class_schemas)
+      assert_equal(JSI::SchemaSet[schema], schema.new_jsi({}).class.jsi_class_schemas)
     end
   end
 
@@ -236,12 +236,12 @@ describe JSI::Base do
       it "yields JSIs with the right schemas" do
         descendent_nodes = subject.jsi_each_descendent_node.to_a
         assert_equal({
-          JSI::Ptr[] => Set[schema],
-          JSI::Ptr["foo"] => Set[schema.properties['foo']],
-          JSI::Ptr["foo", 0] => Set[schema.properties['foo'].items],
-          JSI::Ptr["foo", 1] => Set[schema.properties['foo'].items],
-          JSI::Ptr["bar"] => Set[schema.additionalProperties],
-          JSI::Ptr["bar", 0] => Set[],
+          JSI::Ptr[] => JSI::SchemaSet[schema],
+          JSI::Ptr["foo"] => JSI::SchemaSet[schema.properties['foo']],
+          JSI::Ptr["foo", 0] => JSI::SchemaSet[schema.properties['foo'].items],
+          JSI::Ptr["foo", 1] => JSI::SchemaSet[schema.properties['foo'].items],
+          JSI::Ptr["bar"] => JSI::SchemaSet[schema.additionalProperties],
+          JSI::Ptr["bar", 0] => JSI::SchemaSet[],
         }, descendent_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
       end
 
@@ -269,7 +269,7 @@ describe JSI::Base do
       it "yields a JSI with the right schemas" do
         descendent_nodes = subject.jsi_each_descendent_node.to_a
         assert_equal({
-          JSI::Ptr[] => Set[schema],
+          JSI::Ptr[] => JSI::SchemaSet[schema],
         }, descendent_nodes.map { |node| {node.jsi_ptr => node.jsi_schemas} }.inject({}, &:update))
       end
     end
@@ -761,7 +761,7 @@ describe JSI::Base do
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
           assert_equal(instance, subject.jsi_instance)
-          assert_equal(Set[schema], subject.jsi_schemas)
+          assert_equal(JSI::SchemaSet[schema], subject.jsi_schemas)
         end
       end
       describe 'properties with names to ignore' do

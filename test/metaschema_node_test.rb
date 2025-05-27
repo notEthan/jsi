@@ -296,7 +296,7 @@ describe(JSI::MetaSchemaNode) do
         [metaschema, applicator_schema, schema].each do |jsi|
           jsi.jsi_each_descendent_node do |node|
             assert_equal(node.equal?(metaschema), node.is_a?(JSI::Schema::MetaSchema))
-            assert_equal(node.jsi_schemas == Set[metaschema, applicator_schema], node.is_a?(JSI::Schema))
+            assert_equal(node.jsi_schemas == JSI::SchemaSet[metaschema, applicator_schema], node.is_a?(JSI::Schema))
           end
         end
 
