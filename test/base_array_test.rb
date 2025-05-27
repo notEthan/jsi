@@ -412,8 +412,8 @@ describe 'JSI::Base array' do
     it('#join')     { assert_equal('a b', schema.new_jsi(['a', 'b']).join(' ')) }
     it('#last')      { assert_equal(subject[3], subject.last) }
     it('#pack')       { assert_equal(' ', schema.new_jsi([32]).pack('c')) }
-    if ([32].pack('c', buffer: '') rescue false) # compat: no #pack keywords on ruby < 2.4, truffleruby
-      it('#pack kw')    { assert_equal(' ', schema.new_jsi([32]).pack('c', buffer: '')) }
+    if ([32].pack('c', buffer: +'') rescue false) # compat: no #pack keywords on ruby < 2.4, truffleruby
+      it('#pack kw')    { assert_equal(' ', schema.new_jsi([32]).pack('c', buffer: +'')) }
     end
     it('#permutation') { assert_equal([['foo'], [subject[1]], [subject[2]], [subject[3]]], subject.permutation(1).to_a) }
     it('#product')    { assert_equal([], subject.product([])) }
