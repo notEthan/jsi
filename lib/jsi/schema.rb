@@ -244,7 +244,7 @@ module JSI
       #
       #   `nil` to unset.
       def default_metaschema=(default_metaschema)
-        @default_metaschema = default_metaschema.nil? ? nil : ensure_metaschema(default_metaschema)
+        @default_metaschema = default_metaschema.nil? ? nil : Schema.ensure_metaschema(default_metaschema)
       end
 
       # Instantiates the given schema content as a JSI Schema.
