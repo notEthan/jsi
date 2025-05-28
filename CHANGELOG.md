@@ -1,3 +1,7 @@
+# v0.8.2
+
+- bugfix
+
 # v0.8.1
 
 - JSIs are immutable by default
