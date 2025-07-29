@@ -24,7 +24,7 @@ module JSI
     # if no block is given, the enum must contain only Schemas.
     #
     # @param enum [#each] the schemas to be included in the SchemaSet, or items to be passed to the block
-    # @yieldparam yields each element of enum for preprocessing into a Schema
+    # @yieldparam yields each element of `enum` for preprocessing into a Schema
     # @yieldreturn [JSI::Schema]
     # @raise [JSI::Schema::NotASchemaError]
     def initialize(enum, &block)
