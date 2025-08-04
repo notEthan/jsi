@@ -128,10 +128,11 @@ module JSI
         subschema_idx_valid = Hash.new { |h, i| h[i] = subschema(['oneOf', i]).instance_valid?(instance) }
         # count up to 2 `oneOf` subschemas which `instance` validates against
         nvalid = oneOf_idxs.inject(0) { |n, i| n <= 1 && subschema_idx_valid[i] ? n + 1 : n }
-        if nvalid == 1
+        if nvalid != 0
           applicator_idxs = oneOf_idxs.select { |i| subschema_idx_valid[i] }
         else
-          # invalid application: if none or multiple of the oneOf were valid, we apply them all
+          # invalid application: if none of the oneOf were valid, we apply them all.
+          # note: invalid application does not apply when multiple oneOfs validate.
           applicator_idxs = oneOf_idxs
         end
 
