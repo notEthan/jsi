@@ -401,6 +401,9 @@ describe 'JSI::Base array' do
     it('#combination')  { assert_equal([['foo'], [subject[1]], [subject[2]], [subject[3]]], subject.combination(1).to_a) }
     it('#count')       { assert_equal(1, subject.count('foo')) }
     it('#cycle')      { assert_equal(subject.to_a, subject.cycle(1).to_a) }
+    if [].respond_to?(:difference)
+      it('#difference') { assert_equal([subject[1], subject[3]], subject.difference(['foo'], [subject[2]])) }
+    end
     it('#dig')       { assert_equal(3, subject.dig(1, 'lamp', 0)) } if [].respond_to?(:dig)
     it('#drop')      { assert_equal([subject[2], subject[3]], subject.drop(2)) }
     it('#drop_while') { assert_equal([subject[1], subject[2], subject[3]], subject.drop_while { |e| e == 'foo' }) }
@@ -409,6 +412,10 @@ describe 'JSI::Base array' do
     it('#first')     { assert_equal('foo', subject.first) }
     it('#include?') { assert_equal(true, subject.include?('foo')) }
     it('#index')   { assert_equal(0, subject.index('foo')) }
+    if [].respond_to?(:intersection)
+      it('#intersection') { assert_equal(['foo', subject[2]], subject.intersection(['foo', subject[2], 0])) }
+    end
+    it('#intersect?') { assert_equal(true, subject.intersect?(['foo'])) } if [].respond_to?(:intersect?)
     it('#join')     { assert_equal('a b', schema.new_jsi(['a', 'b']).join(' ')) }
     it('#last')      { assert_equal(subject[3], subject.last) }
     it('#pack')       { assert_equal(' ', schema.new_jsi([32]).pack('c')) }
@@ -433,6 +440,7 @@ describe 'JSI::Base array' do
     it('#take')       { assert_equal(['foo'], subject.take(1)) }
     it('#take_while') { assert_equal([], subject.take_while { false }) }
     it('#transpose') { assert_equal([], schema.new_jsi([]).transpose) }
+    it('#union')    { assert_equal([*subject, 'bar'], subject.union(['bar'])) } if [].respond_to?(:union)
     it('#uniq')     { assert_equal(subject.to_a, subject.uniq) }
     it('#values_at') { assert_equal(['foo'], subject.values_at(0)) }
     it('#zip')      { assert_equal([['foo', 'foo'], [subject[1], subject[1]], [subject[2], subject[2]], [subject[3], subject[3]]], subject.zip(subject)) }

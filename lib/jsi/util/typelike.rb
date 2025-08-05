@@ -126,7 +126,7 @@ module JSI
     # methods which do not need to access the element.
     SAFE_INDEX_ONLY_METHODS = %w(each_index empty? length size).map(&:freeze).freeze
     # there are some ambiguous ones that are omitted, like #sort, #map / #collect.
-    SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev at bsearch bsearch_index combination compact count cycle dig drop drop_while fetch find_index first include? index join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip).map(&:freeze).freeze
+    SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev at bsearch bsearch_index combination compact count cycle difference dig drop drop_while fetch find_index first include? index intersection intersect? join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose union uniq values_at zip).map(&:freeze).freeze
     DESTRUCTIVE_METHODS = %w(<< clear collect! compact! concat delete delete_at delete_if fill flatten! insert keep_if map! pop push reject! replace reverse! rotate! select! shift shuffle! slice! sort! sort_by! uniq! unshift).map(&:freeze).freeze
 
     # methods (well, method) that returns a modified copy and doesn't need any handling of block variable(s)
