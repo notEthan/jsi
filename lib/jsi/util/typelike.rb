@@ -13,12 +13,12 @@ module JSI
 
     # methods which do not need to access the value.
     SAFE_KEY_ONLY_METHODS = %w(each_key empty? has_key? include? key? keys length member? size).map(&:freeze).freeze
-    SAFE_KEY_VALUE_METHODS = %w(< <= > >= any? assoc compact dig each_pair each_value fetch fetch_values has_value? invert key merge rassoc reject select to_h to_proc transform_values value? values values_at).map(&:freeze).freeze
-    DESTRUCTIVE_METHODS = %w(clear delete delete_if keep_if reject! replace select! shift).map(&:freeze).freeze
+    SAFE_KEY_VALUE_METHODS = %w(< <= > >= any? assoc compact dig each_pair each_value fetch fetch_values flatten has_value? invert key merge rassoc reject select filter to_h to_proc transform_values value? values values_at).map(&:freeze).freeze
+    DESTRUCTIVE_METHODS = %w(clear delete delete_if filter! flatten! keep_if reject! replace select! shift).map(&:freeze).freeze
     # these return a modified copy
-    safe_modified_copy_methods = %w(compact)
+    safe_modified_copy_methods = %w(compact slice except)
     # select and reject will return a modified copy but need the yielded block variable value from #[]
-    safe_kv_block_modified_copy_methods = %w(select reject)
+    safe_kv_block_modified_copy_methods = %w(select filter reject)
     SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
     custom_methods = %w(merge) # defined below
     safe_to_hash_methods = SAFE_METHODS -
