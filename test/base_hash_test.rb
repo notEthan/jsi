@@ -106,7 +106,7 @@ describe 'JSI::Base hash' do
       end
     end
   end
-  describe 'hashlike []=' do
+  describe("#[]=, #store") do
     let(:subject_opt) { {mutable: true} }
 
     it 'sets a property' do
@@ -117,6 +117,10 @@ describe 'JSI::Base hash' do
       assert_equal({'y' => 'z'}, subject['foo'].jsi_instance)
       assert_schemas([schema.properties['foo']], orig_foo)
       assert_schemas([schema.properties['foo']], subject['foo'])
+    end
+    it("sets a property with #store") do
+      subject.store('foo', {})
+      assert_equal(schema.new_jsi({'foo' => {}, 'bar' => [9], 'baz' => [true]}), subject)
     end
     it 'sets a property to a schema instance with a different schema' do
       assert(subject['foo'])

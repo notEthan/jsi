@@ -62,6 +62,11 @@ module JSI
       end
     end
 
+    # See [Hash#store](https://ruby-doc.org/current/Hash.html#method-i-store)
+    def store(key, value)
+      self[key] = value
+    end
+
     # See {Base#jsi_as_child_default_as_jsi}. true for HashNode.
     def jsi_as_child_default_as_jsi
       true
