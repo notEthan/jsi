@@ -76,7 +76,7 @@ module JSI
         ref_uri_nofrag = ref_uri.merge(fragment: nil)
 
         if ref_uri_nofrag.empty?
-          ptr = Ptr.from_fragment(ref_uri.fragment) # anchor not supported
+          ptr = Ptr.from_fragment(ref_uri.fragment).resolve_against(jsi_document) # anchor not supported
           msn_dialect.bootstrap_schema(
             jsi_document,
             jsi_ptr: ptr,
@@ -285,7 +285,7 @@ module JSI
     # @return [MetaSchemaNode]
     protected def root_descendent_node(ptr, dynamic_anchor_map: )
       node = @root_descendent_node_map[
-        ptr: ptr,
+        ptr: ptr.resolve_against(jsi_document),
         dynamic_anchor_map: dynamic_anchor_map,
       ]
 
