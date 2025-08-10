@@ -184,7 +184,7 @@ class JSISpec < Minitest::Spec
       [].tap do |ms|
         ms << "Expected match."
         ms << "#{ANSI.red   { 'matcher' }}: #{mu_pp matcher}"
-        ms << "#{ANSI.green { 'object' }}:  #{mu_pp obj}"
+        ms << "#{ANSI.green { 'object' }}:  #{obj}"
         ms << "#{ANSI.yellow { 'escaped' }}: #{Regexp.new(Regexp.escape(obj)).inspect}" if obj.is_a?(String)
       end.join("\n")
     end
