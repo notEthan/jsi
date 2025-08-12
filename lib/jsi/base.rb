@@ -80,9 +80,15 @@ module JSI
           child_as_jsi: false,
           child_use_default: false,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
-          **
+          **kw
       )
-        super
+        super(
+          registry: registry,
+          child_as_jsi: child_as_jsi,
+          child_use_default: child_use_default,
+          to_immutable: to_immutable,
+          **kw,
+        )
         freeze
       end
 
