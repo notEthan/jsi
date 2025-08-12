@@ -29,6 +29,13 @@ module JSI
     # {Base::Conf} with additional configuration for MetaSchemaNode.
     #
     class Conf < Base::Conf
+      def initialize(
+          **kw
+      )
+        super(
+          **kw,
+        )
+      end
     end
 
     # See {JSI.new_metaschema_node} to instantiate.
