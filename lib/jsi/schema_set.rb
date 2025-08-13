@@ -89,13 +89,9 @@ module JSI
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
-    # @param to_immutable [#call, nil] A proc/callable which takes given instance content
-    #   and results in an immutable (i.e. deeply frozen) object equal to that.
-    #   If the instantiated JSI will be mutable, this is not used.
-    #   Though not recommended, this may be nil with immutable JSIs if the instance content is otherwise
-    #   guaranteed to be immutable, as well as any modified copies of the instance.
     # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
-    #   The instance content will be transformed with `to_immutable` if the JSI will be immutable.
+    #   The instance content will be transformed with the {Base::Conf configured}
+    #   {Base::Conf#to_immutable `to_immutable`} if the JSI will be immutable.
     # @param conf_kw Additional keyword params are passed to initialize a {Base::Conf}, the JSI's {Base#jsi_conf}.
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of the schemas in this set.
@@ -104,19 +100,17 @@ module JSI
         register: false,
         registry: JSI.registry,
         stringify_symbol_keys: false,
-        to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         mutable: false,
         **conf_kw
     )
       conf = Base::Conf.new(
         registry: registry,
-        to_immutable: to_immutable,
         **conf_kw,
       )
 
       instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
-      instance = to_immutable.call(instance) if !mutable && to_immutable
+      instance = conf.to_immutable.call(instance) if !mutable && conf.to_immutable
 
       applied_schemas = SchemaSet.build do |y|
         c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
