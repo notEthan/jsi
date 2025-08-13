@@ -24,6 +24,7 @@ module JSI
     include(Base::Immutable)
 
     Conf = Base::Conf.subclass(*%i(
+      dialect
       metaschema_root_ref
       root_schema_ref
       bootstrap_registry
@@ -31,6 +32,8 @@ module JSI
 
     # {Base::Conf} with additional configuration for MetaSchemaNode.
     #
+    # @!attribute dialect
+    #   @return [Schema::Dialect]
     # @!attribute metaschema_root_ref
     #   URI reference to the root of the meta-schema.
     #
@@ -47,11 +50,13 @@ module JSI
     #   @return [Registry, nil]
     class Conf < Base::Conf
       def initialize(
+          dialect: ,
           metaschema_root_ref: '#',
           root_schema_ref: metaschema_root_ref,
           **kw
       )
         super(
+          dialect: dialect,
           metaschema_root_ref: Util.uri(metaschema_root_ref, nnil: true),
           root_schema_ref: Util.uri(root_schema_ref, nnil: true),
           **kw,
@@ -64,11 +69,9 @@ module JSI
     # @param jsi_document the document containing the meta-schema.
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
-    # @param msn_dialect [Schema::Dialect]
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        msn_dialect: ,
         jsi_schema_base_uri: nil,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         initialize_finish: true,
@@ -88,8 +91,6 @@ module JSI
 
       @initialize_finished = false
       @to_initialize_finish = []
-
-      @msn_dialect = msn_dialect
 
       if jsi_ptr.root? && jsi_schema_base_uri
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on meta-schema document root")
@@ -189,7 +190,9 @@ module JSI
     end
 
     # @return [Schema::Dialect]
-    attr_reader(:msn_dialect)
+    def msn_dialect
+      jsi_conf.dialect
+    end
 
     # URI reference to the root of the meta-schema
     # @return [Addressable::URI]
@@ -265,6 +268,7 @@ module JSI
       {
         class: self.class,
         jsi_document: jsi_document,
+        msn_dialect: msn_dialect,
         metaschema_root_ref: metaschema_root_ref,
         root_schema_ref: root_schema_ref,
         jsi_registry: jsi_registry,
@@ -290,7 +294,6 @@ module JSI
     def our_initialize_params
       {
         jsi_ptr: jsi_ptr,
-        msn_dialect: msn_dialect,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
       }.freeze
