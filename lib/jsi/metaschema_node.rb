@@ -53,12 +53,14 @@ module JSI
           dialect: ,
           metaschema_root_ref: '#',
           root_schema_ref: metaschema_root_ref,
+          registry: nil, # overrides Base::Conf default value JSI.registry
           **kw
       )
         super(
           dialect: dialect,
           metaschema_root_ref: Util.uri(metaschema_root_ref, nnil: true),
           root_schema_ref: Util.uri(root_schema_ref, nnil: true),
+          registry: registry,
           **kw,
         )
       end
