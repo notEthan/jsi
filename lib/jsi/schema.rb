@@ -84,7 +84,7 @@ module JSI
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
       #
       # Schemas instantiated with `new_schema` are immutable, their content transformed using
-      # the `to_immutable` param.
+      # the {Base::Conf configured} {Base::Conf#to_immutable `to_immutable`}.
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [#to_str, URI] The retrieval URI of the schema document.
@@ -110,7 +110,6 @@ module JSI
       # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
-      # @param to_immutable (see SchemaSet#new_jsi)
       # @param conf_kw (see SchemaSet#new_jsi)
       # @yield If a block is given, it is evaluated in the context of the schema's {Schema#jsi_schema_module JSI schema module}
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
@@ -121,7 +120,6 @@ module JSI
           register: true,
           registry: JSI.registry,
           stringify_symbol_keys: true,
-          to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           **conf_kw,
           &block
       )
@@ -130,7 +128,6 @@ module JSI
           register: register,
           registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
-          to_immutable: to_immutable,
           mutable: false,
           **conf_kw,
         )
@@ -233,7 +230,7 @@ module JSI
       # that may be present.
       #
       # Schemas instantiated with `new_schema` are immutable, their content transformed using
-      # the `to_immutable` param.
+      # the {Base::Conf configured} {Base::Conf#to_immutable `to_immutable`}.
       #
       # @param schema_content (see Schema::MetaSchema#new_schema)
       # @param default_metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
@@ -244,7 +241,6 @@ module JSI
       # @param register (see Schema::MetaSchema#new_schema)
       # @param registry (see Schema::MetaSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
-      # @param to_immutable (see Schema::DescribesSchema#new_schema)
       # @param conf_kw (see SchemaSet#new_jsi)
       # @yield (see Schema::MetaSchema#new_schema)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
@@ -257,7 +253,6 @@ module JSI
           register: true,
           registry: JSI.registry,
           stringify_symbol_keys: true,
-          to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           **conf_kw,
           &block
       )
@@ -266,7 +261,6 @@ module JSI
           register: register,
           registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
-          to_immutable: to_immutable,
           **conf_kw,
         }
         default_metaschema_new_schema = -> {

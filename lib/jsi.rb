@@ -76,7 +76,7 @@ module JSI
     Util.deep_to_frozen(content, not_implemented: proc do |instance|
       raise(ArgumentError, [
         "JSI does not know how to make the given instance immutable.",
-        "See new_jsi / new_schema params `mutable` and `to_immutable` documentation for options.",
+        "See new_jsi / new_schema `mutable` param and `to_immutable` configuration documentation for options.",
         "https://www.rubydoc.info/gems/jsi/#{VERSION}/JSI/SchemaSet#new_jsi-instance_method",
         "Given instance: #{instance.pretty_inspect.chomp}",
       ].join("\n"))
@@ -120,12 +120,10 @@ module JSI
   # @api private
   # @param metaschema_document
   # @param dialect (see MetaSchemaNode#initialize)
-  # @param to_immutable (see SchemaSet#new_jsi)
   # @param conf_kw (see SchemaSet#new_jsi)
   # @return [MetaSchemaNode]
   def self.new_metaschema_node(metaschema_document,
       dialect: ,
-      to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
       **conf_kw
   )
     raise(BlockGivenError) if block_given?
@@ -135,11 +133,10 @@ module JSI
     conf_kw = conf_kw.select { |k, _| Base::Conf.members.include?(k) }
 
     conf = Base::Conf.new(
-      to_immutable: to_immutable,
       **conf_kw,
     )
 
-    metaschema_document = to_immutable.call(metaschema_document) if to_immutable
+    metaschema_document = conf.to_immutable.call(metaschema_document) if conf.to_immutable
 
     MetaSchemaNode.new(metaschema_document,
       msn_dialect: dialect,
