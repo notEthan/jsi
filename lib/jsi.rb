@@ -119,11 +119,9 @@ module JSI
   #
   # @api private
   # @param metaschema_document
-  # @param dialect (see MetaSchemaNode#initialize)
   # @param conf_kw Passed to initialize a {MetaSchemaNode::Conf} for {Base#jsi_conf}.
   # @return [MetaSchemaNode]
   def self.new_metaschema_node(metaschema_document,
-      dialect: ,
       **conf_kw
   )
     raise(BlockGivenError) if block_given?
@@ -139,7 +137,6 @@ module JSI
     metaschema_document = conf.to_immutable.call(metaschema_document) if conf.to_immutable
 
     MetaSchemaNode.new(metaschema_document,
-      msn_dialect: dialect,
       **init_kw,
       jsi_conf: conf,
     )
