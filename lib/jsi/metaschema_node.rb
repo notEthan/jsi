@@ -24,15 +24,36 @@ module JSI
     include(Base::Immutable)
 
     Conf = Base::Conf.subclass(*%i(
+      metaschema_root_ref
+      root_schema_ref
+      bootstrap_registry
     ))
 
     # {Base::Conf} with additional configuration for MetaSchemaNode.
     #
+    # @!attribute metaschema_root_ref
+    #   URI reference to the root of the meta-schema.
+    #
+    #   Default: `"#"` resolves to the root of the `jsi_document`.
+    #   @return [Addressable::URI]
+    # @!attribute root_schema_ref
+    #   URI reference to the schema describing the root of the jsi_document.
+    #   When schemas of the meta-schema are in multiple documents, this describes the roots of all instantiated documents.
+    #
+    #   Default: `metaschema_root_ref` value, i.e. the document root is a schema.
+    #   @return [Addressable::URI]
+    # @!attribute bootstrap_registry
+    #   Default: nil
+    #   @return [Registry, nil]
     class Conf < Base::Conf
       def initialize(
+          metaschema_root_ref: '#',
+          root_schema_ref: metaschema_root_ref,
           **kw
       )
         super(
+          metaschema_root_ref: Util.uri(metaschema_root_ref, nnil: true),
+          root_schema_ref: Util.uri(root_schema_ref, nnil: true),
           **kw,
         )
       end
@@ -44,20 +65,12 @@ module JSI
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
     # @param msn_dialect [Schema::Dialect]
-    # @param metaschema_root_ref [#to_str] URI reference to the root of the meta-schema.
-    #   The default resolves to the root of the given document.
-    # @param root_schema_ref [#to_str] URI reference to the schema describing the root of the jsi_document.
-    #   When schemas of the meta-schema are in multiple documents, this describes the roots of all instantiated documents.
-    # @param bootstrap_registry [Registry, nil]
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
         msn_dialect: ,
-        metaschema_root_ref: '#',
-        root_schema_ref: metaschema_root_ref,
         jsi_schema_base_uri: nil,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
-        bootstrap_registry: nil,
         initialize_finish: true,
         jsi_conf: nil,
         jsi_root_node: nil
@@ -77,9 +90,6 @@ module JSI
       @to_initialize_finish = []
 
       @msn_dialect = msn_dialect
-      @metaschema_root_ref = metaschema_root_ref = Util.uri(metaschema_root_ref, nnil: true)
-      @root_schema_ref     = root_schema_ref     = Util.uri(root_schema_ref, nnil: true)
-      @bootstrap_registry = bootstrap_registry
 
       if jsi_ptr.root? && jsi_schema_base_uri
         raise(NotImplementedError, "unsupported jsi_schema_base_uri on meta-schema document root")
@@ -183,14 +193,20 @@ module JSI
 
     # URI reference to the root of the meta-schema
     # @return [Addressable::URI]
-    attr_reader(:metaschema_root_ref)
+    def metaschema_root_ref
+      jsi_conf.metaschema_root_ref
+    end
 
     # URI reference to the schema describing the root of the document
     # @return [Addressable::URI]
-    attr_reader(:root_schema_ref)
+    def root_schema_ref
+      jsi_conf.root_schema_ref
+    end
 
     # @return [Registry, nil]
-    attr_reader(:bootstrap_registry)
+    def bootstrap_registry
+      jsi_conf.bootstrap_registry
+    end
 
     # JSI Schemas describing this MetaSchemaNode
     # @return [JSI::SchemaSet]
@@ -249,7 +265,10 @@ module JSI
       {
         class: self.class,
         jsi_document: jsi_document,
+        metaschema_root_ref: metaschema_root_ref,
+        root_schema_ref: root_schema_ref,
         jsi_registry: jsi_registry,
+        bootstrap_registry: bootstrap_registry,
       }.merge(our_initialize_params).freeze
     end
 
@@ -272,11 +291,8 @@ module JSI
       {
         jsi_ptr: jsi_ptr,
         msn_dialect: msn_dialect,
-        metaschema_root_ref: metaschema_root_ref,
-        root_schema_ref: root_schema_ref,
         jsi_schema_base_uri: jsi_schema_base_uri,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        bootstrap_registry: bootstrap_registry,
       }.freeze
     end
 
