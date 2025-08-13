@@ -79,13 +79,10 @@ module JSI
     #   It is rare that this needs to be specified, and only useful for instances which contain schemas.
     #   See {Schema::MetaSchema#new_schema}'s `uri` param documentation.
     # @param register [Boolean] Whether schema resources in the instantiated JSI will be registered
-    #   in the schema registry indicated by param `registry`.
+    #   in the {Base::Conf configured} {Base::Conf#registry `registry`}.
     #   This is only useful when the JSI is a schema or contains schemas.
     #   The JSI's root will be registered with the `uri` param, if specified, whether or not the
     #   root is a schema.
-    # @param registry [Registry, nil] The registry to use for references to other schemas and,
-    #    depending on `register` and `uri` params, to register this JSI and/or any contained schemas with
-    #    declared URIs.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
@@ -98,13 +95,11 @@ module JSI
     def new_jsi(instance,
         uri: nil,
         register: false,
-        registry: JSI.registry,
         stringify_symbol_keys: false,
         mutable: false,
         **conf_kw
     )
       conf = Base::Conf.new(
-        registry: registry,
         **conf_kw,
       )
 
@@ -129,7 +124,7 @@ module JSI
         jsi_conf: conf,
       )
 
-      registry.register(jsi) if register && registry
+      conf.registry.register(jsi) if register && conf.registry
 
       jsi
     end

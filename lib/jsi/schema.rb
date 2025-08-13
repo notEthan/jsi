@@ -78,7 +78,7 @@ module JSI
       # Instantiates the given schema content as a JSI Schema.
       #
       # By default, the schema will be registered with the {JSI.registry}.
-      # This can be controlled by params `register` and `registry`.
+      # This can be controlled by the `register` param and {Base::Conf#registry `registry`} {Base::Conf configuration}.
       #
       # By default, the `schema_content` will have any Symbol keys of Hashes replaced with Strings
       # (recursively through the document). This is controlled by the param `stringify_symbol_keys`.
@@ -89,7 +89,8 @@ module JSI
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [#to_str, URI] The retrieval URI of the schema document.
       #   If specified, the root schema will be identified by this URI, in addition
-      #   to any absolute URI declared with an id keyword, for resolution in the `registry`.
+      #   to any absolute URI declared with an id keyword, for resolution in the
+      #   {Base::Conf configured} {Base::Conf#registry `registry`}.
       #
       #   It is rare that this needs to be specified. Most schemas, if they use absolute URIs, will
       #   use the `$id` keyword (`id` in draft 4) to specify this. A different retrieval URI is useful
@@ -99,14 +100,9 @@ module JSI
       #       ancestor schema - these will be resolved relative to this URI
       #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
       #       rather than an id declared in the schema - the schema is resolvable by this URI in the
-      #       `registry`.
+      #       {Base::Conf configured} {Base::Conf#registry `registry`}.
       # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
-      #   will be registered in the schema registry indicated by param `registry`.
-      # @param registry [Registry, nil] The registry this schema will use.
-      #
-      #   - The schema and subschemas will be registered here with any declared URI,
-      #     unless the `register` param is false.
-      #   - References from within the schema (typically from `$ref` keywords) are resolved using this registry.
+      #   will be registered in the {Base::Conf configured} {Base::Conf#registry `registry`}.
       # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
@@ -118,7 +114,6 @@ module JSI
       def new_schema(schema_content,
           uri: nil,
           register: true,
-          registry: JSI.registry,
           stringify_symbol_keys: true,
           **conf_kw,
           &block
@@ -126,7 +121,6 @@ module JSI
         schema_jsi = new_jsi(schema_content,
           uri: uri,
           register: register,
-          registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
           mutable: false,
           **conf_kw,
@@ -194,8 +188,9 @@ module JSI
       #
       # The meta-schema that describes the schema must be indicated:
       #
-      # - If the schema object has a `$schema` property, that URI is resolved using the `registry`
-      #   param (by default {JSI.registry JSI.registry}), and that meta-schema is used. For example:
+      # - If the schema object has a `$schema` property, that URI is resolved using the
+      #   {Base::Conf configured} {Base::Conf#registry `registry`} (by default {JSI.registry JSI.registry}),
+      #   and that meta-schema is used. For example:
       #
       #   ```ruby
       #   JSI.new_schema({
@@ -239,7 +234,6 @@ module JSI
       #   or a URI (as would be in a `$schema` keyword).
       # @param uri (see Schema::MetaSchema#new_schema)
       # @param register (see Schema::MetaSchema#new_schema)
-      # @param registry (see Schema::MetaSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
       # @param conf_kw (see SchemaSet#new_jsi)
       # @yield (see Schema::MetaSchema#new_schema)
@@ -251,7 +245,6 @@ module JSI
           # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
           register: true,
-          registry: JSI.registry,
           stringify_symbol_keys: true,
           **conf_kw,
           &block
@@ -259,13 +252,13 @@ module JSI
         new_schema_params = {
           uri: uri,
           register: register,
-          registry: registry,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
         }
+        conf = Base::Conf.new(**conf_kw) # some redundancy instantiating this - not passed to MetaSchema#new_schema, just used in this method
         default_metaschema_new_schema = -> {
           default_metaschema = if default_metaschema
-            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", registry: registry)
+            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", registry: conf.registry)
           elsif self.default_metaschema
             self.default_metaschema
           else
@@ -298,7 +291,7 @@ module JSI
             unless id.respond_to?(:to_str)
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
-            metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: registry)
+            metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: conf.registry)
             metaschema.new_schema(schema_content, **new_schema_params, &block)
           else
             default_metaschema_new_schema.call

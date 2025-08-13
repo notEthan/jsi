@@ -44,6 +44,11 @@ module JSI
     # {Schema::MetaSchema#new_schema #new_schema} and related methods.
     #
     # @!attribute registry
+    #   The registry from which references are resolved.
+    #   For schemas (or documents containing schemas), this is mainly used with `$ref` values.
+    #   It is unused in instances that do not contain schemas.
+    #
+    #   Default: {JSI.registry}
     #   @return [Registry, nil]
     # @!attribute to_immutable
     #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.
@@ -59,6 +64,7 @@ module JSI
     #   @return [#call, nil]
     class Conf
       def initialize(
+          registry: JSI.registry,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           **
       )
