@@ -93,7 +93,7 @@ module JSI
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
       # @param to_immutable (see SchemaSet#new_jsi)
-      # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
+      # @yield If a block is given, it is evaluated in the context of the schema's {Schema#jsi_schema_module JSI schema module}
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
@@ -177,7 +177,7 @@ module JSI
       # The meta-schema that describes the schema must be indicated:
       #
       # - If the schema object has a `$schema` property, that URI is resolved using the `registry`
-      #   param (by default {JSI.registry}), and that meta-schema is used. For example:
+      #   param (by default {JSI.registry JSI.registry}), and that meta-schema is used. For example:
       #
       #   ```ruby
       #   JSI.new_schema({
