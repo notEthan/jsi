@@ -235,7 +235,10 @@ module JSI
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
-      {class: self.class, jsi_document: jsi_document}.merge(our_initialize_params).freeze
+      {
+        class: self.class,
+        jsi_document: jsi_document,
+      }.merge(our_initialize_params).freeze
     end
 
     protected
