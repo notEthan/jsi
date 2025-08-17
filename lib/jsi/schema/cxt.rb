@@ -68,7 +68,7 @@ module JSI
 
     # @!attribute block
     #   @return [#call]
-    class Cxt::Block
+    class Cxt::Block < Cxt
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         def cxt_yield(*a)
           block.call(*a)
