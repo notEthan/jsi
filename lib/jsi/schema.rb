@@ -471,7 +471,8 @@ module JSI
       nil
     end
 
-    # The JSI Schema Module for this schema. JSI instances described by this schema are instances of this module.
+    # The {SchemaModule JSI Schema Module} for this schema.
+    # JSI instances described by this schema are instances of this module.
     #
     # @return [SchemaModule]
     def jsi_schema_module
