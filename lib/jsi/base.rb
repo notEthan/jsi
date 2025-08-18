@@ -579,9 +579,9 @@ module JSI
         jsi_simple_node_child_error(token)
       end
       if value.is_a?(Base)
-        self[token] = value.jsi_instance
+        self[token] = value.jsi_node_content
       else
-        jsi_instance[token] = value
+        jsi_node_content[token] = value
       end
     end
 
