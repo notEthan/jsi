@@ -220,7 +220,7 @@ For `#name` and `#name=`, we're overriding existing accessor methods. note the u
 
 Working with subschemas to add methods is just about as easy as with root schemas.
 
-You can subscript or use property accessors on a JSI schema module to refer to the schema modules of its subschemas, e.g.:
+You can use `#[]` or property accessors on a JSI schema module to refer to the schema modules of its subschemas, e.g.:
 
 ```ruby
 Contact.properties['phone'].items
@@ -299,7 +299,7 @@ A really excellent place to use JSI is when dealing with serialized columns in A
 
 Let's say you're sticking to JSON types in the database - you have to do so if you're using JSON columns, or JSON serialization, and if you have dealt with arbitrary yaml- or marshal-serialized objects in ruby, you have probably found that approach has its shortcomings when the implementation of your classes changes.
 
-But if your database contains JSON, then your deserialized objects in ruby are likewise Hash / Array / simple types. You have to use subscripts instead of accessors, and you don't have any way to add methods to your data types.
+But if your database contains JSON, then your deserialized objects in ruby are likewise Hash / Array / simple types. You have to use `#[]` instead of accessors, and you don't have any way to add methods to your data types.
 
 JSI gives you the best of both with {JSI::JSICoder}. This coder dumps objects which are simple JSON types, and loads instances of a specified JSON Schema. Here's an example, supposing a `users` table with a JSON column `contact_info` to be instantiated using the `Contact` schema module defined in the Example section above:
 
