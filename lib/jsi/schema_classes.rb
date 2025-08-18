@@ -120,7 +120,6 @@ module JSI
 
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given parameters.
     #
-    # @param (see JSI::Schema#new_jsi)
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this module's schema.
     def new_jsi(instance, **kw)

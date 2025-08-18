@@ -510,7 +510,8 @@ module JSI
     # This schema indicates the schemas of the JSI - its schemas are in-place
     # applicators of this schema which apply to the given instance.
     #
-    # @param (see SchemaSet#new_jsi)
+    # All parameters are passed to {SchemaSet#new_jsi}.
+    #
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this schema.
     def new_jsi(instance, **kw)
