@@ -33,7 +33,8 @@ jobs:
         - '2.3'
         - '2.7'
         - '3.0'
-        - head
+        - ruby # latest release
+        #- head # commented for 3.5.0dev pending https://bugs.ruby-lang.org/issues/21375
         runs-on:
         - ubuntu-latest
 
