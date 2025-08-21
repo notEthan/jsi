@@ -137,18 +137,6 @@ module JSI
     )
   end
 
-  # @private
-  # @deprecated for new_metaschema_node
-  def self.new_metaschema(document, **kw, &block)
-    new_metaschema_node(document, **kw, &block)
-  end
-
-  # @private
-  # @deprecated for new_metaschema_node
-  def self.new_metaschema_module(metaschema_document, **kw, &block)
-    new_metaschema(metaschema_document, **kw, &block).jsi_schema_module
-  end
-
   # `JSI.registry` is the default {JSI::Registry} in which schemas are registered and from
   # which they resolve references.
   #
