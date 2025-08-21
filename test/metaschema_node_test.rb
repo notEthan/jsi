@@ -11,7 +11,7 @@ BASIC_DIALECT = JSI::Schema::Dialect.new(
   ],
 )
 
-BasicMetaSchema = JSI.new_metaschema_module(
+BasicMetaSchema = JSI.new_metaschema_node(
   YAML.load(<<~YAML
     "$id": "tag:named-basic-meta-schema"
     properties:
@@ -24,7 +24,7 @@ BasicMetaSchema = JSI.new_metaschema_module(
     YAML
   ),
   dialect: BASIC_DIALECT,
-)
+).jsi_schema_module
 
 describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
@@ -360,7 +360,7 @@ describe(JSI::MetaSchemaNode) do
   describe("draft04 boolean schema in meta-schema") do
     it("is a schema") do
       # d4 meta-schema doesn't have any boolean schema in it; make one that does
-      d4ms_with_bool = JSI.new_metaschema(
+      d4ms_with_bool = JSI.new_metaschema_node(
         JSON.parse(JSI::SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read).merge({
           'additionalProperties' => true,
         }),
