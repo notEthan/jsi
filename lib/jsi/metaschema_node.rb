@@ -16,8 +16,10 @@ module JSI
   # the meta-schema's schema module (and thereby JSI::Schema).
   #
   # The meta-schema may be anywhere in a document, though it is rare to put it anywhere but at the root.
-  # The root of the meta-schema is referenced by metaschema_root_ref.
-  # The schema describing the root of the document is referenced by root_schema_ref.
+  # The root of the meta-schema is referenced by the {MetaSchemaNode::Conf configured}
+  # {MetaSchemaNode::Conf#metaschema_root_ref `metaschema_root_ref`}.
+  # The schema describing the root of the document is referenced by the configured
+  # {MetaSchemaNode::Conf#root_schema_ref `root_schema_ref`}.
   class MetaSchemaNode < Base
     autoload :BootstrapSchema, 'jsi/metaschema_node/bootstrap_schema'
 
@@ -109,19 +111,19 @@ module JSI
             jsi_document,
             jsi_ptr: ptr,
             jsi_schema_base_uri: nil, # not supported
-            jsi_registry: bootstrap_registry,
+            jsi_registry: self.jsi_conf.bootstrap_registry,
           )
         else
           # if not fragment-only, ref must be registered in the bootstrap_registry
-          ref = Schema::Ref.new(ref_uri, registry: bootstrap_registry)
+          ref = Schema::Ref.new(ref_uri, registry: self.jsi_conf.bootstrap_registry)
           ref.resolve
         end
       end
 
-      @bootstrap_metaschema = bootstrap_schema_from_ref[metaschema_root_ref]
+      @bootstrap_metaschema = bootstrap_schema_from_ref[self.jsi_conf.metaschema_root_ref]
 
       instance_for_schemas = jsi_document
-      root_bootstrap_schema = bootstrap_schema_from_ref[root_schema_ref]
+      root_bootstrap_schema = bootstrap_schema_from_ref[self.jsi_conf.root_schema_ref]
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
         child_indicated_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
           is.each_inplace_child_applicator_schema(tok, instance_for_schemas, &y)
@@ -196,23 +198,6 @@ module JSI
       jsi_conf.dialect
     end
 
-    # URI reference to the root of the meta-schema
-    # @return [Addressable::URI]
-    def metaschema_root_ref
-      jsi_conf.metaschema_root_ref
-    end
-
-    # URI reference to the schema describing the root of the document
-    # @return [Addressable::URI]
-    def root_schema_ref
-      jsi_conf.root_schema_ref
-    end
-
-    # @return [Registry, nil]
-    def bootstrap_registry
-      jsi_conf.bootstrap_registry
-    end
-
     # JSI Schemas describing this MetaSchemaNode
     # @return [JSI::SchemaSet]
     attr_reader :jsi_schemas
@@ -271,10 +256,10 @@ module JSI
         class: self.class,
         jsi_document: jsi_document,
         msn_dialect: msn_dialect,
-        metaschema_root_ref: metaschema_root_ref,
-        root_schema_ref: root_schema_ref,
+        metaschema_root_ref: jsi_conf.metaschema_root_ref,
+        root_schema_ref: jsi_conf.root_schema_ref,
         jsi_registry: jsi_registry,
-        bootstrap_registry: bootstrap_registry,
+        bootstrap_registry: jsi_conf.bootstrap_registry,
       }.merge(our_initialize_params).freeze
     end
 
