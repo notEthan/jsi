@@ -126,9 +126,7 @@ module JSI
   )
     raise(BlockGivenError) if block_given?
 
-    conf = MetaSchemaNode::Conf.new(
-      **conf_kw,
-    )
+    conf = MetaSchemaNode::Conf.new(**conf_kw)
 
     metaschema_document = conf.to_immutable.call(metaschema_document) if conf.to_immutable
 

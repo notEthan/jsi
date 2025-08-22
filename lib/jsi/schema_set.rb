@@ -99,9 +99,7 @@ module JSI
         mutable: false,
         **conf_kw
     )
-      conf = Base::Conf.new(
-        **conf_kw,
-      )
+      conf = Base::Conf.new(**conf_kw)
 
       instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
