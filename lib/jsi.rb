@@ -124,7 +124,7 @@ module JSI
   def self.new_metaschema_node(metaschema_document,
       dialect: ,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
-      **
+      **init_kw
   )
     raise(BlockGivenError) if block_given?
 
@@ -133,6 +133,7 @@ module JSI
     MetaSchemaNode.new(metaschema_document,
       msn_dialect: dialect,
       jsi_content_to_immutable: to_immutable,
+      **init_kw,
     )
   end
 
