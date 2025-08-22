@@ -126,20 +126,13 @@ module JSI
   )
     raise(BlockGivenError) if block_given?
 
-    # temp
-    init_kw = conf_kw.reject { |k, _| MetaSchemaNode::Conf.members.include?(k) }
-    conf_kw = conf_kw.select { |k, _| MetaSchemaNode::Conf.members.include?(k) }
-
     conf = MetaSchemaNode::Conf.new(
       **conf_kw,
     )
 
     metaschema_document = conf.to_immutable.call(metaschema_document) if conf.to_immutable
 
-    MetaSchemaNode.new(metaschema_document,
-      **init_kw,
-      jsi_conf: conf,
-    )
+    MetaSchemaNode.new(metaschema_document, jsi_conf: conf)
   end
 
   # `JSI.registry` is the default {JSI::Registry} in which schemas are registered and from
