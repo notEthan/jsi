@@ -18,13 +18,7 @@ describe(JSI::MetaSchemaNode) do
     )
   end
   let(:metaschema) do
-    metaschema_root_ref = JSI::Util.uri(self.metaschema_root_ref)
-    if metaschema_root_ref.merge(fragment: nil).empty?
-      root_node.jsi_descendent_node(JSI::Ptr.from_fragment(metaschema_root_ref.fragment))
-    else
-      root_node
-      JSI::Schema::Ref.new(metaschema_root_ref, registry: registry).resolve
-    end
+    JSI::Ref.new(metaschema_root_ref, registry: registry, referrer: root_node).resolve
   end
 
   def bootstrap_schema(schema_content, registry: nil, base_uri: nil)
