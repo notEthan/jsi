@@ -101,10 +101,10 @@ module JSI
     # @return [JSI::Base]
     # @raise [ResolutionError]
     def find(uri)
-      internal_find(uri, @resources, @resource_autoloaders, proc { |r, _| register(r) })
+      internal_find(uri, @resources, @resource_autoloaders, proc { |r, _| register(r) }, 'resource')
     end
 
-    private def internal_find(uri, store, autoloaders, registerer)
+    private def internal_find(uri, store, autoloaders, registerer, typename)
       uri = registration_uri(uri)
       if autoloaders.key?(uri)
         autoload_param = {
@@ -125,12 +125,12 @@ module JSI
       if !store.key?(uri)
         if autoloaded
           msg = [
-            "URI #{uri} was registered for autoload but the result did not contain an entity with that URI.",
+            "#{typename} URI #{uri} was registered for autoload but the result did not contain an entity with that URI.",
             "autoload result was:",
             autoloaded.pretty_inspect.chomp,
           ]
         else
-          msg = ["URI #{uri} is not registered. registered URIs:", *(store.keys | autoloaders.keys)]
+          msg = ["#{typename} URI #{uri} is not registered. registered URIs:", *(store.keys | autoloaders.keys)]
         end
         raise(ResolutionError.new(msg, uri: uri))
       end
@@ -163,7 +163,7 @@ module JSI
     # @return [Schema::Vocabulary]
     # @raise [ResolutionError]
     def find_vocabulary(uri)
-      internal_find(uri, @vocabularies, @vocabulary_autoloaders, proc { |v, uri| register_vocabulary(v, uri: uri) })
+      internal_find(uri, @vocabularies, @vocabulary_autoloaders, proc { |v, uri| register_vocabulary(v, uri: uri) }, 'vocabulary')
     end
 
     # @param uri [#to_str]
@@ -192,7 +192,7 @@ module JSI
     # @return [Schema::Dialect]
     # @raise [ResolutionError]
     def find_dialect(uri)
-      internal_find(uri, @dialects, @dialect_autoloaders, proc { |v, uri| register_dialect(v, uri: uri) })
+      internal_find(uri, @dialects, @dialect_autoloaders, proc { |v, uri| register_dialect(v, uri: uri) }, 'dialect')
     end
 
     # @param uri [#to_str]

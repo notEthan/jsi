@@ -119,12 +119,12 @@ describe("JSI::Ref, JSI::Schema::Ref") do
 
       it 'errors from the registry' do
         err = assert_raises(JSI::ResolutionError) { schema.new_jsi({}) }
-        assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
+        assert_match(%r(\Aresource URI http://jsi/no is not registered. registered URIs:), err.message)
       end
 
       it("errors from the registry (no referrer)") do
         err = assert_raises(JSI::ResolutionError) { JSI::Ref.new(uri).resolve }
-        assert_match(%r(\AURI http://jsi/no is not registered. registered URIs:), err.message)
+        assert_match(%r(\Aresource URI http://jsi/no is not registered. registered URIs:), err.message)
       end
 
       it("errors from the registry (no registry)") do
