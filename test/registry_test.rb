@@ -163,7 +163,7 @@ describe("JSI::Registry") do
         registry.find(uri)
       end
       msg = <<~MSG
-        URI http://jsi/registry/6d86 was registered for autoload but the result did not contain an entity with that URI.
+        resource URI http://jsi/registry/6d86 was registered for autoload but the result did not contain an entity with that URI.
         autoload result was:
         \#{<JSI*1>}
         MSG
