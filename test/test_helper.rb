@@ -154,6 +154,10 @@ class JSISpec < Minitest::Spec
     before { schema.jsi_schema_module_exec { redef_method(:jsi_child_use_default_default) { true } } }
   end
 
+  def self.yaml(name, yaml)
+    let(name) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE[YAML.load(yaml)] }
+  end
+
   def assert_equal exp, act, msg = nil
     msg = message(msg, E) do
       [].tap do |ms|

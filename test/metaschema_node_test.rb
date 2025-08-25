@@ -64,8 +64,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe 'basic' do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         properties:
           properties:
             additionalProperties:
@@ -74,8 +73,7 @@ describe(JSI::MetaSchemaNode) do
             "$ref": "#"
           "$ref": {}
         YAML
-      )
-    end
+    )
 
     it('acts like a meta-schema') do
       assert_metaschema_behaves
@@ -143,8 +141,7 @@ describe(JSI::MetaSchemaNode) do
         )
       end
 
-      let(:metaschema_document) do
-        to_immutable[YAML.load(<<~YAML
+      yaml(:metaschema_document, <<~YAML
           $id: "tag:7bg7:meta"
           allOf:
             - "$ref": "tag:7bg7:applicator"
@@ -152,11 +149,9 @@ describe(JSI::MetaSchemaNode) do
             "$id": {}
             "$ref": {}
           YAML
-        )]
-      end
+      )
 
-      let(:applicator_document) do
-        to_immutable[YAML.load(<<~YAML
+      yaml(:applicator_document, <<~YAML
           $id: "tag:7bg7:applicator"
           properties:
             properties:
@@ -170,8 +165,7 @@ describe(JSI::MetaSchemaNode) do
               items:
                 "$ref": "tag:7bg7:meta"
           YAML
-        )]
-      end
+      )
 
       let(:metaschema_root_ref) { "tag:7bg7:meta" }
 
@@ -285,8 +279,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe 'with schema default' do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         properties:
           properties:
             additionalProperties:
@@ -299,8 +292,7 @@ describe(JSI::MetaSchemaNode) do
               default
         default: {}
         YAML
-      )
-    end
+    )
 
     it 'does not insert a default value' do
       metaschema.jsi_schema_module_exec { define_method(:jsi_child_use_default_default) { true } }
@@ -350,8 +342,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe('meta-schema outside the root, document is an instance of a schema in the document') do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         schemas:
           JsonSchema:
             id: JsonSchema
@@ -370,8 +361,7 @@ describe(JSI::MetaSchemaNode) do
                 additionalProperties:
                   "$ref": JsonSchema
         YAML
-      )
-    end
+    )
     let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
     let(:root_schema_ref) { '#/schemas/Document' }
     it('acts like a meta-schema') do
@@ -385,8 +375,7 @@ describe(JSI::MetaSchemaNode) do
     end
   end
   describe('meta-schema outside the root, document is a schema') do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         $id: tag:ck6
         $defs:
           JsonSchema:
@@ -401,8 +390,7 @@ describe(JSI::MetaSchemaNode) do
                 additionalProperties:
                   "$ref": "#/$defs/JsonSchema"
         YAML
-      )
-    end
+    )
     let(:metaschema_root_ref) { '#/$defs/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
@@ -424,8 +412,7 @@ describe(JSI::MetaSchemaNode) do
     end
   end
   describe('meta-schema outside the root on schemas, document is a schema') do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         schemas:
           JsonSchema:
             id: JsonSchema
@@ -439,8 +426,7 @@ describe(JSI::MetaSchemaNode) do
                 additionalProperties:
                   "$ref": JsonSchema
         YAML
-      )
-    end
+    )
     let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
