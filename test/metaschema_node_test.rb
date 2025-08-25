@@ -259,6 +259,24 @@ describe(JSI::MetaSchemaNode) do
       it("acts like a meta-schema") do
         assert_mutual_metaschema_behaves(metaschema)
       end
+
+      it("jsi_modified_copy") do
+        metaschema2 = metaschema.merge('2' => true)
+        assert_mutual_metaschema_behaves(metaschema2)
+      end
+
+      it("jsi_modified_copy from applicator_schema") do
+        # modified copy of applicator_schema
+        applicator_schema3 = metaschema.jsi_registry.find("tag:7bg7:applicator").merge('3' => true)
+        metaschema3 = applicator_schema3.jsi_registry.find(metaschema_root_ref)
+        assert_mutual_metaschema_behaves(metaschema3)
+      end
+
+      it("jsi_modified_copy invalid") do
+        metaschema_inv = metaschema.merge('additionalProperties' => false)
+        refute(metaschema_inv.jsi_valid?)
+        refute(metaschema_inv.jsi_registry.find("tag:7bg7:applicator").jsi_valid?)
+      end
     end
   end
 
