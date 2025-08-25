@@ -227,17 +227,18 @@ module JSI
     #   in a (nondestructively) modified copy of this.
     # @return [MetaSchemaNode] modified copy of self
     def jsi_modified_copy(&block)
-      if equal?(jsi_root_node)
         modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
-        modified_document = jsi_conf.to_immutable.call(modified_document) if jsi_conf.to_immutable
-        modified_copy = MetaSchemaNode.new(modified_document, **our_initialize_params, jsi_conf: jsi_conf.for_modified_copy)
-      else
-        modified_jsi_root_node = jsi_root_node.jsi_modified_copy do |root|
-          jsi_ptr.modified_document_copy(root, &block)
+        kw = jsi_conf.for_modified_copy.to_h
+        if jsi_conf.bootstrap_registry
+          # we assume our bootstrap_registry contains appropriate schema_documents for new_metaschema_node,
+          # minus our own document pre-modified_document_copy.
+          # bootstrap_registry and jsi registry will be created.
+          kw[:schema_documents] = jsi_conf.bootstrap_registry.instance_exec { @resources.values.map(&:jsi_document) } - [jsi_document]
+          kw[:bootstrap_registry] = nil
+          kw[:registry] = nil
         end
-        modified_copy = modified_jsi_root_node.jsi_descendent_node(jsi_ptr)
-      end
-      modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
+        modified_jsi_root_node = JSI.new_metaschema_node(modified_document, **kw)
+        modified_jsi_root_node.jsi_descendent_node(jsi_ptr)
     end
 
     # @private
