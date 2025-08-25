@@ -4,7 +4,6 @@ describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
   let(:metaschema_root_ref) { '#' }
   let(:root_schema_ref) { metaschema_root_ref }
-  let(:registry) { nil }
   let(:schema_documents) { nil }
 
   let(:root_node) do
@@ -12,7 +11,6 @@ describe(JSI::MetaSchemaNode) do
       dialect: dialect,
       metaschema_root_ref: metaschema_root_ref,
       root_schema_ref: root_schema_ref,
-      registry: registry,
       schema_documents: schema_documents,
     )
   end
@@ -22,7 +20,7 @@ describe(JSI::MetaSchemaNode) do
       root_node.jsi_descendent_node(JSI::Ptr.from_fragment(metaschema_root_ref.fragment))
     else
       root_node
-      JSI::Schema::Ref.new(metaschema_root_ref, registry: registry).resolve
+      JSI::Schema::Ref.new(metaschema_root_ref, registry: root_node.jsi_registry).resolve
     end
   end
 
@@ -172,15 +170,10 @@ describe(JSI::MetaSchemaNode) do
 
       let(:metaschema_root_ref) { "tag:7bg7:meta" }
 
-      let(:registry) do
-        JSI::Registry.new
-      end
-
       let(:schema_documents) { [applicator_document] }
 
       let(:applicator_schema) do
-        metaschema
-        registry.find("tag:7bg7:applicator")
+        metaschema.jsi_registry.find("tag:7bg7:applicator")
       end
 
       it("acts like a meta-schema") do
@@ -262,7 +255,7 @@ describe(JSI::MetaSchemaNode) do
 
         schema_by_uri = JSI.new_schema(
           {"$schema" => "tag:7bg7:meta"},
-          registry: registry,
+          registry: metaschema.jsi_registry,
         )
         assert_schemas([metaschema, applicator_schema], schema_by_uri)
 

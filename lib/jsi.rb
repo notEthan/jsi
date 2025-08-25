@@ -140,7 +140,10 @@ module JSI
       (!conf.bootstrap_registry || !conf.bootstrap_registry.registered?(conf.metaschema_root_ref.merge(fragment: nil)))
 
     if !conf.bootstrap_registry && (register_bootstrap_metaschema || schema_documents)
-      conf = conf.class.new(**conf_kw, bootstrap_registry: Registry.new)
+      conf = conf.class.new(**conf.to_h, bootstrap_registry: Registry.new)
+    end
+    if !conf.registry && (register_bootstrap_metaschema || schema_documents)
+      conf = conf.class.new(**conf.to_h, registry: Registry.new)
     end
 
     metaschema_document = conf.to_immutable.call(metaschema_document) if conf.to_immutable
