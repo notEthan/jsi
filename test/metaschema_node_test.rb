@@ -258,6 +258,44 @@ describe(JSI::MetaSchemaNode) do
         assert_schemas([schema.allOf[0].properties['bar'], schema, schema.allOf[0]], instance['bar'])
         assert(instance.jsi_valid?)
       end
+
+      it("jsi_modified_copy") do
+        metaschema2 = metaschema.merge('2' => true)
+        applicator_schema2 = metaschema2.jsi_registry.find("tag:7bg7:applicator")
+        assert_schemas([metaschema2, applicator_schema2], metaschema2)
+        assert_schemas([metaschema2.properties['$id']],  metaschema2 / ['$id'])
+        assert_schemas([applicator_schema2.properties['allOf']],
+                                                        metaschema2 / ['allOf'])
+        assert_schemas([metaschema2, applicator_schema2], metaschema2 / ['allOf', 0])
+        assert_schemas([metaschema2.properties['$ref']], metaschema2 / ['allOf', 0, '$ref'])
+        assert_schemas([applicator_schema2.properties['properties']],
+                                                        metaschema2 / ['properties'])
+        assert_schemas([metaschema2, applicator_schema2], metaschema2 / ['properties', '$id'])
+        assert_schemas([metaschema2, applicator_schema2], metaschema2 / ['properties', '$ref'])
+        assert_schemas([metaschema2, applicator_schema2], applicator_schema2)
+        assert_schemas([metaschema2.properties['$id']],  applicator_schema2 / ['$id'])
+        assert_schemas([applicator_schema2.properties['properties']],
+                                                        applicator_schema2 / ['properties'])
+        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'properties'])
+        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'properties', 'additionalProperties'])
+        assert_schemas([metaschema2.properties['$ref']], applicator_schema2 / ['properties', 'properties', 'additionalProperties', '$ref'])
+        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'additionalProperties'])
+        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'items'])
+        assert_schemas([metaschema2.properties['$ref']], applicator_schema2 / ['properties', 'items', '$ref'])
+        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'allOf'])
+        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'allOf', 'items'])
+        assert_schemas([metaschema2.properties['$ref']], applicator_schema2 / ['properties', 'allOf', 'items', '$ref'])
+
+        # subscripting keys that are not present
+        assert_equal(nil, metaschema2['no'])
+        assert_equal(nil, metaschema2.properties['no'])
+
+        # validates the schemas of the meta-schema
+        assert(metaschema2.jsi_valid?)
+        assert(applicator_schema2.jsi_valid?)
+        assert(metaschema2.instance_valid?(metaschema2))
+        assert(metaschema2.instance_valid?(applicator_schema2))
+      end
     end
   end
 
