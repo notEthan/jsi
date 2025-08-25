@@ -266,44 +266,6 @@ describe(JSI::MetaSchemaNode) do
         assert_schemas([schema.allOf[0].properties['bar'], schema, schema.allOf[0]], instance['bar'])
         assert(instance.jsi_valid?)
       end
-
-      it("jsi_modified_copy") do
-        metaschema2 = metaschema.merge('2' => true)
-        applicator_schema2 = metaschema2.jsi_registry.find("tag:7bg7:applicator")
-        assert_schemas([metaschema2, applicator_schema2], metaschema2)
-        assert_schemas([metaschema2.properties['$id']],  metaschema2 / ['$id'])
-        assert_schemas([applicator_schema2.properties['allOf']],
-                                                        metaschema2 / ['allOf'])
-        assert_schemas([metaschema2, applicator_schema2], metaschema2 / ['allOf', 0])
-        assert_schemas([metaschema2.properties['$ref']], metaschema2 / ['allOf', 0, '$ref'])
-        assert_schemas([applicator_schema2.properties['properties']],
-                                                        metaschema2 / ['properties'])
-        assert_schemas([metaschema2, applicator_schema2], metaschema2 / ['properties', '$id'])
-        assert_schemas([metaschema2, applicator_schema2], metaschema2 / ['properties', '$ref'])
-        assert_schemas([metaschema2, applicator_schema2], applicator_schema2)
-        assert_schemas([metaschema2.properties['$id']],  applicator_schema2 / ['$id'])
-        assert_schemas([applicator_schema2.properties['properties']],
-                                                        applicator_schema2 / ['properties'])
-        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'properties'])
-        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'properties', 'additionalProperties'])
-        assert_schemas([metaschema2.properties['$ref']], applicator_schema2 / ['properties', 'properties', 'additionalProperties', '$ref'])
-        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'additionalProperties'])
-        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'items'])
-        assert_schemas([metaschema2.properties['$ref']], applicator_schema2 / ['properties', 'items', '$ref'])
-        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'allOf'])
-        assert_schemas([metaschema2, applicator_schema2], applicator_schema2 / ['properties', 'allOf', 'items'])
-        assert_schemas([metaschema2.properties['$ref']], applicator_schema2 / ['properties', 'allOf', 'items', '$ref'])
-
-        # subscripting keys that are not present
-        assert_equal(nil, metaschema2['no'])
-        assert_equal(nil, metaschema2.properties['no'])
-
-        # validates the schemas of the meta-schema
-        assert(metaschema2.jsi_valid?)
-        assert(applicator_schema2.jsi_valid?)
-        assert(metaschema2.instance_valid?(metaschema2))
-        assert(metaschema2.instance_valid?(applicator_schema2))
-      end
     end
   end
 
@@ -459,24 +421,6 @@ describe(JSI::MetaSchemaNode) do
     end
   end
 
-  describe('#jsi_modified_copy') do
-    let(:metaschema) { BasicMetaSchema.schema }
-    it('modifies a copy') do
-      # at the root
-      mc1 = metaschema.merge('title' => 'root modified')
-      assert_equal('root modified', mc1['title'])
-      refute_equal(metaschema, mc1)
-      assert_equal(metaschema.jsi_document.merge('title' => 'root modified'), mc1.jsi_document)
-      # below the root
-      mc2 = metaschema.properties.merge('foo' => [])
-      assert_equal([], mc2['foo', as_jsi: false])
-      mc2root = mc2.jsi_root_node
-      refute_equal(metaschema, mc2root)
-      expected_mc2_document = metaschema.jsi_document.merge('properties' => metaschema.jsi_document['properties'].merge('foo' => []))
-      assert_equal(expected_mc2_document, mc2.jsi_document)
-    end
-  end
-
   metaschema_modules = [
     JSI::JSONSchemaDraft04,
     JSI::JSONSchemaDraft06,
@@ -495,7 +439,8 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe('a meta-schema fails to validate itself') do
-    let(:metaschema) { JSI::JSONSchemaDraft06.schema.merge({'title' => []}) }
+    let(:metaschema_document) { JSI::JSONSchemaDraft06.schema_content.merge({'title' => []}) }
+    let(:dialect) { JSI::Schema::Draft06::DIALECT }
 
     it 'has validation error for `title`' do
       results = [
