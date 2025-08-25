@@ -19,7 +19,7 @@ describe(JSI::MetaSchemaNode) do
     )
   end
   let(:metaschema) do
-    JSI::Ref.new(metaschema_root_ref, registry: registry, referrer: root_node).resolve
+    JSI::Ref.new(metaschema_root_ref, registry: root_node.jsi_registry, referrer: root_node).resolve
   end
 
   def assert_metaschema_behaves
@@ -162,15 +162,10 @@ describe(JSI::MetaSchemaNode) do
 
       let(:metaschema_root_ref) { "tag:7bg7:meta" }
 
-      let(:registry) do
-        JSI::Registry.new
-      end
-
       let(:schema_documents) { [applicator_document] }
 
       let(:applicator_schema) do
-        metaschema
-        registry.find("tag:7bg7:applicator")
+        root_node.jsi_registry.find("tag:7bg7:applicator")
       end
 
       it("acts like a meta-schema") do
@@ -252,7 +247,7 @@ describe(JSI::MetaSchemaNode) do
 
         schema_by_uri = JSI.new_schema(
           {"$schema" => "tag:7bg7:meta"},
-          registry: registry,
+          registry: root_node.jsi_registry,
         )
         assert_schemas([metaschema, applicator_schema], schema_by_uri)
 
