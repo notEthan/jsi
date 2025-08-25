@@ -218,24 +218,12 @@ module JSI
     end
     private :jsi_default_child # internals for #[] but idk, could be public
 
-    # instantiates a new MetaSchemaNode whose instance is a modified copy of this MetaSchemaNode's instance
-    # @yield [Object] the node content of the instance. the block should result
-    #   in a (nondestructively) modified copy of this.
-    # @return [MetaSchemaNode] modified copy of self
+    # @raise [NotImplementedError] not implemented for MetaSchemaNode
     def jsi_modified_copy(&block)
-        modified_document = jsi_ptr.modified_document_copy(jsi_document, &block)
-        kw = jsi_conf.for_modified_copy.to_h
-        if jsi_conf.bootstrap_registry
-          # we assume our bootstrap_registry contains appropriate schema_documents for new_metaschema_node,
-          # minus our own document pre-modified_document_copy.
-          # bootstrap_registry and jsi registry will be created.
-          # this will not work when new_metaschema_node has been given an externally configured registry.
-          kw[:schema_documents] = jsi_conf.bootstrap_registry.instance_exec { @resources.values.map(&:jsi_document) } - [jsi_document]
-          kw[:bootstrap_registry] = nil
-          kw[:registry] = nil
-        end
-        modified_jsi_root_node = JSI.new_metaschema_node(modified_document, **kw)
-        modified_jsi_root_node.jsi_descendent_node(jsi_ptr)
+      # this had an implementation previously (see git history). but for 2020-12, support for multiple
+      # mutually-descriptive schemas as well as dynamic scope makes instantiating a modified copy that
+      # preserves self-descriptive/mutually-descriptive relationships generally infeasible.
+      raise(NotImplementedError)
     end
 
     # @private
