@@ -6,11 +6,9 @@ module JSI
   vocabulary_schema_documents = metaschema_document['allOf'].map do |schema|
     Util.json_parse_freeze(path.join(schema['$ref'] + '.json').read)
   end
-  jsi_registry = Registry.new
 
   JSONSchemaDraft202012 = JSI.new_metaschema_node(metaschema_document,
     dialect: Schema::Draft202012::DIALECT,
-    registry: jsi_registry,
     metaschema_root_ref: 'https://json-schema.org/draft/2020-12/schema',
     schema_documents: vocabulary_schema_documents,
   ).jsi_schema_module
