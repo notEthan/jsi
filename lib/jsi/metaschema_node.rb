@@ -337,6 +337,7 @@ module JSI
       if bootstrap_schema.jsi_document.equal?(jsi_document)
         root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
       else
+        jsi_registry || raise(ResolutionError, "no jsi_registry")
         bootstrap_resource = bootstrap_schema.schema_resource_root
         resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
         if jsi_registry.registered?(resource_uri)
