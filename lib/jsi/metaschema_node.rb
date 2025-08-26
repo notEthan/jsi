@@ -23,6 +23,8 @@ module JSI
 
     include(Base::Immutable)
 
+    # See {JSI.new_metaschema_node} to instantiate.
+    # @api private
     # @param jsi_document the document containing the meta-schema.
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
     # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
