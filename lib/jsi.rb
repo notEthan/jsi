@@ -129,7 +129,7 @@ module JSI
 
     conf = MetaSchemaNode::Conf.new(**conf_kw)
 
-    # need the metaschema to be registered in the bootstrap_registry if...
+    # need the metaschema_document root to be registered in the bootstrap_registry if...
     register_bootstrap_metaschema =
       # the root is a schema
       conf.root_schema_ref == conf.metaschema_root_ref &&
