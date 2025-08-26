@@ -498,6 +498,27 @@ describe 'JSI::Base hash' do
       it('#except') { assert_equal(schema.new_jsi({'bar' => instance['bar'], 'baz' => instance['baz']}), subject.except('foo')) }
     end
   end
+  describe("instance mutating methods") do
+    describe("#update (mutable)") do
+      let(:subject_opt) { {mutable: true} }
+      it("updates") do
+        assert(!subject.key?('q'))
+        subject.update('q' => 1)
+        assert_equal(1, subject['q'])
+        subject.update('q' => 2) { |_k, o, n| o + n }
+        assert_equal(3, subject['q'])
+      end
+    end
+
+    describe("#update (immutable)") do
+      it("errors") do
+        assert(!subject.key?('q'))
+        assert_raises { subject.update('q' => true) }
+        # unchanged
+        assert(!subject.key?('q'))
+      end
+    end
+  end
   JSI::Util::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|
     it("does not respond to destructive method #{destructive_method_name}") do
       assert(!subject.respond_to?(destructive_method_name))
