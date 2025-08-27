@@ -694,7 +694,7 @@ module JSI
         #
         # :inplace_applicate yields (schema, **keywords)
         # so @immediate_inplace_applicators is a 2D Array of tuples (schema, keywords)
-        @immediate_inplace_applicators ||= begin
+        @memos[:immediate_inplace_applicators] ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
             visited_refs: visited_refs,
@@ -704,7 +704,7 @@ module JSI
           immediate_inplace_applicators.freeze
         end
 
-        @immediate_inplace_applicators.each do |(s, kw)|
+        @memos[:immediate_inplace_applicators].each do |(s, kw)|
           yield(s, **kw)
         end
         nil
