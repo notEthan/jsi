@@ -13,12 +13,12 @@ module JSI
 
     # methods which do not need to access the value.
     SAFE_KEY_ONLY_METHODS = %w(each_key empty? has_key? include? key? keys length member? size).map(&:freeze).freeze
-    SAFE_KEY_VALUE_METHODS = %w(< <= > >= any? assoc compact dig each_pair each_value fetch fetch_values has_value? invert key merge rassoc reject select to_h to_proc transform_values value? values values_at).map(&:freeze).freeze
-    DESTRUCTIVE_METHODS = %w(clear delete delete_if keep_if reject! replace select! shift).map(&:freeze).freeze
+    SAFE_KEY_VALUE_METHODS = %w(< <= > >= any? assoc compact dig each_pair each_value fetch fetch_values flatten has_value? invert key merge rassoc reject select filter to_h to_proc transform_values value? values values_at).map(&:freeze).freeze
+    DESTRUCTIVE_METHODS = %w(clear delete delete_if filter! flatten! keep_if reject! replace select! shift).map(&:freeze).freeze
     # these return a modified copy
-    safe_modified_copy_methods = %w(compact)
+    safe_modified_copy_methods = %w(compact slice except)
     # select and reject will return a modified copy but need the yielded block variable value from #[]
-    safe_kv_block_modified_copy_methods = %w(select reject)
+    safe_kv_block_modified_copy_methods = %w(select filter reject)
     SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
     custom_methods = %w(merge) # defined below
     safe_to_hash_methods = SAFE_METHODS -
@@ -126,7 +126,7 @@ module JSI
     # methods which do not need to access the element.
     SAFE_INDEX_ONLY_METHODS = %w(each_index empty? length size).map(&:freeze).freeze
     # there are some ambiguous ones that are omitted, like #sort, #map / #collect.
-    SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev at bsearch bsearch_index combination compact count cycle dig drop drop_while fetch find_index first include? index join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose uniq values_at zip).map(&:freeze).freeze
+    SAFE_INDEX_ELEMENT_METHODS = %w(| & * + - <=> abbrev at bsearch bsearch_index combination compact count cycle difference dig drop drop_while fetch find_index first include? index intersection intersect? join last pack permutation product reject repeated_combination repeated_permutation reverse reverse_each rindex rotate sample select shelljoin shuffle slice sort take take_while transpose union uniq values_at zip).map(&:freeze).freeze
     DESTRUCTIVE_METHODS = %w(<< clear collect! compact! concat delete delete_at delete_if fill flatten! insert keep_if map! pop push reject! replace reverse! rotate! select! shift shuffle! slice! sort! sort_by! uniq! unshift).map(&:freeze).freeze
 
     # methods (well, method) that returns a modified copy and doesn't need any handling of block variable(s)

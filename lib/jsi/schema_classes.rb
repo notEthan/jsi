@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module JSI
-  # A Module associated with a JSI Schema. See {Schema#jsi_schema_module}.
+  # A Module associated with a JSI Schema (its {Schema#jsi_schema_module #jsi_schema_module}).
   #
   # This module may be opened by the application to define methods for instances described by its schema.
   #
@@ -120,7 +120,6 @@ module JSI
 
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given parameters.
     #
-    # @param (see JSI::Schema#new_jsi)
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this module's schema.
     def new_jsi(instance, **kw)

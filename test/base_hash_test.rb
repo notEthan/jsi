@@ -106,7 +106,7 @@ describe 'JSI::Base hash' do
       end
     end
   end
-  describe 'hashlike []=' do
+  describe("#[]=, #store") do
     let(:subject_opt) { {mutable: true} }
 
     it 'sets a property' do
@@ -117,6 +117,10 @@ describe 'JSI::Base hash' do
       assert_equal({'y' => 'z'}, subject['foo'].jsi_instance)
       assert_schemas([schema.properties['foo']], orig_foo)
       assert_schemas([schema.properties['foo']], subject['foo'])
+    end
+    it("sets a property with #store") do
+      subject.store('foo', {})
+      assert_equal(schema.new_jsi({'foo' => {}, 'bar' => [9], 'baz' => [true]}), subject)
     end
     it 'sets a property to a schema instance with a different schema' do
       assert(subject['foo'])
@@ -334,7 +338,7 @@ describe 'JSI::Base hash' do
 
     describe "when a schema's `propertyNames` is not a schema" do
       let(:schema) do
-        JSI.new_metaschema({}, dialect: JSI::Schema::Dialect.new(
+        JSI.new_metaschema_node({}, dialect: JSI::Schema::Dialect.new(
           vocabularies: [
             JSI::Schema::Vocabulary.new(elements: [
               JSI::Schema::Elements::SELF[],
@@ -423,6 +427,7 @@ describe 'JSI::Base hash' do
     it('#each_value') { assert_equal([subject['foo'], subject['bar'], subject['baz']], subject.each_value.to_a) }
     it('#fetch')       { assert_equal(subject['baz'], subject.fetch('baz')) }
     it('#fetch_values') { assert_equal([subject['baz']], subject.fetch_values('baz')) } if {}.respond_to?(:fetch_values)
+    it('#flatten')      { assert_equal(subject.to_a, subject.flatten(0)) }
     it('#has_value?')  { assert_equal(true, subject.has_value?(subject['baz'])) }
     it('#invert')     { assert_equal({subject['foo'] => 'foo', subject['bar'] => 'bar', subject['baz'] => 'baz'}, subject.invert) }
     it('#key')       { assert_equal('baz', subject.key(subject['baz'])) }
@@ -467,6 +472,7 @@ describe 'JSI::Base hash' do
     end
     it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
     it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
+    it('#filter') { assert_equal(schema.new_jsi({}), subject.filter { false }) } if {}.respond_to?(:filter)
     describe '#select' do
       it 'yields property too' do
         subject.select do |k, v|
@@ -484,6 +490,33 @@ describe 'JSI::Base hash' do
     # Hash#compact only available as of ruby 2.5.0
     if {}.respond_to?(:compact)
       it('#compact') { assert_equal(subject, subject.compact) }
+    end
+    if {}.respond_to?(:slice)
+      it('#slice') { assert_equal(schema.new_jsi({'foo' => instance['foo']}), subject.slice('foo')) }
+    end
+    if {}.respond_to?(:except)
+      it('#except') { assert_equal(schema.new_jsi({'bar' => instance['bar'], 'baz' => instance['baz']}), subject.except('foo')) }
+    end
+  end
+  describe("instance mutating methods") do
+    describe("#update (mutable)") do
+      let(:subject_opt) { {mutable: true} }
+      it("updates") do
+        assert(!subject.key?('q'))
+        subject.update('q' => 1)
+        assert_equal(1, subject['q'])
+        subject.update('q' => 2) { |_k, o, n| o + n }
+        assert_equal(3, subject['q'])
+      end
+    end
+
+    describe("#update (immutable)") do
+      it("errors") do
+        assert(!subject.key?('q'))
+        assert_raises { subject.update('q' => true) }
+        # unchanged
+        assert(!subject.key?('q'))
+      end
     end
   end
   JSI::Util::Hashlike::DESTRUCTIVE_METHODS.each do |destructive_method_name|

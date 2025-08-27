@@ -111,7 +111,7 @@ module JSI
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
       # @param to_immutable (see SchemaSet#new_jsi)
-      # @yield If a block is given, it is evaluated in the context of the schema's JSI schema module
+      # @yield If a block is given, it is evaluated in the context of the schema's {Schema#jsi_schema_module JSI schema module}
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
@@ -160,9 +160,9 @@ module JSI
         # if a module (m) includes Schema, and an object (o) is extended with m,
         # then o should have #jsi_schema_initialize called, but Schema.extended is not called,
         # so m needs its own .extended method to call jsi_schema_initialize.
-        # note: including a module with #extended on m's singleton, rather than m.define_singleton_method(:extended),
+        # note: extending m with ExtendedInitialize for .extended, rather than m.define_singleton_method(:extended),
         # avoids possibly clobbering an existing singleton .extended method the module has defined.
-        m.singleton_class.send(:include, ExtendedInitialize)
+        m.extend(ExtendedInitialize)
       end
     end
 
@@ -187,7 +187,7 @@ module JSI
       #
       #   `nil` to unset.
       def default_metaschema=(default_metaschema)
-        @default_metaschema = default_metaschema.nil? ? nil : ensure_metaschema(default_metaschema)
+        @default_metaschema = default_metaschema.nil? ? nil : Schema.ensure_metaschema(default_metaschema)
       end
 
       # Instantiates the given schema content as a JSI Schema.
@@ -195,7 +195,7 @@ module JSI
       # The meta-schema that describes the schema must be indicated:
       #
       # - If the schema object has a `$schema` property, that URI is resolved using the `registry`
-      #   param (by default {JSI.registry}), and that meta-schema is used. For example:
+      #   param (by default {JSI.registry JSI.registry}), and that meta-schema is used. For example:
       #
       #   ```ruby
       #   JSI.new_schema({
@@ -489,7 +489,8 @@ module JSI
       nil
     end
 
-    # The JSI Schema Module for this schema. JSI instances described by this schema are instances of this module.
+    # The {SchemaModule JSI Schema Module} for this schema.
+    # JSI instances described by this schema are instances of this module.
     #
     # @return [SchemaModule]
     def jsi_schema_module
@@ -528,7 +529,8 @@ module JSI
     # This schema indicates the schemas of the JSI - its schemas are in-place
     # applicators of this schema which apply to the given instance.
     #
-    # @param (see SchemaSet#new_jsi)
+    # All parameters are passed to {SchemaSet#new_jsi}.
+    #
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this schema.
     def new_jsi(instance, **kw)
@@ -560,11 +562,25 @@ module JSI
     # with {SchemaModule::MetaSchemaModule}, and the JSI Schema Module will include
     # JSI::Schema.
     #
-    # @param dialect [Schema::Dialect]
+    # @param dialect [Schema::Dialect, nil] dialect may be passed, or inferred from $vocabulary
     # @return [void]
-    def describes_schema!(dialect)
+    def describes_schema!(dialect = nil)
       # TODO rm bridge code hax
       dialect = dialect.first::DIALECT if dialect.is_a?(Array) && dialect.size == 1
+
+      if !dialect
+        raise(ArgumentError, "no dialect given and no $vocabulary hash/object") if !self['$vocabulary'].respond_to?(:to_hash)
+
+        vocabularies = []
+        self['$vocabulary'].each do |vocabulary_uri, required|
+          if required || jsi_registry.vocabulary_registered?(vocabulary_uri)
+            vocabularies << jsi_registry.find_vocabulary(vocabulary_uri)
+          end
+        end
+
+        dialect = Schema::Dialect.new(vocabularies: vocabularies)
+      end
+
       raise(TypeError) if !dialect.is_a?(Schema::Dialect)
 
       if jsi_schema_module <= Schema
@@ -664,7 +680,7 @@ module JSI
     )
       # if collect_evaluated, applicators must validate the instance to set `evaluated`
       if collect_evaluated || @inplace_application_requires_instance
-        dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
+        dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication::WithInstance,
           instance: instance,
           visited_refs: visited_refs,
           collect_evaluated: collect_evaluated,
@@ -680,9 +696,7 @@ module JSI
         @immediate_inplace_applicators ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
-            instance: nil,
             visited_refs: visited_refs,
-            collect_evaluated: false,
           ) do |s, **kw|
             immediate_inplace_applicators.push([s, kw])
           end

@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require("delegate")
+
 module JSI
   # JSI::Util contains public utilities
   module Util
@@ -184,7 +186,9 @@ module JSI
     # the given object is not modified.
     def deep_to_frozen(object, not_implemented: nil)
       dtf = proc { |o| deep_to_frozen(o, not_implemented: not_implemented) }
-      if object.instance_of?(Hash)
+      if object.is_a?(Delegator)
+        object.class.new(dtf[object.__getobj__]).freeze
+      elsif object.instance_of?(Hash)
         out = {}
         identical = object.frozen?
         object.each do |k, v|

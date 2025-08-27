@@ -3,15 +3,13 @@
 module JSI
   class Schema::Cxt
     InplaceApplication = Block.subclass(*%i(
-      instance
       visited_refs
-      collect_evaluated
     ))
 
     # @!attribute collect_evaluated
     #   Does application need to collect successful child evaluation?
     #   @return [Boolean]
-    class InplaceApplication
+    class InplaceApplication < Block
       # @param subschema_ptr [Ptr, #to_ary]
       def inplace_subschema_applicate(subschema_ptr, **kw)
         inplace_schema_applicate(schema.subschema(subschema_ptr), **kw)
@@ -21,6 +19,19 @@ module JSI
       def inplace_schema_applicate(applicator_schema, **kw)
         block.call(applicator_schema, **kw)
       end
+
+      def instance
+        raise(Bug, "in-place application is being invoked without an instance; the current element needs action :inplace_application_requires_instance")
+      end
+
+      def collect_evaluated
+        false
+      end
     end
+
+    InplaceApplication::WithInstance = InplaceApplication.subclass(*%i(
+      instance
+      collect_evaluated
+    ))
   end
 end

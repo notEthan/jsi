@@ -140,8 +140,8 @@ module JSI
       #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
       @jsi_root_node = jsi_root_node || self
 
-      @jsi_is_orphan = nil
-
+      # @memos does not freeze if/when the node freezes
+      @memos = {}
       jsi_memomaps_initialize
       jsi_mutability_initialize
 
@@ -206,10 +206,10 @@ module JSI
     # is this node not a descendent of its root node?
     # @return [Boolean]
     def jsi_is_orphan?
-      if @jsi_is_orphan.nil?
-        @jsi_is_orphan = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr))
+      if @memos.key?(:is_orphan)
+        @memos[:is_orphan]
       else
-        @jsi_is_orphan
+        @memos[:is_orphan] = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr))
       end
     end
 
@@ -248,7 +248,7 @@ module JSI
 
       # note: this never yields self; if self is a Schema, Schema#jsi_each_descendent_schema overrides this method
       jsi_each_child_token do |token|
-        jsi_child(token, as_jsi: true).jsi_each_descendent_schema(&block)
+        jsi_child_node(token).jsi_each_descendent_schema(&block)
       end
     end
 
@@ -452,6 +452,10 @@ module JSI
     # @return [JSI::Base]
     # @raise [Base::ChildNotPresent]
     def jsi_child_node(token)
+      @child_node_by_token_map[token]
+    end
+
+    private def jsi_child_node_by_token_compute(token)
       jsi_child_ensure_present(token)
 
       child_content = jsi_node_content_child(token)
@@ -579,9 +583,9 @@ module JSI
         jsi_simple_node_child_error(token)
       end
       if value.is_a?(Base)
-        self[token] = value.jsi_instance
+        self[token] = value.jsi_node_content
       else
-        jsi_instance[token] = value
+        jsi_node_content[token] = value
       end
     end
 

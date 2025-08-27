@@ -11,7 +11,7 @@ BASIC_DIALECT = JSI::Schema::Dialect.new(
   ],
 )
 
-BasicMetaSchema = JSI.new_metaschema_module(
+BasicMetaSchema = JSI.new_metaschema_node(
   YAML.load(<<~YAML
     "$id": "tag:named-basic-meta-schema"
     properties:
@@ -24,7 +24,7 @@ BasicMetaSchema = JSI.new_metaschema_module(
     YAML
   ),
   dialect: BASIC_DIALECT,
-)
+).jsi_schema_module
 
 describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
@@ -35,13 +35,12 @@ describe(JSI::MetaSchemaNode) do
   let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
-    JSI::MetaSchemaNode.new(to_immutable[metaschema_document],
-      msn_dialect: dialect,
+    JSI.new_metaschema_node(metaschema_document,
+      dialect: dialect,
       metaschema_root_ref: metaschema_root_ref,
       root_schema_ref: root_schema_ref,
       jsi_registry: registry,
       bootstrap_registry: bootstrap_registry,
-      jsi_content_to_immutable: to_immutable,
     )
   end
   let(:metaschema) do
@@ -296,7 +295,7 @@ describe(JSI::MetaSchemaNode) do
         [metaschema, applicator_schema, schema].each do |jsi|
           jsi.jsi_each_descendent_node do |node|
             assert_equal(node.equal?(metaschema), node.is_a?(JSI::Schema::MetaSchema))
-            assert_equal(node.jsi_schemas == Set[metaschema, applicator_schema], node.is_a?(JSI::Schema))
+            assert_equal(node.jsi_schemas == JSI::SchemaSet[metaschema, applicator_schema], node.is_a?(JSI::Schema))
           end
         end
 
@@ -360,7 +359,7 @@ describe(JSI::MetaSchemaNode) do
   describe("draft04 boolean schema in meta-schema") do
     it("is a schema") do
       # d4 meta-schema doesn't have any boolean schema in it; make one that does
-      d4ms_with_bool = JSI.new_metaschema(
+      d4ms_with_bool = JSI.new_metaschema_node(
         JSON.parse(JSI::SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read).merge({
           'additionalProperties' => true,
         }),

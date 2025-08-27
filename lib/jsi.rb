@@ -115,38 +115,27 @@ module JSI
     new_schema(schema_content, **kw, &block).jsi_schema_module
   end
 
-  # @private pending dialect/vocabularies
-  # Instantiates the given document as a JSI Meta-Schema.
+  # Instantiates the given metaschema_document as a MetaSchemaNode.
   #
-  # @param metaschema_document an object to be instantiated as a JSI Meta-Schema
+  # @api private
+  # @param metaschema_document
   # @param dialect (see MetaSchemaNode#initialize)
   # @param to_immutable (see SchemaSet#new_jsi)
-  # @yield (see Schema::MetaSchema#new_schema)
-  # @return [JSI::MetaSchemaNode + JSI::Schema::MetaSchema + JSI::Schema]
-  def self.new_metaschema(metaschema_document,
+  # @return [MetaSchemaNode]
+  def self.new_metaschema_node(metaschema_document,
       dialect: ,
       to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
-      &block
+      **init_kw
   )
+    raise(BlockGivenError) if block_given?
+
     metaschema_document = to_immutable.call(metaschema_document) if to_immutable
 
-    metaschema = MetaSchemaNode.new(metaschema_document,
+    MetaSchemaNode.new(metaschema_document,
       msn_dialect: dialect,
       jsi_content_to_immutable: to_immutable,
+      **init_kw,
     )
-
-    metaschema.jsi_schema_module_exec(&block) if block
-
-    metaschema
-  end
-
-  # @private pending dialect/vocabularies
-  # Instantiates the given document as a JSI Meta-Schema, passing all params to
-  # {new_metaschema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
-  #
-  # @return [JSI::SchemaModule + JSI::SchemaModule::MetaSchemaModule]
-  def self.new_metaschema_module(metaschema_document, **kw, &block)
-    new_metaschema(metaschema_document, **kw, &block).jsi_schema_module
   end
 
   # `JSI.registry` is the default {JSI::Registry} in which schemas are registered and from

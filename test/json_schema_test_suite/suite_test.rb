@@ -6,30 +6,27 @@ test_schema_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/test-sc
 JSONSchemaTestSchema = JSI.new_schema(JSON.parse(test_schema_path.open('r:UTF-8', &:read), freeze: true))
 $test_report_time["JSONSchemaTestSchema set up"]
 
-all_vocabularies = Set[]
-all_vocabularies.merge(JSI::Schema::Draft202012::DIALECT.vocabularies)
+base_registry = JSI::DEFAULT_REGISTRY.dup
 
 # this dummy vocabulary implementation is for the test:
 # "schema that uses custom metaschema with format-assertion: true"
 # using http://localhost:1234/draft2020-12/format-assertion-true.json
 # the test itself fails and is skipped because `format` is in unsupported_keywords,
 # this just lets the schema be instantiated.
-all_vocabularies.add(
+base_registry.register_vocabulary(
   # draft-bhutton-json-schema-validation-01 7.2.2.  Format-Assertion Vocabulary
   JSI::Schema::Vocabulary.new(id: "https://json-schema.org/draft/2020-12/vocab/format-assertion", elements: [
     JSI::Schema::Element.new(keyword: 'format') { },
   ])
 )
 
-all_vocabularies.freeze
-
-JSI.registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-assertion") do
+base_registry.autoload_uri("https://json-schema.org/draft/2020-12/meta/format-assertion") do
   path = JSI::SCHEMAS_PATH.join('json-schema.org/draft/2020-12/meta/format-assertion.json')
   JSI::JSONSchemaDraft202012.new_schema(JSON.parse(path.read, freeze: true), registry: nil)
 end
 
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
-  jsts_registry = JSI.registry.dup
+  jsts_registry = base_registry.dup
 
   Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
     Dir.glob('**/*.json').each do |subpath|
@@ -53,18 +50,7 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
           )
 
           if remote_content['$vocabulary']
-            vocabularies = Set[]
-            remote_content['$vocabulary'].each do |vocabulary_uri, required|
-              vocabulary = all_vocabularies.detect { |v| v.id == JSI::Util.uri(vocabulary_uri) }
-              if vocabulary
-                vocabularies << vocabulary
-              elsif required
-                raise(JSI::ResolutionError, "vocabulary: #{vocabulary_uri}")
-              end
-            end
-
-            dialect = JSI::Schema::Dialect.new(vocabularies: vocabularies)
-            schema.describes_schema!(dialect)
+            schema.describes_schema!
           end
 
           schema

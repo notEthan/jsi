@@ -56,7 +56,7 @@ describe 'JSI::SchemaModule' do
             sch: {}
           YAML
         )
-        JSI.new_metaschema(document, dialect: JSI::Schema::Draft06::DIALECT)
+        JSI.new_metaschema_node(document, dialect: JSI::Schema::Draft06::DIALECT)
       end
 
       it 'defines accessors for the connection' do

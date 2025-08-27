@@ -15,7 +15,7 @@ module JSI
     # @!attribute evaluated
     #   Was the child successfully evaluated by a child applicator?
     #   @return [Boolean]
-    class ChildApplication
+    class ChildApplication < Block
       # @param subschema_ptr [Ptr, #to_ary]
       def child_subschema_applicate(subschema_ptr)
         child_schema_applicate(schema.subschema(subschema_ptr))

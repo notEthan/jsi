@@ -2,9 +2,9 @@
 
 module JSI
   metaschema_document = Util.json_parse_freeze(SCHEMAS_PATH.join('json-schema.org/draft-07/schema.json').read)
-  JSONSchemaDraft07 = JSI.new_metaschema_module(metaschema_document,
+  JSONSchemaDraft07 = JSI.new_metaschema_node(metaschema_document,
     dialect: JSI::Schema::Draft07::DIALECT,
-  )
+  ).jsi_schema_module
 
   # the JSI schema module for `http://json-schema.org/draft-07/schema`
   module JSONSchemaDraft07

@@ -54,6 +54,7 @@ module JSI
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       self.jsi_registry = jsi_registry
 
+      @memos = {}
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
       #chkbug fail(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
 

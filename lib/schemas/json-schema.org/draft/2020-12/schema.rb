@@ -18,8 +18,8 @@ module JSI
     bootstrap_registry.register(bootstrap_vocabulary_schema)
   end
 
-  JSONSchemaDraft202012 = MetaSchemaNode.new(metaschema_document,
-    msn_dialect: dialect,
+  JSONSchemaDraft202012 = JSI.new_metaschema_node(metaschema_document,
+    dialect: dialect,
     jsi_registry: jsi_registry,
     bootstrap_registry: bootstrap_registry,
     metaschema_root_ref: 'https://json-schema.org/draft/2020-12/schema',

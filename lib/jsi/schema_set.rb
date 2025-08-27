@@ -24,7 +24,7 @@ module JSI
     # if no block is given, the enum must contain only Schemas.
     #
     # @param enum [#each] the schemas to be included in the SchemaSet, or items to be passed to the block
-    # @yieldparam yields each element of enum for preprocessing into a Schema
+    # @yieldparam yields each element of `enum` for preprocessing into a Schema
     # @yieldreturn [JSI::Schema]
     # @raise [JSI::Schema::NotASchemaError]
     def initialize(enum, &block)
@@ -68,8 +68,10 @@ module JSI
     end
 
     # Instantiates a new JSI whose content comes from the given `instance` param.
-    # This SchemaSet indicates the schemas of the JSI - its schemas are in-place
+    #
+    # The schemas of the JSI (its {Base#jsi_schemas}) are in-place
     # applicators of this set's schemas which apply to the given instance.
+    # The JSI's {Base#jsi_indicated_schemas} set is this set.
     #
     # @param instance [Object] the instance to be represented as a JSI
     # @param uri [#to_str, URI] The retrieval URI of the instance.
