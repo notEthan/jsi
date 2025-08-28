@@ -77,6 +77,8 @@ module JSI
     # the block would normally load JSON from the filesystem or similar.
     #
     # @param uri [#to_str]
+    # @yieldparam registry [Registry] (keyword) this registry
+    # @yieldparam uri [URI] (keyword) the URI being autoloaded
     # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
@@ -163,6 +165,8 @@ module JSI
     end
 
     # @param uri [#to_str]
+    # @yieldparam registry [Registry] (keyword) this registry
+    # @yieldparam uri [URI] (keyword) the URI being autoloaded
     # @yieldreturn [Schema::Vocabulary]
     # @return [void]
     def autoload_vocabulary_uri(uri, &block)
@@ -192,6 +196,8 @@ module JSI
     end
 
     # @param uri [#to_str]
+    # @yieldparam registry [Registry] (keyword) this registry
+    # @yieldparam uri [URI] (keyword) the URI being autoloaded
     # @yieldreturn [Schema::Dialect]
     # @return [void]
     def autoload_dialect_uri(uri, &block)
