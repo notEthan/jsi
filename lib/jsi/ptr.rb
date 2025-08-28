@@ -136,11 +136,14 @@ module JSI
       def resolve_against(document)
         return(self) if tokens.empty?
         node = document
-        resolved_tokens = Array.new(tokens.size)
+        resolved_tokens = nil
         tokens.each_with_index do |token, i|
           resolved_token, node = node_subscript_token_child(node, token)
+          next if resolved_token.equal?(token)
+          resolved_tokens ||= tokens.dup
           resolved_tokens[i] = resolved_token
         end
+        return(self) if !resolved_tokens
         Ptr.new(resolved_tokens.freeze)
       end
 
