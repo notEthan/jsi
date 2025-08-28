@@ -5,6 +5,8 @@ module JSI
   #
   # this module is intended to be internal to JSI. no guarantees or API promises
   # are made for non-JSI classes including this module.
+  #
+  # @api private
   module Util::Hashlike
     include(Enumerable)
 
@@ -104,6 +106,8 @@ module JSI
   #
   # this module is intended to be internal to JSI. no guarantees or API promises
   # are made for non-JSI classes including this module.
+  #
+  # @api private
   module Util::Arraylike
     include(Enumerable)
 
