@@ -10,7 +10,7 @@ module JSI
   # These subclasses are generally intended to be ignored by applications using this library - the purpose
   # they serve is to include modules relevant to the instance. The modules these classes include are:
   #
-  # - the {Schema#jsi_schema_module} of each schema which describes the instance
+  # - the {SchemaModule JSI Schema Module} of each schema that describes the instance
   # - {Base::HashNode}, {Base::ArrayNode}, or {Base::StringNode} if the instance is
   #   a hash/object, array, or string
   # - {Base::Immutable} or {Base::Mutable}
