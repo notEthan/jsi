@@ -37,6 +37,7 @@ module JSI
       registry
       after_initialize
       as_child_as_jsi
+      child_use_default
       to_immutable
     ))
 
@@ -58,6 +59,9 @@ module JSI
     # @!attribute as_child_as_jsi
     #   Default value for {Base#jsi_as_child_default_as_jsi}.
     #   @return [Boolean]
+    # @!attribute child_use_default
+    #   Default value for {Base#jsi_child_use_default_default}.
+    #   @return [Boolean]
     # @!attribute to_immutable
     #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.
     #
@@ -74,6 +78,7 @@ module JSI
       def initialize(
           registry: JSI.registry,
           as_child_as_jsi: false,
+          child_use_default: false,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           **
       )
@@ -644,9 +649,10 @@ module JSI
 
     # The default value for the param `use_default` of {#[]}, controlling whether a schema default value is
     # returned when a token refers to a child that is not in the document.
+    # {Base::Conf Configurable} using {Base::Conf#child_use_default `child_use_default`}.
     # @return [true, false] a valid value of the `use_default` param of {#[]}
     def jsi_child_use_default_default
-      false
+      jsi_conf.child_use_default
     end
 
     # assigns the subscript of the instance identified by the given token to the given value.
