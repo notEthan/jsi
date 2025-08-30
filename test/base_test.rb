@@ -440,6 +440,18 @@ describe JSI::Base do
         assert(!subject.first.respond_to?(:to_ary))
       end
     end
+
+    describe("with conf_kw") do
+      let(:instance) { {"foo" => "bar"} }
+
+      it("modified copy has given conf") do
+        modified = subject.jsi_modified_copy(child_as_jsi: true, &:itself)
+        assert_equal("bar", subject['foo'])
+        assert_equal(subject.jsi_child_node('foo'), modified['foo'])
+        refute_equal("bar", modified['foo'])
+        refute_equal(subject.jsi_child_node('foo'), subject['foo'])
+      end
+    end
   end
   describe 'validation' do
     describe 'without errors' do

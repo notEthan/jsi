@@ -702,13 +702,14 @@ module JSI
     # @yield [Object] this JSI's instance. the block should result
     #   in a nondestructively modified copy of this.
     # @return [Base] the modified copy of self
-    def jsi_modified_copy(&block)
+    def jsi_modified_copy(**conf_kw, &block)
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
           uri: @jsi_root_node.jsi_base_uri,
           register: false, # default is already false but this is a place to be explicit
           mutable: jsi_mutable?,
           **jsi_conf.for_modified_copy.to_h,
+          **conf_kw,
         )
         modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
         modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)

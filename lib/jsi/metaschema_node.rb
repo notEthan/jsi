@@ -227,7 +227,7 @@ module JSI
     private :jsi_default_child # internals for #[] but idk, could be public
 
     # @raise [NotImplementedError] not implemented for MetaSchemaNode
-    def jsi_modified_copy(&block)
+    def jsi_modified_copy(**)
       # this had an implementation previously (see git history). but for 2020-12, support for multiple
       # mutually-descriptive schemas as well as dynamic scope makes instantiating a modified copy that
       # preserves self-descriptive/mutually-descriptive relationships generally infeasible.
