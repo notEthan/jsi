@@ -427,7 +427,7 @@ module JSI
       anchors.freeze
     end
 
-    # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
+    # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_schema_base_uri`
     # @return [URI, nil]
     def schema_absolute_uri
       schema_absolute_uris.first
