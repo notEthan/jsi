@@ -95,7 +95,7 @@ describe 'JSI::Base array' do
       }
     end
 
-    schema_instance_child_use_default_default_true
+    let(:subject_opt) { {child_use_default: true} }
 
     describe 'default value' do
       let(:instance) { [1] }
@@ -144,7 +144,7 @@ describe 'JSI::Base array' do
       }
     end
 
-    schema_instance_child_use_default_default_true
+    let(:subject_opt) { {child_use_default: true} }
 
     describe 'default value' do
       let(:instance) { [{'bar' => 3}] }

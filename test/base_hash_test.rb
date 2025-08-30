@@ -27,7 +27,7 @@ describe 'JSI::Base hash' do
       }
     end
 
-    schema_instance_child_use_default_default_true
+    let(:subject_opt) { {child_use_default: true} }
 
     describe 'default value' do
       let(:instance) { {'bar' => 3} }
@@ -61,7 +61,7 @@ describe 'JSI::Base hash' do
       }
     end
 
-    schema_instance_child_use_default_default_true
+    let(:subject_opt) { {child_use_default: true} }
 
     describe 'default value' do
       let(:instance) { {'bar' => 3} }
@@ -96,7 +96,7 @@ describe 'JSI::Base hash' do
       }
     end
 
-    schema_instance_child_use_default_default_true
+    let(:subject_opt) { {child_use_default: true} }
 
     describe 'default value' do
       let(:instance) { Hash.new({'foo' => 2}).merge({'bar' => 3}) }
