@@ -36,6 +36,7 @@ module JSI
     Conf = Struct.subclass(*%i(
       registry
       after_initialize
+      as_child_as_jsi
       to_immutable
     ))
 
@@ -54,6 +55,9 @@ module JSI
     # @!attribute after_initialize
     #   _EXPERIMENTAL_ - a callback that is called with each JSI node in the document after the node is initialized.
     #   @return [#call, nil]
+    # @!attribute as_child_as_jsi
+    #   Default value for {Base#jsi_as_child_default_as_jsi}.
+    #   @return [Boolean]
     # @!attribute to_immutable
     #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.
     #
@@ -69,6 +73,7 @@ module JSI
     class Conf
       def initialize(
           registry: JSI.registry,
+          as_child_as_jsi: false,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
           **
       )
@@ -622,10 +627,11 @@ module JSI
     # When accessing this node as a child (from a parent's {#[]} or a property reader), should the result
     # by default be a JSI node (this node), or its node content?
     # This default may be overridden using the `as_jsi` parameter calling the parent's {#[]}.
+    # {Base::Conf Configurable} using {Base::Conf#as_child_as_jsi `as_child_as_jsi`}.
     # @return [Boolean]
     def jsi_as_child_default_as_jsi
       # base default is false, for simple types. overridden by complex types (HashNode, ArrayNode), Schema, and others.
-      false
+      jsi_conf.as_child_as_jsi
     end
 
     # The default value for the param `as_jsi` of {#[]}, controlling whether a child is returned as a JSI instance.
