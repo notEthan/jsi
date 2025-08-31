@@ -262,7 +262,22 @@ module JSI
     # @yield [JSI::Base] each descendent node, starting with self
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def jsi_each_descendent_node(propertyNames: false, &block)
-      return to_enum(__method__, propertyNames: propertyNames) unless block
+      unless block
+        return to_enum(__method__, propertyNames: propertyNames) do
+          # size
+          Util.ycomb do |rec|
+            proc do |node|
+              if node.respond_to?(:to_hash)
+                node.to_hash.inject(1) { |c, (k, child)| c + rec[child] + (propertyNames ? rec[k] : 0) }
+              elsif node.respond_to?(:to_ary)
+                node.to_ary.inject(1) { |c, child| c + rec[child] }
+              else
+                1
+              end
+            end
+          end[jsi_node_content]
+        end
+      end
 
       yield self
 
