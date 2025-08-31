@@ -135,6 +135,7 @@ module JSI
       @root_rel_ptr = @jsi_ptr.relative_to(@jsi_root_node.jsi_ptr)
 
       # @memos does not freeze if/when the node freezes
+      # note: use memomap when mutable content should invalidate memo
       @memos = {}
       jsi_memomaps_initialize
       jsi_mutability_initialize
