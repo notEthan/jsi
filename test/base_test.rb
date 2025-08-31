@@ -263,6 +263,26 @@ describe JSI::Base do
         grepped = subject.jsi_each_descendent_node.grep(/x/)
         assert_equal([subject / %w(foo 0)], grepped)
       end
+
+      describe("enumerator size") do
+        it("counts") do
+          assert_equal(6, subject.jsi_each_descendent_node.size)
+          assert_equal(8, subject.jsi_each_descendent_node(propertyNames: true).size)
+          assert_equal(5, JSI::SchemaSet[].new_jsi({[0] => [0]}).jsi_each_descendent_node(propertyNames: true).size)
+        end
+      end
+
+      describe("mutable JSI enumerator size") do
+        let(:subject_opt) { {mutable: true} }
+
+        it("counts, changes") do
+          assert_equal(6, subject.jsi_each_descendent_node.size)
+          assert_equal(8, subject.jsi_each_descendent_node(propertyNames: true).size)
+          instance.delete('bar')
+          assert_equal(4, subject.jsi_each_descendent_node.size)
+          assert_equal(5, subject.jsi_each_descendent_node(propertyNames: true).size)
+        end
+      end
     end
     describe 'iterating a simple structure' do
       let(:instance) { 0 }
