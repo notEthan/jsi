@@ -18,13 +18,14 @@ module JSI
   module JSONSchemaDraft202012
   end
 
-  JSONSchemaDraft202012::Core       = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/core").jsi_schema_module
-  JSONSchemaDraft202012::Applicator  = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/applicator").jsi_schema_module
-  JSONSchemaDraft202012::Unevaluated  = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/unevaluated").jsi_schema_module
-  JSONSchemaDraft202012::Validation    = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/validation").jsi_schema_module
-  JSONSchemaDraft202012::MetaData       = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/meta-data").jsi_schema_module
-  JSONSchemaDraft202012::FormatAnnotation = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/format-annotation").jsi_schema_module
-  JSONSchemaDraft202012::Content         = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/content").jsi_schema_module
+  find_module = proc { |uri| JSONSchemaDraft202012.schema.jsi_registry.find(uri).jsi_schema_module }
+  JSONSchemaDraft202012::Core       = find_module["https://json-schema.org/draft/2020-12/meta/core"]
+  JSONSchemaDraft202012::Applicator  = find_module["https://json-schema.org/draft/2020-12/meta/applicator"]
+  JSONSchemaDraft202012::Unevaluated  = find_module["https://json-schema.org/draft/2020-12/meta/unevaluated"]
+  JSONSchemaDraft202012::Validation    = find_module["https://json-schema.org/draft/2020-12/meta/validation"]
+  JSONSchemaDraft202012::MetaData       = find_module["https://json-schema.org/draft/2020-12/meta/meta-data"]
+  JSONSchemaDraft202012::FormatAnnotation = find_module["https://json-schema.org/draft/2020-12/meta/format-annotation"]
+  JSONSchemaDraft202012::Content         = find_module["https://json-schema.org/draft/2020-12/meta/content"]
 
   module JSONSchemaDraft202012::Core
   end
