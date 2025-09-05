@@ -13,11 +13,6 @@ if ENV['CI'] || ENV['COV']
     if ENV['CI']
       require 'simplecov-lcov'
 
-      # TODO remove. see https://github.com/fortissimo1997/simplecov-lcov/pull/25
-      if !SimpleCov.respond_to?(:branch_coverage)
-        SimpleCov.define_singleton_method(:branch_coverage?) { false }
-      end
-
       SimpleCov::Formatter::LcovFormatter.config do |c|
         c.report_with_single_file = true
         c.single_report_path = 'coverage/lcov.info'
@@ -35,8 +30,6 @@ if ENV['CI'] || ENV['COV']
 end
 
 require_relative 'jsi_helper'
-
-require 'yaml'
 
 # NO EXPECTATIONS
 ENV["MT_NO_EXPECTATIONS"] = ''
@@ -159,6 +152,10 @@ class JSISpec < Minitest::Spec
 
   def self.schema_instance_child_use_default_default_true
     before { schema.jsi_schema_module_exec { redef_method(:jsi_child_use_default_default) { true } } }
+  end
+
+  def self.yaml(name, yaml)
+    let(name) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE[YAML.load(yaml)] }
   end
 
   def assert_equal exp, act, msg = nil

@@ -1,38 +1,11 @@
 require_relative 'test_helper'
 
-BASIC_DIALECT = JSI::Schema::Dialect.new(
-  vocabularies: [
-    JSI::Schema::Vocabulary.new(elements: [
-      JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: false],
-      JSI::Schema::Elements::REF[exclusive: true],
-      JSI::Schema::Elements::SELF[],
-      JSI::Schema::Elements::PROPERTIES[],
-    ]),
-  ],
-)
-
-BasicMetaSchema = JSI.new_metaschema_node(
-  YAML.load(<<~YAML
-    "$id": "tag:named-basic-meta-schema"
-    properties:
-      properties:
-        additionalProperties:
-          "$ref": "#"
-      additionalProperties:
-        "$ref": "#"
-      "$ref": {}
-    YAML
-  ),
-  dialect: BASIC_DIALECT,
-).jsi_schema_module
-
 describe(JSI::MetaSchemaNode) do
   let(:dialect) { BASIC_DIALECT }
   let(:metaschema_root_ref) { '#' }
   let(:root_schema_ref) { metaschema_root_ref }
   let(:registry) { nil }
   let(:bootstrap_registry) { nil }
-  let(:to_immutable) { JSI::DEFAULT_CONTENT_TO_IMMUTABLE }
 
   let(:root_node) do
     JSI.new_metaschema_node(metaschema_document,
@@ -44,13 +17,7 @@ describe(JSI::MetaSchemaNode) do
     )
   end
   let(:metaschema) do
-    metaschema_root_ref = JSI::Util.uri(self.metaschema_root_ref)
-    if metaschema_root_ref.merge(fragment: nil).empty?
-      root_node.jsi_descendent_node(JSI::Ptr.from_fragment(metaschema_root_ref.fragment))
-    else
-      root_node
-      JSI::Schema::Ref.new(metaschema_root_ref, registry: registry).resolve
-    end
+    JSI::Ref.new(metaschema_root_ref, registry: registry, referrer: root_node).resolve
   end
 
   def bootstrap_schema(schema_content, registry: nil, base_uri: nil)
@@ -96,8 +63,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe 'basic' do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         properties:
           properties:
             additionalProperties:
@@ -106,8 +72,7 @@ describe(JSI::MetaSchemaNode) do
             "$ref": "#"
           "$ref": {}
         YAML
-      )
-    end
+    )
 
     it('acts like a meta-schema') do
       assert_metaschema_behaves
@@ -175,8 +140,7 @@ describe(JSI::MetaSchemaNode) do
         )
       end
 
-      let(:metaschema_document) do
-        to_immutable[YAML.load(<<~YAML
+      yaml(:metaschema_document, <<~YAML
           $id: "tag:7bg7:meta"
           allOf:
             - "$ref": "tag:7bg7:applicator"
@@ -184,11 +148,9 @@ describe(JSI::MetaSchemaNode) do
             "$id": {}
             "$ref": {}
           YAML
-        )]
-      end
+      )
 
-      let(:applicator_document) do
-        to_immutable[YAML.load(<<~YAML
+      yaml(:applicator_document, <<~YAML
           $id: "tag:7bg7:applicator"
           properties:
             properties:
@@ -202,8 +164,7 @@ describe(JSI::MetaSchemaNode) do
               items:
                 "$ref": "tag:7bg7:meta"
           YAML
-        )]
-      end
+      )
 
       let(:metaschema_root_ref) { "tag:7bg7:meta" }
 
@@ -317,8 +278,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe 'with schema default' do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         properties:
           properties:
             additionalProperties:
@@ -331,8 +291,7 @@ describe(JSI::MetaSchemaNode) do
               default
         default: {}
         YAML
-      )
-    end
+    )
 
     it 'does not insert a default value' do
       metaschema.jsi_schema_module_exec { define_method(:jsi_child_use_default_default) { true } }
@@ -382,8 +341,7 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe('meta-schema outside the root, document is an instance of a schema in the document') do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         schemas:
           JsonSchema:
             id: JsonSchema
@@ -402,8 +360,7 @@ describe(JSI::MetaSchemaNode) do
                 additionalProperties:
                   "$ref": JsonSchema
         YAML
-      )
-    end
+    )
     let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
     let(:root_schema_ref) { '#/schemas/Document' }
     it('acts like a meta-schema') do
@@ -417,10 +374,11 @@ describe(JSI::MetaSchemaNode) do
     end
   end
   describe('meta-schema outside the root, document is a schema') do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
+        $id: tag:ck6
         $defs:
           JsonSchema:
+            $id: "#0ek"
             properties:
               additionalProperties:
                 "$ref": "#/$defs/JsonSchema"
@@ -431,8 +389,7 @@ describe(JSI::MetaSchemaNode) do
                 additionalProperties:
                   "$ref": "#/$defs/JsonSchema"
         YAML
-      )
-    end
+    )
     let(:metaschema_root_ref) { '#/$defs/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
@@ -440,10 +397,21 @@ describe(JSI::MetaSchemaNode) do
 
       assert_metaschema_behaves
     end
+
+    it("$schema can reference the meta-schema by fragment") do
+      registry = JSI::Registry.new
+      registry.register(root_node)
+
+      schema_by_ptr = JSI.new_schema({"$schema" => "tag:ck6#/$defs/JsonSchema", "additionalProperties": {}}, registry: registry)
+      assert_schemas([metaschema], schema_by_ptr)
+      assert_schemas([metaschema], schema_by_ptr.additionalProperties)
+      schema_by_anchor = JSI.new_schema({"$schema" => "tag:ck6#0ek", "additionalProperties": {}}, registry: registry)
+      assert_schemas([metaschema], schema_by_anchor)
+      assert_schemas([metaschema], schema_by_anchor.additionalProperties)
+    end
   end
   describe('meta-schema outside the root on schemas, document is a schema') do
-    let(:metaschema_document) do
-      YAML.load(<<~YAML
+    yaml(:metaschema_document, <<~YAML
         schemas:
           JsonSchema:
             id: JsonSchema
@@ -457,8 +425,7 @@ describe(JSI::MetaSchemaNode) do
                 additionalProperties:
                   "$ref": JsonSchema
         YAML
-      )
-    end
+    )
     let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)

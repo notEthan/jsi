@@ -419,7 +419,7 @@ module JSI
       anchors.freeze
     end
 
-    # the URI of this schema, calculated from our `#id`, resolved against our `#jsi_schema_base_uri`
+    # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_schema_base_uri`
     # @return [URI, nil]
     def schema_absolute_uri
       schema_absolute_uris.first
@@ -486,15 +486,16 @@ module JSI
     #
     # @return [SchemaModule]
     def jsi_schema_module
+      raise(BlockGivenError) if block_given?
       raise(TypeError, "non-Base schema may not have a schema module: #{self}") unless is_a?(Base)
       raise(TypeError, "mutable schema may not have a schema module: #{self}") if jsi_mutable?
-      @jsi_schema_module ||= SchemaModule.new(self)
+      @memos.fetch(:jsi_schema_module) { @memos[:jsi_schema_module] = SchemaModule.new(self) }
     end
 
     # @private
     # @return [Boolean]
     def jsi_schema_module_defined?
-      !!@jsi_schema_module
+      @memos.key?(:jsi_schema_module)
     end
 
     # Evaluates the given block in the context of this schema's JSI schema module.
@@ -509,7 +510,7 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name
-      @jsi_schema_module && @jsi_schema_module.name
+      @memos.key?(:jsi_schema_module) && @memos[:jsi_schema_module].name
     end
 
     # @return [String, nil]
@@ -611,7 +612,7 @@ module JSI
     # is this schema the root of a schema resource?
     # @return [Boolean]
     def schema_resource_root?
-      jsi_ptr.root? || schema_absolute_uris.any?
+      jsi_ptr.root? || @memos.fetch(:has_resource_id) { @memos[:has_resource_id] = dialect_invoke_each(:id_without_fragment).any? }
     end
 
     # a subschema of this Schema
@@ -685,7 +686,7 @@ module JSI
         #
         # :inplace_applicate yields (schema, **keywords)
         # so @immediate_inplace_applicators is a 2D Array of tuples (schema, keywords)
-        @immediate_inplace_applicators ||= begin
+        @memos[:immediate_inplace_applicators] ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
             visited_refs: visited_refs,
@@ -695,7 +696,7 @@ module JSI
           immediate_inplace_applicators.freeze
         end
 
-        @immediate_inplace_applicators.each do |(s, kw)|
+        @memos[:immediate_inplace_applicators].each do |(s, kw)|
           yield(s, **kw)
         end
         nil
@@ -922,13 +923,13 @@ module JSI
 
     # @private
     def jsi_next_schema_dynamic_anchor_map
-      return(@next_schema_dynamic_anchor_map) if @next_schema_dynamic_anchor_map
+      return @memos[:next_schema_dynamic_anchor_map] if @memos.key?(:next_schema_dynamic_anchor_map)
 
       if !dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }
-        return @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+        return @memos[:next_schema_dynamic_anchor_map] = jsi_schema_dynamic_anchor_map
       end
 
-      @next_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+      map = jsi_schema_dynamic_anchor_map
 
       anchor_root = schema_resource_root.is_a?(Schema) ? schema_resource_root : self
       descendent_schemas = [[anchor_root, Util::EMPTY_ARY]]
@@ -937,8 +938,8 @@ module JSI
         descendent_schema, ptrs = *descendent_schemas.shift
 
         descendent_schema.dialect_invoke_each(:dynamicAnchor) do |anchor|
-          next if @next_schema_dynamic_anchor_map.key?(anchor)
-          @next_schema_dynamic_anchor_map = @next_schema_dynamic_anchor_map.merge({
+          next if map.key?(anchor)
+          map = map.merge({
             anchor => [anchor_root, ptrs].freeze,
           }).freeze
         end
@@ -961,7 +962,7 @@ module JSI
         end
       end
 
-      @next_schema_dynamic_anchor_map
+      @memos[:next_schema_dynamic_anchor_map] = map
     end
 
     # @private pending stronger stability of dynamic scope
@@ -983,14 +984,12 @@ module JSI
       # guard against being called twice on MetaSchemaNode, first from extend(Schema) then extend(jsi_schema_module) that includes Schema.
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
       instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
-      @jsi_schema_module = nil
       @schema_ref_map = Hash.new { |h, ref| h[ref] = Schema::Ref.new(ref, referrer: self) }
       @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
         dialect_invoke_each(:described_object_property_names).to_set.freeze
       end
-      @next_schema_dynamic_anchor_map = nil
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
       @inplace_application_requires_instance = dialect_invoke_each(:inplace_application_requires_instance).any?
       @immediate_inplace_applicators = nil

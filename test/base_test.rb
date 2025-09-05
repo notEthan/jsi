@@ -275,8 +275,7 @@ describe JSI::Base do
     end
   end
   describe 'selecting descendent nodes' do
-    let(:schema_content) do
-      YAML.safe_load(<<~YAML
+    yaml(:schema_content, <<~YAML
         patternProperties:
           ...:
             $ref: "#"
@@ -285,13 +284,11 @@ describe JSI::Base do
           - $ref: "#"
         pattern: "..."
         YAML
-      )
-    end
+    )
     describe '#jsi_select_descendents_node_first: selecting in a complex structure those elements described by a schema or subschema' do
       # note that 'described by a schema' does not imply the instance or child validates against
       # its schema(s). string children ('y') are described but fail validation against `pattern`.
-      let(:instance) do
-        YAML.safe_load(<<~YAML
+      yaml(:instance, <<~YAML
           n:
             n: []
           yyy:
@@ -300,8 +297,7 @@ describe JSI::Base do
               yyy: [y, {yyy: y}, n, {nnn: n}]
             - n
           YAML
-        )
-      end
+      )
       it "selects the nodes" do
         exp = schema.new_jsi({
           'yyy' => [
@@ -317,8 +313,7 @@ describe JSI::Base do
     end
     describe 'jsi_select_descendents_leaf_first: selecting in a complex structure by validity' do
       # here we select valid leaf nodes and thereby end up with a result consisting of valid descendent nodes
-      let(:instance) do
-        YAML.safe_load(<<~YAML
+      yaml(:instance, <<~YAML
           y: # valid because no schema applies to this or its descendents
             y: [y]
           yyy: # will be valid when its invalid descendents are rejected
@@ -327,8 +322,7 @@ describe JSI::Base do
               yyy: [[yyy, n], {nnn: n}, yyy]
             - yyy
           YAML
-        )
-      end
+      )
       it "selects the nodes" do
         exp = schema.new_jsi({
           'y' => {'y' => ['y']},
@@ -749,10 +743,10 @@ describe JSI::Base do
         end
         it 'does not define readers' do
           assert_equal('bar', subject.foo) # this one is defined
-          assert_respond_to(subject.method(:foo).owner, :jsi_property_readers)
+          assert_respond_to(subject.method(:foo).owner, :jsi_property_readers) # assert owner of #foo is a schema property reader module
           assert_equal('not ary', subject.to_ary) # this one is defined but would not be for an Array instance
 
-          refute_respond_to(subject.method(:initialize).owner, :jsi_property_readers)
+          refute_respond_to(subject.method(:initialize).owner, :jsi_property_readers) # refute owner of #initialize is a schema property reader module
           assert_equal('hi', subject['initialize'])
           assert_equal(%q(#{<JSI*1> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
@@ -1029,8 +1023,7 @@ describe JSI::Base do
     end
 
     describe 'instance of the same applied schemas via different indicated schemas' do
-      let(:schema_content) do
-        YAML.safe_load(<<~YAML
+      yaml(:schema_content, <<~YAML
           $schema: "http://json-schema.org/draft-07/schema"
           definitions:
             A:
@@ -1039,8 +1032,7 @@ describe JSI::Base do
               $ref: "#"
           type: object
           YAML
-        )
-      end
+      )
       it 'compares equality' do
         a = schema.definitions['A'].new_jsi(instance)
         b = schema.definitions['B'].new_jsi(instance)

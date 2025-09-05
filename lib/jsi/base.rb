@@ -249,11 +249,7 @@ module JSI
     # is this node not a descendent of its root node?
     # @return [Boolean]
     def jsi_is_orphan?
-      if @memos.key?(:is_orphan)
-        @memos[:is_orphan]
-      else
-        @memos[:is_orphan] = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr))
-      end
+      @memos.fetch(:is_orphan) { @memos[:is_orphan] = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr)) }
     end
 
     # yields a JSI of each node at or below this one in this JSI's document.

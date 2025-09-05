@@ -184,7 +184,12 @@ module JSI
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
-      {class: self.class, ref: ref, referrer: referrer}.freeze
+      {
+        class: self.class,
+        ref: ref,
+        referrer: referrer,
+        registry: registry,
+      }.freeze
     end
 
     include(Util::FingerprintHash::Immutable)

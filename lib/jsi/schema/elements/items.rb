@@ -25,7 +25,7 @@ module JSI
         element.add_action(:child_applicate) do
     if instance.respond_to?(:to_ary)
       if keyword?('items') && schema_content['items'].respond_to?(:to_ary)
-        if schema_content['items'].each_index.to_a.include?(token)
+        if schema_content['items'].size > token
           child_subschema_applicate(['items', token])
         elsif keyword?('additionalItems')
           child_subschema_applicate(['additionalItems'])

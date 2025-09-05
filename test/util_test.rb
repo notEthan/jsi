@@ -107,6 +107,12 @@ describe JSI::Util do
       assert_equal('cannot make immutable copy of a Hash with default_proc', e.message)
     end
   end
+
+  describe("Struct") do
+    it("pretty") do
+      assert_equal(%q(#<JSI::Schema::Cxt schema: 0, abort: nil>), JSI::Schema::Cxt.new(schema: 0).pretty_inspect.chomp)
+    end
+  end
 end
 
 $test_report_file_loaded[__FILE__]

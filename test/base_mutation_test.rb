@@ -6,8 +6,7 @@ describe JSI::Base do
   let(:subject) { schema.new_jsi(instance, **subject_opt) }
 
   describe 'instance mutation' do
-    let(:schema_content) do
-      YAML.load(<<~YAML
+    yaml(:schema_content, <<~YAML
         $schema: "http://json-schema.org/draft-07/schema#"
         definitions:
           a:
@@ -25,8 +24,7 @@ describe JSI::Base do
               - $ref: "#/definitions/a"
               - $ref: "#/definitions/b"
         YAML
-      )
-    end
+    )
 
     let(:instance) do
       YAML.load(<<~YAML
@@ -116,8 +114,7 @@ describe("instance mutation affecting adjacent items") do
 
   describe("without collecting evaluated children") do
     # when we skip collecting evaluated children, child schemas are computed from the parent's applied schemas
-    let(:schema_content) do
-      YAML.load(<<~YAML
+    yaml(:schema_content, <<~YAML
         $schema: "http://json-schema.org/draft-07/schema#"
         definitions:
           a:
@@ -141,8 +138,7 @@ describe("instance mutation affecting adjacent items") do
               - $ref: "#/definitions/as"
               - $ref: "#/definitions/bs"
         YAML
-      )
-    end
+    )
 
     let(:instance) do
       YAML.load(<<~YAML
@@ -186,8 +182,7 @@ describe("instance mutation affecting adjacent items") do
 
   describe("with collecting evaluated children") do
     # when we are collecting evaluated children, child schemas are computed from the parent's indicated schemas
-    let(:schema_content) do
-      YAML.load(<<~YAML
+    yaml(:schema_content, <<~YAML
         $schema: "https://json-schema.org/draft/2020-12/schema"
         unevaluatedItems: true
         definitions:
@@ -215,8 +210,7 @@ describe("instance mutation affecting adjacent items") do
               abs:
                 $ref: "#/definitions/bs"
         YAML
-      )
-    end
+    )
 
     let(:instance) do
       YAML.load(<<~YAML

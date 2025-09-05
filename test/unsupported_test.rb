@@ -18,8 +18,7 @@ describe 'unsupported behavior' do
     # ugly, and prone to breakage, particularly with $id.
     describe 'reinstantiation' do
       describe 'below another schema' do
-        let(:schema_content) do
-          YAML.safe_load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               a:
                 $id: http://jsi/test/reinstantiation/below_another/a
@@ -34,8 +33,7 @@ describe 'unsupported behavior' do
             items:
               $ref: "#/definitions/a/unknown/definitions/b"
             YAML
-          )
-        end
+        )
         let(:instance) do
           [{'x' => {}}]
         end
@@ -52,8 +50,7 @@ describe 'unsupported behavior' do
       end
 
       describe("in a location described by the metaschema as a nonschema") do
-        let(:schema_content) do
-          YAML.safe_load(<<~YAML
+        yaml(:schema_content, <<~YAML
             const: true
             properties:
               additionalProperties:
@@ -61,8 +58,7 @@ describe 'unsupported behavior' do
             items:
               $ref: "#/properties"
             YAML
-          )
-        end
+        )
         let(:instance) do
           [{'x' => {}}]
         end
@@ -431,15 +427,13 @@ describe 'unsupported behavior' do
 
   describe 'recursive structures' do
     describe 'a instance whose child references itself' do
-      let(:schema_content) do
-        YAML.load(<<~YAML
+      yaml(:schema_content, <<~YAML
           properties:
             "a": {}
             "on":
               $ref: "#"
           YAML
-        )
-      end
+      )
       it 'goes all the way down' do
         child = {'a' => ['turtle']}
         child['on'] = child
@@ -461,8 +455,7 @@ describe 'unsupported behavior' do
   end
 
   describe 'conflicting JSI Schema Module instance methods' do
-    let(:schema_content) do
-      YAML.safe_load(<<~YAML
+    yaml(:schema_content, <<~YAML
         definitions:
           a:
             {}
@@ -472,8 +465,7 @@ describe 'unsupported behavior' do
           - $ref: "#/definitions/a"
           - $ref: "#/definitions/b"
         YAML
-      )
-    end
+    )
     let(:instance) do
       {}
     end
