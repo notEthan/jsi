@@ -603,7 +603,7 @@ module JSI
       jsi_simple_node_child_error(token)
     end
 
-    # When accessing this node as a child (from {#[]} or a property reader), should the result
+    # When accessing this node as a child (from a parent's {#[]} or a property reader), should the result
     # by default be a JSI node (this node), or its node content?
     # This default may be overridden using the `as_jsi` parameter calling the parent's {#[]}.
     # @return [Boolean]
