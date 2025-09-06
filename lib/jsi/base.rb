@@ -177,7 +177,7 @@ module JSI
     # @api private
     # @param jsi_document [Object] the document containing the instance
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
-    # @param jsi_schema_base_uri [URI] see {SchemaSet#new_jsi} param uri
+    # @param jsi_base_uri [URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @param jsi_conf [Base::Conf]
@@ -185,7 +185,7 @@ module JSI
     def initialize(jsi_document,
         jsi_ptr: Ptr[],
         jsi_indicated_schemas: ,
-        jsi_schema_base_uri: nil,
+        jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         jsi_conf: nil,
@@ -200,7 +200,7 @@ module JSI
       @jsi_ptr = jsi_ptr
       #chkbug fail(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
       @jsi_indicated_schemas = jsi_indicated_schemas
-      self.jsi_schema_base_uri = jsi_schema_base_uri
+      self.jsi_base_uri = jsi_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
@@ -710,7 +710,7 @@ module JSI
     def jsi_modified_copy(&block)
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
-          uri: @jsi_root_node.jsi_schema_base_uri,
+          uri: @jsi_root_node.jsi_base_uri,
           register: false, # default is already false but this is a place to be explicit
           mutable: jsi_mutable?,
           **jsi_conf.for_modified_copy.to_h,
@@ -806,7 +806,7 @@ module JSI
       self.class.new(jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: jsi_indicated_schemas,
-        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_base_uri: jsi_base_uri,
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
         jsi_root_node: jsi_root_node,
@@ -929,7 +929,7 @@ module JSI
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
-        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_base_uri: jsi_base_uri,
         # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         # different registries mean references may resolve to different resources so must not be equal
@@ -961,7 +961,7 @@ module JSI
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_indicated_schemas: child_indicated_schemas,
-          jsi_schema_base_uri: jsi_resource_ancestor_uri,
+          jsi_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
           jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token]),
           jsi_root_node: @jsi_root_node,

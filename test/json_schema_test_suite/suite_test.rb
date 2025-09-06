@@ -47,11 +47,12 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
             uri: uri,
             default_metaschema: metaschema,
             registry: registry,
+            after_initialize: proc do |node|
+              if node.jsi_ptr.root? && remote_content['$vocabulary']
+                node.describes_schema!
+              end
+            end,
           )
-
-          if remote_content['$vocabulary']
-            schema.describes_schema!
-          end
 
           schema
         end

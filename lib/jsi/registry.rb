@@ -44,9 +44,9 @@ module JSI
       end
 
       # allow for registration of resources at the root of a document whether or not they are schemas.
-      # jsi_schema_base_uri at the root comes from the `uri` parameter to new_jsi / new_schema.
-      if resource.jsi_schema_base_uri && resource.jsi_ptr.root?
-        internal_store(@resources, resource.jsi_schema_base_uri, resource)
+      # jsi_base_uri at the root comes from the `uri` parameter to new_jsi / new_schema.
+      if resource.jsi_base_uri && resource.jsi_ptr.root?
+        internal_store(@resources, resource.jsi_base_uri, resource)
       end
 
       resource.jsi_each_descendent_schema do |node|
