@@ -510,7 +510,7 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name
-      @memos.key?(:jsi_schema_module) && @memos[:jsi_schema_module].name
+      @memos[:jsi_schema_module] && @memos[:jsi_schema_module].name
     end
 
     # @return [String, nil]
@@ -527,6 +527,7 @@ module JSI
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this schema.
     def new_jsi(instance, **kw)
+      raise(BlockGivenError) if block_given?
       SchemaSet[self].new_jsi(instance, **kw)
     end
 

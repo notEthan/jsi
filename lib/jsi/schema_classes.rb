@@ -123,6 +123,7 @@ module JSI
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this module's schema.
     def new_jsi(instance, **kw)
+      raise(BlockGivenError) if block_given?
       schema.new_jsi(instance, **kw)
     end
 
