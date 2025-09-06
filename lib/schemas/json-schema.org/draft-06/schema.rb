@@ -9,7 +9,6 @@ module JSI
   # the JSI schema module for `http://json-schema.org/draft-06/schema`
   module JSONSchemaDraft06
     # @!parse extend JSI::SchemaModule::MetaSchemaModule
-    # @!parse include JSI::Schema::Draft06
 
 
     Id      = properties['$id']
