@@ -3,6 +3,8 @@
 module JSI
   module Schema
     class Vocabulary
+      include(Util::Pretty)
+
       # @param id [#to_str, nil]
       # @param elements [Enumerable<Schema::Element>]
       def initialize(id: nil, elements: )
@@ -18,6 +20,17 @@ module JSI
 
       # @return [Set<Schema::Element>]
       attr_reader(:elements)
+
+      # @param q
+      def pretty_print(q)
+        if id
+          jsi_pp_object_group(q, [self.class.name, -"id: <#{id}>"])
+        else
+          jsi_pp_object_group(q) do
+            q.seplist(elements) { |e| q.pp(e) }
+          end
+        end
+      end
     end
   end
 end
