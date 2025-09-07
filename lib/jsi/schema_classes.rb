@@ -142,7 +142,7 @@ module JSI
     end
 
     # See {Schema#describes_schema!}
-    def describes_schema!(dialect)
+    def describes_schema!(dialect = nil)
       schema.describes_schema!(dialect)
     end
 
