@@ -3,6 +3,31 @@
 module JSI
   module Schema
     class Dialect
+      class << self
+        # @param xvocabulary [#to_hash] `$vocabulary` keyword value
+        # @param id [#to_str, nil]
+        # @param registry [Registry]
+        # @param register [Boolean]
+        # @return [Schema::Dialect]
+        def from_xvocabulary(
+            xvocabulary,
+            id: nil,
+            registry: JSI.registry,
+            register: !!id,
+            **conf
+        )
+          vocabularies = []
+          xvocabulary.each do |vocabulary_uri, required|
+            if required || registry.vocabulary_registered?(vocabulary_uri)
+              vocabularies << registry.find_vocabulary(vocabulary_uri)
+            end
+          end
+          dialect = Schema::Dialect.new(id: id, vocabularies: vocabularies, **conf)
+          registry.register_dialect(dialect) if register
+          dialect
+        end
+      end
+
       include(Util::Pretty)
 
       # @param id [#to_str, nil]

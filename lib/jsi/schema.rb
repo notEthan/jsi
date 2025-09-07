@@ -537,7 +537,7 @@ module JSI
     # with {SchemaModule::MetaSchemaModule}, and the JSI Schema Module will include
     # JSI::Schema.
     #
-    # @param dialect [Schema::Dialect, nil] dialect may be passed, or inferred from $vocabulary
+    # @param dialect [Schema::Dialect, nil] dialect may be passed, or inferred from `$vocabulary`
     # @return [void]
     def describes_schema!(dialect = nil)
       # TODO rm bridge code hax
@@ -545,15 +545,7 @@ module JSI
 
       if !dialect
         raise(ArgumentError, "no dialect given and no $vocabulary hash/object") if !schema_content['$vocabulary'].respond_to?(:to_hash)
-
-        vocabularies = []
-        schema_content['$vocabulary'].each do |vocabulary_uri, required|
-          if required || jsi_registry.vocabulary_registered?(vocabulary_uri)
-            vocabularies << jsi_registry.find_vocabulary(vocabulary_uri)
-          end
-        end
-
-        dialect = Schema::Dialect.new(vocabularies: vocabularies)
+        dialect = Schema::Dialect.from_xvocabulary(schema_content['$vocabulary'], registry: jsi_registry)
       end
 
       raise(TypeError) if !dialect.is_a?(Schema::Dialect)
