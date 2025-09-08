@@ -31,11 +31,11 @@ module JSI
   # The schema module makes it straightforward to access the schema modules of the schema's subschemas.
   # It defines readers for schema properties (keywords) on its singleton (that is,
   # called on the module itself, not on instances of it) to access these.
-  # The {SchemaModule::Connects#[] #[]} method can also be used.
+  # The {SchemaModule::Connection#[] #[]} method can also be used.
   #
   # For example, given a schema with an `items` subschema, then `schema.items.jsi_schema_module`
   # and `schema.jsi_schema_module.items` both refer to the same module.
-  # Subscripting with {SchemaModule::Connects#[] #[]} can refer to subschemas on properties
+  # Subscripting with {SchemaModule::Connection#[] #[]} can refer to subschemas on properties
   # that can have any name, e.g. `schema.properties['foo'].jsi_schema_module` is the same as
   # `schema.jsi_schema_module.properties['foo']`.
   #
@@ -305,8 +305,7 @@ module JSI
     @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(k) }
   end
 
-  # connecting {SchemaModule}s via {SchemaModule::Connection}s
-  module SchemaModule::Connects
+  class SchemaModule::Connection
     attr_reader :jsi_node
 
     # a name relative to a named schema module of an ancestor schema.
@@ -358,10 +357,8 @@ module JSI
       end
     end
 
-    private
-
     # @return [Array<JSI::Schema, Array>, nil]
-    def named_ancestor_schema_tokens
+    private def named_ancestor_schema_tokens
       schema_ancestors = @jsi_node.jsi_ancestor_nodes
       named_ancestor_schema = schema_ancestors.detect do |jsi|
         jsi.is_a?(Schema) && jsi.jsi_schema_module_defined? && jsi.jsi_schema_module_name
@@ -384,8 +381,6 @@ module JSI
   # This class subclasses Module only so that it can be named, to identify schemas descendent of its node.
   # No object is ever expected to be an instance of a SchemaModule::Connection module.
   class SchemaModule::Connection < Module
-    include SchemaModule::Connects
-
     # @param node [JSI::Base]
     def initialize(node)
       fail(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
