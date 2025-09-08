@@ -119,9 +119,9 @@ module JSI
         return super unless respond_to?(:jsi_class_schemas)
         alnum = proc { |id| (id % 36**4).to_s(36).rjust(4, '0').upcase }
         schema_names = jsi_class_schemas.map do |schema|
-          named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
-          if named_ancestor_schema
-            [named_ancestor_schema.jsi_schema_module_connection.name, *tokens].join('_')
+          named_ancestor, tokens = schema.jsi_schema_module.send(:named_ancestor_tokens)
+          if named_ancestor
+            [named_ancestor.jsi_schema_module_connection.name, *tokens].join('_')
           elsif schema.schema_uri
             schema.schema_uri.to_s
           else

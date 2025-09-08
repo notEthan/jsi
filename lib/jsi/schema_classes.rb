@@ -314,11 +314,11 @@ module JSI
     # @api private
     # @return [String, nil]
     def name_from_ancestor
-      named_ancestor_schema, tokens = named_ancestor_schema_tokens
-      return nil unless named_ancestor_schema
+      named_ancestor, tokens = named_ancestor_tokens
+      return nil unless named_ancestor
 
-      name = named_ancestor_schema.jsi_schema_module_connection.name
-      ancestor = named_ancestor_schema
+      name = named_ancestor.jsi_schema_module_connection.name
+      ancestor = named_ancestor
       tokens.each do |token|
         if ancestor.jsi_property_readers.include?(token)
           name += ".#{token}"
@@ -358,14 +358,14 @@ module JSI
     end
 
     # @return [Array<JSI::Schema, Array>, nil]
-    private def named_ancestor_schema_tokens
-      schema_ancestors = @jsi_node.jsi_ancestor_nodes
-      named_ancestor_schema = schema_ancestors.detect do |jsi|
+    private def named_ancestor_tokens
+      ancestors = @jsi_node.jsi_ancestor_nodes
+      named_ancestor = ancestors.detect do |jsi|
         jsi.jsi_schema_module_connection_defined? && jsi.jsi_schema_module_connection.name
       end
-      return nil unless named_ancestor_schema
-      tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
-      [named_ancestor_schema, tokens]
+      return nil unless named_ancestor
+      tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor.jsi_ptr).tokens
+      [named_ancestor, tokens]
     end
   end
 
