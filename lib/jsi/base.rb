@@ -756,6 +756,13 @@ module JSI
     end
 
     # @private
+    # @return [Boolean]
+    def jsi_schema_module_connection_defined?
+      return(jsi_schema_module_defined?) if is_a?(Schema)
+      @memos.key?(:schema_module_connection)
+    end
+
+    # @private
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [Base]
     def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
