@@ -332,6 +332,13 @@ module JSI
       name.freeze
     end
 
+    # See {Base#/} - descendent's {Base#jsi_schema_module_connection}
+    # @param (see Base#/)
+    # @return [SchemaModule::Connection]
+    def /(ptr)
+      (jsi_node / ptr).jsi_schema_module_connection
+    end
+
     # Subscripting a JSI schema module or a {SchemaModule::Connection} will subscript its node, and
     # if the result is a JSI::Schema, return the JSI Schema module of that schema; if it is a JSI::Base,
     # return a SchemaModule::Connection; or if it is another value (a simple type), return that value.
