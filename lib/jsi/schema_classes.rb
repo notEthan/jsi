@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
 module JSI
+  # class SchemaModule < class SchemaModule::Connection < class Module
+  # this unusual configuration of a class (SchemaModule) subclassing a class inside its own
+  # namespace (SchemaModule::Connection) follows reconfiguration changing Connection from a regular
+  # class to subclass Module, so that a JSI that isn't a Schema can have a named module, and schemas
+  # within that JSI's document have a useful name_from_ancestor when inspecting their instances.
+  begin # shenanigans to get classes configured while not confusing yard
+    SchemaModule = Class.new(Class.new(Module))
+    SchemaModule.const_set(:Connection, SchemaModule.superclass)
+  end
+
   # A Module associated with a JSI Schema (its {Schema#jsi_schema_module #jsi_schema_module}).
   #
   # This module may be opened by the application to define methods for instances described by its schema.
@@ -77,18 +87,7 @@ module JSI
   #
   # Note that when `bill` is inspected, schema module names `Contact`, `Contact.properties["phone"]`,
   # and `Contact::PhoneNumber` are informatively shown on respective instances.
-  class SchemaModule < Module
-    # @private
-    def initialize(schema, &block)
-      super(&block)
-
-      @jsi_node = schema
-
-      schema.jsi_schemas.each do |schema_schema|
-        extend SchemaClasses.schema_property_reader_module(schema_schema, conflicting_modules: Set[SchemaModule])
-      end
-    end
-
+  class SchemaModule < SchemaModule::Connection
     # The schema for which this is the JSI Schema Module
     # @return [Base + Schema]
     def schema
@@ -373,10 +372,6 @@ module JSI
     end
   end
 
-  class SchemaModule
-    include Connects
-  end
-
   # A JSI Schema Module is a module which represents a schema. A SchemaModule::Connection represents
   # a node in a schema's document which is not a schema, such as the 'properties'
   # object (which contains schemas but is not a schema).
@@ -394,7 +389,6 @@ module JSI
     # @param node [JSI::Base]
     def initialize(node)
       fail(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
-      fail(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
       @jsi_node = node
       node.jsi_schemas.each do |schema|
         extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [SchemaModule::Connection]))
