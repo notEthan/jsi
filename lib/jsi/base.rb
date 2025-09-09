@@ -659,12 +659,6 @@ module JSI
       end
     end
 
-    # the set of JSI schema modules corresponding to the schemas that describe this JSI
-    # @return [Set<Module>]
-    def jsi_schema_modules
-      Set.new(jsi_schemas, &:jsi_schema_module).freeze
-    end
-
     # Is this JSI described by the given schema (or schema module)?
     #
     # @param schema [Schema, SchemaModule]
@@ -673,7 +667,7 @@ module JSI
       if schema.is_a?(Schema)
         jsi_schemas.include?(schema)
       elsif schema.is_a?(SchemaModule)
-        jsi_schema_modules.include?(schema)
+        jsi_schemas.include?(schema.schema)
       else
         raise(TypeError, "expected a Schema or Schema Module; got: #{schema.pretty_inspect.chomp}")
       end
