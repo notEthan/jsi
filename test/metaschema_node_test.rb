@@ -100,7 +100,7 @@ describe(JSI::MetaSchemaNode) do
     it 'is pretty' do
       pretty = <<~str
       \#{<JSI:MSN (BasicMetaSchema) Meta-Schema>
-        "$id" => "tag:named-basic-meta-schema",
+        "id" => "tag:named-basic-meta-schema",
         "properties" => \#{<JSI:MSN (BasicMetaSchema.properties["properties"])>
           "properties" => \#{<JSI:MSN (BasicMetaSchema) Schema>
             "additionalProperties" => \#{<JSI:MSN (BasicMetaSchema) Schema>

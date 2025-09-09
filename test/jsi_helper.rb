@@ -31,7 +31,7 @@ end
 BASIC_DIALECT = JSI::Schema::Dialect.new(
   vocabularies: [
     JSI::Schema::Vocabulary.new(elements: [
-      JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: false],
+      JSI::Schema::Elements::ID[keyword: 'id', fragment_is_anchor: false],
       JSI::Schema::Elements::REF[exclusive: true],
       JSI::Schema::Elements::SELF[],
       JSI::Schema::Elements::PROPERTIES[],
@@ -41,7 +41,7 @@ BASIC_DIALECT = JSI::Schema::Dialect.new(
 
 BasicMetaSchema = JSI.new_metaschema_node(
   YAML.load(<<~YAML
-    "$id": "tag:named-basic-meta-schema"
+    id: "tag:named-basic-meta-schema"
     properties:
       properties:
         additionalProperties:
