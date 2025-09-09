@@ -146,6 +146,11 @@ module JSI
       all? { |schema| schema.instance_valid?(instance) }
     end
 
+    # @return [Set<SchemaModule>]
+    def jsi_schema_modules
+      Set.new(self, &:jsi_schema_module).freeze
+    end
+
     # Builds a SchemaSet, yielding each schema and a callable to be called with each schema of the resulting SchemaSet.
     # @yield [Schema, #to_proc]
     # @return [SchemaSet]
