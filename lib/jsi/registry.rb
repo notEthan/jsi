@@ -124,7 +124,7 @@ module JSI
           end
         end
         autoloaded = autoloader.block.call(**autoload_param)
-        registerer[autoloaded]
+        registerer[autoloaded] if !store.key?(uri)
       end # if autoloaders.key?(uri)
     end # autoloader.mutex.synchronize
   end # if autoloader
