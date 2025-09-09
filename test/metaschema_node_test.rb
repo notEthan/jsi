@@ -353,10 +353,8 @@ describe(JSI::MetaSchemaNode) do
                   "$ref": JsonSchema
           Document:
             id: Document
-            type: object
             properties:
               schemas:
-                type: object
                 additionalProperties:
                   "$ref": JsonSchema
         YAML
