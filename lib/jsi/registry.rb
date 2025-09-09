@@ -57,7 +57,7 @@ module JSI
     # @return [void]
     def register_immediate(node)
       node.jsi_resource_uris.each do |uri|
-        internal_store(@resources, uri, node)
+        internal_store(@resources, @resource_autoloaders, uri, node)
       end
     end
 
@@ -128,7 +128,6 @@ module JSI
         end
         autoloaded = autoloaders[uri].block.call(**autoload_param)
         registerer[autoloaded, uri]
-        autoloaders.delete(uri)
       end # if autoloaders.key?(uri)
     end # autoloader.mutex.synchronize
   end # if autoloader
@@ -160,7 +159,7 @@ module JSI
     # @return [void]
     def register_vocabulary(vocabulary, uri: vocabulary.id)
       raise(ArgumentError, "not a #{Schema::Vocabulary}: #{vocabulary.inspect}") if !vocabulary.is_a?(Schema::Vocabulary)
-      internal_store(@vocabularies, uri, vocabulary)
+      internal_store(@vocabularies, @vocabulary_autoloaders, uri, vocabulary)
     end
 
     # @param uri [#to_str]
@@ -189,7 +188,7 @@ module JSI
     # @return [void]
     def register_dialect(dialect, uri: dialect.id)
       raise(ArgumentError, "not a #{Schema::Dialect}: #{dialect.inspect}") if !dialect.is_a?(Schema::Dialect)
-      internal_store(@dialects, uri, dialect)
+      internal_store(@dialects, @dialect_autoloaders, uri, dialect)
     end
 
     # @param uri [#to_str]
@@ -269,7 +268,7 @@ module JSI
     # @param uri [URI]
     # @param entity
     # @return [void]
-    def internal_store(store, uri, entity)
+    def internal_store(store, autoloaders, uri, entity)
       mutating
       @mutex.synchronize do
         uri = registration_uri(uri)
@@ -280,6 +279,7 @@ module JSI
         else
           store[uri] = entity
         end
+        autoloaders.delete(uri)
       end
       nil
     end
