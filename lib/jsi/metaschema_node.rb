@@ -114,12 +114,21 @@ module JSI
 
         if ref_uri_nofrag.empty?
           ptr = Ptr.from_fragment(ref_uri.fragment).resolve_against(jsi_document) # anchor not supported
-          jsi_conf.dialect.bootstrap_schema(
-            jsi_document: jsi_document,
-            jsi_ptr: ptr,
-            jsi_base_uri: nil, # not supported
-            jsi_registry: jsi_conf.bootstrap_registry,
-          )
+          if jsi_conf.root_schema_ref == jsi_conf.metaschema_root_ref
+            # root is a schema
+            jsi_conf.dialect.bootstrap_schema(
+              jsi_document: jsi_document,
+              jsi_base_uri: nil, # not supported
+              jsi_registry: jsi_conf.bootstrap_registry,
+            ).resource_root_subschema(ptr)
+          else
+            jsi_conf.dialect.bootstrap_schema(
+              jsi_document: jsi_document,
+              jsi_ptr: ptr,
+              jsi_base_uri: nil, # not supported
+              jsi_registry: jsi_conf.bootstrap_registry,
+            )
+          end
         else
           # if not fragment-only, ref must be registered in the bootstrap_registry
           ref = Schema::Ref.new(ref_uri, registry: jsi_conf.bootstrap_registry)
