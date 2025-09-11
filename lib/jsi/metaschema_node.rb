@@ -343,7 +343,8 @@ module JSI
         resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
         if jsi_registry.registered?(resource_uri)
           resource = jsi_registry.find(resource_uri)
-          resource.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
+          relative_ptr = bootstrap_schema.jsi_ptr.relative_to(bootstrap_resource.jsi_ptr)
+          resource.jsi_descendent_node(relative_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
         else
           root = to_initialize_finish(MetaSchemaNode.new(
             bootstrap_schema.jsi_document,
@@ -353,7 +354,7 @@ module JSI
             initialize_finish: false,
             jsi_conf: jsi_conf,
           ))
-          root.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
+          root.jsi_descendent_node(bootstrap_schema.jsi_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
         end
       end
     end
