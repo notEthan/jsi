@@ -96,8 +96,6 @@ module JSI
       super(
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: SchemaSet[],
-        # MSN doesn't track schema_resource_ancestors through descendents, but the root is included when appropriate
-        jsi_schema_resource_ancestors: jsi_ptr.root? || !jsi_root_node.is_a?(Schema) ? Util::EMPTY_ARY : [jsi_root_node].freeze,
         jsi_root_node: jsi_root_node,
         **kw,
       )
@@ -289,6 +287,7 @@ module JSI
           jsi_document: jsi_document,
           jsi_ptr: ptr,
           jsi_base_uri: jsi_next_base_uri,
+          jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : Util::EMPTY_ARY,
           # since MSN only supports document root as jsi_resource_root, and jsi_next_schema_dynamic_anchor_map
           # is only passed to descendents that are resource roots, that is not used here.
           jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
