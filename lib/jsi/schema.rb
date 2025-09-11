@@ -975,6 +975,7 @@ module JSI
 
     # @private pending stronger stability of dynamic scope
     def with_dynamic_scope_from(node)
+      node = node.jsi_node if node.is_a?(SchemaModule::Connects)
       jsi_with_schema_dynamic_anchor_map(node.jsi_next_schema_dynamic_anchor_map)
     end
 

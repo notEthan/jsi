@@ -149,8 +149,7 @@ module JSI
     # @private pending stronger stability of dynamic scope
     # See {Schema#with_dynamic_scope_from}
     def with_dynamic_scope_from(node)
-      node = node.jsi_node if node.is_a?(SchemaModule::Connects)
-      schema.jsi_with_schema_dynamic_anchor_map(node.jsi_next_schema_dynamic_anchor_map).jsi_schema_module
+      schema.with_dynamic_scope_from(node).jsi_schema_module
     end
 
     # `$defs` property reader
