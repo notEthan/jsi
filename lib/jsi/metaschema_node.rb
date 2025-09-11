@@ -352,7 +352,6 @@ module JSI
             **our_initialize_params,
             jsi_ptr: Ptr[],
             jsi_schema_base_uri: nil,
-            jsi_schema_dynamic_anchor_map: dynamic_anchor_map, # TODO does root need this? (if ever !bootstrap_schema.jsi_ptr.root?)
             initialize_finish: false,
             jsi_conf: jsi_conf,
           ))
