@@ -26,15 +26,20 @@ module JSI
   ).jsi_schema_module
 
   module JSONSchemaDraft202012
-  end
+    def self.name_vocab_schemas(metaschema_module, namespace: metaschema_module)
+      find_module = proc { |uri| metaschema_module.schema.jsi_registry.find(uri).with_dynamic_scope_from(metaschema_module).jsi_schema_module }
+      namespace.const_set(:Core,       find_module["https://json-schema.org/draft/2020-12/meta/core"])
+      namespace.const_set(:Applicator,  find_module["https://json-schema.org/draft/2020-12/meta/applicator"])
+      namespace.const_set(:Unevaluated,  find_module["https://json-schema.org/draft/2020-12/meta/unevaluated"])
+      namespace.const_set(:Validation,    find_module["https://json-schema.org/draft/2020-12/meta/validation"])
+      namespace.const_set(:MetaData,       find_module["https://json-schema.org/draft/2020-12/meta/meta-data"])
+      namespace.const_set(:FormatAnnotation, find_module["https://json-schema.org/draft/2020-12/meta/format-annotation"])
+      namespace.const_set(:Content,         find_module["https://json-schema.org/draft/2020-12/meta/content"])
+      metaschema_module
+    end
 
-  JSONSchemaDraft202012::Core       = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/core").jsi_schema_module
-  JSONSchemaDraft202012::Applicator  = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/applicator").jsi_schema_module
-  JSONSchemaDraft202012::Unevaluated  = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/unevaluated").jsi_schema_module
-  JSONSchemaDraft202012::Validation    = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/validation").jsi_schema_module
-  JSONSchemaDraft202012::MetaData       = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/meta-data").jsi_schema_module
-  JSONSchemaDraft202012::FormatAnnotation = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/format-annotation").jsi_schema_module
-  JSONSchemaDraft202012::Content         = jsi_registry.find("https://json-schema.org/draft/2020-12/meta/content").jsi_schema_module
+    name_vocab_schemas(self)
+  end
 
   module JSONSchemaDraft202012::Core
   end
