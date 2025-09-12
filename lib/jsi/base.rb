@@ -203,6 +203,7 @@ module JSI
     # @param jsi_base_uri [URI, nil] see {SchemaSet#new_jsi} param `base_uri`
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
+    # @param jsi_dynamic_root_map map of (ptr, dynamic_anchor_map) → (Base root node), shared across dynamic root nodes
     # @param jsi_conf [Base::Conf]
     # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
     def initialize(
@@ -212,6 +213,7 @@ module JSI
         jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
+        jsi_dynamic_root_map: nil,
         jsi_conf: nil,
         jsi_root_node: nil
     )
@@ -228,7 +230,8 @@ module JSI
       self.jsi_base_uri = jsi_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
-      #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
+      #chkbug fail(Bug) if jsi_root_node && jsi_dynamic_root_map
+      @jsi_dynamic_root_map = jsi_dynamic_root_map || (jsi_root_node ? jsi_root_node.jsi_dynamic_root_map : jsi_memomap(&method(:jsi_dynamic_root_compute)))
       @jsi_root_node = jsi_root_node || self
       @root_rel_ptr = @jsi_ptr.relative_to(@jsi_root_node.jsi_ptr)
 
@@ -264,6 +267,9 @@ module JSI
     def jsi_registry
       jsi_conf.registry
     end
+
+    attr_reader(:jsi_dynamic_root_map)
+    protected(:jsi_dynamic_root_map)
 
     # @return [Base::Conf]
     attr_reader(:jsi_conf)
@@ -872,29 +878,47 @@ module JSI
       @memos.key?(:schema_module_connection)
     end
 
-    # @private
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [Base]
-    def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
-      return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
-      new_dynamic_anchor_map = dynamic_anchor_map.without_node(jsi_resource_root)
-      return(self) if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
-
-      @with_schema_dynamic_anchor_map_map[dynamic_anchor_map: new_dynamic_anchor_map]
+    private def jsi_dynamic_root_descendent(dynamic_anchor_map)
+      root = jsi_dynamic_root_map[
+        ptr: jsi_resource_root.jsi_ptr,
+        dynamic_anchor_map: dynamic_anchor_map,
+      ]
+      root.jsi_descendent_node(jsi_ptr.relative_to(jsi_resource_root.jsi_ptr))
     end
 
-    private def jsi_with_schema_dynamic_anchor_map_compute(dynamic_anchor_map: )
-      # we instantiate a node the same as self but with the given dynamic_anchor_map,
-      # under the same root node - so this node is not a descendent of its root node,
-      # which is odd but does not cause problems at the moment.
-      self.class.new(
-        jsi_document: jsi_document,
-        jsi_ptr: jsi_ptr,
-        jsi_indicated_schemas: jsi_indicated_schemas,
-        jsi_base_uri: jsi_base_uri,
-        jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
+    # This instantiates a new root node (its #jsi_root_node is itself).
+    # When the resource at `ptr` is not the document root, the new root node has the
+    # unusual property that its jsi_ptr is not the root ptr; it is the given `ptr`.
+    # (Calling this a 'root node' is questionable, but that is the name we use.)
+    # From the new root node, no JSI node represents locations in the document above it.
+    # @param ptr [Ptr]
+    # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
+    # @return [Base]
+    private def jsi_dynamic_root_compute(ptr: , dynamic_anchor_map: )
+      # self is always the originally instantiated root node (with jsi_ptr = Ptr[])
+      resource_root = jsi_descendent_node(ptr)
+      if resource_root.jsi_schema_dynamic_anchor_map == dynamic_anchor_map
+        return resource_root
+      end
+
+      resource_root.jsi_dynamic_root_instantiate(
+        jsi_document: resource_root.jsi_document,
+        jsi_ptr: ptr,
+        jsi_base_uri: resource_root.jsi_base_uri,
+        #jsi_schema_resource_ancestors: none (new root),
         jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
-        jsi_root_node: jsi_root_node,
+        jsi_dynamic_root_map: jsi_dynamic_root_map,
+        jsi_conf: resource_root.jsi_conf,
+      )
+    end
+
+    protected def jsi_dynamic_root_instantiate(**kw)
+      # self is a resource root being instantiated with overridden dynamic scope
+      self.class.new(
+        jsi_indicated_schemas: jsi_indicated_schemas,
+        **kw,
       ).send(:jsi_initialized)
     end
 
@@ -1035,7 +1059,6 @@ module JSI
     def jsi_memomaps_initialize
       @child_indicated_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_indicated_schemas_compute))
       @child_applied_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_applied_schemas_compute))
-      @with_schema_dynamic_anchor_map_map = jsi_memomap(&method(:jsi_with_schema_dynamic_anchor_map_compute))
     end
 
     def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )
