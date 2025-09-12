@@ -968,6 +968,15 @@ module JSI
     # @return [Boolean]
     attr_reader(:application_requires_evaluated)
 
+    # @private
+    # @return [#to_s, nil]
+    def jsi_schema_identifier(required: false)
+      name = jsi_schema_module_name_from_ancestor
+      return name if name
+      return schema_uri || (required ? jsi_ptr.uri : nil) if jsi_schema_dynamic_anchor_map.empty?
+      -"#{schema_uri || jsi_ptr.uri}#{jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}"
+    end
+
     private
 
     KEY_BY_NONE = proc { nil }

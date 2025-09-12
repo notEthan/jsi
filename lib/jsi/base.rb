@@ -873,8 +873,7 @@ module JSI
       schema_names = []
       schemas_priorities.each do |(priority, _idx, schema)|
         if priority[0] == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
-          name = schema.jsi_schema_module_name_from_ancestor || schema.schema_uri
-          name ||= schema.jsi_ptr.uri if priority[0] == 0
+          name = schema.jsi_schema_identifier(required: priority[0] == 0)
           schema_names << name if name
         end
       end
@@ -900,6 +899,7 @@ module JSI
       [
         -"JSI#{is_a?(MetaSchemaNode) ? ":MSN" : ""}#{schemas_txt}",
         is_a?(Schema::MetaSchema) ? "Meta-Schema" : is_a?(Schema) ? "Schema" : nil,
+        is_a?(Schema) && !jsi_schema_dynamic_anchor_map.empty? ? jsi_schema_dynamic_anchor_map.anchor_schemas_identifier : nil,
         *content_txt,
       ].compact.freeze
     end

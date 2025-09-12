@@ -141,6 +141,7 @@ module JSI
       [
         self.class.name || MetaSchemaNode::BootstrapSchema.name,
         dialect.id ? -"(#{dialect.id})" : nil,
+        !jsi_schema_dynamic_anchor_map.empty? ? jsi_schema_dynamic_anchor_map.anchor_schemas_identifier : nil,
         jsi_ptr.uri,
       ].compact.freeze
     end

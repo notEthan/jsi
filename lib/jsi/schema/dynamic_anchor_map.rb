@@ -49,6 +49,15 @@ module JSI
       dynamic_anchor_map.empty? ? EMPTY : dynamic_anchor_map
     end
 
+    # @private
+    # @return [String]
+    def anchor_schemas_identifier
+      names = map do |anchor, (r, ptrs)|
+        -"#{anchor}→#{ptrs.inject(r, &:subschema).jsi_schema_identifier(required: true)}"
+      end
+      -"«#{names.join(", ")}»"
+    end
+
     EMPTY = new.freeze
   end
 end
