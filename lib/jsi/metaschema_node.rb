@@ -243,15 +243,10 @@ module JSI
       raise(NotImplementedError)
     end
 
-    # @private
-    # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
-    # @return [MetaSchemaNode]
-    def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
-      return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
-      new_dynamic_anchor_map = dynamic_anchor_map.without_node(jsi_resource_root)
-      return(self) if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
-
-      root_descendent_node(jsi_ptr, dynamic_anchor_map: new_dynamic_anchor_map)
+    protected def jsi_dynamic_root_instantiate(**kw)
+      # self is a resource root being instantiated with overridden dynamic scope
+      #chkbug fail unless jsi_ptr.root? # jsi_schema_resource_ancestors not tracked
+      to_initialize_finish(MetaSchemaNode.new(**kw))
     end
 
     # see {Util::Private::FingerprintHash}

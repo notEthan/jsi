@@ -83,6 +83,29 @@ module JSI
       jsi_resource_uri || jsi_base_uri
     end
 
+    # @private
+    # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
+    # @return [Schema::SchemaAncestorNode]
+    def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
+      if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
+        return self
+      end
+
+      if jsi_resource_root
+        # it might seem to make more sense to keep dynamic scope from the resource_root, merged with given scope, e.g.:
+        #new_dynamic_anchor_map = resource_root.jsi_next_schema_dynamic_anchor_map.merge(dynamic_anchor_map).without_node(resource_root)
+        # except the json schema test suite has (optional) tests "$dynamicRef skips over intermediate resources"
+        new_dynamic_anchor_map = dynamic_anchor_map.without_node(jsi_resource_root)
+        if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
+          return self
+        end
+      else
+        new_dynamic_anchor_map = dynamic_anchor_map
+      end
+
+      jsi_dynamic_root_descendent(new_dynamic_anchor_map)
+    end
+
     # All schemas at or below this node with the given anchor.
     #
     # @return [Set<JSI::Schema>]

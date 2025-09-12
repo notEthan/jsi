@@ -121,22 +121,27 @@ module JSI
       )
     end
 
-    # @private
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [MetaSchemaNode::BootstrapSchema]
-    def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
-      return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
-      new_dynamic_anchor_map = dynamic_anchor_map.without_node(jsi_resource_root) if jsi_resource_root
-      return(self) if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
-
-      dialect.bootstrap_schema(
-        jsi_document: jsi_document,
-        jsi_ptr: jsi_ptr,
-        jsi_base_uri: jsi_base_uri,
-        jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
-        jsi_schema_dynamic_anchor_map: new_dynamic_anchor_map,
-        jsi_registry: jsi_registry,
-      )
+    private def jsi_dynamic_root_descendent(dynamic_anchor_map)
+      resource_root = jsi_resource_root
+      if resource_root
+        dialect.bootstrap_schema(
+          jsi_document: resource_root.jsi_document,
+          jsi_ptr: resource_root.jsi_ptr,
+          jsi_base_uri: resource_root.jsi_base_uri,
+          #jsi_schema_resource_ancestors: none (new root) (though that is not significant for bootstrap),
+          jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
+          jsi_registry: resource_root.jsi_registry,
+        ).resource_root_subschema(jsi_ptr.relative_to(resource_root.jsi_ptr))
+      else
+        dialect.bootstrap_schema(
+          jsi_document: jsi_document,
+          jsi_ptr: jsi_ptr,
+          jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
+          jsi_registry: jsi_registry,
+        )
+      end
     end
 
     # pretty-prints a representation of self to the given printer
