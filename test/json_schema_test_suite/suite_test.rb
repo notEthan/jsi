@@ -131,6 +131,21 @@ describe 'JSON Schema Test Suite' do
 
                         assert_equal(result.valid?, bootstrap_schema.instance_valid?(test.jsi_instance['data']))
 
+                        transform_errors = JSI::Util.ycomb do |rec|
+                          proc do |errors|
+                            errors.map do |error|
+                              error.to_h.merge(
+                                schema: error.schema.schema_content,
+                                nested_errors: rec[error.nested_errors],
+                              )
+                            end
+                          end
+                        end
+
+                        assert_transform_equal(result, bootstrap_schema.instance_validate(test.jsi_instance['data'])) do |r|
+                          transform_errors[r.immediate_validation_errors]
+                        end
+
                         assert_consistent_jsi_descendent_errors(jsi, result: result)
 
                         if test.valid != result.valid?
