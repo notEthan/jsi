@@ -13,8 +13,7 @@ describe("JSI Schema in-place application") do
       let(:metaschema) { metaschema }
 
       describe("any instance") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               a: {}
             $ref: "#/definitions/a"
@@ -26,8 +25,7 @@ describe("JSI Schema in-place application") do
             anyOf: [{}]
             oneOf: [{}]
             YAML
-          )
-        end
+        )
         let(:instance) { {"a" => {}, "b" => {}} }
 
         it("applies no $ref siblings") do
@@ -52,14 +50,12 @@ describe("JSI Schema in-place application") do
     describe("#{name} in-place $ref application") do
       let(:metaschema) { metaschema }
       describe '$ref' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               A: {}
             $ref: "#/definitions/A"
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies $ref, excludes the schema containing $ref' do
           assert_schemas([
@@ -69,8 +65,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe '$ref nested' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               A:
                 $ref: "#/definitions/B"
@@ -78,8 +73,7 @@ describe("JSI Schema in-place application") do
                 {}
             $ref: "#/definitions/A"
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies final $ref' do
           assert_schemas([
@@ -90,16 +84,14 @@ describe("JSI Schema in-place application") do
         end
       end
       describe '$ref sibling applicators' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               A: {}
             $ref: "#/definitions/A"
             allOf:
               - {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'ignores' do
           assert_schemas([
@@ -110,16 +102,14 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'applicators through $ref target' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               A:
                 allOf:
                   - {}
             $ref: "#/definitions/A"
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies' do
           assert_schemas([
@@ -139,14 +129,12 @@ describe("JSI Schema in-place application") do
       let(:metaschema) { metaschema }
 
       describe("$ref") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               A: {}
             $ref: "#/definitions/A"
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
 
         it("applies $ref and the schema containing $ref") do
@@ -158,8 +146,7 @@ describe("JSI Schema in-place application") do
       end
 
       describe("$ref nested") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               A:
                 $ref: "#/definitions/B"
@@ -167,8 +154,7 @@ describe("JSI Schema in-place application") do
                 {}
             $ref: "#/definitions/A"
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
 
         it("applies") do
@@ -181,16 +167,14 @@ describe("JSI Schema in-place application") do
       end
 
       describe("$ref sibling applicators") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               A: {}
             $ref: "#/definitions/A"
             allOf:
               - {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
 
         it("applies") do
@@ -203,16 +187,14 @@ describe("JSI Schema in-place application") do
       end
 
       describe("applicators through $ref target") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               A:
                 allOf:
                   - {}
             $ref: "#/definitions/A"
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
 
         it("applies") do
@@ -237,14 +219,12 @@ describe("JSI Schema in-place application") do
     describe("#{name} in-place allOf, anyOf, oneOf application") do
       let(:metaschema) { metaschema }
       describe 'allOf' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             allOf:
               - {}
               - {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies' do
           assert_schemas([
@@ -255,16 +235,14 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'applicators through allOf' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             allOf:
               - allOf:
                   - {}
               - oneOf:
                   - {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies all' do
           assert_schemas([
@@ -277,8 +255,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'allOf failing validation' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             allOf:
               - allOf:
                   - {type: integer}
@@ -286,8 +263,7 @@ describe("JSI Schema in-place application") do
               - oneOf:
                 - type: integer
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'still applies all' do
           assert_schemas([
@@ -301,15 +277,13 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'anyOf' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             anyOf:
               - {}
               - {type: integer}
               - {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies the ones that validate' do
           assert_schemas([
@@ -321,8 +295,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'applicators through anyOf' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             anyOf:
               - anyOf:
                   - {}
@@ -331,8 +304,7 @@ describe("JSI Schema in-place application") do
               - allOf:
                   - type: string
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies those that validate' do
           assert_schemas([
@@ -347,8 +319,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'anyOf, all failing validation' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             anyOf:
               - anyOf:
                   - {type: integer}
@@ -356,8 +327,7 @@ describe("JSI Schema in-place application") do
               - oneOf:
                   - type: integer
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies all' do
           assert_schemas([
@@ -371,15 +341,13 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'oneOf' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             oneOf:
               - {not: {}}
               - {type: integer}
               - {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies the one that validates' do
           assert_schemas([
@@ -391,8 +359,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'applicators through oneOf' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             oneOf:
               - oneOf:
                   - {}
@@ -402,8 +369,7 @@ describe("JSI Schema in-place application") do
               - allOf:
                   - type: string
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies one' do
           assert_schemas([
@@ -419,8 +385,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'oneOf, all failing validation' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             oneOf:
               - oneOf:
                   - {type: integer}
@@ -428,8 +393,7 @@ describe("JSI Schema in-place application") do
               - allOf:
                   - type: integer
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies all' do
           assert_schemas([
@@ -452,14 +416,12 @@ describe("JSI Schema in-place application") do
     describe("#{name} in-place dependencies application") do
       let(:metaschema) { metaschema }
       describe 'dependencies' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             dependencies:
               foo: {}
               bar: {}
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => [0], 'baz' => {}} }
         it 'applies the ones present' do
           assert_schemas([
@@ -470,8 +432,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'applicators through dependencies' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             dependencies:
               foo:
                 allOf:
@@ -483,8 +444,7 @@ describe("JSI Schema in-place application") do
                 oneOf:
                   - type: string
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => [0], 'baz' => {}} }
         it 'applies the ones present' do
           assert_schemas([
@@ -500,8 +460,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'dependencies, all failing validation' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             dependencies:
               foo:
                 allOf:
@@ -513,8 +472,7 @@ describe("JSI Schema in-place application") do
                 oneOf:
                   - type: string
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => [0], 'baz' => {}} }
         it 'applies the ones present (regardless of validation)' do
           assert_schemas([
@@ -539,14 +497,12 @@ describe("JSI Schema in-place application") do
       let(:metaschema) { metaschema }
 
       describe("dependentSchemas") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             dependentSchemas:
               foo: {}
               bar: {}
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => [0], 'baz' => {}} }
 
         it("applies the ones present") do
@@ -559,8 +515,7 @@ describe("JSI Schema in-place application") do
       end
 
       describe("applicators through dependentSchemas") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             dependentSchemas:
               foo:
                 allOf:
@@ -572,8 +527,7 @@ describe("JSI Schema in-place application") do
                 oneOf:
                   - type: string
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => [0], 'baz' => {}} }
 
         it("applies the ones present") do
@@ -591,8 +545,7 @@ describe("JSI Schema in-place application") do
       end
 
       describe("dependentSchemas, all failing validation") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             dependentSchemas:
               foo:
                 allOf:
@@ -604,8 +557,7 @@ describe("JSI Schema in-place application") do
                 oneOf:
                   - type: string
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => [0], 'baz' => {}} }
 
         it("applies the ones present (regardless of validation)") do
@@ -631,14 +583,12 @@ describe("JSI Schema in-place application") do
     describe("#{name} in-place if/then/else application") do
       let(:metaschema) { metaschema }
       describe 'if/then' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             if: {}
             then: {}
             else: {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies then' do
           assert_schemas([
@@ -650,14 +600,12 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'if/else' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             if: {not: {}}
             then: {}
             else: {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies else' do
           assert_schemas([
@@ -669,8 +617,7 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'applicators through if/then' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             if:
               oneOf:
                 - true
@@ -683,8 +630,7 @@ describe("JSI Schema in-place application") do
               anyOf:
                 - {}
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies then' do
           assert_schemas([
@@ -701,16 +647,14 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'applicators through if/else' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             if: false
             then: true
             else:
               if: false
               else: false
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies else' do
           assert_schemas([
@@ -724,14 +668,12 @@ describe("JSI Schema in-place application") do
         end
       end
       describe 'if/then, failing validation' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             if: true
             then: false
             else: false
             YAML
-          )
-        end
+        )
         let(:instance) { {} }
         it 'applies then' do
           assert_schemas([

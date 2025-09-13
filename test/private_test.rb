@@ -17,10 +17,6 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
     }]
   end
 
-  it 'is not directly instantiable' do
-    assert_raises(JSI::Bug) { JSI::MetaSchemaNode::BootstrapSchema.new({}) }
-  end
-
   it 'is pretty' do
     schema = dialect.bootstrap_schema(document)
 
@@ -29,11 +25,6 @@ describe(JSI::MetaSchemaNode::BootstrapSchema) do
 
     assert_equal(schema.inspect, schema.to_s)
     assert_match(%r(\A#<JSI::MetaSchemaNode::BootstrapSchema \(tag:dialect:dqzk\) #\n  .*\n>\Z)m, schema.pretty_inspect)
-  end
-
-  it('class inspect') do
-    assert_equal('JSI::MetaSchemaNode::BootstrapSchema', JSI::MetaSchemaNode::BootstrapSchema.inspect)
-    assert_equal('JSI::MetaSchemaNode::BootstrapSchema (#<JSI::Schema::Dialect id: <tag:dialect:dqzk>>)', dialect.bootstrap_schema_class.inspect)
   end
 end
 

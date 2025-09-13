@@ -249,11 +249,7 @@ module JSI
     # is this node not a descendent of its root node?
     # @return [Boolean]
     def jsi_is_orphan?
-      if @memos.key?(:is_orphan)
-        @memos[:is_orphan]
-      else
-        @memos[:is_orphan] = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr))
-      end
+      @memos.fetch(:is_orphan) { @memos[:is_orphan] = !equal?(jsi_root_node.jsi_descendent_node(jsi_ptr)) }
     end
 
     # yields a JSI of each node at or below this one in this JSI's document.
@@ -592,7 +588,7 @@ module JSI
       jsi_simple_node_child_error(token)
     end
 
-    # When accessing this node as a child (from {#[]} or a property reader), should the result
+    # When accessing this node as a child (from a parent's {#[]} or a property reader), should the result
     # by default be a JSI node (this node), or its node content?
     # This default may be overridden using the `as_jsi` parameter calling the parent's {#[]}.
     # @return [Boolean]

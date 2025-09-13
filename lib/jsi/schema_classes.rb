@@ -142,15 +142,14 @@ module JSI
     end
 
     # See {Schema#describes_schema!}
-    def describes_schema!(dialect)
+    def describes_schema!(dialect = nil)
       schema.describes_schema!(dialect)
     end
 
     # @private pending stronger stability of dynamic scope
     # See {Schema#with_dynamic_scope_from}
     def with_dynamic_scope_from(node)
-      node = node.jsi_node if node.is_a?(SchemaModule::Connects)
-      schema.jsi_with_schema_dynamic_anchor_map(node.jsi_next_schema_dynamic_anchor_map).jsi_schema_module
+      schema.with_dynamic_scope_from(node).jsi_schema_module
     end
 
     # `$defs` property reader
@@ -253,17 +252,16 @@ module JSI
       #   will not be defined as accessors.
       # @return [Module]
       def schema_property_reader_module(schema, conflicting_modules: )
-        Schema.ensure_schema(schema)
-        @schema_property_reader_module_map[schema: schema, conflicting_modules: conflicting_modules]
-      end
-
-      private def schema_property_reader_module_compute(schema: , conflicting_modules: )
-          Module.new do
-            readers = schema.described_object_property_names.select do |name|
+        @schema_property_reader_module_map[
+            schema.described_object_property_names.select do |name|
               Util.ok_ruby_method_name?(name) &&
                 !conflicting_modules.any? { |m| m.method_defined?(name) || m.private_method_defined?(name) }
             end.to_set.freeze
+        ]
+      end
 
+      private def schema_property_reader_module_compute(readers)
+          Module.new do
             define_singleton_method(:inspect) { -"(JSI Schema Property Reader Module: #{readers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_readers) { readers }
@@ -279,18 +277,17 @@ module JSI
       # a module of writers for described property names of the given schema.
       # @private
       def schema_property_writer_module(schema, conflicting_modules: )
-        Schema.ensure_schema(schema)
-        @schema_property_writer_module_map[schema: schema, conflicting_modules: conflicting_modules]
-      end
-
-      private def schema_property_writer_module_compute(schema: , conflicting_modules: )
-          Module.new do
-            writers = schema.described_object_property_names.select do |name|
+        @schema_property_writer_module_map[
+            schema.described_object_property_names.select do |name|
               writer = "#{name}="
               Util.ok_ruby_method_name?(name) &&
                 !conflicting_modules.any? { |m| m.method_defined?(writer) || m.private_method_defined?(writer) }
             end.to_set.freeze
+        ]
+      end
 
+      private def schema_property_writer_module_compute(writers)
+          Module.new do
             define_singleton_method(:inspect) { -"(JSI Schema Property Writer Module: #{writers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_writers) { writers }
@@ -305,8 +302,8 @@ module JSI
     end
 
     @class_for_schemas_map          = Hash.new { |h, k| h[k] = class_for_schemas_compute(**k) }
-    @schema_property_reader_module_map = Hash.new { |h, k| h[k] = schema_property_reader_module_compute(**k) }
-    @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(**k) }
+    @schema_property_reader_module_map = Hash.new { |h, k| h[k] = schema_property_reader_module_compute(k) }
+    @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(k) }
   end
 
   # connecting {SchemaModule}s via {SchemaModule::Connection}s

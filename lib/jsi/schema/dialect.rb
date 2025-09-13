@@ -47,8 +47,6 @@ module JSI
         end
         @actions.freeze
 
-        @bootstrap_schema_class = bootstrap_schema_class_compute
-
         # Bootstrap schemas are memoized in nested hashes.
         # The outer hash is keyed by document, compared by identity, because hashing the document
         # is expensive and there aren't typically multiple instances of the same document
@@ -57,7 +55,8 @@ module JSI
         # not by identity, as those use different instances but are cheaper to hash.
         @bootstrap_schema_map = Hash.new do |dochash, document|
           dochash[document] = Hash.new do |paramhash, kw|
-            paramhash[kw] = bootstrap_schema_class.new(document, **kw)
+            #chkbug fail if kw[:dialect]
+            paramhash[kw] = MetaSchemaNode::BootstrapSchema.new(document, dialect: self, **kw)
           end
         end
         @bootstrap_schema_map.compare_by_identity
@@ -76,11 +75,6 @@ module JSI
 
       # @return [Array<Schema::Element>]
       attr_reader(:elements)
-
-      # a subclass of {MetaSchemaNode::BootstrapSchema} for this Dialect
-      # @api private
-      # @return [Class subclass of MetaSchemaNode::BootstrapSchema]
-      attr_reader(:bootstrap_schema_class)
 
       # @api private
       # @return [MetaSchemaNode::BootstrapSchema]
@@ -106,16 +100,6 @@ module JSI
         pres = [self.class.name]
         pres.push(-"id: <#{id}>") if id
         jsi_pp_object_group(q, pres.freeze)
-      end
-
-      private
-
-      def bootstrap_schema_class_compute
-        dialect = self
-        Class.new(MetaSchemaNode::BootstrapSchema) do
-          define_singleton_method(:described_dialect) { dialect }
-          define_method(:dialect) { dialect }
-        end
       end
     end
   end

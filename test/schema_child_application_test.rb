@@ -13,8 +13,7 @@ describe 'JSI Schema child application' do
       let(:metaschema) { metaschema }
 
       describe("array instance") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               a:
                 items: [{}]
@@ -23,8 +22,7 @@ describe 'JSI Schema child application' do
             additionalItems: {}
             contains: {}
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, {}] }
 
         it("applies no $ref siblings") do
@@ -42,8 +40,7 @@ describe 'JSI Schema child application' do
       end
 
       describe("hash/object instance") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             definitions:
               a:
                 properties:
@@ -53,8 +50,7 @@ describe 'JSI Schema child application' do
             patternProperties: {a: {}}
             additionalProperties: {}
             YAML
-          )
-        end
+        )
         let(:instance) { {"a" => {}, "b" => {}} }
 
         it("applies no $ref siblings") do
@@ -79,12 +75,10 @@ describe 'JSI Schema child application' do
     describe "#{name} child items / additionalItems application" do
       let(:metaschema) { metaschema }
       describe 'items' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             items: {}
             YAML
-          )
-        end
+        )
         let(:instance) { [{}] }
         it('array instance: applies items') do
           assert_schemas([
@@ -101,12 +95,10 @@ describe 'JSI Schema child application' do
         end
       end
       describe 'items array' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             items: [{}]
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, {}] }
         it('array instance: applies corresponding items') do
           assert_schemas([
@@ -124,13 +116,11 @@ describe 'JSI Schema child application' do
         end
       end
       describe 'additionalItems' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             items: [{}]
             additionalItems: {}
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, {}] }
         it('array instance: applies items, additionalItems') do
           assert_schemas([
@@ -153,12 +143,10 @@ describe 'JSI Schema child application' do
         end
       end
       describe 'additionalItems without items' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             additionalItems: {}
             YAML
-          )
-        end
+        )
         let(:instance) { [{}] }
         it('array instance: applies none') do
           refute_is_a(schema.additionalItems.jsi_schema_module, subject[0])
@@ -180,12 +168,10 @@ describe 'JSI Schema child application' do
     describe("#{name} child prefixItems / items application") do
       let(:metaschema) { metaschema }
       describe("items") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             items: {}
             YAML
-          )
-        end
+        )
         let(:instance) { [{}] }
 
         it("array instance: applies items") do
@@ -203,12 +189,10 @@ describe 'JSI Schema child application' do
       end
 
       describe("prefixItems") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             prefixItems: [{}]
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, {}] }
 
         it("array instance: applies corresponding prefixItems") do
@@ -227,13 +211,11 @@ describe 'JSI Schema child application' do
       end
 
       describe("prefixItems + items") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             prefixItems: [{}]
             items: {}
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, {}] }
 
         it("array instance: applies prefixItems, items") do
@@ -264,13 +246,11 @@ describe 'JSI Schema child application' do
     describe "#{name} contains application" do
       let(:metaschema) { metaschema }
       describe 'contains valid' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, [], [], {}] }
         it('array instance: applies') do
           assert_schemas([], subject[0])
@@ -295,13 +275,11 @@ describe 'JSI Schema child application' do
         end
       end
       describe 'contains invalid' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, {}] }
         it 'applies' do
           assert_schemas([
@@ -322,14 +300,12 @@ describe 'JSI Schema child application' do
       let(:metaschema) { metaschema }
 
       describe("contains + minContains valid") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             minContains: 2
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, [], [], {}] }
 
         it("array instance: applies to children that are valid against contains") do
@@ -354,14 +330,12 @@ describe 'JSI Schema child application' do
       end
 
       describe("contains + minContains invalid") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             minContains: 2
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, [], {}] }
 
         it("applies to all children") do
@@ -372,14 +346,12 @@ describe 'JSI Schema child application' do
       end
 
       describe("contains + maxContains valid") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             maxContains: 2
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, [], [], {}] }
 
         it("array instance: applies to children that validate against contains") do
@@ -404,14 +376,12 @@ describe 'JSI Schema child application' do
       end
 
       describe("contains + maxContains invalid (too many valid)") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             maxContains: 2
             YAML
-          )
-        end
+        )
         let(:instance) { [[], [], [], {}] }
 
         it("applies to children that validate against contains") do
@@ -423,14 +393,12 @@ describe 'JSI Schema child application' do
       end
 
       describe("contains + maxContains invalid (none valid, lacking minContains: 0, inferred minContains: 1)") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             maxContains: 1
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, {}] }
 
         it("applies to all children") do
@@ -440,15 +408,13 @@ describe 'JSI Schema child application' do
       end
 
       describe("contains + minContains + maxContains valid") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             minContains: 2
             maxContains: 2
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, [], [], {}] }
 
         it("array instance: applies") do
@@ -473,15 +439,13 @@ describe 'JSI Schema child application' do
       end
 
       describe("contains + minContains + maxContains both invalid") do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             contains:
               type: array
             minContains: 3
             maxContains: 1
             YAML
-          )
-        end
+        )
         let(:instance) { [{}, [], []] }
 
         it("applies to all children") do
@@ -502,13 +466,11 @@ describe 'JSI Schema child application' do
     describe "#{name} child properties, additionalProperties, patternProperties application" do
       let(:metaschema) { metaschema }
       describe 'properties' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             properties:
               foo: {}
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => []} }
         it('hash/object instance: applies properties') do
           assert_schemas([
@@ -516,13 +478,11 @@ describe 'JSI Schema child application' do
           ], subject['foo'])
         end
         describe('array instance') do
-          let(:schema_content) do
-            YAML.load(<<~YAML
+          yaml(:schema_content, <<~YAML
               properties:
                 0: {}
               YAML
-            )
-          end
+          )
           let(:instance) { [{}] }
           it('does not apply properties') do
             refute_schema(schema.properties[0], subject[0])
@@ -530,14 +490,12 @@ describe 'JSI Schema child application' do
         end
       end
       describe 'additionalProperties' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             properties:
               foo: {}
             additionalProperties: {}
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => [], 'bar' => []} }
         it('hash/object instance: applies properties, additionalProperties') do
           assert_schemas([
@@ -548,14 +506,12 @@ describe 'JSI Schema child application' do
           ], subject['bar'])
         end
         describe('array instance') do
-          let(:schema_content) do
-            YAML.load(<<~YAML
+          yaml(:schema_content, <<~YAML
               properties:
                 0: {}
               additionalProperties: {}
               YAML
-            )
-          end
+          )
           let(:instance) { [{}, {}] }
           it('does not apply properties or additionalProperties') do
             refute_schema(schema.properties[0], subject[0])
@@ -565,12 +521,10 @@ describe 'JSI Schema child application' do
         end
       end
       describe 'additionalProperties without properties' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             additionalProperties: {}
             YAML
-          )
-        end
+        )
         let(:instance) { {'foo' => []} }
         it('hash/object instance: applies additionalProperties') do
           assert_schemas([
@@ -578,12 +532,10 @@ describe 'JSI Schema child application' do
           ], subject['foo'])
         end
         describe('array instance') do
-          let(:schema_content) do
-            YAML.load(<<~YAML
+          yaml(:schema_content, <<~YAML
               additionalProperties: {}
               YAML
-            )
-          end
+          )
           let(:instance) { [{}] }
           it('does not apply additionalProperties') do
             refute_schema(schema.additionalProperties, subject[0])
@@ -591,8 +543,7 @@ describe 'JSI Schema child application' do
         end
       end
       describe 'properties, additionalProperties, patternProperties' do
-        let(:schema_content) do
-          YAML.load(<<~YAML
+        yaml(:schema_content, <<~YAML
             properties:
               foo:
                 title: foo
@@ -604,17 +555,14 @@ describe 'JSI Schema child application' do
             additionalProperties:
               title: additional
             YAML
-          )
-        end
-        let(:instance) do
-          YAML.load(<<~YAML
+        )
+        yaml(:instance, <<~YAML
             foo: {}
             bar: {}
             baz: {}
             qux: {}
             YAML
-          )
-        end
+        )
         it('hash/object instance: applies those applicable') do
           assert_schemas([
             schema.properties['foo'],
@@ -646,8 +594,7 @@ describe 'JSI Schema child application' do
           refute_is_a(schema.patternProperties['^b'].jsi_schema_module, subject['qux'])
         end
         describe('array instance') do
-          let(:schema_content) do
-            YAML.load(<<~YAML
+          yaml(:schema_content, <<~YAML
               properties:
                 0:
                   title: 0
@@ -659,8 +606,7 @@ describe 'JSI Schema child application' do
               additionalProperties:
                 title: additional
               YAML
-            )
-          end
+          )
           let(:instance) { [{}, {}, {}, {}] }
           it('does not apply') do
             refute_schema(schema.properties[0], subject[0])
