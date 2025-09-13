@@ -164,11 +164,8 @@ describe(JSI::MetaSchemaNode) do
 
       let(:schema_documents) { [applicator_document] }
 
-      let(:applicator_schema) do
-        root_node.jsi_registry.find("tag:7bg7:applicator")
-      end
-
-      it("acts like a meta-schema") do
+      def assert_mutual_metaschema_behaves(metaschema)
+        applicator_schema = metaschema.jsi_registry.find("tag:7bg7:applicator")
         assert_schemas([metaschema, applicator_schema], metaschema)
         assert_schemas([metaschema.properties['$id']],  metaschema / ['$id'])
         assert_schemas([applicator_schema.properties['allOf']],
@@ -247,7 +244,7 @@ describe(JSI::MetaSchemaNode) do
 
         schema_by_uri = JSI.new_schema(
           {"$schema" => "tag:7bg7:meta"},
-          registry: root_node.jsi_registry,
+          registry: metaschema.jsi_registry,
         )
         assert_schemas([metaschema, applicator_schema], schema_by_uri)
 
@@ -257,6 +254,10 @@ describe(JSI::MetaSchemaNode) do
         assert_schemas([schema.properties['foo']], instance.foo)
         assert_schemas([schema.allOf[0].properties['bar'], schema, schema.allOf[0]], instance['bar'])
         assert(instance.jsi_valid?)
+      end
+
+      it("acts like a meta-schema") do
+        assert_mutual_metaschema_behaves(metaschema)
       end
     end
   end
