@@ -790,7 +790,7 @@ module JSI
             visited_refs: Util.add_visited_ref(visited_refs, ref),
             collect_evaluated: collect_evaluated && !inplace_child_evaluated,
             # the `if` keyword needs to yield to here because it does affect `evaluated`,
-            # but it does not apply itself/its applicators, so is not passed to our given block.
+            # but it does not applicate itself/its applicators, so does not yield to the given block.
             &(applicate ? block : proc { })
           )
           inplace_child_evaluated ||= collect_evaluated && schema_evaluated && schema.instance_valid?(instance)
