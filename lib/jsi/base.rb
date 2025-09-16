@@ -34,6 +34,7 @@ module JSI
     end
 
     Conf = Struct.subclass(*%i(
+      root_uri
       registry
       reinstantiate_nonschemas
       after_initialize
@@ -47,6 +48,15 @@ module JSI
     # Configuration parameters are set from `**conf_kw` params passed to {SchemaSet#new_jsi #new_jsi},
     # {Schema::MetaSchema#new_schema #new_schema} and related methods.
     #
+    # @!attribute root_uri
+    #   A URI identifying the document root resource.
+    #   References (e.g. a schema `$ref`) can resolve the resource with this URI.
+    #
+    #   It is rare that this needs to be specified. Most resources that would be
+    #   referenced are schemas that use the `$id` keyword to specify their URI.
+    #   However, there are cases when a resource may be referenced using a retrieval URI
+    #   that does not match the resource's `$id`, and `root_uri` enables resolution.
+    #   @return [URI, nil]
     # @!attribute registry
     #   The registry from which references are resolved.
     #   For schemas (or documents containing schemas), this is mainly used with `$ref` values.
@@ -79,6 +89,7 @@ module JSI
     #   @return [#call, nil]
     class Conf
       def initialize(
+          root_uri: nil,
           registry: JSI.registry,
           child_as_jsi: false,
           child_use_default: false,
@@ -86,6 +97,7 @@ module JSI
           **kw
       )
         super(
+          root_uri: Util.uri(root_uri, nnil: false, yabs: true),
           registry: registry,
           child_as_jsi: child_as_jsi,
           child_use_default: child_use_default,
