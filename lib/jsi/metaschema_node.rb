@@ -76,21 +76,17 @@ module JSI
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        jsi_schema_base_uri: nil,
-        jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         initialize_finish: true,
-        jsi_conf: nil,
-        jsi_root_node: nil
+        jsi_root_node: nil,
+        **kw
     )
       super(jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: SchemaSet[],
-        jsi_schema_base_uri: jsi_schema_base_uri,
         # MSN doesn't track schema_resource_ancestors through descendents, but the root is included when appropriate
         jsi_schema_resource_ancestors: jsi_ptr.root? || !jsi_root_node.is_a?(Schema) ? Util::EMPTY_ARY : [jsi_root_node].freeze,
-        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        jsi_conf: jsi_conf,
         jsi_root_node: jsi_root_node,
+        **kw,
       )
 
       @initialize_finished = false
