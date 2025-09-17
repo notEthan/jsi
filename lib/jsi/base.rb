@@ -953,7 +953,6 @@ module JSI
     def jsi_memomaps_initialize
       @child_indicated_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_indicated_schemas_compute))
       @child_applied_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_applied_schemas_compute))
-      @child_node_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_node_compute))
       @with_schema_dynamic_anchor_map_map = jsi_memomap(&method(:jsi_with_schema_dynamic_anchor_map_compute))
     end
 
