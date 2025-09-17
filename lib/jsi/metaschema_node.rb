@@ -107,19 +107,19 @@ module JSI
             jsi_document,
             jsi_ptr: ptr,
             jsi_schema_base_uri: nil, # not supported
-            jsi_registry: self.jsi_conf.bootstrap_registry,
+            jsi_registry: jsi_conf.bootstrap_registry,
           )
         else
           # if not fragment-only, ref must be registered in the bootstrap_registry
-          ref = Schema::Ref.new(ref_uri, registry: self.jsi_conf.bootstrap_registry)
+          ref = Schema::Ref.new(ref_uri, registry: jsi_conf.bootstrap_registry)
           ref.resolve
         end
       end
 
-      @bootstrap_metaschema = bootstrap_schema_from_ref[self.jsi_conf.metaschema_root_ref]
+      @bootstrap_metaschema = bootstrap_schema_from_ref[jsi_conf.metaschema_root_ref]
 
       instance_for_schemas = jsi_document
-      root_bootstrap_schema = bootstrap_schema_from_ref[self.jsi_conf.root_schema_ref]
+      root_bootstrap_schema = bootstrap_schema_from_ref[jsi_conf.root_schema_ref]
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
         child_indicated_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
           is.each_inplace_child_applicator_schema(tok, instance_for_schemas, &y)
