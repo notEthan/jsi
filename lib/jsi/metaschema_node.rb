@@ -87,16 +87,11 @@ module JSI
     #
     # Note: when instantiating MetaSchemaNode directly, the caller must invoke #jsi_initialize_finish.
     # @api private
-    # @param jsi_ptr [JSI::Ptr] ptr to this MetaSchemaNode in jsi_document
     def initialize(
-        jsi_ptr: Ptr[],
-        jsi_root_node: nil,
         **kw
     )
       super(
-        jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: SchemaSet[],
-        jsi_root_node: jsi_root_node,
         **kw,
       )
 
