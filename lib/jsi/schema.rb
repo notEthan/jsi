@@ -522,12 +522,10 @@ module JSI
       SchemaSet[self].new_jsi(instance, **kw)
     end
 
-    # @param keyword schema keyword e.g. "$ref", "$schema"
+    # @param ref [#to_str] ref URI
     # @return [Schema::Ref]
-    # @raise [Base::ChildNotPresent]
-    def schema_ref(keyword = "$ref")
-      raise(Base::ChildNotPresent, "keyword not present: #{keyword}") unless keyword?(keyword)
-      @schema_ref_map[schema_content[keyword]]
+    def schema_ref(ref = schema_content["$ref"])
+      @schema_ref_map[ref]
     end
 
     # Does this schema itself describe a schema? I.e. is this schema a meta-schema?

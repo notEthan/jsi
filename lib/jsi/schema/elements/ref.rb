@@ -21,7 +21,7 @@ module JSI
 
         resolve_ref = proc do
           next if !keyword_value_str?('$ref')
-          ref = schema.schema_ref('$ref')
+          ref = schema.schema_ref(schema_content['$ref'])
           resolved_schema = ref.resolve.with_dynamic_scope_from(schema)
           [resolved_schema, ref]
         end
