@@ -226,7 +226,7 @@ module JSI
 
     # see {Base#jsi_child_node}
     def jsi_child_node(token)
-      root_descendent_node(jsi_ptr[token], dynamic_anchor_map: jsi_schema_dynamic_anchor_map)
+      root_descendent_node(jsi_ptr[token])
     end
 
     # See {Base#jsi_default_child}
@@ -280,30 +280,29 @@ module JSI
       end
     end
 
-    def jsi_root_descendent_node_compute(ptr: , dynamic_anchor_map: )
+    def jsi_root_descendent_node_compute(ptr: )
       # note: self is jsi_root_node
       #chkbug fail(Bug) unless equal?(jsi_root_node)
-      #chkbug fail if dynamic_anchor_map != dynamic_anchor_map.without_node(self, ptr: ptr)
-      if ptr.root? && dynamic_anchor_map == jsi_schema_dynamic_anchor_map
+      if ptr.root?
         self
       else
         MetaSchemaNode.new(
           jsi_document: jsi_document,
           jsi_ptr: ptr,
-          jsi_base_uri: ptr.root? ? nil : jsi_next_base_uri,
-          jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
+          jsi_base_uri: jsi_next_base_uri,
+          # since MSN only supports document root as jsi_resource_root, and jsi_next_schema_dynamic_anchor_map
+          # is only passed to descendents that are resource roots, that is not used here.
+          jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
           jsi_root_node: jsi_root_node,
         )
       end
     end
 
     # @param ptr [Ptr]
-    # @param dynamic_anchor_map [Schema::DynamicAnchorMap] must be `without_node(..., ptr: ptr)` or so
     # @return [MetaSchemaNode]
-    protected def root_descendent_node(ptr, dynamic_anchor_map: )
+    protected def root_descendent_node(ptr)
       to_initialize_finish(@root_descendent_node_map[
         ptr: ptr.resolve_against(jsi_document),
-        dynamic_anchor_map: dynamic_anchor_map,
       ])
     end
 
@@ -329,7 +328,7 @@ module JSI
       end
 
       if bootstrap_schema.jsi_document.equal?(jsi_document)
-        root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
+        root_descendent_node(bootstrap_schema.jsi_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
       else
         jsi_registry || raise(ResolutionError, "no jsi_registry")
         bootstrap_resource = bootstrap_schema.jsi_resource_root
