@@ -931,7 +931,7 @@ module JSI
         descendent_schema.dialect_invoke_each(:dynamicAnchor) do |anchor|
           next if map.key?(anchor)
           map = map.merge({
-            anchor => [anchor_root, ptrs].freeze,
+            anchor => [anchor_root.jsi_with_schema_dynamic_anchor_map(Schema::DynamicAnchorMap::EMPTY), ptrs].freeze,
           }).freeze
         end
 
