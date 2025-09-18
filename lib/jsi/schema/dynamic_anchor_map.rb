@@ -30,7 +30,7 @@ module JSI
     # @return [Schema::DynamicAnchorMap]
     def without_node(node, document: node.jsi_document, ptr: node.jsi_ptr, registry: node.jsi_registry)
       dynamic_anchor_map = self
-      dynamic_anchor_map.each do |anchor, (anchor_root, anchor_ptrs)|
+      each do |anchor, (anchor_root, anchor_ptrs)|
         # Determine whether this anchor maps to the indicated node.
         # This should strictly use the same fields as the node's #jsi_fingerprint
         # (which is different for Base, MetaSchemaNode, and MetaSchemaNode::BootstrapSchema).
