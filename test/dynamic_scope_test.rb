@@ -64,6 +64,26 @@ describe("dynamic scope") do
     end
   end
 
+  describe("cyclical application") do
+    it("errors") do
+      x = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$dynamicAnchor": "a",
+        "$ref": "tag:ap9/y",
+        "title": "x",
+      })
+      JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "tag:ap9/y",
+        "$defs": {
+          "a": {"$dynamicAnchor": "a", "title": "y / a"},
+        },
+        "$dynamicRef": "#a",
+      })
+      assert_raises(JSI::Error::ResolutionError) { x.new_jsi({}) }
+    end
+  end
+
   describe("modified copy") do
     it("retains dynamic scope") do
       a = JSI.new_schema({
