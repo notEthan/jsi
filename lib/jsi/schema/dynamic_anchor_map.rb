@@ -37,7 +37,7 @@ module JSI
         # However, some fields of the fingerprint are fairly complicated to compute with neither
         # the node being removed nor the anchor schema actually instantiated.
         # Realistically document+ptr is sufficient and correct outside of implausible edge cases.
-        maps_to_node = anchor_root.jsi_document == document &&
+        maps_to_node = anchor_root.jsi_document.equal?(document) &&
           anchor_ptrs.inject(anchor_root.jsi_ptr, &:+) == ptr &&
           anchor_root.jsi_registry == registry
         if maps_to_node
