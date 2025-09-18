@@ -603,8 +603,13 @@ module JSI
 
     # is this schema the root of a schema resource?
     # @return [Boolean]
+    def jsi_is_resource_root?
+      super || schema_absolute_uris.any?
+    end
+
+    # @deprecated after v0.8
     def schema_resource_root?
-      jsi_ptr.root? || schema_absolute_uris.any?
+      jsi_is_resource_root?
     end
 
     # a subschema of this Schema

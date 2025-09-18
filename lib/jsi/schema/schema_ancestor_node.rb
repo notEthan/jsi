@@ -37,6 +37,12 @@ module JSI
       jsi_registry
     end
 
+    # @return [Boolean]
+    def jsi_is_resource_root?
+      # overridden by Schema
+      jsi_ptr.root?
+    end
+
     # the URI of the resource containing this node.
     # this is always an absolute URI (with no fragment).
     # If this node is a schema with an id, this is its absolute URI; otherwise an ancestor resource's URI,
