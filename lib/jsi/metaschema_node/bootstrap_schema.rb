@@ -104,7 +104,7 @@ module JSI
         jsi_ptr: ptr.resolve_against(jsi_document),
         jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
-        jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: ptr),
+        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         jsi_registry: jsi_registry,
       )
     end
@@ -114,7 +114,7 @@ module JSI
     # @return [MetaSchemaNode::BootstrapSchema]
     def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
       return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
-      new_dynamic_anchor_map = dynamic_anchor_map.without_node(self)
+      new_dynamic_anchor_map = dynamic_anchor_map.without_node(jsi_resource_root) if jsi_resource_root
       return(self) if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
 
       dialect.bootstrap_schema(

@@ -9,9 +9,7 @@ module JSI
   #
   #   - `anchor_root` [Schema]
   #
-  #     Typically the resource root of the schema containing the `$dynamicAnchor` with `anchor_name`,
-  #     although this may be a non-resource-root schema when the resource root is the document root and is
-  #     not a schema, or the schema is a non-root bootstrap schema with no `jsi_schema_resource_ancestors`.
+  #     The resource root of the schema containing the `$dynamicAnchor` with `anchor_name`.
   #
   #     The `#jsi_schema_dynamic_anchor_map` of anchor_root is expected to be empty.
   #     It should be replaced when the anchor schema is resolved.
@@ -27,6 +25,8 @@ module JSI
     # (which results in its jsi_fingerprint circularly referring to itself)
     # we remove such anchors from the dynamic_anchor_map it will be instantiated with.
     # The node's #jsi_next_schema_dynamic_anchor_map will remap such anchors to the node again.
+    #
+    # If the indicated node is not a schema and a resource root, nothing will be removed.
     # @return [Schema::DynamicAnchorMap]
     def without_node(node, document: node.jsi_document, ptr: node.jsi_ptr, registry: node.jsi_registry)
       dynamic_anchor_map = self
@@ -38,7 +38,7 @@ module JSI
         # the node being removed nor the anchor schema actually instantiated.
         # Realistically document+ptr is sufficient and correct outside of implausible edge cases.
         maps_to_node = anchor_root.jsi_document.equal?(document) &&
-          anchor_ptrs.inject(anchor_root.jsi_ptr, &:+) == ptr &&
+          anchor_root.jsi_ptr == ptr &&
           anchor_root.jsi_registry == registry
         if maps_to_node
           dynamic_anchor_map = dynamic_anchor_map.dup

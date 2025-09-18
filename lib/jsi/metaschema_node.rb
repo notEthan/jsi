@@ -248,7 +248,7 @@ module JSI
     # @return [MetaSchemaNode]
     def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
       return(self) if dynamic_anchor_map == jsi_schema_dynamic_anchor_map
-      new_dynamic_anchor_map = dynamic_anchor_map.without_node(self)
+      new_dynamic_anchor_map = dynamic_anchor_map.without_node(jsi_resource_root)
       return(self) if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
 
       root_descendent_node(jsi_ptr, dynamic_anchor_map: new_dynamic_anchor_map)

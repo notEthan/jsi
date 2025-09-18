@@ -930,10 +930,15 @@ module JSI
       if !dialect.elements.any? { |e| e.invokes?(:dynamicAnchor) }
         return @memos[:next_schema_dynamic_anchor_map] = jsi_schema_dynamic_anchor_map
       end
+      if !jsi_resource_root.is_a?(Schema)
+        # if the resource root is not a schema, then this schema does not add to dynamic_anchor_map.
+        # we could treat self as the anchor root, but that complicates DynamicAnchorMap#without_node.
+        return @memos[:next_schema_dynamic_anchor_map] = jsi_schema_dynamic_anchor_map
+      end
 
       map = jsi_schema_dynamic_anchor_map
 
-      anchor_root = jsi_resource_root.is_a?(Schema) ? jsi_resource_root : self
+      anchor_root = jsi_resource_root
       descendent_schemas = [[anchor_root, Util::EMPTY_ARY]]
 
       while !descendent_schemas.empty?
