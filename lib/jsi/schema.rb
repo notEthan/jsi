@@ -463,9 +463,9 @@ module JSI
     private def schema_uris_compute(&block)
       schema_absolute_uris.each(&block)
 
-      if schema_resource_root
+      if jsi_resource_root
         anchors.each do |anchor|
-          schema_resource_root.schema_absolute_uris.each do |uri|
+          jsi_resource_root.schema_absolute_uris.each do |uri|
             yield(uri.merge(fragment: anchor))
           end
         end
@@ -621,13 +621,13 @@ module JSI
       Schema.ensure_schema(jsi_descendent_node(subptr)) { "subschema is not a schema at pointer: #{Ptr.ary_ptr(subptr).pointer}" }
     end
 
-    # a schema in the same schema resource as this one (see {#schema_resource_root}) at the given
+    # A schema in the same schema resource as this one (see {Schema::SchemaAncestorNode#jsi_resource_root}) at the given
     # pointer relative to the root of the schema resource.
     #
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-          Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
+          Schema.ensure_schema(jsi_resource_root.jsi_descendent_node(ptr),
             reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
     end
@@ -648,7 +648,7 @@ module JSI
       yield(self)
       dialect_invoke_each(:subschema) do |ptr|
         desc = subschema(ptr)
-        if !desc.schema_resource_root?
+        if !desc.jsi_is_resource_root?
           desc.jsi_each_descendent_schema_same_resource(&block)
         end
       end
@@ -912,7 +912,7 @@ module JSI
     # @api private
     # @return [Array<JSI::Schema>]
     def jsi_subschema_resource_ancestors
-      if schema_resource_root?
+      if jsi_is_resource_root?
         jsi_schema_resource_ancestors.dup.push(self).freeze
       else
         jsi_schema_resource_ancestors
@@ -929,7 +929,7 @@ module JSI
 
       map = jsi_schema_dynamic_anchor_map
 
-      anchor_root = schema_resource_root.is_a?(Schema) ? schema_resource_root : self
+      anchor_root = jsi_resource_root.is_a?(Schema) ? jsi_resource_root : self
       descendent_schemas = [[anchor_root, Util::EMPTY_ARY]]
 
       while !descendent_schemas.empty?
@@ -954,7 +954,7 @@ module JSI
             # note: same as anchor_root.jsi_resource_ancestor_uri since we don't cross resource boundaries.
             jsi_schema_base_uri: descendent_schema.jsi_resource_ancestor_uri,
           )
-          if !descendent_subschema.schema_resource_root?
+          if !descendent_subschema.jsi_is_resource_root?
             descendent_schemas.push([descendent_subschema, ptrs.dup.push(subptr).freeze])
           end
         end

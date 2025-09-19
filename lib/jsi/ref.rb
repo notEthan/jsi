@@ -9,7 +9,7 @@ module JSI
     # @param referrer [Base] A JSI from which the reference originated.
     #
     #   If the ref URI consists of only a fragment, it is resolved from the `referrer`'s
-    #   root (its {Schema#schema_resource_root} if resolving a {Schema::Ref}; its document root if not).
+    #   root (its {Schema::SchemaAncestorNode#jsi_resource_root} if resolving a {Schema::Ref}; its document root if not).
     #   Otherwise the resource is found in the `referrer`'s
     #   `#jsi_registry` (and any fragment is resolved from there).
     # @param registry [Registry, nil] The registry in which the resource this ref refers to will be found.
@@ -73,8 +73,8 @@ module JSI
         # the URI only consists of a fragment (or is empty).
         if resolve_schema?
           # for a fragment pointer, resolve using Schema#resource_root_subschema on the referrer.
-          # for a fragment anchor, use the referrer's schema_resource_root.
-          resource_root = referrer.schema_resource_root # note: may be nil from bootstrap schema
+          # for a fragment anchor, use the referrer's jsi_resource_root.
+          resource_root = referrer.jsi_resource_root # note: may be nil from bootstrap schema
           resolve_fragment_ptr = referrer.method(:resource_root_subschema)
         else
           resource_root = referrer.jsi_root_node

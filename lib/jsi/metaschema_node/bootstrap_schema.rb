@@ -72,9 +72,9 @@ module JSI
     # overrides {Schema#resource_root_subschema}
     def resource_root_subschema(ptr)
       ptr = Ptr.ary_ptr(ptr)
-      if schema_resource_root
-        curschema = schema_resource_root
-        remptr = ptr.resolve_against(schema_resource_root.jsi_node_content)
+      if jsi_resource_root
+        curschema = jsi_resource_root
+        remptr = ptr.resolve_against(jsi_resource_root.jsi_node_content)
         found = true
         while found
           return(curschema) if remptr.empty?
@@ -92,7 +92,7 @@ module JSI
         # TODO rm support (along with reinstantiate_as) and raise(NotASchemaError) here.
         return(curschema.subschema(remptr))
       end
-      # no schema_resource_root means the root is not a schema and no parent schema has an absolute uri.
+      # no jsi_resource_root means the root is not a schema and no parent schema has an absolute uri.
       # result schema is instantiated relative to document root.
       dialect.bootstrap_schema(
         jsi_document,
