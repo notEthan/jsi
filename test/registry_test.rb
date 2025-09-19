@@ -32,32 +32,6 @@ describe("JSI::Registry") do
       registry.register(resource)
     end
 
-    it "registers something that's not a schema below document root with a URI" do
-      uri = 'http://jsi/registry/skw7'
-      resource = JSI::JSONSchemaDraft07.new_schema({'items' => {}}).new_jsi([{}], root_uri: uri)
-      err = assert_raises(ArgumentError) do
-        registry.register(resource[0])
-      end
-      assert_equal("undefined behavior: registration of a JSI which is not a schema and is not at the root of a document", err.message)
-    end
-
-    it "registers something that's not a schema below document root without a URI" do
-      resource = JSI::JSONSchemaDraft07.new_schema({'items' => {}}).new_jsi([{}])
-      err = assert_raises(ArgumentError) do
-        registry.register(resource[0])
-      end
-      assert_equal("undefined behavior: registration of a JSI which is not a schema and is not at the root of a document", err.message)
-    end
-
-    it "registers something that's not a schema below a schema" do
-      uri = 'http://jsi/registry/3ij1'
-      resource = JSI::JSONSchemaDraft07.new_schema({'$id' => uri, 'properties' => {}})
-      err = assert_raises(ArgumentError) do
-        registry.register(resource.properties)
-      end
-      assert_equal("undefined behavior: registration of a JSI which is not a schema and is not at the root of a document", err.message)
-    end
-
     it "registers the same schema twice" do
       uri = 'http://jsi/registry/r3fh'
       schema = JSI::JSONSchemaDraft07.new_schema({'$id' => uri}, register: false)

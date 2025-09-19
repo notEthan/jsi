@@ -37,15 +37,6 @@ module JSI
     # @param resource [JSI::Base] a JSI containing resources to register
     # @return [void]
     def register(resource)
-      unless resource.is_a?(Base) || resource.is_a?(Schema)
-        raise(ArgumentError, "resource must be a #{Base}. got: #{resource.pretty_inspect.chomp}")
-      end
-      unless resource.is_a?(JSI::Schema) || resource.jsi_ptr.root?
-        # unsure, should this be allowed? the given JSI is not a "resource" as we define it, but
-        # if this check is removed it will just register any resources (schemas) below the given JSI.
-        raise(ArgumentError, "undefined behavior: registration of a JSI which is not a schema and is not at the root of a document")
-      end
-
       register_immediate(resource) if !resource.is_a?(Schema)
 
       resource.jsi_each_descendent_schema do |node|
@@ -56,6 +47,10 @@ module JSI
     # @param node [Base, Schema]
     # @return [void]
     def register_immediate(node)
+      unless node.is_a?(Base) || node.is_a?(Schema)
+        raise(ArgumentError, "resource must be a #{Base}. got: #{node.pretty_inspect.chomp}")
+      end
+
       node.jsi_resource_uris.each do |uri|
         internal_store(@resources, @resource_autoloaders, uri, node)
       end
