@@ -79,7 +79,7 @@ module JSI
     # or nil if not contained by a resource with a URI.
     # @return [URI, nil]
     def jsi_resource_ancestor_uri
-      (is_a?(Schema) && schema_absolute_uri) || jsi_base_uri
+      jsi_resource_uri || jsi_base_uri
     end
 
     # All schemas at or below this node with the given anchor.
