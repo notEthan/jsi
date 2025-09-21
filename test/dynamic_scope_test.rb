@@ -64,6 +64,67 @@ describe("dynamic scope") do
     end
   end
 
+  describe("resource root below document root with dynamic scope") do
+    it("applicates, consistent root nodes") do
+      x = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "x",
+        "$defs": {
+          "x1": {
+            "$id": "tag:x1",
+            "$dynamicRef": "#a",
+            "$defs": {
+              "x2": {"title": "x2", "$dynamicAnchor": "a"},
+            },
+          },
+        },
+      })
+      y = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "tag:y",
+        "$defs": {
+          "y1": {"title": "y1", "$dynamicAnchor": "a"},
+          "y2": {"title": "y2", "$ref": "tag:x1"},
+        },
+      })
+      z = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "z",
+        "$ref": "tag:y#/$defs/y2",
+      })
+
+      x1 = x['$defs']['x1']
+      x2 = x1['$defs']['x2']
+      y1 = y['$defs']['y1']
+      y2 = y['$defs']['y2']
+      x1«y2» = x1.with_dynamic_scope_from(y2)
+      # x1«y2» is a new root
+      assert_same(x1«y2», x1«y2».jsi_root_node)
+
+      # application
+      assert_schemas([y2, x1«y2», y1], y2.new_jsi({}))
+      assert_schemas([z, y2, x1«y2», y1], z.new_jsi({}))
+
+      # then make a registry
+      registry = JSI::DEFAULT_REGISTRY.dup
+      # register a resource that is not its original root node
+      registry.register(x1«y2»)
+      # a $ref to x1 in that registry
+      w = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "w",
+        "$ref": "tag:x1",
+      }, registry: registry)
+      # when resolving x1 from w's $ref,
+      # the dynamic scope from w overriding y2's scope that x1 in the registry has,
+      # and that scope (empty from w) being the same as x1's original scope,
+      # results in the original x1 resolved and applicated
+      assert_schemas([w, x1, x2], w.new_jsi({}))
+      # x1«y2» with scope from w has the original `x` root node
+      assert_same(x, x1«y2».with_dynamic_scope_from(w).jsi_root_node)
+    end
+  end
+
   describe("cyclical application") do
     it("errors") do
       x = JSI.new_schema({
