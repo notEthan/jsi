@@ -64,6 +64,93 @@ describe("dynamic scope") do
     end
   end
 
+  describe("several paths through three schema documents") do
+    it("passes dynamic scope through application") do
+      x = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "x",
+        "$defs": {
+          "x1": {
+            "$id": "tag:x1",
+            "allOf": [
+              {"title": "x allOf a", "$dynamicRef": "#a"},
+              {"title": "x allOf b", "$dynamicRef": "#b"},
+            ],
+            "$defs": {
+              "x2": {"title": "x2", "$dynamicAnchor": "a"},
+              "x3": {"title": "x3", "$dynamicAnchor": "b"},
+            },
+          },
+        },
+      })
+      y = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "tag:y",
+        "$defs": {
+          "y1": {"title": "y1", "$dynamicAnchor": "a"},
+          "y2": {"title": "y2", "$ref": "tag:x1"},
+          "y3": {"title": "y3", "$ref": "tag:z"},
+        },
+      })
+      z = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "tag:z",
+        "$ref": "tag:y#/$defs/y2",
+        "$defs": {
+          "z1": {"title": "z1", "$dynamicAnchor": "b"},
+        },
+      })
+
+      x1 = x.defs['x1']
+      y1 = y.defs['y1']
+      y2 = y.defs['y2']
+      y3 = y.defs['y3']
+      z1 = z.defs['z1']
+      x1«y2» = x1.with_dynamic_scope_from(y2)
+      y2«z» = y2.with_dynamic_scope_from(z)
+      x1«y2«z»» = x1.with_dynamic_scope_from(y2«z»)
+      z1«y» = z1.with_dynamic_scope_from(y)
+
+      # x1«y2» is a new root
+      assert_same(x1«y2», x1«y2».jsi_root_node)
+
+      # application
+      assert_schemas([
+        x1,
+        x1.allOf[0],
+        x1.defs['x2'],
+        x1.allOf[1],
+        x1.defs['x3'],
+      ], x1.new_jsi({}))
+      assert_schemas([y2,
+        x1«y2»,
+        x1«y2».allOf[0],
+        y1.with_dynamic_scope_from(x1«y2»),
+        x1«y2».allOf[1],
+        x1«y2».defs['x3'],
+      ], y2.new_jsi({}))
+      assert_schemas([
+        y3,
+        z.with_dynamic_scope_from(y),
+        y2«z»,
+        x1«y2«z»»,
+        x1«y2«z»».allOf[0],
+        y1.with_dynamic_scope_from(z),
+        x1«y2«z»».allOf[1],
+        z1«y»,
+      ], y3.new_jsi({}))
+      assert_schemas([
+        z,
+        y2«z»,
+        x1«y2«z»»,
+        x1«y2«z»».allOf[0],
+        y1.with_dynamic_scope_from(z),
+        x1«y2«z»».allOf[1],
+        z1«y»,
+      ], z.new_jsi({}))
+    end
+  end
+
   describe("resource root below document root with dynamic scope") do
     it("applicates, consistent root nodes") do
       x = JSI.new_schema({
