@@ -170,7 +170,7 @@ module JSI
       #chkbug fail(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
       #chkbug fail(Bug) if !jsi_root_node ^ jsi_conf
-      @jsi_conf = jsi_conf || jsi_root_node.jsi_conf
+      @jsi_conf = jsi_conf = jsi_conf || jsi_root_node.jsi_conf
       @jsi_document = jsi_document
       #chkbug fail(Bug) unless jsi_ptr.is_a?(Ptr)
       @jsi_ptr = jsi_ptr
