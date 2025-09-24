@@ -501,6 +501,7 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name
+      # don't hit #jsi_schema_module - avoid creating module, avoid erroring for MSN::BootstrapSchema
       @memos[:schema_module_connection] && @memos[:schema_module_connection].name
     end
 
