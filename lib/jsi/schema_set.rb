@@ -112,7 +112,7 @@ module JSI
         each { |is| is.each_inplace_applicator_schema(instance, &c) }
       end
 
-      uri = Util.uri(uri, nnil: false, yabs: true)
+      base_uri = Util.uri(uri, nnil: false, yabs: true) || conf.root_uri
 
       jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
         includes: SchemaClasses.includes_for(instance),
@@ -120,7 +120,7 @@ module JSI
       )
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
-        jsi_base_uri: uri,
+        jsi_base_uri: base_uri,
         jsi_conf: conf,
       ).send(:jsi_initialized)
 
