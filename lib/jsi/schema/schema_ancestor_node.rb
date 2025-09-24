@@ -71,7 +71,6 @@ module JSI
     # @yield [URI]
     private def jsi_each_resource_uri_compute
       yield jsi_root_uri if jsi_ptr.root? && jsi_root_uri
-      yield jsi_base_uri if jsi_ptr.root? && jsi_base_uri
     end
 
     # the URI of the resource containing this node.

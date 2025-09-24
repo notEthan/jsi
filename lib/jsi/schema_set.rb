@@ -81,8 +81,6 @@ module JSI
     # @param register [Boolean] Whether schema resources in the instantiated JSI will be registered
     #   in the {Base::Conf configured} {Base::Conf#registry `registry`}.
     #   This is only useful when the JSI is a schema or contains schemas.
-    #   The JSI's root will be registered with the `uri` param, if specified, whether or not the
-    #   root is a schema.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
