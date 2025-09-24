@@ -748,17 +748,22 @@ module JSI
     # @private
     # @return [SchemaModule::Connection]
     def jsi_schema_module_connection
-      return(jsi_schema_module) if is_a?(Schema)
+      raise(BlockGivenError) if block_given?
       @memos.fetch(:schema_module_connection) do
-        raise(TypeError, "mutable JSI may not have a SchemaModule::Connection: #{self}") if jsi_mutable?
-        @memos[:schema_module_connection] = SchemaModule::Connection.new(self)
+        if is_a?(Schema)
+          raise(TypeError, "mutable schema may not have a schema module: #{self}") if jsi_mutable?
+          module_class = SchemaModule
+        else
+          raise(TypeError, "mutable JSI may not have a SchemaModule::Connection: #{self}") if jsi_mutable?
+          module_class = SchemaModule::Connection
+        end
+        @memos[:schema_module_connection] = module_class.new(self)
       end
     end
 
     # @private
     # @return [Boolean]
     def jsi_schema_module_connection_defined?
-      return(jsi_schema_module_defined?) if is_a?(Schema)
       @memos.key?(:schema_module_connection)
     end
 

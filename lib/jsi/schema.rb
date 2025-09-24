@@ -486,16 +486,13 @@ module JSI
     #
     # @return [SchemaModule]
     def jsi_schema_module
-      raise(BlockGivenError) if block_given?
-      raise(TypeError, "non-Base schema may not have a schema module: #{self}") unless is_a?(Base)
-      raise(TypeError, "mutable schema may not have a schema module: #{self}") if jsi_mutable?
-      @memos.fetch(:jsi_schema_module) { @memos[:jsi_schema_module] = SchemaModule.new(self) }
+      jsi_schema_module_connection
     end
 
     # @private
     # @return [Boolean]
     def jsi_schema_module_defined?
-      @memos.key?(:jsi_schema_module)
+      jsi_schema_module_connection_defined?
     end
 
     # Evaluates the given block in the context of this schema's JSI schema module.
@@ -510,7 +507,7 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name
-      @memos[:jsi_schema_module] && @memos[:jsi_schema_module].name
+      @memos[:schema_module_connection] && @memos[:schema_module_connection].name
     end
 
     # @return [String, nil]
