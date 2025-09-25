@@ -55,6 +55,13 @@ module JSI
       jsi_ptr.root?
     end
 
+    # An absolute URI identifying this node, if this node is a resource root.
+    # Typically from a schema's `$id` keyword.
+    # @return [URI, nil]
+    def jsi_resource_uri
+      jsi_resource_uris.first
+    end
+
     # Absolute URIs identifying this node - typically one URI if this is a resource root, otherwise none.
     # @return [Enumerable<URI>]
     def jsi_resource_uris

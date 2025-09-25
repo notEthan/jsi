@@ -420,9 +420,10 @@ module JSI
     end
 
     # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_base_uri`
+    # @deprecated after v0.8 - use `#jsi_resource_uri`
     # @return [URI, nil]
     def schema_absolute_uri
-      schema_absolute_uris.first
+      jsi_resource_uri
     end
 
     # @deprecated after v0.8 - use `#jsi_resource_uris`
