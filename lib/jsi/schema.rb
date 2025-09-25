@@ -980,7 +980,7 @@ module JSI
       @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
-        dialect_invoke_each(:described_object_property_names).to_set.freeze
+        Set.new(dialect_invoke_each(:described_object_property_names)).freeze
       end
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
       @inplace_application_requires_instance = dialect_invoke_each(:inplace_application_requires_instance).any?
