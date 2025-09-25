@@ -108,7 +108,7 @@ describe("JSI::Registry") do
           '$id' => uri,
         })
       end
-      assert_uri(uri, registry.find(uri).schema_absolute_uri)
+      assert_uri(uri, registry.find(uri).jsi_resource_uri)
     end
 
     it 'autoloads a schema uri containing that resource but not at document root' do
@@ -126,7 +126,7 @@ describe("JSI::Registry") do
         })
       end
       resource = registry.find(uri)
-      assert_uri(uri, resource.schema_absolute_uri)
+      assert_uri(uri, resource.jsi_resource_uri)
       assert_equal(JSI::Ptr['items', 'definitions', 's'], resource.jsi_ptr)
     end
 
@@ -142,7 +142,7 @@ describe("JSI::Registry") do
         schema.new_jsi({'x' => {'$id' => uri}})
       end
       resource = registry.find(uri)
-      assert_uri(uri, resource.schema_absolute_uri)
+      assert_uri(uri, resource.jsi_resource_uri)
       assert_equal(JSI::Ptr['x'], resource.jsi_ptr)
     end
 
@@ -286,9 +286,9 @@ describe("JSI::Registry") do
         JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => autoload_uri})
       end
       registry_dup = registry.dup
-      assert_uri(register_uri, registry_dup.find(register_uri).schema_absolute_uri)
+      assert_uri(register_uri, registry_dup.find(register_uri).jsi_resource_uri)
       assert_equal(register_resource, registry_dup.find(register_uri))
-      assert_uri(autoload_uri, registry_dup.find(autoload_uri).schema_absolute_uri)
+      assert_uri(autoload_uri, registry_dup.find(autoload_uri).jsi_resource_uri)
 
       # registering with the dup does not register in the original
       postdup_register_uri = 'http://jsi/registry/ipzf'

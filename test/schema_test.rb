@@ -302,79 +302,79 @@ describe JSI::Schema do
       end
     end
   end
-  describe '#schema_absolute_uri, #anchor' do
+  describe("#jsi_resource_uri, #anchor") do
     describe 'draft 4' do
       let(:metaschema) { JSI::JSONSchemaDraft04 }
       it "hasn't got one" do
         schema = metaschema.new_schema({})
-        assert_nil(schema.schema_absolute_uri)
+        assert_nil(schema.jsi_resource_uri)
         assert_enum_equal([], schema.anchors)
       end
       it 'uses a given id with an empty fragment' do
-        schema = metaschema.new_schema({'id' => 'http://jsi/test/schema_absolute_uri/d4/empty_fragment#'})
-        assert_uri('http://jsi/test/schema_absolute_uri/d4/empty_fragment', schema.schema_absolute_uri)
+        schema = metaschema.new_schema({'id' => 'http://jsi/test/jsi_resource_uri/d4/empty_fragment#'})
+        assert_uri('http://jsi/test/jsi_resource_uri/d4/empty_fragment', schema.jsi_resource_uri)
         assert_enum_equal([], schema.anchors)
       end
       it 'uses a given id without a fragment' do
-        schema = metaschema.new_schema({'id' => 'http://jsi/test/schema_absolute_uri/d4/given_id'})
-        assert_uri('http://jsi/test/schema_absolute_uri/d4/given_id', schema.schema_absolute_uri)
+        schema = metaschema.new_schema({'id' => 'http://jsi/test/jsi_resource_uri/d4/given_id'})
+        assert_uri('http://jsi/test/jsi_resource_uri/d4/given_id', schema.jsi_resource_uri)
         assert_enum_equal([], schema.anchors)
       end
       it 'nested schema without id' do
         schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_no_id',
+          'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_no_id',
           'items' => {},
         })
-        assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with absolute id' do
         schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_abs_id_base',
-          'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_abs_id'},
+          'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_w_abs_id_base',
+          'items' => {'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_w_abs_id'},
         })
-        assert_uri('http://jsi/test/schema_absolute_uri/d4/nested_w_abs_id', schema.items.schema_absolute_uri)
+        assert_uri('http://jsi/test/jsi_resource_uri/d4/nested_w_abs_id', schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with relative id' do
         schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_rel_id_base',
+          'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_w_rel_id_base',
           'items' => {'id' => 'nested_w_rel_id'},
         })
-        assert_uri('http://jsi/test/schema_absolute_uri/d4/nested_w_rel_id', schema.items.schema_absolute_uri)
+        assert_uri('http://jsi/test/jsi_resource_uri/d4/nested_w_rel_id', schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with anchor id' do
         schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_anchor_id_base',
+          'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_w_anchor_id_base',
           'items' => {'id' => '#nested_anchor'},
         })
-        assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
 
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag_base',
-          'items' => {'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag#nested_anchor'},
+          'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_w_id_frag_base',
+          'items' => {'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_w_id_frag#nested_anchor'},
         })
-        assert_uri('http://jsi/test/schema_absolute_uri/d4/nested_w_id_frag', schema.items.schema_absolute_uri)
+        assert_uri('http://jsi/test/jsi_resource_uri/d4/nested_w_id_frag', schema.items.jsi_resource_uri)
         assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with id with empty fragment' do
         schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_id_empty_frag_base',
+          'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_w_id_empty_frag_base',
           'items' => {'id' => '#'},
         })
-        assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with empty id' do
         schema = metaschema.new_schema({
-          'id' => 'http://jsi/test/schema_absolute_uri/d4/nested_w_empty_id_base',
+          'id' => 'http://jsi/test/jsi_resource_uri/d4/nested_w_empty_id_base',
           'items' => {'id' => ''},
         })
-        assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       describe 'externally supplied uri' do
@@ -387,10 +387,10 @@ describe JSI::Schema do
               'none' => {},
             },
           }, uri: 'http://jsi/test/d4/external_uri/1')
-          assert_uri('http://jsi/test/d4/external_uri/root_relative', schema.schema_absolute_uri)
-          assert_uri('http://jsi/test/d4/external_uri/nested_relative', schema.properties['relative'].schema_absolute_uri)
-          assert_uri('http://jsi/test/d4/ignore_external_uri/nested_absolute', schema.properties['absolute'].schema_absolute_uri)
-          assert_nil(schema.properties['none'].schema_absolute_uri)
+          assert_uri('http://jsi/test/d4/external_uri/root_relative', schema.jsi_resource_uri)
+          assert_uri('http://jsi/test/d4/external_uri/nested_relative', schema.properties['relative'].jsi_resource_uri)
+          assert_uri('http://jsi/test/d4/ignore_external_uri/nested_absolute', schema.properties['absolute'].jsi_resource_uri)
+          assert_nil(schema.properties['none'].jsi_resource_uri)
         end
 
         it("root with only externally supplied uri") do
@@ -401,10 +401,10 @@ describe JSI::Schema do
               'none' => {},
             },
           }, uri: 'http://jsi/3az9/root')
-          assert_uris(['http://jsi/3az9/root'], schema.schema_absolute_uris)
-          assert_uris(['http://jsi/3az9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
-          assert_uris(['http://jsi/3aza'], schema.properties['absolute'].schema_absolute_uris)
-          assert_uris([], schema.properties['none'].schema_absolute_uris)
+          assert_uris(['http://jsi/3az9/root'], schema.jsi_resource_uris)
+          assert_uris(['http://jsi/3az9/nested_relative'], schema.properties['relative'].jsi_resource_uris)
+          assert_uris(['http://jsi/3aza'], schema.properties['absolute'].jsi_resource_uris)
+          assert_uris([], schema.properties['none'].jsi_resource_uris)
         end
 
         it("schema with same id as externally supplied") do
@@ -416,25 +416,25 @@ describe JSI::Schema do
               'none' => {},
             },
           }, uri: 'http://jsi/3bz9/root')
-          assert_uris(['http://jsi/3bz9/root'], schema.schema_absolute_uris)
-          assert_uris(['http://jsi/3bz9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
-          assert_uris(['http://jsi/3bza'], schema.properties['absolute'].schema_absolute_uris)
-          assert_uris([], schema.properties['none'].schema_absolute_uris)
+          assert_uris(['http://jsi/3bz9/root'], schema.jsi_resource_uris)
+          assert_uris(['http://jsi/3bz9/nested_relative'], schema.properties['relative'].jsi_resource_uris)
+          assert_uris(['http://jsi/3bza'], schema.properties['absolute'].jsi_resource_uris)
+          assert_uris([], schema.properties['none'].jsi_resource_uris)
         end
       end
       describe 'relative id uri with no base' do
-        it 'has no schema_absolute_uri' do
+        it("has no jsi_resource_uri") do
           schema = metaschema.new_schema({
             'id' => 'test/d4/relative_uri',
           })
-          assert_nil(schema.schema_absolute_uri)
+          assert_nil(schema.jsi_resource_uri)
           assert_enum_equal([], schema.anchors)
         end
-        it 'has no schema_absolute_uri but has an anchor' do
+        it("has no jsi_resource_uri but has an anchor") do
           schema = metaschema.new_schema({
             'id' => 'test/d4/relative_uri_w_anchor#anchor',
           })
-          assert_nil(schema.schema_absolute_uri)
+          assert_nil(schema.jsi_resource_uri)
           assert_enum_equal(['anchor'], schema.anchors)
         end
       end
@@ -443,74 +443,74 @@ describe JSI::Schema do
       let(:metaschema) { JSI::JSONSchemaDraft06 }
       it "hasn't got one" do
         schema = metaschema.new_schema({})
-        assert_nil(schema.schema_absolute_uri)
+        assert_nil(schema.jsi_resource_uri)
         assert_enum_equal([], schema.anchors)
       end
       it 'uses a given id with an empty fragment' do
-        schema = metaschema.new_schema({'$id' => 'http://jsi/test/schema_absolute_uri/d6/empty_fragment#'})
-        assert_uri('http://jsi/test/schema_absolute_uri/d6/empty_fragment', schema.schema_absolute_uri)
+        schema = metaschema.new_schema({'$id' => 'http://jsi/test/jsi_resource_uri/d6/empty_fragment#'})
+        assert_uri('http://jsi/test/jsi_resource_uri/d6/empty_fragment', schema.jsi_resource_uri)
         assert_enum_equal([], schema.anchors)
       end
       it 'uses a given id without a fragment' do
-        schema = metaschema.new_schema({'$id' => 'http://jsi/test/schema_absolute_uri/d6/given_id'})
-        assert_uri('http://jsi/test/schema_absolute_uri/d6/given_id', schema.schema_absolute_uri)
+        schema = metaschema.new_schema({'$id' => 'http://jsi/test/jsi_resource_uri/d6/given_id'})
+        assert_uri('http://jsi/test/jsi_resource_uri/d6/given_id', schema.jsi_resource_uri)
         assert_enum_equal([], schema.anchors)
       end
       it 'nested schema without id' do
         schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_no_id',
+          '$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_no_id',
           'items' => {},
         })
-        assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with absolute id' do
         schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_abs_id_base',
-          'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_abs_id'},
+          '$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_w_abs_id_base',
+          'items' => {'$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_w_abs_id'},
         })
-        assert_uri('http://jsi/test/schema_absolute_uri/d6/nested_w_abs_id', schema.items.schema_absolute_uri)
+        assert_uri('http://jsi/test/jsi_resource_uri/d6/nested_w_abs_id', schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with relative id' do
         schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_rel_id_base',
+          '$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_w_rel_id_base',
           'items' => {'$id' => 'nested_w_rel_id'},
         })
-        assert_uri('http://jsi/test/schema_absolute_uri/d6/nested_w_rel_id', schema.items.schema_absolute_uri)
+        assert_uri('http://jsi/test/jsi_resource_uri/d6/nested_w_rel_id', schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with anchor id' do
         schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_anchor_id_base',
+          '$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_w_anchor_id_base',
           'items' => {'$id' => '#nested_anchor'},
         })
-        assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
 
       it 'nested schema with id and fragment' do
         schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag_base',
-          'items' => {'$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag#nested_anchor'},
+          '$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_w_id_frag_base',
+          'items' => {'$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_w_id_frag#nested_anchor'},
         })
-        assert_uri('http://jsi/test/schema_absolute_uri/d6/nested_w_id_frag', schema.items.schema_absolute_uri)
+        assert_uri('http://jsi/test/jsi_resource_uri/d6/nested_w_id_frag', schema.items.jsi_resource_uri)
         assert_enum_equal(['nested_anchor'], schema.items.anchors)
       end
       it 'nested schema with id with empty fragment' do
         schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_id_empty_frag_base',
+          '$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_w_id_empty_frag_base',
           'items' => {'$id' => '#'},
         })
-        assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       it 'nested schema with empty id' do
         schema = metaschema.new_schema({
-          '$id' => 'http://jsi/test/schema_absolute_uri/d6/nested_w_empty_id_base',
+          '$id' => 'http://jsi/test/jsi_resource_uri/d6/nested_w_empty_id_base',
           'items' => {'$id' => ''},
         })
-        assert_nil(schema.items.schema_absolute_uri)
+        assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
       describe 'externally supplied uri' do
@@ -523,10 +523,10 @@ describe JSI::Schema do
               'none' => {},
             },
           }, uri: 'http://jsi/test/d6/external_uri/0')
-          assert_uri('http://jsi/test/d6/external_uri/root_relative', schema.schema_absolute_uri)
-          assert_uri('http://jsi/test/d6/external_uri/nested_relative', schema.properties['relative'].schema_absolute_uri)
-          assert_uri('http://jsi/test/d6/ignore_external_uri/nested_absolute', schema.properties['absolute'].schema_absolute_uri)
-          assert_nil(schema.properties['none'].schema_absolute_uri)
+          assert_uri('http://jsi/test/d6/external_uri/root_relative', schema.jsi_resource_uri)
+          assert_uri('http://jsi/test/d6/external_uri/nested_relative', schema.properties['relative'].jsi_resource_uri)
+          assert_uri('http://jsi/test/d6/ignore_external_uri/nested_absolute', schema.properties['absolute'].jsi_resource_uri)
+          assert_nil(schema.properties['none'].jsi_resource_uri)
         end
 
         it("root with only externally supplied uri") do
@@ -537,10 +537,10 @@ describe JSI::Schema do
               'none' => {},
             },
           }, uri: 'http://jsi/3ay9/root')
-          assert_uris(['http://jsi/3ay9/root'], schema.schema_absolute_uris)
-          assert_uris(['http://jsi/3ay9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
-          assert_uris(['http://jsi/3aya'], schema.properties['absolute'].schema_absolute_uris)
-          assert_uris([], schema.properties['none'].schema_absolute_uris)
+          assert_uris(['http://jsi/3ay9/root'], schema.jsi_resource_uris)
+          assert_uris(['http://jsi/3ay9/nested_relative'], schema.properties['relative'].jsi_resource_uris)
+          assert_uris(['http://jsi/3aya'], schema.properties['absolute'].jsi_resource_uris)
+          assert_uris([], schema.properties['none'].jsi_resource_uris)
         end
 
         it("schema with same id as externally supplied") do
@@ -552,25 +552,25 @@ describe JSI::Schema do
               'none' => {},
             },
           }, uri: 'http://jsi/3by9/root')
-          assert_uris(['http://jsi/3by9/root'], schema.schema_absolute_uris)
-          assert_uris(['http://jsi/3by9/nested_relative'], schema.properties['relative'].schema_absolute_uris)
-          assert_uris(['http://jsi/3bya'], schema.properties['absolute'].schema_absolute_uris)
-          assert_uris([], schema.properties['none'].schema_absolute_uris)
+          assert_uris(['http://jsi/3by9/root'], schema.jsi_resource_uris)
+          assert_uris(['http://jsi/3by9/nested_relative'], schema.properties['relative'].jsi_resource_uris)
+          assert_uris(['http://jsi/3bya'], schema.properties['absolute'].jsi_resource_uris)
+          assert_uris([], schema.properties['none'].jsi_resource_uris)
         end
       end
       describe 'relative id uri with no base' do
-        it 'has no schema_absolute_uri' do
+        it("has no jsi_resource_uri") do
           schema = metaschema.new_schema({
             '$id' => 'test/d6/relative_uri',
           })
-          assert_nil(schema.schema_absolute_uri)
+          assert_nil(schema.jsi_resource_uri)
           assert_enum_equal([], schema.anchors)
         end
-        it 'has no schema_absolute_uri but has an anchor' do
+        it("has no jsi_resource_uri but has an anchor") do
           schema = metaschema.new_schema({
             '$id' => 'test/d6/relative_uri_w_anchor#anchor',
           })
-          assert_nil(schema.schema_absolute_uri)
+          assert_nil(schema.jsi_resource_uri)
           assert_enum_equal(['anchor'], schema.anchors)
         end
       end
@@ -579,9 +579,9 @@ describe JSI::Schema do
       it 'resolves' do
         schema = JSI.new_schema(
           {'$schema' => 'http://json-schema.org/draft-07/schema#', '$id' => 'tehschema'},
-          uri: 'http://jsi/test/schema_absolute_uri/schema.new_base/0',
+          uri: 'http://jsi/test/jsi_resource_uri/schema.new_base/0',
         )
-        assert_uri('http://jsi/test/schema_absolute_uri/schema.new_base/tehschema', schema.schema_absolute_uri)
+        assert_uri('http://jsi/test/jsi_resource_uri/schema.new_base/tehschema', schema.jsi_resource_uri)
       end
     end
   end

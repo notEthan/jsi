@@ -156,7 +156,7 @@ module JSI
           define_singleton_method(:dialect) { msn_dialect }
           extend(Schema)
 
-          if jsi_registry && schema_absolute_uris.any? { |uri| !jsi_registry.registered?(uri) }
+          if jsi_registry && jsi_resource_uris.any? { |uri| !jsi_registry.registered?(uri) }
             jsi_registry.register_immediate(self)
           end
         end
@@ -342,7 +342,7 @@ module JSI
       else
         jsi_registry || raise(ResolutionError, "no jsi_registry")
         bootstrap_resource = bootstrap_schema.jsi_resource_root
-        resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
+        resource_uri = bootstrap_resource.jsi_resource_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
         if jsi_registry.registered?(resource_uri)
           resource = jsi_registry.find(resource_uri)
           relative_ptr = bootstrap_schema.jsi_ptr.relative_to(bootstrap_resource.jsi_ptr)

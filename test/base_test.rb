@@ -1028,8 +1028,8 @@ describe JSI::Base do
         exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
         act = schema.new_jsi(instance, uri: 'http://jsi/test/802e/')
         refute_equal(exp, act)
-        assert_uris(['http://jsi/test/802d/4c01', 'http://jsi/test/802d/'], exp.schema_absolute_uris)
-        assert_uris(['http://jsi/test/802e/4c01', 'http://jsi/test/802e/'], act.schema_absolute_uris)
+        assert_uris(['http://jsi/test/802d/4c01', 'http://jsi/test/802d/'], exp.jsi_resource_uris)
+        assert_uris(['http://jsi/test/802e/4c01', 'http://jsi/test/802e/'], act.jsi_resource_uris)
       end
     end
 
@@ -1040,8 +1040,8 @@ describe JSI::Base do
         exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
         act = schema.new_jsi(instance, uri: 'http://jsi/test/802e/')
         refute_equal(exp, act)
-        assert_uris(['http://jsi/test/a86e', 'http://jsi/test/802d/'], exp.schema_absolute_uris)
-        assert_uris(['http://jsi/test/a86e', 'http://jsi/test/802e/'], act.schema_absolute_uris)
+        assert_uris(['http://jsi/test/a86e', 'http://jsi/test/802d/'], exp.jsi_resource_uris)
+        assert_uris(['http://jsi/test/a86e', 'http://jsi/test/802e/'], act.jsi_resource_uris)
       end
     end
 

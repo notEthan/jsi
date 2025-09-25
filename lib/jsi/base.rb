@@ -107,8 +107,8 @@ module JSI
         else
           schema_names = jsi_class_schemas.map do |schema|
             mod_name = schema.jsi_schema_module_name_from_ancestor
-            if mod_name && schema.schema_absolute_uri
-              "#{mod_name} <#{schema.schema_absolute_uri}>"
+            if mod_name && schema.jsi_resource_uri
+              "#{mod_name} <#{schema.jsi_resource_uri}>"
             elsif mod_name
               mod_name
             elsif schema.schema_uri
@@ -873,7 +873,7 @@ module JSI
             0
           : schema.jsi_schema_module_name_from_ancestor ?
             1
-          : schema.schema_absolute_uri ?
+          : schema.jsi_resource_uri ?
             2
           : schema.schema_uri ?
             3

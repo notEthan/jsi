@@ -104,8 +104,8 @@ module JSI
     def inspect
       dam_s = " #{schema.jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}" if !schema.jsi_schema_dynamic_anchor_map.empty?
       if name_from_ancestor
-        if schema.schema_absolute_uri
-          -"#{name_from_ancestor} <#{schema.schema_absolute_uri}>#{dam_s} (JSI Schema Module)"
+        if schema.jsi_resource_uri
+          -"#{name_from_ancestor} <#{schema.jsi_resource_uri}>#{dam_s} (JSI Schema Module)"
         else
           -"#{name_from_ancestor}#{dam_s} (JSI Schema Module)"
         end

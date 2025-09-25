@@ -460,11 +460,11 @@ module JSI
 
     # @yield [URI]
     private def schema_uris_compute(&block)
-      schema_absolute_uris.each(&block)
+      jsi_resource_uris.each(&block)
 
       if jsi_resource_root
         anchors.each do |anchor|
-          jsi_resource_root.schema_absolute_uris.each do |uri|
+          jsi_resource_root.jsi_resource_uris.each do |uri|
             yield(uri.merge(fragment: anchor))
           end
         end
@@ -472,7 +472,7 @@ module JSI
 
       jsi_subschema_resource_ancestors.reverse_each do |ancestor_schema|
         relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
-        ancestor_schema.schema_absolute_uris.each do |uri|
+        ancestor_schema.jsi_resource_uris.each do |uri|
           yield(uri.merge(fragment: relative_ptr.fragment))
         end
       end
@@ -603,7 +603,7 @@ module JSI
     # is this schema the root of a schema resource?
     # @return [Boolean]
     def jsi_is_resource_root?
-      super || schema_absolute_uris.any?
+      super || jsi_resource_uris.any?
     end
 
     # @deprecated after v0.8
