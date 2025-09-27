@@ -951,8 +951,8 @@ module JSI
             jsi_document,
             dialect: dialect,
             jsi_ptr: descendent_schema.jsi_ptr + subptr,
-            # note: same as anchor_root.jsi_resource_ancestor_uri since we don't cross resource boundaries.
-            jsi_base_uri: descendent_schema.jsi_resource_ancestor_uri,
+            # note: same as anchor_root.jsi_next_base_uri since we don't cross resource boundaries.
+            jsi_base_uri: descendent_schema.jsi_next_base_uri,
           )
           if !descendent_subschema.jsi_is_resource_root?
             descendent_schemas.push([descendent_subschema, ptrs.dup.push(subptr).freeze])

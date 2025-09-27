@@ -53,7 +53,7 @@ describe("JSON Referencing Test Suite") do
                 else
                   resolved_schema = ref.resolve
                   assert_equal(curr_test['target'], resolved_schema.jsi_node_content)
-                  base_uri = resolved_schema.jsi_resource_ancestor_uri
+                  base_uri = resolved_schema.jsi_next_base_uri
                 end
                 curr_test = curr_test['then']
               end

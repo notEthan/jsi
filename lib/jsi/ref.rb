@@ -85,8 +85,8 @@ module JSI
 
         if ref_uri_nofrag.absolute?
           ref_abs_uri = ref_uri_nofrag
-        elsif referrer && referrer.jsi_resource_ancestor_uri
-          ref_abs_uri = referrer.jsi_resource_ancestor_uri.join(ref_uri_nofrag)
+        elsif referrer && referrer.jsi_next_base_uri
+          ref_abs_uri = referrer.jsi_next_base_uri.join(ref_uri_nofrag)
         else
           ref_abs_uri = nil
         end

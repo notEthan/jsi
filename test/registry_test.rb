@@ -151,7 +151,7 @@ describe("JSI::Registry") do
       registry.autoload_uri(uri) do
         JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, root_uri: uri)
       end
-      assert_uri(uri, registry.find(uri).jsi_resource_ancestor_uri)
+      assert_uri(uri, registry.find(uri).jsi_next_base_uri)
     end
 
     it 'autoloads a uri but the resource is not in the JSI from the block' do

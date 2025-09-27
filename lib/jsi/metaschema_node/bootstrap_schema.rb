@@ -67,7 +67,7 @@ module JSI
       dialect.bootstrap_schema(
         jsi_document,
         jsi_ptr: jsi_ptr + subptr,
-        jsi_base_uri: jsi_resource_ancestor_uri,
+        jsi_base_uri: jsi_next_base_uri,
         jsi_schema_resource_ancestors: jsi_subschema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr + subptr),
         jsi_registry: jsi_registry,

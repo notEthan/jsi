@@ -78,7 +78,7 @@ module JSI
     # If this node is a schema with an id, this is its absolute URI; otherwise an ancestor resource's URI,
     # or nil if not contained by a resource with a URI.
     # @return [URI, nil]
-    def jsi_resource_ancestor_uri
+    def jsi_next_base_uri
       jsi_resource_uri || jsi_base_uri
     end
 

@@ -1015,7 +1015,7 @@ module JSI
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_indicated_schemas: child_indicated_schemas,
-          jsi_base_uri: jsi_resource_ancestor_uri,
+          jsi_base_uri: jsi_next_base_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
           jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token]),
           jsi_root_node: @jsi_root_node,
