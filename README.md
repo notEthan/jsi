@@ -7,7 +7,7 @@ JSI offers an Object-Oriented representation for JSON data using JSON Schemas. G
 
 To learn more about JSON Schema see <https://json-schema.org/>.
 
-JSI marries object-oriented programming with JSON Schemas by associating a module with each schema, and extending every instance described by a schema with that module. When an application adds methods to a schema module, those methods can be used on its instances.
+JSI marries object-oriented programming with JSON Schemas by associating a module with each schema, and constructing every instance described by a schema to be an instance of that module. When an application adds methods to a schema module, those methods can be used on the schema's instances.
 
 A JSI instance aims to offer a fairly unobtrusive wrapper around its JSON data, which is usually a Hash (JSON Object) or Array described by one or more JSON Schemas. JSI instances have accessors for property names described by schemas, schema validation, and other nice things. Mostly though, you use a JSI as you would use its underlying data, calling the same methods (e.g. `#[]`, `#map`, `#repeated_permutation`) and passing it to anything that duck-types expecting `#to_ary` or `#to_hash`.
 
@@ -38,7 +38,8 @@ properties:
 We pass that to {JSI.new_schema} which will instantiate a JSI Schema which represents it:
 
 ```ruby
-# this would usually load YAML or JSON; the schema object is inlined for copypastability.
+# this would usually load YAML or JSON; the schema content
+# is inlined here for copypastability.
 contact_schema = JSI.new_schema({"$schema" => "http://json-schema.org/draft-07/schema", "description" => "A Contact", "type" => "object", "properties" => {"name" => {"type" => "string"}, "phone" => {"type" => "array", "items" => {"type" => "object", "properties" => {"location" => {"type" => "string"}, "number" => {"type" => "string"}}}}}})
 ```
 
@@ -64,7 +65,8 @@ So, if we construct an instance like:
 
 ```ruby
 bill = Contact.new_jsi(
-  # this would typically load JSON or YAML; the schema instance is inlined for copypastability.
+  # this would usually load JSON or YAML; the instance content
+  # is inlined for copypastability.
   {"name" => "bill", "phone" => [{"location" => "home", "number" => "555"}], "nickname" => "big b"},
   # note: bill is mutable to demonstrate setters below; the default is immutable.
   mutable: true
@@ -158,7 +160,7 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 
 - `JSI::Base` is the base class for each JSI schema class representing instances of JSON Schemas.
 - a "JSI Schema" is a JSON Schema, instantiated as (usually) a JSI::Base described by a meta-schema (see the section on meta-schemas below). A JSI Schema is an instance of the module `JSI::Schema`.
-- a "JSI Schema Module" is a module which represents one schema, dynamically created by that Schema. Instances of that schema are extended with its JSI schema module. applications may reopen these modules to add functionality to JSI instances described by a given schema.
+- a "JSI Schema Module" is a module associated with one schema, dynamically created by that schema. Instances of that schema are ruby instances of its JSI schema module. Applications may reopen these modules to add functionality to JSI instances described by the schema.
 - a "JSI schema class" is a subclass of `JSI::Base` representing any number of JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
