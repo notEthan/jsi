@@ -29,8 +29,8 @@ module JSI
         jsi_registry: nil
     )
       @dialect = dialect
-      self.jsi_ptr = jsi_ptr
-      self.jsi_document = jsi_document
+      @jsi_ptr = jsi_ptr
+      @jsi_document = jsi_document
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map

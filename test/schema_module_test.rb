@@ -142,4 +142,23 @@ describe 'JSI::SchemaModule' do
   end
 end
 
+# hvz: a document that contains a schema (but the document is not a schema)
+hvz_schema = BasicMetaSchema.new_schema(
+  {
+    "properties": {"txf": {"$ref": "tag:named-basic-meta-schema"}},
+  },
+  registry: JSI::Registry.new.tap { |r| r.register(BasicMetaSchema.schema) },
+)
+# name the root
+HVZ = hvz_schema.new_jsi({'txf' => {'additionalProperties' => {}}}).jsi_schema_module_connection
+
+describe(JSI::SchemaModule::Connection) do
+  describe("an instance of a schema in a non-schema document with a named module") do
+    it("shows name_from_ancestor") do
+      i = HVZ.txf.new_jsi({'a' => {}})
+      assert_equal(%q(#{<JSI (HVZ.txf)> "a" => #{<JSI (HVZ.txf.additionalProperties)>}}), i.inspect)
+    end
+  end
+end
+
 $test_report_file_loaded[__FILE__]

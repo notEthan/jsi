@@ -1,6 +1,16 @@
 # frozen_string_literal: true
 
 module JSI
+  # class SchemaModule < class SchemaModule::Connection < class Module
+  # this unusual configuration of a class (SchemaModule) subclassing a class inside its own
+  # namespace (SchemaModule::Connection) follows reconfiguration changing Connection from a regular
+  # class to subclass Module, so that a JSI that isn't a Schema can have a named module, and schemas
+  # within that JSI's document have a useful name_from_ancestor when inspecting their instances.
+  begin # shenanigans to get classes configured while not confusing yard
+    SchemaModule = Class.new(Class.new(Module))
+    SchemaModule.const_set(:Connection, SchemaModule.superclass)
+  end
+
   # A Module associated with a JSI Schema (its {Schema#jsi_schema_module #jsi_schema_module}).
   #
   # This module may be opened by the application to define methods for instances described by its schema.
@@ -21,11 +31,11 @@ module JSI
   # The schema module makes it straightforward to access the schema modules of the schema's subschemas.
   # It defines readers for schema properties (keywords) on its singleton (that is,
   # called on the module itself, not on instances of it) to access these.
-  # The {SchemaModule::Connects#[] #[]} method can also be used.
+  # The {SchemaModule::Connection#[] #[]} method can also be used.
   #
   # For example, given a schema with an `items` subschema, then `schema.items.jsi_schema_module`
   # and `schema.jsi_schema_module.items` both refer to the same module.
-  # Subscripting with {SchemaModule::Connects#[] #[]} can refer to subschemas on properties
+  # Subscripting with {SchemaModule::Connection#[] #[]} can refer to subschemas on properties
   # that can have any name, e.g. `schema.properties['foo'].jsi_schema_module` is the same as
   # `schema.jsi_schema_module.properties['foo']`.
   #
@@ -77,18 +87,7 @@ module JSI
   #
   # Note that when `bill` is inspected, schema module names `Contact`, `Contact.properties["phone"]`,
   # and `Contact::PhoneNumber` are informatively shown on respective instances.
-  class SchemaModule < Module
-    # @private
-    def initialize(schema, &block)
-      super(&block)
-
-      @jsi_node = schema
-
-      schema.jsi_schemas.each do |schema_schema|
-        extend SchemaClasses.schema_property_reader_module(schema_schema, conflicting_modules: Set[SchemaModule])
-      end
-    end
-
+  class SchemaModule < SchemaModule::Connection
     # The schema for which this is the JSI Schema Module
     # @return [Base + Schema]
     def schema
@@ -123,6 +122,7 @@ module JSI
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this module's schema.
     def new_jsi(instance, **kw)
+      raise(BlockGivenError) if block_given?
       schema.new_jsi(instance, **kw)
     end
 
@@ -306,8 +306,7 @@ module JSI
     @schema_property_writer_module_map = Hash.new { |h, k| h[k] = schema_property_writer_module_compute(k) }
   end
 
-  # connecting {SchemaModule}s via {SchemaModule::Connection}s
-  module SchemaModule::Connects
+  class SchemaModule::Connection
     attr_reader :jsi_node
 
     # a name relative to a named schema module of an ancestor schema.
@@ -316,11 +315,11 @@ module JSI
     # @api private
     # @return [String, nil]
     def name_from_ancestor
-      named_ancestor_schema, tokens = named_ancestor_schema_tokens
-      return nil unless named_ancestor_schema
+      named_ancestor, tokens = named_ancestor_tokens
+      return nil unless named_ancestor
 
-      name = named_ancestor_schema.jsi_schema_module_name
-      ancestor = named_ancestor_schema
+      name = named_ancestor.jsi_schema_module_connection.name
+      ancestor = named_ancestor
       tokens.each do |token|
         if ancestor.jsi_property_readers.include?(token)
           name += ".#{token}"
@@ -332,6 +331,13 @@ module JSI
         ancestor = ancestor[token]
       end
       name.freeze
+    end
+
+    # See {Base#/} - descendent's {Base#jsi_schema_module_connection}
+    # @param (see Base#/)
+    # @return [SchemaModule::Connection]
+    def /(ptr)
+      (jsi_node / ptr).jsi_schema_module_connection
     end
 
     # Subscripting a JSI schema module or a {SchemaModule::Connection} will subscript its node, and
@@ -353,28 +359,22 @@ module JSI
       elsif block
         raise(BlockGivenError, "block given but token #{token.inspect} does not identify a schema")
       elsif sub.is_a?(JSI::Base)
-        SchemaModule::Connection.new(sub)
+        sub.jsi_schema_module_connection
       else
         sub
       end
     end
 
-    private
-
     # @return [Array<JSI::Schema, Array>, nil]
-    def named_ancestor_schema_tokens
-      schema_ancestors = @jsi_node.jsi_ancestor_nodes
-      named_ancestor_schema = schema_ancestors.detect do |jsi|
-        jsi.is_a?(Schema) && jsi.jsi_schema_module_defined? && jsi.jsi_schema_module_name
+    private def named_ancestor_tokens
+      ancestors = @jsi_node.jsi_ancestor_nodes
+      named_ancestor = ancestors.detect do |jsi|
+        jsi.jsi_schema_module_connection_defined? && jsi.jsi_schema_module_connection.name
       end
-      return nil unless named_ancestor_schema
-      tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor_schema.jsi_ptr).tokens
-      [named_ancestor_schema, tokens]
+      return nil unless named_ancestor
+      tokens = @jsi_node.jsi_ptr.relative_to(named_ancestor.jsi_ptr).tokens
+      [named_ancestor, tokens]
     end
-  end
-
-  class SchemaModule
-    include Connects
   end
 
   # A JSI Schema Module is a module which represents a schema. A SchemaModule::Connection represents
@@ -385,13 +385,13 @@ module JSI
   # schema modules to refer to their subschemas' schema modules.
   #
   # A SchemaModule::Connection has readers for property names described by the node's schemas.
-  class SchemaModule::Connection
-    include SchemaModule::Connects
-
+  #
+  # This class subclasses Module only so that it can be named, to identify schemas descendent of its node.
+  # No object is ever expected to be an instance of a SchemaModule::Connection module.
+  class SchemaModule::Connection < Module
     # @param node [JSI::Base]
     def initialize(node)
       fail(Bug, "node must be JSI::Base: #{node.pretty_inspect.chomp}") unless node.is_a?(JSI::Base)
-      fail(Bug, "node must not be JSI::Schema: #{node.pretty_inspect.chomp}") if node.is_a?(JSI::Schema)
       @jsi_node = node
       node.jsi_schemas.each do |schema|
         extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [SchemaModule::Connection]))

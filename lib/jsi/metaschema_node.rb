@@ -76,21 +76,17 @@ module JSI
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        jsi_schema_base_uri: nil,
-        jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         initialize_finish: true,
-        jsi_conf: nil,
-        jsi_root_node: nil
+        jsi_root_node: nil,
+        **kw
     )
       super(jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: SchemaSet[],
-        jsi_schema_base_uri: jsi_schema_base_uri,
         # MSN doesn't track schema_resource_ancestors through descendents, but the root is included when appropriate
         jsi_schema_resource_ancestors: jsi_ptr.root? || !jsi_root_node.is_a?(Schema) ? Util::EMPTY_ARY : [jsi_root_node].freeze,
-        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        jsi_conf: jsi_conf,
         jsi_root_node: jsi_root_node,
+        **kw,
       )
 
       @initialize_finished = false
@@ -111,19 +107,19 @@ module JSI
             jsi_document,
             jsi_ptr: ptr,
             jsi_schema_base_uri: nil, # not supported
-            jsi_registry: self.jsi_conf.bootstrap_registry,
+            jsi_registry: jsi_conf.bootstrap_registry,
           )
         else
           # if not fragment-only, ref must be registered in the bootstrap_registry
-          ref = Schema::Ref.new(ref_uri, registry: self.jsi_conf.bootstrap_registry)
+          ref = Schema::Ref.new(ref_uri, registry: jsi_conf.bootstrap_registry)
           ref.resolve
         end
       end
 
-      @bootstrap_metaschema = bootstrap_schema_from_ref[self.jsi_conf.metaschema_root_ref]
+      @bootstrap_metaschema = bootstrap_schema_from_ref[jsi_conf.metaschema_root_ref]
 
       instance_for_schemas = jsi_document
-      root_bootstrap_schema = bootstrap_schema_from_ref[self.jsi_conf.root_schema_ref]
+      root_bootstrap_schema = bootstrap_schema_from_ref[jsi_conf.root_schema_ref]
       our_bootstrap_indicated_schemas = jsi_ptr.tokens.inject(SchemaSet[root_bootstrap_schema]) do |bootstrap_indicated_schemas, tok|
         child_indicated_schemas = bootstrap_indicated_schemas.each_yield_set do |is, y|
           is.each_inplace_child_applicator_schema(tok, instance_for_schemas, &y)
@@ -344,17 +340,13 @@ module JSI
         resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
         if jsi_registry.registered?(resource_uri)
           resource = jsi_registry.find(resource_uri)
-          to_initialize_finish(resource.root_descendent_node_map[
-            ptr: bootstrap_schema.jsi_ptr,
-            dynamic_anchor_map: dynamic_anchor_map,
-          ])
+          resource.root_descendent_node(bootstrap_schema.jsi_ptr, dynamic_anchor_map: dynamic_anchor_map)
         else
           root = to_initialize_finish(MetaSchemaNode.new(
             bootstrap_schema.jsi_document,
             **our_initialize_params,
             jsi_ptr: Ptr[],
             jsi_schema_base_uri: nil,
-            jsi_schema_dynamic_anchor_map: dynamic_anchor_map, # TODO does root need this? (if ever !bootstrap_schema.jsi_ptr.root?)
             initialize_finish: false,
             jsi_conf: jsi_conf,
           ))

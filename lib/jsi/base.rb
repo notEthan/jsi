@@ -133,9 +133,9 @@ module JSI
         return super unless respond_to?(:jsi_class_schemas)
         alnum = proc { |id| (id % 36**4).to_s(36).rjust(4, '0').upcase }
         schema_names = jsi_class_schemas.map do |schema|
-          named_ancestor_schema, tokens = schema.jsi_schema_module.send(:named_ancestor_schema_tokens)
-          if named_ancestor_schema
-            [named_ancestor_schema.jsi_schema_module_name, *tokens].join('_')
+          named_ancestor, tokens = schema.jsi_schema_module.send(:named_ancestor_tokens)
+          if named_ancestor
+            [named_ancestor.jsi_schema_module_connection.name, *tokens].join('_')
           elsif schema.schema_uri
             schema.schema_uri.to_s
           else
@@ -184,10 +184,12 @@ module JSI
       #chkbug fail(Bug, "no #jsi_schemas") unless respond_to?(:jsi_schemas)
 
       #chkbug fail(Bug) if !jsi_root_node ^ jsi_conf
-      @jsi_conf = jsi_conf || jsi_root_node.jsi_conf
-      self.jsi_document = jsi_document
-      self.jsi_ptr = jsi_ptr
-      self.jsi_indicated_schemas = jsi_indicated_schemas
+      @jsi_conf = jsi_conf = jsi_conf || jsi_root_node.jsi_conf
+      @jsi_document = jsi_document
+      #chkbug fail(Bug) unless jsi_ptr.is_a?(Ptr)
+      @jsi_ptr = jsi_ptr
+      #chkbug fail(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
+      @jsi_indicated_schemas = jsi_indicated_schemas
       self.jsi_schema_base_uri = jsi_schema_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
@@ -276,7 +278,22 @@ module JSI
     # @yield [JSI::Base] each descendent node, starting with self
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def jsi_each_descendent_node(propertyNames: false, &block)
-      return to_enum(__method__, propertyNames: propertyNames) unless block
+      unless block
+        return to_enum(__method__, propertyNames: propertyNames) do
+          # size
+          Util.ycomb do |rec|
+            proc do |node|
+              if node.respond_to?(:to_hash)
+                node.to_hash.inject(1) { |c, (k, child)| c + rec[child] + (propertyNames ? rec[k] : 0) }
+              elsif node.respond_to?(:to_ary)
+                node.to_ary.inject(1) { |c, child| c + rec[child] }
+              else
+                1
+              end
+            end
+          end[jsi_node_content]
+        end
+      end
 
       yield self
 
@@ -760,6 +777,28 @@ module JSI
     end
 
     # @private
+    # @return [SchemaModule::Connection]
+    def jsi_schema_module_connection
+      raise(BlockGivenError) if block_given?
+      @memos.fetch(:schema_module_connection) do
+        if is_a?(Schema)
+          raise(TypeError, "mutable schema may not have a schema module: #{self}") if jsi_mutable?
+          module_class = SchemaModule
+        else
+          raise(TypeError, "mutable JSI may not have a SchemaModule::Connection: #{self}") if jsi_mutable?
+          module_class = SchemaModule::Connection
+        end
+        @memos[:schema_module_connection] = module_class.new(self)
+      end
+    end
+
+    # @private
+    # @return [Boolean]
+    def jsi_schema_module_connection_defined?
+      @memos.key?(:schema_module_connection)
+    end
+
+    # @private
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [Base]
     def jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
@@ -922,11 +961,6 @@ module JSI
       @child_applied_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_applied_schemas_compute))
       @child_node_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_node_compute))
       @with_schema_dynamic_anchor_map_map = jsi_memomap(&method(:jsi_with_schema_dynamic_anchor_map_compute))
-    end
-
-    def jsi_indicated_schemas=(jsi_indicated_schemas)
-      #chkbug fail(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
-      @jsi_indicated_schemas = jsi_indicated_schemas
     end
 
     def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )

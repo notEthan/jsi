@@ -39,6 +39,11 @@ module JSI
       end
     end
 
+    # @return [self.class]
+    def merge(**h)
+      self.class.new(**to_h, **h)
+    end
+
     def pretty_print(q)
       jsi_pp_object_group(q) do
         q.seplist(each_pair) do |k, v|

@@ -486,16 +486,7 @@ module JSI
     #
     # @return [SchemaModule]
     def jsi_schema_module
-      raise(BlockGivenError) if block_given?
-      raise(TypeError, "non-Base schema may not have a schema module: #{self}") unless is_a?(Base)
-      raise(TypeError, "mutable schema may not have a schema module: #{self}") if jsi_mutable?
-      @memos.fetch(:jsi_schema_module) { @memos[:jsi_schema_module] = SchemaModule.new(self) }
-    end
-
-    # @private
-    # @return [Boolean]
-    def jsi_schema_module_defined?
-      @memos.key?(:jsi_schema_module)
+      jsi_schema_module_connection
     end
 
     # Evaluates the given block in the context of this schema's JSI schema module.
@@ -510,7 +501,7 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name
-      @memos[:jsi_schema_module] && @memos[:jsi_schema_module].name
+      @memos[:schema_module_connection] && @memos[:schema_module_connection].name
     end
 
     # @return [String, nil]
@@ -527,6 +518,7 @@ module JSI
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this schema.
     def new_jsi(instance, **kw)
+      raise(BlockGivenError) if block_given?
       SchemaSet[self].new_jsi(instance, **kw)
     end
 
@@ -789,7 +781,7 @@ module JSI
             visited_refs: Util.add_visited_ref(visited_refs, ref),
             collect_evaluated: collect_evaluated && !inplace_child_evaluated,
             # the `if` keyword needs to yield to here because it does affect `evaluated`,
-            # but it does not apply itself/its applicators, so is not passed to our given block.
+            # but it does not applicate itself/its applicators, so does not yield to the given block.
             &(applicate ? block : proc { })
           )
           inplace_child_evaluated ||= collect_evaluated && schema_evaluated && schema.instance_valid?(instance)
@@ -967,7 +959,7 @@ module JSI
 
     # @private pending stronger stability of dynamic scope
     def with_dynamic_scope_from(node)
-      node = node.jsi_node if node.is_a?(SchemaModule::Connects)
+      node = node.jsi_node if node.is_a?(SchemaModule::Connection)
       jsi_with_schema_dynamic_anchor_map(node.jsi_next_schema_dynamic_anchor_map)
     end
 
