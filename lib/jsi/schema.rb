@@ -553,10 +553,10 @@ module JSI
       dialect = dialect.first::DIALECT if dialect.is_a?(Array) && dialect.size == 1
 
       if !dialect
-        raise(ArgumentError, "no dialect given and no $vocabulary hash/object") if !self['$vocabulary'].respond_to?(:to_hash)
+        raise(ArgumentError, "no dialect given and no $vocabulary hash/object") if !schema_content['$vocabulary'].respond_to?(:to_hash)
 
         vocabularies = []
-        self['$vocabulary'].each do |vocabulary_uri, required|
+        schema_content['$vocabulary'].each do |vocabulary_uri, required|
           if required || jsi_registry.vocabulary_registered?(vocabulary_uri)
             vocabularies << jsi_registry.find_vocabulary(vocabulary_uri)
           end
