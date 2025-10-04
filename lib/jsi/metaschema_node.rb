@@ -135,6 +135,8 @@ module JSI
         is.each_inplace_applicator_schema(instance_for_schemas, &y) # note: instance_for_schemas == jsi_node_content now
       end
 
+      @jsi_schemas = @bootstrap_schemas
+
       @bootstrap_schemas.each do |bootstrap_schema|
         if bootstrap_schema == @bootstrap_metaschema
           # this is described by the meta-schema, i.e. this is a schema
@@ -146,8 +148,6 @@ module JSI
           end
         end
       end
-
-      @jsi_schemas = @bootstrap_schemas
 
       jsi_initialize_finish if initialize_finish
     end
