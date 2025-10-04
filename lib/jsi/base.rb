@@ -880,7 +880,7 @@ module JSI
       end
 
       if schema_names.empty?
-        schemas_txt = -"*#{jsi_schemas.size}"
+        schemas_txt = -"*#{self.jsi_schemas ? jsi_schemas.size : '?'}"
       elsif schema_names.size == jsi_schemas.size
         schemas_txt = -" (#{schema_names.join(' + ')})"
       else
