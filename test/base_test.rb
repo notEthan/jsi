@@ -389,9 +389,9 @@ describe JSI::Base do
       it 'yields the instance to modify' do
         modified = subject.jsi_modified_copy { |o| o }
         # this doesn't really need to be tested but ... whatever
-        assert_equal(subject.jsi_instance.object_id, modified.jsi_instance.object_id)
+        assert_same(subject.jsi_instance, modified.jsi_instance)
         assert_equal(subject, modified)
-        refute_equal(subject.object_id, modified.object_id)
+        refute_same(subject, modified)
       end
     end
     describe 'resulting in a different type' do
