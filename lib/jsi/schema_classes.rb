@@ -173,7 +173,7 @@ module JSI
 
     # (see Schema::MetaSchema#new_schema_module)
     def new_schema_module(schema_content, **kw, &block)
-      schema.new_schema(schema_content, **kw, &block).jsi_schema_module
+      schema.new_schema_module(schema_content, **kw, &block)
     end
 
     # @return [Schema::Dialect]

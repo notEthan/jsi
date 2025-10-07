@@ -107,36 +107,34 @@ module JSI
       #   replaced with Strings (recursively through the document).
       #   Replacement is done on a copy; the given schema content is not modified.
       # @param conf_kw (see SchemaSet#new_jsi)
-      # @yield If a block is given, it is evaluated in the context of the schema's {Schema#jsi_schema_module JSI schema module}
-      #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
       def new_schema(schema_content,
           uri: nil,
           register: true,
           stringify_symbol_keys: true,
-          **conf_kw,
-          &block
+          **conf_kw
       )
-        schema_jsi = new_jsi(schema_content,
+        raise(BlockGivenError) if block_given?
+        new_jsi(schema_content,
           uri: uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
           mutable: false,
         )
-
-        schema_jsi.jsi_schema_module_exec(&block) if block
-
-        schema_jsi
       end
 
       # Instantiates the given schema content as a JSI Schema, passing all params to
       # {Schema::MetaSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
       #
+      # @yield If a block is given, it is evaluated in the context of the schema module
+      #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::SchemaModule] the JSI Schema Module of the instantiated schema
       def new_schema_module(schema_content, **kw, &block)
-        new_schema(schema_content, **kw, &block).jsi_schema_module
+        schema_jsi = new_schema(schema_content, **kw)
+        schema_jsi.jsi_schema_module_exec(&block) if block
+        schema_jsi.jsi_schema_module
       end
     end
 
@@ -236,7 +234,6 @@ module JSI
       # @param register (see Schema::MetaSchema#new_schema)
       # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
       # @param conf_kw (see SchemaSet#new_jsi)
-      # @yield (see Schema::MetaSchema#new_schema)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
       def new_schema(schema_content,
@@ -246,9 +243,9 @@ module JSI
           uri: nil,
           register: true,
           stringify_symbol_keys: true,
-          **conf_kw,
-          &block
+          **conf_kw
       )
+        raise(BlockGivenError) if block_given?
         new_schema_params = {
           uri: uri,
           register: register,
@@ -273,7 +270,7 @@ module JSI
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
-          default_metaschema.new_schema(schema_content, **new_schema_params, &block)
+          default_metaschema.new_schema(schema_content, **new_schema_params)
         }
         if schema_content.is_a?(Schema)
           raise(TypeError, [
@@ -292,7 +289,7 @@ module JSI
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
             metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: conf.registry)
-            metaschema.new_schema(schema_content, **new_schema_params, &block)
+            metaschema.new_schema(schema_content, **new_schema_params)
           else
             default_metaschema_new_schema.call
           end

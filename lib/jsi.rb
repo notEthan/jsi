@@ -110,9 +110,12 @@ module JSI
   # Instantiates the given schema content as a JSI Schema, passing all params to
   # {JSI.new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
   #
+  # @yield (see Schema::MetaSchema#new_schema_module)
   # @return (see JSI::Schema::MetaSchema#new_schema_module)
   def self.new_schema_module(schema_content, **kw, &block)
-    new_schema(schema_content, **kw, &block).jsi_schema_module
+    schema_jsi = new_schema(schema_content, **kw)
+    schema_jsi.jsi_schema_module_exec(&block) if block
+    schema_jsi.jsi_schema_module
   end
 
   # Instantiates the given metaschema_document as a MetaSchemaNode.
