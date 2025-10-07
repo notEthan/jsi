@@ -260,6 +260,185 @@ describe(JSI::MetaSchemaNode) do
         assert_schemas([schema, schema.allOf[0], schema.allOf[0].properties['bar']], instance['bar'])
         assert(instance.jsi_valid?)
       end
+
+      describe("with dynamic scope") do
+        let(:dialect) do
+          JSI::Schema::Dialect.new(
+            vocabularies: [
+              JSI::Schema::Vocabulary.new(elements: [
+                JSI::Schema::Elements::SELF[],
+                JSI::Schema::Elements::ID[keyword: '$id', fragment_is_anchor: false],
+                JSI::Schema::Elements::ANCHOR[keyword: '$dynamicAnchor', actions: [:dynamicAnchor]],
+                JSI::Schema::Elements::DYNAMIC_REF[],
+                JSI::Schema::Elements::PROPERTIES[], # note: element supports patternProperties but meta-schema does not
+                JSI::Schema::Elements::ITEMS[], # note: element supports additionalItems but meta-schema does not
+                JSI::Schema::Elements::ALL_OF[],
+              ]),
+            ],
+          )
+        end
+
+        yaml(:metaschema_document, <<~YAML
+            $id: "tag:9cs:meta"
+            $dynamicAnchor: "meta"
+            allOf:
+              # this could be plain $ref but this dialect does not include that
+              - title: "meta-allOf"
+                $dynamicRef: "tag:9cs:applicator"
+            properties:
+              $id: {title: "meta-props-id"}
+              $dynamicRef: {title: "meta-props-dynamicRef"}
+            YAML
+        )
+
+        yaml(:applicator_document, <<~YAML
+            $id: "tag:9cs:applicator"
+            $dynamicAnchor: "meta"
+            properties:
+              properties:
+                title: "applic-props-properties"
+                additionalProperties:
+                  title: "applic-props-properties-additionalProperties"
+                  $dynamicRef: "#meta"
+              additionalProperties:
+                title: "applic-props-additionalProperties"
+                $dynamicRef: "#meta"
+              items:
+                title: "applic-props-items"
+                $dynamicRef: "#meta"
+              allOf:
+                title: "applic-props-allOf"
+                items:
+                  title: "applic-props-allOf-items"
+                  $dynamicRef: "#meta"
+            YAML
+        )
+
+        let(:metaschema_root_ref) { "tag:9cs:meta" }
+
+        it("acts like a meta-schema 9cs") do
+          applicator_schema = metaschema.jsi_schemas.detect { |s| s.id == "tag:9cs:applicator" }
+          assert_schemas([metaschema, metaschema / ['allOf', 0], applicator_schema],
+            metaschema)
+          assert_schemas([metaschema.properties['$id']],
+            metaschema / ['$id'])
+          assert_schemas([applicator_schema.properties['allOf']],
+            metaschema / ['allOf'])
+          assert_schemas([applicator_schema / ['properties', 'allOf', 'items'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            metaschema / ['allOf', 0])
+          assert_schemas([metaschema.properties['$dynamicRef']],
+            metaschema / ['allOf', 0, '$dynamicRef'])
+          assert_schemas([applicator_schema.properties['properties']],
+            metaschema / ['properties'])
+          assert_schemas([applicator_schema / ['properties', 'properties', 'additionalProperties'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            metaschema / ['properties', '$id'])
+          assert_schemas([applicator_schema / ['properties', 'properties', 'additionalProperties'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            metaschema / ['properties', '$dynamicRef'])
+          assert_schemas([metaschema, metaschema / ['allOf', 0], applicator_schema],
+            applicator_schema)
+          assert_schemas([metaschema.properties['$id']],
+            applicator_schema / ['$id'])
+          assert_schemas([applicator_schema.properties['properties']],
+            applicator_schema / ['properties'])
+          assert_schemas([applicator_schema / ['properties', 'properties', 'additionalProperties'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            applicator_schema / ['properties', 'properties'])
+          assert_schemas([applicator_schema / ['properties', 'additionalProperties'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            applicator_schema / ['properties', 'properties', 'additionalProperties'])
+          assert_schemas([metaschema.properties['$dynamicRef']],
+            applicator_schema / ['properties', 'properties', 'additionalProperties', '$dynamicRef'])
+          assert_schemas([applicator_schema / ['properties', 'properties', 'additionalProperties'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            applicator_schema / ['properties', 'additionalProperties'])
+          assert_schemas([applicator_schema / ['properties', 'properties', 'additionalProperties'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            applicator_schema / ['properties', 'items'])
+          assert_schemas([metaschema.properties['$dynamicRef']],
+            applicator_schema / ['properties', 'items', '$dynamicRef'])
+          assert_schemas([applicator_schema / ['properties', 'properties', 'additionalProperties'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            applicator_schema / ['properties', 'allOf'])
+          assert_schemas([applicator_schema / ['properties', 'items'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            applicator_schema / ['properties', 'allOf', 'items'])
+          assert_schemas([metaschema.properties['$dynamicRef']],
+            applicator_schema / ['properties', 'allOf', 'items', '$dynamicRef'])
+
+          # subscripting keys that are not present
+          assert_equal(nil, metaschema['no'])
+          assert_equal(nil, metaschema.properties['no'])
+
+          # validates the schemas of the meta-schema
+          assert(metaschema.jsi_valid?)
+          assert(applicator_schema.jsi_valid?)
+          assert(metaschema.instance_valid?(metaschema))
+          assert(metaschema.instance_valid?(applicator_schema))
+
+
+          schema = metaschema.new_schema({
+            "properties": {
+              "foo": {
+                "$id": "tag:55ky",
+                "items": {},
+              },
+            },
+            "additionalProperties": {
+              "$dynamicRef": "#",
+            },
+            "allOf": [
+              {
+                "properties": {
+                  "bar": {},
+                },
+              },
+            ],
+          })
+          assert_schemas([metaschema, metaschema / ['allOf', 0], applicator_schema],
+            schema)
+          assert_schemas([applicator_schema.properties['properties']],
+            schema / ["properties"])
+          assert_schemas([applicator_schema.properties['properties'].additionalProperties, metaschema, metaschema / ['allOf', 0], applicator_schema],
+            schema / ["properties", "foo"])
+          assert_schemas([metaschema.properties['$id']],
+            schema / ["properties", "foo", "$id"])
+          assert_schemas([applicator_schema.properties['items'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            schema / ["properties", "foo", "items"])
+          assert_schemas([applicator_schema.properties['additionalProperties'], metaschema, metaschema / ['allOf', 0], applicator_schema],
+            schema / ["additionalProperties"])
+          assert_schemas([metaschema.properties['$dynamicRef']],
+            schema / ["additionalProperties", "$dynamicRef"])
+          assert_schemas([applicator_schema.properties['allOf']],
+            schema / ["allOf"])
+          assert_schemas([applicator_schema.properties['allOf'].items, metaschema, metaschema / ['allOf', 0], applicator_schema],
+            schema / ["allOf", 0])
+          assert_schemas([applicator_schema.properties['properties'], applicator_schema.properties['properties']],
+            schema / ["allOf", 0, "properties"])
+          assert_schemas([applicator_schema.properties['properties'].additionalProperties, metaschema, metaschema / ['allOf', 0], applicator_schema],
+            schema / ["allOf", 0, "properties", "bar"])
+
+          assert(schema.jsi_valid?)
+          assert(metaschema.instance_valid?(schema))
+
+          [metaschema, metaschema / ['allOf', 0], applicator_schema, schema].each do |jsi|
+            jsi.jsi_each_descendent_node do |node|
+              assert_equal(node.equal?(metaschema), node.is_a?(JSI::Schema::MetaSchema))
+              expect_method = node.is_a?(JSI::Schema) ? :any? : :none?
+              assert(node.jsi_schemas.send(expect_method) do |node_schema|
+                node_schema.equal?(metaschema) || node_schema.equal?(applicator_schema) || node_schema['$dynamicRef'] == '#meta'
+              end)
+            end
+          end
+
+
+          schema_by_uri = JSI.new_schema(
+            {"$schema" => "tag:9cs:meta"},
+            registry: metaschema.jsi_registry,
+          )
+          assert_schemas([metaschema, metaschema / ['allOf', 0], applicator_schema], schema_by_uri)
+
+
+          instance = schema.new_jsi({'foo' => [], 'bar' => []})
+          assert_schemas([schema, schema.allOf[0]], instance)
+          assert_schemas([schema.properties['foo']], instance.foo)
+          assert_schemas([schema.additionalProperties, schema, schema.allOf[0], schema.allOf[0].properties['bar']], instance['bar'])
+          assert(instance.jsi_valid?)
+        end
+      end
     end
   end
 
