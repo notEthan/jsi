@@ -39,12 +39,12 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
             'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
           })
           subSchemas_schema.new_jsi(remote_content,
-            uri: uri,
+            root_uri: uri,
             registry: registry,
           )
         else
           JSI.new_schema(remote_content,
-            uri: uri,
+            root_uri: uri,
             default_metaschema: metaschema,
             registry: registry,
             after_initialize: proc do |node|

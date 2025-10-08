@@ -155,7 +155,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
       end
 
       it("resolves from non-schema") do
-        x = JSI::SchemaSet[].new_jsi({'a' => {}}, uri: 'tag:gb2/x', registry: JSI::Registry.new, register: true)
+        x = JSI::SchemaSet[].new_jsi({'a' => {}}, root_uri: 'tag:gb2/x', registry: JSI::Registry.new, register: true)
         assert_equal(x, JSI::Ref.new('x', referrer: x['a']).resolve)
         assert_equal(x['a'], JSI::Ref.new('x#/a', referrer: x['a']).resolve)
         extreferrer = JSI::SchemaSet[].new_jsi({}, uri: 'tag:gb2/root', registry: x.jsi_registry)
@@ -196,7 +196,7 @@ describe("JSI::Ref, JSI::Schema::Ref") do
 
       it 'finds a thing that is not a schema' do
         JSI.registry.autoload_uri(uri) do
-          JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, uri: uri)
+          JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, root_uri: uri)
         end
 
         err = assert_raises(JSI::Schema::NotASchemaError) { schema.new_jsi({}) }

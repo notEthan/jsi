@@ -1033,12 +1033,12 @@ describe JSI::Base do
   end
 
   describe 'equality' do
-    describe("with different externally supplied URI") do
+    describe("with different externally supplied root URI") do
       let(:schema) { JSI::JSONSchemaDraft06 }
       let(:instance) { {'$id' => '4c01'} }
       it 'is not equal' do
-        exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
-        act = schema.new_jsi(instance, uri: 'http://jsi/test/802e/')
+        exp = schema.new_jsi(instance, root_uri: 'http://jsi/test/802d/')
+        act = schema.new_jsi(instance, root_uri: 'http://jsi/test/802e/')
         refute_equal(exp, act)
         assert_uris(['http://jsi/test/802d/4c01', 'http://jsi/test/802d/'], exp.jsi_resource_uris)
         assert_uris(['http://jsi/test/802e/4c01', 'http://jsi/test/802e/'], act.jsi_resource_uris)
@@ -1049,8 +1049,8 @@ describe JSI::Base do
       let(:schema) { JSI::JSONSchemaDraft06 }
       let(:instance) { {'$id' => 'http://jsi/test/a86e'} }
       it 'is not equal' do
-        exp = schema.new_jsi(instance, uri: 'http://jsi/test/802d/')
-        act = schema.new_jsi(instance, uri: 'http://jsi/test/802e/')
+        exp = schema.new_jsi(instance, root_uri: 'http://jsi/test/802d/')
+        act = schema.new_jsi(instance, root_uri: 'http://jsi/test/802e/')
         refute_equal(exp, act)
         assert_uris(['http://jsi/test/a86e', 'http://jsi/test/802d/'], exp.jsi_resource_uris)
         assert_uris(['http://jsi/test/a86e', 'http://jsi/test/802e/'], act.jsi_resource_uris)

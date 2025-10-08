@@ -17,7 +17,7 @@ describe("resource URIs") do
       jsi = schema.new_jsi({"$self" => "tag:c8dd/root", "x" => {"$id" => "xrel"}}, registry: registry, register: true)
       assert_equal(jsi, registry.find('tag:c8dd/root'))
       assert_equal(jsi['x'], registry.find('tag:c8dd/xrel'))
-      jsi = schema.new_jsi({"$self" => "rel", "x" => {"$id" => "xrel"}}, uri: 'tag:c8de/base', registry: registry, register: true)
+      jsi = schema.new_jsi({"$self" => "rel", "x" => {"$id" => "xrel"}}, root_uri: 'tag:c8de/base', registry: registry, register: true)
       assert_equal(jsi, registry.find('tag:c8de/base'))
       assert_equal(jsi, registry.find('tag:c8de/rel'))
       assert_equal(jsi['x'], registry.find('tag:c8de/xrel'))

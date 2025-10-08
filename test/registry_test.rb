@@ -22,7 +22,7 @@ describe("JSI::Registry") do
 
     it 'registers a nonschema and finds it' do
       uri = 'http://jsi/registry/d7eu'
-      resource = JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, uri: uri)
+      resource = JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, root_uri: uri)
       registry.register(resource)
       assert_equal(resource, registry.find(uri))
     end
@@ -34,7 +34,7 @@ describe("JSI::Registry") do
 
     it "registers something that's not a schema below document root with a URI" do
       uri = 'http://jsi/registry/skw7'
-      resource = JSI::JSONSchemaDraft07.new_schema({'items' => {}}).new_jsi([{}], uri: uri)
+      resource = JSI::JSONSchemaDraft07.new_schema({'items' => {}}).new_jsi([{}], root_uri: uri)
       err = assert_raises(ArgumentError) do
         registry.register(resource[0])
       end
@@ -149,7 +149,7 @@ describe("JSI::Registry") do
     it 'autoloads a nonschema uri and finds it' do
       uri = 'http://jsi/registry/0vsi'
       registry.autoload_uri(uri) do
-        JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, uri: uri)
+        JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}, root_uri: uri)
       end
       assert_uri(uri, registry.find(uri).jsi_resource_ancestor_uri)
     end
@@ -210,7 +210,7 @@ describe("JSI::Registry") do
     end
 
     it("autoloads a URI that is already registered") do
-      registry.register(JSI::SchemaSet[].new_jsi({}, uri: 'tag:x'))
+      registry.register(JSI::SchemaSet[].new_jsi({}, root_uri: 'tag:x'))
       err = assert_raises(JSI::Registry::Collision) { registry.autoload_uri('tag:x') { } }
       msg = <<~MSG
         already registered URI
@@ -221,7 +221,7 @@ describe("JSI::Registry") do
     end
 
     it("autoloads a URI that is already registered via autoload") do
-      registry.autoload_uri('tag:x') { JSI::SchemaSet[].new_jsi({}, uri: 'tag:x') }
+      registry.autoload_uri('tag:x') { JSI::SchemaSet[].new_jsi({}, root_uri: 'tag:x') }
       # trigger the autoload
       registry.find('tag:x')
       err = assert_raises(JSI::Registry::Collision) { registry.autoload_uri('tag:x') { } }
