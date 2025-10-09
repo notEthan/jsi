@@ -198,7 +198,7 @@ module JSI
     # @api private
     # @param jsi_document [Object] the document containing the instance
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
-    # @param jsi_base_uri [URI] see {SchemaSet#new_jsi} param uri
+    # @param jsi_base_uri [URI, nil] see {SchemaSet#new_jsi} param `base_uri`
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @param jsi_conf [Base::Conf]
@@ -726,7 +726,7 @@ module JSI
     def jsi_modified_copy(**conf_kw, &block)
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
-          uri: @jsi_root_node.jsi_base_uri,
+          base_uri: @jsi_root_node.jsi_base_uri,
           register: false, # default is already false but this is a place to be explicit
           mutable: jsi_mutable?,
           **jsi_conf.for_modified_copy.to_h,

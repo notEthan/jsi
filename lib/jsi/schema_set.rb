@@ -74,10 +74,15 @@ module JSI
     # The JSI's {Base#jsi_indicated_schemas} set is this set.
     #
     # @param instance [Object] the instance to be represented as a JSI
-    # @param uri [#to_str, URI] The retrieval URI of the instance.
+    # @param base_uri [#to_str, URI, nil]
+    #   The base URI of the instance document. An absolute URI.
     #
-    #   It is rare that this needs to be specified, and only useful for instances which contain schemas.
-    #   See {Schema::MetaSchema#new_schema}'s `uri` param documentation.
+    #   It is rare that this needs to be specified. It is useful when the instance contains schemas,
+    #   and schemas in the document use relative URIs for `$id` or `$ref` without an absolute id
+    #   in an ancestor schema - those URIs will be resolved relative to `base_uri`.
+    #
+    #   See also {Base::Conf conf} {Base::Conf#root_uri `root_uri`}. `base_uri` is not used to identify
+    #   any resource, only to resolve relative URIs. `root_uri` does identify the root resource.
     # @param register [Boolean] Whether schema resources in the instantiated JSI will be registered
     #   in the {Base::Conf configured} {Base::Conf#registry `registry`}.
     #   This is only useful when the JSI is a schema or contains schemas.
@@ -91,7 +96,7 @@ module JSI
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of the schemas in this set.
     def new_jsi(instance,
-        uri: nil,
+        base_uri: nil,
         register: false,
         stringify_symbol_keys: false,
         mutable: false,
@@ -110,7 +115,7 @@ module JSI
         each { |is| is.each_inplace_applicator_schema(instance, &c) }
       end
 
-      base_uri = Util.uri(uri, nnil: false, yabs: true) || conf.root_uri
+      base_uri = Util.uri(base_uri, nnil: false, yabs: true) || conf.root_uri
 
       jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
         includes: SchemaClasses.includes_for(instance),

@@ -377,7 +377,8 @@ describe JSI::Schema do
         assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
-      describe 'externally supplied uri' do
+
+      describe("externally supplied base uri") do
         it 'schema with relative ids' do
           schema = metaschema.new_schema({
             'id' => 'root_relative',
@@ -386,7 +387,7 @@ describe JSI::Schema do
               'absolute' => {'id' => 'http://jsi/test/d4/ignore_external_uri/nested_absolute'},
               'none' => {},
             },
-          }, uri: 'http://jsi/test/d4/external_uri/1')
+          }, base_uri: 'http://jsi/test/d4/external_uri/1')
           assert_uri('http://jsi/test/d4/external_uri/root_relative', schema.jsi_resource_uri)
           assert_uri('http://jsi/test/d4/external_uri/nested_relative', schema.properties['relative'].jsi_resource_uri)
           assert_uri('http://jsi/test/d4/ignore_external_uri/nested_absolute', schema.properties['absolute'].jsi_resource_uri)
@@ -513,7 +514,8 @@ describe JSI::Schema do
         assert_nil(schema.items.jsi_resource_uri)
         assert_enum_equal([], schema.items.anchors)
       end
-      describe 'externally supplied uri' do
+
+      describe("externally supplied base uri") do
         it 'schema with relative ids' do
           schema = metaschema.new_schema({
             '$id' => 'root_relative',
@@ -522,7 +524,7 @@ describe JSI::Schema do
               'absolute' => {'$id' => 'http://jsi/test/d6/ignore_external_uri/nested_absolute'},
               'none' => {},
             },
-          }, uri: 'http://jsi/test/d6/external_uri/0')
+          }, base_uri: 'http://jsi/test/d6/external_uri/0')
           assert_uri('http://jsi/test/d6/external_uri/root_relative', schema.jsi_resource_uri)
           assert_uri('http://jsi/test/d6/external_uri/nested_relative', schema.properties['relative'].jsi_resource_uri)
           assert_uri('http://jsi/test/d6/ignore_external_uri/nested_absolute', schema.properties['absolute'].jsi_resource_uri)
@@ -575,11 +577,12 @@ describe JSI::Schema do
         end
       end
     end
-    describe 'externally supplied uri with JSI.new_schema' do
+
+    describe("externally supplied base uri with JSI.new_schema") do
       it 'resolves' do
         schema = JSI.new_schema(
           {'$schema' => 'http://json-schema.org/draft-07/schema#', '$id' => 'tehschema'},
-          uri: 'http://jsi/test/jsi_resource_uri/schema.new_base/0',
+          base_uri: 'http://jsi/test/jsi_resource_uri/schema.new_base/0',
         )
         assert_uri('http://jsi/test/jsi_resource_uri/schema.new_base/tehschema', schema.jsi_resource_uri)
       end

@@ -90,34 +90,21 @@ module JSI
       # different defaults for new_schema.
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
-      # @param uri [#to_str, URI] The retrieval URI of the schema document.
-      #   If specified, the root schema will be identified by this URI, in addition
-      #   to any absolute URI declared with an id keyword, for resolution in the
-      #   {Base::Conf configured} {Base::Conf#registry `registry`}.
-      #
-      #   It is rare that this needs to be specified. Most schemas, if they use absolute URIs, will
-      #   use the `$id` keyword (`id` in draft 4) to specify this. A different retrieval URI is useful
-      #   in unusual cases:
-      #
-      #     - A schema in the document uses relative URIs for `$id` or `$ref` without an absolute id in an
-      #       ancestor schema - these will be resolved relative to this URI
-      #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
-      #       rather than an id declared in the schema - the schema is resolvable by this URI in the
-      #       {Base::Conf configured} {Base::Conf#registry `registry`}.
+      # @param base_uri
       # @param register
       # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
       def new_schema(schema_content,
-          uri: nil,
+          base_uri: nil,
           register: true,
           stringify_symbol_keys: true,
           **conf_kw
       )
         raise(BlockGivenError) if block_given?
         new_jsi(schema_content,
-          uri: uri,
+          base_uri: base_uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
@@ -233,7 +220,7 @@ module JSI
       #   Indicates the meta-schema to use if the given `schema_content` does not have a `$schema` property.
       #   This may be a meta-schema or a meta-schema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
-      # @param uri
+      # @param base_uri
       # @param register
       # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
@@ -241,14 +228,14 @@ module JSI
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
       def new_schema(schema_content,
           default_metaschema: nil,
-          uri: nil,
+          base_uri: nil,
           register: true,
           stringify_symbol_keys: true,
           **conf_kw
       )
         raise(BlockGivenError) if block_given?
         new_schema_params = {
-          uri: uri,
+          base_uri: base_uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
