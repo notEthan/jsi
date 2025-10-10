@@ -197,6 +197,7 @@ module JSI
       @jsi_conf = jsi_conf = jsi_conf || jsi_root_node.jsi_conf
       @jsi_document = jsi_document
       #chkbug fail(Bug) unless jsi_ptr.is_a?(Ptr)
+      #chkbug fail(Bug) unless jsi_ptr.resolve_against(jsi_document).equal?(jsi_ptr)
       @jsi_ptr = jsi_ptr
       #chkbug fail(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
       @jsi_indicated_schemas = jsi_indicated_schemas
