@@ -217,8 +217,7 @@ module JSI
 
     # see {Base#jsi_child_node}
     def jsi_child_node(token)
-      dynamic_anchor_map = jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token])
-      root_descendent_node(jsi_ptr[token], dynamic_anchor_map: dynamic_anchor_map)
+      root_descendent_node(jsi_ptr[token], dynamic_anchor_map: jsi_schema_dynamic_anchor_map)
     end
 
     # See {Base#jsi_default_child}
