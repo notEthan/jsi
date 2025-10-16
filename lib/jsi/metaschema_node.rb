@@ -285,6 +285,7 @@ module JSI
     end
 
     def jsi_root_descendent_node_compute(ptr: , dynamic_anchor_map: )
+      # note: self is jsi_root_node
       #chkbug fail(Bug) unless equal?(jsi_root_node)
       #chkbug fail if dynamic_anchor_map != dynamic_anchor_map.without_node(self, ptr: ptr)
       if ptr.root? && dynamic_anchor_map == jsi_schema_dynamic_anchor_map
