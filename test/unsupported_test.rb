@@ -71,8 +71,8 @@ describe 'unsupported behavior' do
           # the schema that describes subject[0] is both a schema and a 'properties' object
           assert_schemas(
             [
-              JSI::JSONSchemaDraft07.schema,
               JSI::JSONSchemaDraft07.schema.properties['properties'],
+              JSI::JSONSchemaDraft07.schema,
             ],
             subject[0].jsi_schemas.first
           )
@@ -83,8 +83,8 @@ describe 'unsupported behavior' do
           # the schema that describes subject[0]['x'] is both a schema and a 'const' value
           assert_schemas(
             [
-              JSI::JSONSchemaDraft07.schema,
               JSI::JSONSchemaDraft07.schema.properties['const'],
+              JSI::JSONSchemaDraft07.schema,
             ],
             subject[0]['x'].jsi_schemas.first
           )
@@ -387,7 +387,7 @@ describe 'unsupported behavior' do
       end
 
       it 'applies properties and items' do
-        assert_schemas([schema.properties[0], schema.items], subject[0])
+        assert_schemas([schema.items, schema.properties[0]], subject[0])
         assert_is_a(Hash, subject.to_hash)
         assert_is_a(Array, subject.to_ary)
       end
@@ -415,9 +415,9 @@ describe 'unsupported behavior' do
       end
 
       it 'applies' do
-        assert_schemas([schema.properties[0],         schema.items[0]],        subject[0])
-        assert_schemas([schema.patternProperties['1'], schema.additionalItems], subject[1])
-        assert_schemas([schema.additionalProperties,  schema.additionalItems], subject[2])
+        assert_schemas([schema.items[0], schema.properties[0]], subject[0])
+        assert_schemas([schema.additionalItems, schema.patternProperties['1']], subject[1])
+        assert_schemas([schema.additionalItems, schema.additionalProperties], subject[2])
         assert(subject.jsi_valid?)
         assert_is_a(Hash, subject.to_hash)
         assert_is_a(Array, subject.to_ary)

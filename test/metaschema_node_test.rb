@@ -257,7 +257,7 @@ describe(JSI::MetaSchemaNode) do
         instance = schema.new_jsi({'foo' => [], 'bar' => []})
         assert_schemas([schema, schema.allOf[0]], instance)
         assert_schemas([schema.properties['foo']], instance.foo)
-        assert_schemas([schema.allOf[0].properties['bar'], schema, schema.allOf[0]], instance['bar'])
+        assert_schemas([schema, schema.allOf[0], schema.allOf[0].properties['bar']], instance['bar'])
         assert(instance.jsi_valid?)
       end
     end
