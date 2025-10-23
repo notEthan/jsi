@@ -148,6 +148,14 @@ Minitest.backtrace_filter.define_singleton_method(:filter) do |bt|
 end
 
 class JSISpec < Minitest::Spec
+  if ENV['JSI_PARALLEL'] || ENV['MT_CPU']
+    parallelize_me!
+
+    JSI.singleton_class.redef_method(:registry) { Thread.current[:jsi_registry] }
+    JSI.singleton_class.redef_method(:registry=) { |r| Thread.current[:jsi_registry] = r }
+    JSI.registry = JSI::DEFAULT_REGISTRY.dup
+  end
+
   if ENV['JSI_TEST_ALPHA']
     # :nocov:
     define_singleton_method(:test_order) { :alpha }
