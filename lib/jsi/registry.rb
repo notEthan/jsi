@@ -12,7 +12,7 @@ module JSI
     ResourceNotFound = ResolutionError
 
     # @private
-    Autoloader = Struct.subclass(:block)
+    Autoloader = Struct.subclass(:block, :mutex)
 
     include(Util::Pretty)
 
@@ -99,7 +99,7 @@ module JSI
       if store.key?(uri)
         raise(Collision, ["already registered URI", "URI: #{uri}", "existing: #{store[uri].pretty_inspect.chomp}"].join("\n"))
       end
-      autoloaders[uri] = Autoloader.new(block: block)
+      autoloaders[uri] = Autoloader.new(block: block, mutex: nil)
       nil
     end
 
@@ -112,7 +112,13 @@ module JSI
 
     private def internal_find(uri, store, autoloaders, registerer, typename)
       uri = registration_uri(uri)
-      if autoloaders.key?(uri)
+      autoloaded = nil
+      autoloader = autoloaders[uri]
+  if autoloader
+    mutating
+    @mutex.synchronize { autoloader.mutex ||= Mutex.new }
+    autoloader.mutex.synchronize do
+      if autoloaders.key?(uri) # check against race
         autoload_param = {
           registry: self,
           uri: uri,
@@ -127,7 +133,10 @@ module JSI
         autoloaded = autoloaders[uri].block.call(**autoload_param)
         registerer[autoloaded, uri]
         autoloaders.delete(uri)
-      end
+      end # if autoloaders.key?(uri)
+    end # autoloader.mutex.synchronize
+  end # if autoloader
+
       if !store.key?(uri)
         if autoloaded
           msg = [
