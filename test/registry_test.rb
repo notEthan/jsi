@@ -209,6 +209,30 @@ describe("JSI::Registry") do
       assert(err.message.start_with?(msg.chomp))
     end
 
+    it("autoloads a URI that is already registered") do
+      registry.register(JSI::SchemaSet[].new_jsi({}, uri: 'tag:x'))
+      err = assert_raises(JSI::Registry::Collision) { registry.autoload_uri('tag:x') { } }
+      msg = <<~MSG
+        already registered URI
+        URI: tag:x
+        existing: \#{<JSI*0>}
+        MSG
+      assert_match(/#{Regexp.escape(msg.chomp)}/, err.message)
+    end
+
+    it("autoloads a URI that is already registered via autoload") do
+      registry.autoload_uri('tag:x') { JSI::SchemaSet[].new_jsi({}, uri: 'tag:x') }
+      # trigger the autoload
+      registry.find('tag:x')
+      err = assert_raises(JSI::Registry::Collision) { registry.autoload_uri('tag:x') { } }
+      msg = <<~MSG
+        already registered URI
+        URI: tag:x
+        existing: \#{<JSI*0>}
+        MSG
+      assert_match(/#{Regexp.escape(msg.chomp)}/, err.message)
+    end
+
     it "registers autoload without a block" do
       uri = 'http://jsi/registry/j0s5'
       err = assert_raises(ArgumentError) { registry.autoload_uri(uri) }

@@ -81,10 +81,10 @@ module JSI
     # @yieldreturn [JSI::Base] a JSI instance containing the resource identified by the given uri
     # @return [void]
     def autoload_uri(uri, &block)
-      internal_autoload(@resource_autoloaders, uri, block)
+      internal_autoload(@resource_autoloaders, @resources, uri, block)
     end
 
-    private def internal_autoload(autoloaders, uri, block)
+    private def internal_autoload(autoloaders, store, uri, block)
       uri = registration_uri(uri)
       mutating
       unless block
@@ -92,6 +92,9 @@ module JSI
       end
       if autoloaders.key?(uri)
         raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{autoloaders[uri]}"].join("\n"))
+      end
+      if store.key?(uri)
+        raise(Collision, ["already registered URI", "URI: #{uri}", "existing: #{store[uri].pretty_inspect.chomp}"].join("\n"))
       end
       autoloaders[uri] = block
       nil
@@ -156,7 +159,7 @@ module JSI
     # @yieldreturn [Schema::Vocabulary]
     # @return [void]
     def autoload_vocabulary_uri(uri, &block)
-      internal_autoload(@vocabulary_autoloaders, uri, block)
+      internal_autoload(@vocabulary_autoloaders, @vocabularies, uri, block)
     end
 
     # @param uri [#to_str]
@@ -185,7 +188,7 @@ module JSI
     # @yieldreturn [Schema::Dialect]
     # @return [void]
     def autoload_dialect_uri(uri, &block)
-      internal_autoload(@dialect_autoloaders, uri, block)
+      internal_autoload(@dialect_autoloaders, @dialects, uri, block)
     end
 
     # @param uri [#to_str]
