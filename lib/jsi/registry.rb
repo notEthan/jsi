@@ -11,6 +11,9 @@ module JSI
     # an exception raised when a URI we are looking for has not been registered
     ResourceNotFound = ResolutionError
 
+    # @private
+    Autoloader = Struct.subclass(:block)
+
     include(Util::Pretty)
 
     def initialize
@@ -91,12 +94,12 @@ module JSI
         raise(ArgumentError, ["#{Registry} autoload must be invoked with a block", "URI: #{uri}"].join("\n"))
       end
       if autoloaders.key?(uri)
-        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{autoloaders[uri]}"].join("\n"))
+        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{autoloaders[uri].block}"].join("\n"))
       end
       if store.key?(uri)
         raise(Collision, ["already registered URI", "URI: #{uri}", "existing: #{store[uri].pretty_inspect.chomp}"].join("\n"))
       end
-      autoloaders[uri] = block
+      autoloaders[uri] = Autoloader.new(block: block)
       nil
     end
 
@@ -116,12 +119,12 @@ module JSI
         }
         # remove params the autoload proc does not accept
         autoload_param.select! do |name, _|
-          autoloaders[uri].parameters.any? do |type, pname|
+          autoloaders[uri].block.parameters.any? do |type, pname|
             # dblsplat (**k) ||   required (k: )  || optional (k: nil)
             type == :keyrest || ((type == :keyreq || type == :key) && pname == name)
           end
         end
-        autoloaded = autoloaders[uri].call(**autoload_param)
+        autoloaded = autoloaders[uri].block.call(**autoload_param)
         registerer[autoloaded, uri]
         autoloaders.delete(uri)
       end
