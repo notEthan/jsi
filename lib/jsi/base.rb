@@ -230,6 +230,7 @@ module JSI
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
       @jsi_root_node = jsi_root_node || self
+      @root_rel_ptr = @jsi_ptr.relative_to(@jsi_root_node.jsi_ptr)
 
       # @memos does not freeze if/when the node freezes
       @memos = {}
@@ -437,7 +438,7 @@ module JSI
     def jsi_parent_nodes
       return Util::EMPTY_ARY if jsi_is_orphan?
       parent_nodes = []
-      ptr = jsi_ptr
+      ptr = @root_rel_ptr
       while !ptr.root?
         ptr = ptr.parent
         parent_nodes.push(jsi_root_node.jsi_descendent_node(ptr))
@@ -449,7 +450,7 @@ module JSI
     #
     # @return [JSI::Base, nil]
     def jsi_parent_node
-      jsi_is_orphan? || jsi_ptr.root? ? nil : jsi_root_node.jsi_descendent_node(jsi_ptr.parent)
+      jsi_is_orphan? || @root_rel_ptr.root? ? nil : jsi_root_node.jsi_descendent_node(@root_rel_ptr.parent)
     end
 
     # ancestor JSI instances from this node up to the root. this node itself is always its own first ancestor.
@@ -461,7 +462,7 @@ module JSI
       ancestor = jsi_root_node
       ancestors << ancestor
 
-      jsi_ptr.tokens.each do |token|
+      @root_rel_ptr.tokens.each do |token|
         ancestor = ancestor.jsi_child_node(token)
         ancestors << ancestor
       end
@@ -754,7 +755,7 @@ module JSI
           jsi_conf: conf,
         ).send(:jsi_initialized)
 
-        modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
+        modified_copy = modified_jsi_root_node.jsi_descendent_node(@root_rel_ptr)
         modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
     end
 
