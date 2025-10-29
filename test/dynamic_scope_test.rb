@@ -212,6 +212,110 @@ describe("dynamic scope") do
     end
   end
 
+  describe("going from a parent (x) to a child (y) via an external schema (z) with a dynamic scope that includes y will exclude y from y's dynamic scope") do
+    it("passes correct scope through application") do
+      # evaluates
+      # indicated: r «»
+      # $ref:      y «» → «a: y»                  # add dynamic anchor «a» to scope
+      # child:     y/additionalProperties «a: y»  # child application (inplace would be circular)
+      # $ref:      x «a: y»                       # get to the parent (x) with child y in «a: y»
+      # child:     y «» → «a: y»                  # descending x to y removes y from y's dynamic scope
+      x = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "tag:n5/x",
+        "additionalProperties": {
+          "$ref": "#/$defs/y",
+        },
+        "$defs": {
+          "y": {
+            "$id": "tag:n5/y",
+            "$dynamicAnchor": "a",
+            "$ref": "tag:n5/z",
+          },
+        },
+      })
+      y = x['$defs']['y']
+      z = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "tag:n5/z",
+        "additionalProperties": {
+          "$ref": "tag:n5/x",
+        },
+      })
+      r = JSI.new_schema({
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$ref": "tag:n5/y",
+      })
+
+      i = r.new_jsi({'a' => {'a' => {}}})
+
+      z«y» = z.with_dynamic_scope_from(y)
+      x«y» = x.with_dynamic_scope_from(y)
+      assert_schemas([r, y, z«y»], i)
+      assert_schemas([z«y».additionalProperties, x«y»], i['a'])
+      # note: arguably a bug; TODO address this when possible.
+      # it _should_ be the case that y is the same schema as x«y»['$defs']['y'].
+      # they are equal (#==) but not identical (#equal?), and it would be better if there was one instance.
+      # they are different instances because they have different parents - one from x with empty dynamic scope,
+      # the other from x with y in its dynamic scope, but removed descending to /$defs/y.
+      refute_same(y, x«y»['$defs']['y'])
+      assert_schemas([x«y».additionalProperties, x«y»['$defs']['y'], z«y»], i['a']['a'])
+    end
+  end
+
+  describe("going from a parent (x) to a child (y) with a dynamic scope that includes y will exclude y from y's dynamic scope") do
+    describe("y to x") do
+      let(:x) do
+        JSI.new_schema({
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$id": "tag:n5/x",
+          "additionalProperties": {
+            "$ref": "#/$defs/y",
+          },
+          "$defs": {
+            "y": {
+              "$id": "tag:n5/y",
+              "$dynamicAnchor": "a",
+              "additionalProperties": {
+                "$ref": "tag:n5/x",
+              },
+            },
+          },
+        })
+      end
+
+      it("passes correct scope through application") do
+        y = x['$defs']['y']
+        r = JSI.new_schema({
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$ref": "tag:n5/y",
+        })
+        i = r.new_jsi({'a' => {'a' => {}}})
+
+        x«y» = x.with_dynamic_scope_from(y)
+        assert_schemas([r, y], i)
+        assert_schemas([y.additionalProperties, x«y»], i['a'])
+        assert_schemas([x«y».additionalProperties, x«y»['$defs']['y']], i['a']['a'])
+      end
+
+      it("applicates, with dynamic scope (b) from initial ref") do
+        y = x['$defs']['y']
+        r = JSI.new_schema({
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "$ref": "tag:n5/y",
+          "$dynamicAnchor": "b",
+        })
+        i = r.new_jsi({'a' => {'a' => {}}})
+
+        y«r» = y.with_dynamic_scope_from(r)
+        x«y«r»» = x.with_dynamic_scope_from(y«r»)
+        assert_schemas([r, y«r»], i)
+        assert_schemas([y«r».additionalProperties, x«y«r»»], i['a'])
+        assert_schemas([x«y«r»».additionalProperties, x«y«r»»['$defs']['y']], i['a']['a'])
+      end
+    end
+  end
+
   describe("cyclical application") do
     it("errors") do
       x = JSI.new_schema({
