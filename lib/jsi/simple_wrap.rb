@@ -16,8 +16,7 @@ module JSI
   SimpleWrap = simple_wrap_metaschema.new_schema_module(Util::EMPTY_HASH)
 
   # SimpleWrap is a JSI schema module which recursively wraps nested structures
-  module SimpleWrap
-  end
+  module SimpleWrap end
 
   SimpleWrap::DIALECT = dialect
   SimpleWrap::METASCHEMA = simple_wrap_metaschema

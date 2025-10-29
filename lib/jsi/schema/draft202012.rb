@@ -2,8 +2,7 @@
 
 module JSI
   module Schema::Draft202012
-    module Vocab
-    end
+    module Vocab end
 
     # draft-bhutton-json-schema-01 8.  The JSON Schema Core Vocabulary
     #
