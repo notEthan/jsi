@@ -1019,6 +1019,15 @@ module JSI
     end
 
     def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )
+        metaschema = child_applied_schemas.detect(&:describes_schema?)
+        # note: no memoized dialect.bootstrap_schema; this is only used once.
+        if metaschema && MetaSchemaNode::BootstrapSchema.new(dialect: metaschema.dialect, jsi_document: jsi_document, jsi_ptr: jsi_ptr[token], jsi_base_uri: jsi_next_base_uri).jsi_is_resource_root?
+          # if the child is a resource root, compute dynamic scope for it.
+          child_dynamic_anchor_map = jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token])
+        else
+          # child is not a resource, has the same dynamic scope as self.
+          child_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
+        end
         jsi_class = JSI::SchemaClasses.class_for_schemas(child_applied_schemas,
           includes: includes,
           mutable: jsi_mutable?,
@@ -1029,7 +1038,7 @@ module JSI
           jsi_indicated_schemas: child_indicated_schemas,
           jsi_base_uri: jsi_next_base_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
-          jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token]),
+          jsi_schema_dynamic_anchor_map: child_dynamic_anchor_map,
           jsi_root_node: @jsi_root_node,
         ).send(:jsi_initialized)
     end

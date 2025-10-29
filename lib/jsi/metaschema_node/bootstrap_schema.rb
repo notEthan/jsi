@@ -64,14 +64,26 @@ module JSI
     # overrides {Schema#subschema}
     def subschema(subptr)
       subptr = Ptr.ary_ptr(subptr).resolve_against(jsi_node_content)
-      dialect.bootstrap_schema(
+      kw = {
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr + subptr,
         jsi_base_uri: jsi_next_base_uri,
         jsi_schema_resource_ancestors: jsi_subschema_resource_ancestors,
-        jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr + subptr),
         jsi_registry: jsi_registry,
+      }
+      # determine if subschema is a resource root here, for dynamic_anchor_map.
+      # done in the same manner as Base#jsi_child_node, when child is a schema - a bootstrap schema is instantiated
+      # to check #jsi_is_resource_root?. here, though, that bootstrap schema is usually the returned subschema.
+      subschema = dialect.bootstrap_schema(**kw,
+        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
       )
+      if subschema.jsi_is_resource_root?
+        # if subschema is a resource root, it should have our jsi_next_schema_dynamic_anchor_map
+        subschema = dialect.bootstrap_schema(**kw,
+          jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr + subptr),
+        )
+      end
+      subschema
     end
 
     # overrides {Schema#resource_root_subschema}
