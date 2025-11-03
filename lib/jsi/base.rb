@@ -557,10 +557,10 @@ module JSI
     # @return [JSI::Base]
     # @raise [Base::ChildNotPresent]
     def jsi_child_node(token)
-      @child_node_by_token_map[token]
+      @child_node_by_token_map[token: token]
     end
 
-    private def jsi_child_node_by_token_compute(token)
+    private def jsi_child_node_by_token_compute(token: )
       jsi_child_ensure_present(token)
 
       child_content = jsi_node_content_child(token)
