@@ -46,6 +46,13 @@ describe JSI::Schema do
       e = assert_raises(TypeError) { JSI.new_schema({}, default_metaschema: "tag:l3bu") }
       assert_match(/default_metaschema URI.* "tag:l3bu"/, e.message)
     end
+
+    it("does not instantiate a mutable schema") do
+      # an ArgumentError might be better than silently overriding the param
+      assert_equal(false, JSI::JSONSchemaDraft07.new_schema({}, mutable: true).jsi_mutable?)
+      # this does ArgumentError. **conf_kw are passed to Base::Conf.new before being passed to Schema::MetaSchema#new_schema
+      assert_raises(ArgumentError) { JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#"}, mutable: true) }
+    end
   end
   describe('as an instance of meta-schema') do
     let(:metaschema_jsi_module) { JSI::JSONSchemaDraft04 }

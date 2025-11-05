@@ -122,8 +122,8 @@ module JSI
           uri: uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
-          mutable: false,
           **conf_kw,
+          mutable: false,
         )
 
         schema_jsi.jsi_schema_module_exec(&block) if block
