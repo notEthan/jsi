@@ -86,6 +86,9 @@ module JSI
       # Schemas instantiated with `new_schema` are immutable, their content transformed using
       # the {Base::Conf configured} {Base::Conf#to_immutable `to_immutable`}.
       #
+      # Parameters are passed to {SchemaSet#new_jsi} and are documented there, but some have
+      # different defaults for new_schema.
+      #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [#to_str, URI] The retrieval URI of the schema document.
       #   If specified, the root schema will be identified by this URI, in addition
@@ -101,11 +104,8 @@ module JSI
       #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
       #       rather than an id declared in the schema - the schema is resolvable by this URI in the
       #       {Base::Conf configured} {Base::Conf#registry `registry`}.
-      # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
-      #   will be registered in the {Base::Conf configured} {Base::Conf#registry `registry`}.
-      # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
-      #   replaced with Strings (recursively through the document).
-      #   Replacement is done on a copy; the given schema content is not modified.
+      # @param register
+      # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
@@ -225,14 +225,17 @@ module JSI
       # Schemas instantiated with `new_schema` are immutable, their content transformed using
       # the {Base::Conf configured} {Base::Conf#to_immutable `to_immutable`}.
       #
+      # Most parameters are passed to {SchemaSet#new_jsi} and are documented there, but some have
+      # different defaults for JSI.new_schema.
+      #
       # @param schema_content (see Schema::MetaSchema#new_schema)
       # @param default_metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
       #   Indicates the meta-schema to use if the given `schema_content` does not have a `$schema` property.
       #   This may be a meta-schema or a meta-schema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
-      # @param uri (see Schema::MetaSchema#new_schema)
-      # @param register (see Schema::MetaSchema#new_schema)
-      # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
+      # @param uri
+      # @param register
+      # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
