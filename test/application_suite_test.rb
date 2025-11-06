@@ -34,7 +34,7 @@ describe("application") do
             end
 
             it([*test_descr, instance_pointer].join(' : ')) do
-              assert_equal(expected_schemas, jsi_desc.jsi_schemas, proc do
+              assert_schemas(expected_schemas, jsi_desc, proc do
                 {
                   expected_schema_refs: schema_refs.to_a,
                   actual_schema_refs: jsi_desc.jsi_schemas.map { |s| (s.schema_uri || s.jsi_ptr.uri).to_s },
