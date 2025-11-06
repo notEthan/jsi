@@ -94,8 +94,7 @@ describe JSI::Ptr do
   describe 'initialization' do
     describe 'new with invalid tokens' do
       it 'raises' do
-        err = assert_raises(TypeError) { JSI::Ptr.new({}) }
-        assert_equal("tokens must be an array. got: {}", err.message)
+        assert_raises_msg(TypeError, "tokens must be an array. got: {}") { JSI::Ptr.new({}) }
       end
     end
     describe '.[]' do
@@ -122,8 +121,7 @@ describe JSI::Ptr do
   describe 'errors' do
     describe 'evaluate' do
       it 'fails to evaluate' do
-        err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr['-'].evaluate([]) }
-        assert_match(/nonexistent element/, err.message)
+        assert_raises_msg(JSI::Ptr::ResolutionError, /nonexistent element/) { JSI::Ptr['-'].evaluate([]) }
 
         ['foo', '0foo' 'foo0', '00', 1, -1, '1', '-1'].each do |token|
           err = assert_raises(JSI::Ptr::ResolutionError) { JSI::Ptr[token].evaluate([]) }
