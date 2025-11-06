@@ -178,7 +178,7 @@ describe 'JSON Schema Test Suite' do
                           assert(false, [
                             test.valid ? "expected valid, got errors: " : "expected errors, got valid: ",
                             'file: ' + path.to_s,
-                            'test data: ' + test.data.pretty_inspect.chomp,
+                            "test data: #{test.jsi_node_content['data'].pretty_inspect.chomp}",
                             'test schema: ' + schema.pretty_inspect.chomp,
                             'validation result: ' + result.pretty_inspect.chomp,
                           ].join("\n"))
