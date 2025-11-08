@@ -60,7 +60,9 @@ module JSI
           if @results.key?(key)
             @results[key]
           else
-            @results[key] = @block.call(**inputs)
+            result = @results[key] = @block.call(**inputs)
+            @result_mutexes.delete(key)
+            result
           end
         end
       end
