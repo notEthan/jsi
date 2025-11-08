@@ -233,6 +233,22 @@ describe("JSI::Registry") do
       assert_match(/#{Regexp.escape(msg.chomp)}/, err.message)
     end
 
+    it("autoloading fails, can retry") do
+      resource = JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#", "$id": "tag:x"})
+      n = 0
+      registry.autoload_uri('tag:x') do
+        n += 1
+        raise('n0') if n == 1
+        next('n1') if n == 2
+        next(JSI::SchemaSet[].new_jsi('n2')) if n == 3
+        resource
+      end
+      assert_raises_msg(StandardError, /n0/) { registry.find('tag:x') }
+      assert_raises_msg(ArgumentError, /n1/) { registry.find('tag:x') }
+      assert_raises_msg(JSI::ResolutionError, /n2/) { registry.find('tag:x') }
+      assert_equal(resource, registry.find('tag:x'))
+    end
+
     it "registers autoload without a block" do
       uri = 'http://jsi/registry/j0s5'
       err = assert_raises(ArgumentError) { registry.autoload_uri(uri) }
