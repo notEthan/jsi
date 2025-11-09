@@ -733,7 +733,7 @@ module JSI
 
     # validates this JSI's instance against its schemas
     #
-    # @return [JSI::Validation::FullResult]
+    # @return [JSI::Validation::Result::Full]
     def jsi_validate
       jsi_indicated_schemas.instance_validate(self)
     end
