@@ -38,7 +38,6 @@ module JSI
 
       @memos = {}
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
-      #chkbug fail(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
 
       super()
     end
