@@ -205,7 +205,7 @@ module JSI
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @param jsi_dynamic_root_map map of (ptr, dynamic_anchor_map) → (Base root node), shared across dynamic root nodes
     # @param jsi_conf [Base::Conf]
-    # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
+    # @param jsi_root_node [JSI::Base, nil]
     def initialize(
         jsi_document: ,
         jsi_ptr: Ptr[],
@@ -274,7 +274,8 @@ module JSI
     # @return [Base::Conf]
     attr_reader(:jsi_conf)
 
-    # the JSI at the root of this JSI's document
+    # The root ancestor of this node. This is typically the document root, though
+    # it can be a different resource root when dynamic scope is overridden.
     # @return [JSI::Base]
     attr_reader :jsi_root_node
 
