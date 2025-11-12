@@ -758,11 +758,11 @@ module JSI
           jsi_ptr: jsi_root_node.jsi_ptr,
           jsi_indicated_schemas: jsi_root_node.jsi_indicated_schemas,
           jsi_base_uri: jsi_root_node.jsi_base_uri,
+          jsi_schema_dynamic_anchor_map: jsi_root_node.jsi_schema_dynamic_anchor_map,
           jsi_conf: conf,
         ).send(:jsi_initialized)
 
-        modified_copy = modified_jsi_root_node.jsi_descendent_node(@root_rel_ptr)
-        modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
+        modified_jsi_root_node.jsi_descendent_node(@root_rel_ptr)
     end
 
     # Is the instance an array?
