@@ -728,13 +728,32 @@ module JSI
     # @return [Base] the modified copy of self
     def jsi_modified_copy(**conf_kw, &block)
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
-        modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
-          base_uri: @jsi_root_node.jsi_base_uri,
-          register: false, # default is already false but this is a place to be explicit
+
+        conf = jsi_conf.merge(**conf_kw)
+
+        modified_document = conf.to_immutable.call(modified_document) if !jsi_mutable? && conf.to_immutable
+
+        root_content = jsi_root_node.jsi_ptr.evaluate(modified_document)
+
+        root_applied_schemas = SchemaSet.build do |y|
+          c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
+          jsi_root_node.jsi_indicated_schemas.each do |is|
+            is.each_inplace_applicator_schema(root_content, &c)
+          end
+        end
+
+        root_class = JSI::SchemaClasses.class_for_schemas(root_applied_schemas,
+          includes: SchemaClasses.includes_for(root_content),
           mutable: jsi_mutable?,
-          **jsi_conf.to_h,
-          **conf_kw,
         )
+        modified_jsi_root_node = root_class.new(
+          jsi_document: modified_document,
+          jsi_ptr: jsi_root_node.jsi_ptr,
+          jsi_indicated_schemas: jsi_root_node.jsi_indicated_schemas,
+          jsi_base_uri: jsi_root_node.jsi_base_uri,
+          jsi_conf: conf,
+        ).send(:jsi_initialized)
+
         modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
         modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
     end
