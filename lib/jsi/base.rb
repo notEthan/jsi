@@ -1033,9 +1033,14 @@ module JSI
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
+      jsi_fingerprint_no_schemas.merge({
+        jsi_schemas: jsi_schemas,
+      }).freeze
+    end
+
+    private def jsi_fingerprint_no_schemas
       {
         class: JSI::Base,
-        jsi_schemas: jsi_schemas,
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
