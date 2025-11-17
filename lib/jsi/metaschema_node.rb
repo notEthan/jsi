@@ -257,12 +257,15 @@ module JSI
       {
         class: self.class,
         jsi_document: jsi_document,
+        jsi_ptr: jsi_ptr,
+        jsi_base_uri: jsi_base_uri,
+        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         msn_dialect: msn_dialect,
         metaschema_root_ref: jsi_conf.metaschema_root_ref,
         root_schema_ref: jsi_conf.root_schema_ref,
         jsi_registry: jsi_registry,
         bootstrap_registry: jsi_conf.bootstrap_registry,
-      }.merge(our_initialize_params).freeze
+      }.freeze
     end
 
     protected
@@ -279,15 +282,6 @@ module JSI
       end
     end
 
-    # note: does not include jsi_root_node or jsi_conf
-    def our_initialize_params
-      {
-        jsi_ptr: jsi_ptr,
-        jsi_base_uri: jsi_base_uri,
-        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-      }.freeze
-    end
-
     def jsi_root_descendent_node_compute(ptr: , dynamic_anchor_map: )
       # note: self is jsi_root_node
       #chkbug fail(Bug) unless equal?(jsi_root_node)
@@ -296,7 +290,6 @@ module JSI
         self
       else
         MetaSchemaNode.new(jsi_document,
-          **our_initialize_params,
           jsi_ptr: ptr,
           jsi_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
           jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
@@ -349,9 +342,9 @@ module JSI
         else
           root = to_initialize_finish(MetaSchemaNode.new(
             bootstrap_schema.jsi_document,
-            **our_initialize_params,
             jsi_ptr: Ptr[],
             jsi_base_uri: nil,
+            jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
             jsi_conf: jsi_conf,
           ))
           root.jsi_descendent_node(bootstrap_schema.jsi_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
