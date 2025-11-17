@@ -35,11 +35,11 @@ module JSI
     include(Base::Immutable)
 
     conf_attrs = {
-      dialect:             {},
-      metaschema_root_ref: {},
-      root_schema_ref:     {},
-      bootstrap_registry:  {},
-      is_metaschema:       {},
+      dialect:             {fingerprint: true },
+      metaschema_root_ref: {fingerprint: true },
+      root_schema_ref:     {fingerprint: true },
+      bootstrap_registry:  {fingerprint: true },
+      is_metaschema:       {fingerprint: true },
     }.freeze
     Conf = Base::Conf.subclass(*conf_attrs.keys)
     class Conf end
@@ -257,11 +257,7 @@ module JSI
         jsi_ptr: jsi_ptr,
         jsi_base_uri: jsi_base_uri,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        dialect: jsi_conf.dialect,
-        metaschema_root_ref: jsi_conf.metaschema_root_ref,
-        root_schema_ref: jsi_conf.root_schema_ref,
-        jsi_registry: jsi_registry,
-        bootstrap_registry: jsi_conf.bootstrap_registry,
+        **jsi_conf.for_fingerprint,
       }.freeze
     end
 

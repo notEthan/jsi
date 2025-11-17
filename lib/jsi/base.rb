@@ -34,14 +34,14 @@ module JSI
     end
 
     conf_attrs = {
-      root_uri:                               {},
-      registry:                               {},
-      application_collect_evaluated_validate: {},
-      reinstantiate_nonschemas:               {},
-      after_initialize:                       {},
-      child_as_jsi:                           {},
-      child_use_default:                      {},
-      to_immutable:                           {},
+      root_uri:                               {fingerprint: true },
+      registry:                               {fingerprint: true },
+      application_collect_evaluated_validate: {fingerprint: false},
+      reinstantiate_nonschemas:               {fingerprint: false},
+      after_initialize:                       {fingerprint: false},
+      child_as_jsi:                           {fingerprint: false},
+      child_use_default:                      {fingerprint: false},
+      to_immutable:                           {fingerprint: false},
     }.freeze
     Conf = Struct.subclass(*conf_attrs.keys)
     class Conf end
@@ -135,6 +135,12 @@ module JSI
           **kw,
         )
         freeze
+      end
+
+      # @private
+      # @return [Hash]
+      def for_fingerprint
+        to_h.select { |k, _| self.class::ATTRS.fetch(k).fetch(:fingerprint) }.freeze
       end
     end
 
@@ -1001,8 +1007,7 @@ module JSI
         jsi_root_uri: jsi_conf.root_uri,
         # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        # different registries mean references may resolve to different resources so must not be equal
-        jsi_registry: jsi_registry,
+        **jsi_conf.for_fingerprint,
       }.freeze
     end
 
