@@ -117,7 +117,7 @@ module JSI
 
         if ref_uri_nofrag.empty?
           ptr = Ptr.from_fragment(ref_uri.fragment).resolve_against(jsi_document) # anchor not supported
-          msn_dialect.bootstrap_schema(
+          jsi_conf.dialect.bootstrap_schema(
             jsi_document,
             jsi_ptr: ptr,
             jsi_base_uri: nil, # not supported
@@ -154,7 +154,7 @@ module JSI
       @bootstrap_schemas.each do |bootstrap_schema|
         if instance_exec(bootstrap_schema, &jsi_conf.is_metaschema)
           # this is described by the meta-schema, i.e. this is a schema
-          define_singleton_method(:dialect) { msn_dialect }
+          define_singleton_method(:dialect) { jsi_conf.dialect }
           extend(Schema)
 
           if jsi_registry && schema_absolute_uris.any? { |uri| !jsi_registry.registered?(uri) }
@@ -173,7 +173,7 @@ module JSI
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if instance_exec(self, &jsi_conf.is_metaschema)
-        describes_schema!(msn_dialect)
+        describes_schema!(jsi_conf.dialect)
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
@@ -203,11 +203,6 @@ module JSI
       end
 
       jsi_initialized
-    end
-
-    # @return [Schema::Dialect]
-    def msn_dialect
-      jsi_conf.dialect
     end
 
     # JSI Schemas describing this MetaSchemaNode
@@ -260,7 +255,7 @@ module JSI
         jsi_ptr: jsi_ptr,
         jsi_base_uri: jsi_base_uri,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        msn_dialect: msn_dialect,
+        dialect: jsi_conf.dialect,
         metaschema_root_ref: jsi_conf.metaschema_root_ref,
         root_schema_ref: jsi_conf.root_schema_ref,
         jsi_registry: jsi_registry,
