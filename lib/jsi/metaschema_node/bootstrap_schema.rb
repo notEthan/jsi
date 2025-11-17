@@ -72,7 +72,7 @@ module JSI
         jsi_registry: jsi_registry,
       }
       # determine if subschema is a resource root here, for dynamic_anchor_map.
-      # done in the same manner as Base#jsi_child_node, when child is a schema - a bootstrap schema is instantiated
+      # done in the same manner as Base#jsi_child_dynamic_anchor_map, when child is a schema - a bootstrap schema is instantiated
       # to check #jsi_is_resource_root?. here, though, that bootstrap schema is usually the returned subschema.
       subschema = dialect.bootstrap_schema(**kw,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
