@@ -953,7 +953,7 @@ describe JSI::Schema do
       it '#instance_validate' do
         result = schema.instance_validate(instance)
         assert_equal(true, result.valid?)
-        assert_equal(Set[], result.immediate_validation_errors)
+        assert_equal(JSI::Set[], result.immediate_validation_errors)
       end
       it '#instance_valid?' do
         assert_equal(true, schema.instance_valid?(instance))
@@ -964,14 +964,14 @@ describe JSI::Schema do
       it '#instance_validate' do
         result = schema.instance_validate(instance)
         assert_equal(false, result.valid?)
-        assert_equal(Set[
+        assert_equal(JSI::Set[
           JSI::Validation::Error.new({
             :message => "instance type does not match `type` value",
             :keyword => "type",
             :additional => {},
             :schema => schema,
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
-            :nested_errors => Set[],
+            :nested_errors => JSI::Set[],
           }),
         ], result.immediate_validation_errors)
       end
