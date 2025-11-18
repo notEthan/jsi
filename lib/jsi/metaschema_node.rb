@@ -339,7 +339,8 @@ module JSI
             jsi_document: bootstrap_schema.jsi_document,
             jsi_ptr: Ptr[],
             jsi_base_uri: nil,
-            jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
+            # this seems like the best dynamic_anchor_map to pass
+            jsi_schema_dynamic_anchor_map: dynamic_anchor_map.without_node(nil, document: bootstrap_schema.jsi_document, ptr: Ptr[], registry: jsi_registry),
             jsi_conf: jsi_conf,
           ))
           root.jsi_descendent_node(bootstrap_schema.jsi_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)
