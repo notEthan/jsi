@@ -104,7 +104,12 @@ describe(JSI::MetaSchemaNode) do
           "additionalProperties" => \#{<JSI:MSN (BasicMetaSchema) Schema>
             "$ref" => "#"
           },
-          "$ref" => \#{<JSI:MSN (BasicMetaSchema) Schema>}
+          "$ref" => \#{<JSI:MSN (BasicMetaSchema) Schema>},
+          "schemas" => \#{<JSI:MSN (BasicMetaSchema) Schema>
+            "additionalProperties" => \#{<JSI:MSN (BasicMetaSchema) Schema>
+              "$ref" => "#"
+            }
+          }
         }
       }
       str
@@ -358,24 +363,24 @@ describe(JSI::MetaSchemaNode) do
   describe('meta-schema outside the root, document is a schema') do
     yaml(:metaschema_document, <<~YAML
         id: tag:ck6
-        $defs:
+        schemas:
           JsonSchema:
             id: "#0ek"
             properties:
               additionalProperties:
-                "$ref": "#/$defs/JsonSchema"
+                "$ref": "#/schemas/JsonSchema"
               properties:
                 additionalProperties:
-                  "$ref": "#/$defs/JsonSchema"
-              $defs:
+                  "$ref": "#/schemas/JsonSchema"
+              schemas:
                 additionalProperties:
-                  "$ref": "#/$defs/JsonSchema"
+                  "$ref": "#/schemas/JsonSchema"
         YAML
     )
-    let(:metaschema_root_ref) { '#/$defs/JsonSchema' }
+    let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
-      assert_schemas([metaschema.properties['$defs']], root_node['$defs'])
+      assert_schemas([metaschema.properties['schemas']], root_node['schemas'])
 
       assert_metaschema_behaves
     end
@@ -384,7 +389,7 @@ describe(JSI::MetaSchemaNode) do
       registry = JSI::Registry.new
       registry.register(root_node)
 
-      schema_by_ptr = JSI.new_schema({"$schema" => "tag:ck6#/$defs/JsonSchema", "additionalProperties": {}}, registry: registry)
+      schema_by_ptr = JSI.new_schema({"$schema" => "tag:ck6#/schemas/JsonSchema", "additionalProperties": {}}, registry: registry)
       assert_schemas([metaschema], schema_by_ptr)
       assert_schemas([metaschema], schema_by_ptr.additionalProperties)
       schema_by_anchor = JSI.new_schema({"$schema" => "tag:ck6#0ek", "additionalProperties": {}}, registry: registry)
