@@ -33,16 +33,19 @@ module JSI
     class ChildNotPresent < StandardError
     end
 
-    Conf = Struct.subclass(*%i(
-      root_uri
-      registry
-      application_collect_evaluated_validate
-      reinstantiate_nonschemas
-      after_initialize
-      child_as_jsi
-      child_use_default
-      to_immutable
-    ))
+    conf_attrs = {
+      root_uri:                               {},
+      registry:                               {},
+      application_collect_evaluated_validate: {},
+      reinstantiate_nonschemas:               {},
+      after_initialize:                       {},
+      child_as_jsi:                           {},
+      child_use_default:                      {},
+      to_immutable:                           {},
+    }.freeze
+    Conf = Struct.subclass(*conf_attrs.keys)
+    class Conf end
+    Conf::ATTRS = conf_attrs
 
     # Configuration, shared across all nodes of a document. A JSI's {Base#jsi_conf}.
     #

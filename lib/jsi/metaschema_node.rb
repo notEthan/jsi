@@ -34,13 +34,16 @@ module JSI
 
     include(Base::Immutable)
 
-    Conf = Base::Conf.subclass(*%i(
-      dialect
-      metaschema_root_ref
-      root_schema_ref
-      bootstrap_registry
-      is_metaschema
-    ))
+    conf_attrs = {
+      dialect:             {},
+      metaschema_root_ref: {},
+      root_schema_ref:     {},
+      bootstrap_registry:  {},
+      is_metaschema:       {},
+    }.freeze
+    Conf = Base::Conf.subclass(*conf_attrs.keys)
+    class Conf end
+    Conf::ATTRS = Base::Conf::ATTRS.merge(conf_attrs)
 
     # {Base::Conf} with additional configuration for MetaSchemaNode.
     #
