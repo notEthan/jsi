@@ -57,6 +57,8 @@ jobs:
 
     - run: "if (( RANDOM % 2 )); then bin/chkbug.rb; fi"
 
+    - run: "if (( RANDOM % 2 )); then JSI_PARALLEL=1; echo JSI_PARALLEL=1; fi"
+
     - run: bundle exec rake test
 
     - run: bundle exec ruby readme.rb
