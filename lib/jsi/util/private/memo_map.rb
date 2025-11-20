@@ -50,6 +50,8 @@ module JSI
       def [](**inputs)
         key = key_for(inputs)
 
+        return @results[key] if @results.key?(key)
+
         result_mutex = @result_mutexes_mutex.synchronize do
           @result_mutexes[key] ||= Mutex.new
         end
@@ -58,7 +60,9 @@ module JSI
           if @results.key?(key)
             @results[key]
           else
-            @results[key] = @block.call(**inputs)
+            result = @results[key] = @block.call(**inputs)
+            @result_mutexes.delete(key)
+            result
           end
         end
       end

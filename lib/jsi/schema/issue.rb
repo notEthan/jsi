@@ -30,7 +30,6 @@ module JSI
     # @!attribute schema
     #   the schema that has an issue
     #   @return [JSI::Schema]
-    class Issue
-    end
+    class Issue end
   end
 end

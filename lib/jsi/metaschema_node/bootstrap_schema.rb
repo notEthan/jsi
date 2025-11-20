@@ -23,7 +23,7 @@ module JSI
         jsi_document,
         dialect: ,
         jsi_ptr: Ptr[],
-        jsi_schema_base_uri: nil,
+        jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         jsi_registry: nil
@@ -31,14 +31,13 @@ module JSI
       @dialect = dialect
       @jsi_ptr = jsi_ptr
       @jsi_document = jsi_document
-      self.jsi_schema_base_uri = jsi_schema_base_uri
+      self.jsi_base_uri = jsi_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       @jsi_registry = jsi_registry
 
       @memos = {}
       @jsi_node_content = jsi_ptr.evaluate(jsi_document)
-      #chkbug fail(Bug, 'BootstrapSchema instance must be frozen') unless jsi_node_content.frozen?
 
       super()
     end
@@ -62,7 +61,7 @@ module JSI
       dialect.bootstrap_schema(
         jsi_document,
         jsi_ptr: jsi_ptr + subptr,
-        jsi_schema_base_uri: jsi_resource_ancestor_uri,
+        jsi_base_uri: jsi_resource_ancestor_uri,
         jsi_schema_resource_ancestors: jsi_subschema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr + subptr),
         jsi_registry: jsi_registry,
@@ -72,9 +71,9 @@ module JSI
     # overrides {Schema#resource_root_subschema}
     def resource_root_subschema(ptr)
       ptr = Ptr.ary_ptr(ptr)
-      if schema_resource_root
-        curschema = schema_resource_root
-        remptr = ptr.resolve_against(schema_resource_root.jsi_node_content)
+      if jsi_resource_root
+        curschema = jsi_resource_root
+        remptr = ptr.resolve_against(jsi_resource_root.jsi_node_content)
         found = true
         while found
           return(curschema) if remptr.empty?
@@ -92,21 +91,16 @@ module JSI
         # TODO rm support (along with reinstantiate_as) and raise(NotASchemaError) here.
         return(curschema.subschema(remptr))
       end
-      # no schema_resource_root means the root is not a schema and no parent schema has an absolute uri.
+      # no jsi_resource_root means the root is not a schema and no parent schema has an absolute uri.
       # result schema is instantiated relative to document root.
       dialect.bootstrap_schema(
         jsi_document,
         jsi_ptr: ptr,
-        jsi_schema_base_uri: nil,
+        jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: ptr),
         jsi_registry: jsi_registry,
       )
-    end
-
-    # @return [MetaschemaNode::BootstrapSchema, nil]
-    def schema_resource_root
-      jsi_subschema_resource_ancestors.last
     end
 
     # @private
@@ -120,7 +114,7 @@ module JSI
       dialect.bootstrap_schema(
         jsi_document,
         jsi_ptr: jsi_ptr,
-        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_base_uri: jsi_base_uri,
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: new_dynamic_anchor_map,
         jsi_registry: jsi_registry,
@@ -141,6 +135,7 @@ module JSI
       [
         self.class.name || MetaSchemaNode::BootstrapSchema.name,
         dialect.id ? -"(#{dialect.id})" : nil,
+        !jsi_schema_dynamic_anchor_map.empty? ? jsi_schema_dynamic_anchor_map.anchor_schemas_identifier : nil,
         jsi_ptr.uri,
       ].compact.freeze
     end

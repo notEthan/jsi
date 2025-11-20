@@ -104,7 +104,12 @@ describe(JSI::MetaSchemaNode) do
           "additionalProperties" => \#{<JSI:MSN (BasicMetaSchema) Schema>
             "$ref" => "#"
           },
-          "$ref" => \#{<JSI:MSN (BasicMetaSchema) Schema>}
+          "$ref" => \#{<JSI:MSN (BasicMetaSchema) Schema>},
+          "schemas" => \#{<JSI:MSN (BasicMetaSchema) Schema>
+            "additionalProperties" => \#{<JSI:MSN (BasicMetaSchema) Schema>
+              "$ref" => "#"
+            }
+          }
         }
       }
       str
@@ -164,11 +169,8 @@ describe(JSI::MetaSchemaNode) do
 
       let(:schema_documents) { [applicator_document] }
 
-      let(:applicator_schema) do
-        root_node.jsi_registry.find("tag:7bg7:applicator")
-      end
-
       it("acts like a meta-schema") do
+        applicator_schema = metaschema.jsi_registry.find("tag:7bg7:applicator")
         assert_schemas([metaschema, applicator_schema], metaschema)
         assert_schemas([metaschema.properties['$id']],  metaschema / ['$id'])
         assert_schemas([applicator_schema.properties['allOf']],
@@ -247,7 +249,7 @@ describe(JSI::MetaSchemaNode) do
 
         schema_by_uri = JSI.new_schema(
           {"$schema" => "tag:7bg7:meta"},
-          registry: root_node.jsi_registry,
+          registry: metaschema.jsi_registry,
         )
         assert_schemas([metaschema, applicator_schema], schema_by_uri)
 
@@ -306,12 +308,8 @@ describe(JSI::MetaSchemaNode) do
         JSON.parse(JSI::SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read).merge({
           'additionalProperties' => true,
         }),
-        dialect: JSI::Schema::Draft04::DIALECT,
+        **JSI::JSONSchemaDraft04.schema.jsi_conf.to_h,
       )
-      # note: this still breaks if d4ms_with_bool.additionalProperties is accessed, i.e. computes its schemas,
-      # before the following line makes its schema describes_schema!
-      d4ms_with_bool["properties"]["additionalProperties"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
-      d4ms_with_bool["properties"]["additionalItems"]["anyOf"][0].describes_schema!(JSI::Schema::Draft04::DIALECT)
 
       # check that, for an instance of that meta-schema, a node described by additionalProperties is correctly instantiated
       j = d4ms_with_bool.new_jsi({'x' => {}})
@@ -358,24 +356,24 @@ describe(JSI::MetaSchemaNode) do
   describe('meta-schema outside the root, document is a schema') do
     yaml(:metaschema_document, <<~YAML
         id: tag:ck6
-        $defs:
+        schemas:
           JsonSchema:
             id: "#0ek"
             properties:
               additionalProperties:
-                "$ref": "#/$defs/JsonSchema"
+                "$ref": "#/schemas/JsonSchema"
               properties:
                 additionalProperties:
-                  "$ref": "#/$defs/JsonSchema"
-              $defs:
+                  "$ref": "#/schemas/JsonSchema"
+              schemas:
                 additionalProperties:
-                  "$ref": "#/$defs/JsonSchema"
+                  "$ref": "#/schemas/JsonSchema"
         YAML
     )
-    let(:metaschema_root_ref) { '#/$defs/JsonSchema' }
+    let(:metaschema_root_ref) { '#/schemas/JsonSchema' }
     it('acts like a meta-schema') do
       assert_schemas([metaschema], root_node)
-      assert_schemas([metaschema.properties['$defs']], root_node['$defs'])
+      assert_schemas([metaschema.properties['schemas']], root_node['schemas'])
 
       assert_metaschema_behaves
     end
@@ -384,7 +382,7 @@ describe(JSI::MetaSchemaNode) do
       registry = JSI::Registry.new
       registry.register(root_node)
 
-      schema_by_ptr = JSI.new_schema({"$schema" => "tag:ck6#/$defs/JsonSchema", "additionalProperties": {}}, registry: registry)
+      schema_by_ptr = JSI.new_schema({"$schema" => "tag:ck6#/schemas/JsonSchema", "additionalProperties": {}}, registry: registry)
       assert_schemas([metaschema], schema_by_ptr)
       assert_schemas([metaschema], schema_by_ptr.additionalProperties)
       schema_by_anchor = JSI.new_schema({"$schema" => "tag:ck6#0ek", "additionalProperties": {}}, registry: registry)
@@ -417,24 +415,6 @@ describe(JSI::MetaSchemaNode) do
     end
   end
 
-  describe('#jsi_modified_copy') do
-    let(:metaschema) { BasicMetaSchema.schema }
-    it('modifies a copy') do
-      # at the root
-      mc1 = metaschema.merge('title' => 'root modified')
-      assert_equal('root modified', mc1['title'])
-      refute_equal(metaschema, mc1)
-      assert_equal(metaschema.jsi_document.merge('title' => 'root modified'), mc1.jsi_document)
-      # below the root
-      mc2 = metaschema.properties.merge('foo' => [])
-      assert_equal([], mc2['foo', as_jsi: false])
-      mc2root = mc2.jsi_root_node
-      refute_equal(metaschema, mc2root)
-      expected_mc2_document = metaschema.jsi_document.merge('properties' => metaschema.jsi_document['properties'].merge('foo' => []))
-      assert_equal(expected_mc2_document, mc2.jsi_document)
-    end
-  end
-
   metaschema_modules = [
     JSI::JSONSchemaDraft04,
     JSI::JSONSchemaDraft06,
@@ -453,7 +433,8 @@ describe(JSI::MetaSchemaNode) do
   end
 
   describe('a meta-schema fails to validate itself') do
-    let(:metaschema) { JSI::JSONSchemaDraft06.schema.merge({'title' => []}) }
+    let(:metaschema_document) { JSI::JSONSchemaDraft06.schema_content.merge({'title' => []}) }
+    let(:dialect) { JSI::Schema::Draft06::DIALECT }
 
     it 'has validation error for `title`' do
       results = [

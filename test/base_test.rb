@@ -389,9 +389,9 @@ describe JSI::Base do
       it 'yields the instance to modify' do
         modified = subject.jsi_modified_copy { |o| o }
         # this doesn't really need to be tested but ... whatever
-        assert_equal(subject.jsi_instance.object_id, modified.jsi_instance.object_id)
+        assert_same(subject.jsi_instance, modified.jsi_instance)
         assert_equal(subject, modified)
-        refute_equal(subject.object_id, modified.object_id)
+        refute_same(subject, modified)
       end
     end
     describe 'resulting in a different type' do
@@ -934,8 +934,11 @@ describe JSI::Base do
     ms = JSI.new_schema({
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "tag:u20x",
-    })
-    ms.describes_schema!(JSI::Schema::Dialect.new(vocabularies: []))
+    },
+      after_initialize: proc do |node|
+        node.describes_schema!(JSI::Schema::Dialect.new(vocabularies: [])) if node.jsi_ptr.root?
+      end,
+    )
     assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft07) Meta-Schema> "$schema" => "http://json-schema.org/draft-07/schema#", "$id" => "tag:u20x"}), ms.inspect)
   end
 

@@ -11,7 +11,7 @@ module JSI
 
           #> Resolved against the current URI base, it produces the URI used as the starting point for runtime resolution.
           #> This initial resolution is safe to perform on schema load.
-          ref = schema.schema_ref('$dynamicRef')
+          ref = schema.schema_ref(schema_content['$dynamicRef'])
 
           initial_resolution = ref.resolve
 

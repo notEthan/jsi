@@ -2,20 +2,25 @@
 
 module JSI
   metaschema_document = Util.json_parse_freeze(SCHEMAS_PATH.join('json-schema.org/draft-04/schema.json').read)
+
+  describe_schema_ptrs = Set[
+    Ptr[],
+    # in draft 4, boolean schemas are not described by the main meta-schema (which specifies type: object),
+    # but by anyOf schemas in /properties/additionalProperties and /properties/additionalItems.
+    Ptr['properties', 'additionalProperties', 'anyOf', 0],
+    Ptr['properties', 'additionalItems', 'anyOf', 0]
+  ].freeze
+
   JSONSchemaDraft04 = JSI.new_metaschema_node(metaschema_document,
     dialect: JSI::Schema::Draft04::DIALECT,
+    is_metaschema: proc do |node|
+      describe_schema_ptrs.include?(node.jsi_ptr)
+    end,
   ).jsi_schema_module
-
-  # in draft 4, boolean schemas are not described in the root, but on anyOf schemas on
-  # properties/additionalProperties and properties/additionalItems.
-  # these still describe schemas, despite not being described by the meta-schema.
-  JSONSchemaDraft04.properties["additionalProperties"].anyOf[0].describes_schema!(JSI::Schema::Draft04::DIALECT)
-  JSONSchemaDraft04.properties["additionalItems"].anyOf[0].describes_schema!(JSI::Schema::Draft04::DIALECT)
 
   # the JSI schema module for `http://json-schema.org/draft-04/schema`
   module JSONSchemaDraft04
     # @!parse extend JSI::SchemaModule::MetaSchemaModule
-    # @!parse include JSI::Schema::Draft04
 
 
     Id        = properties['id']
@@ -58,83 +63,45 @@ module JSI
     SimpleType             = definitions['simpleTypes']
     StringArray           = definitions['stringArray']
 
-    module Id
-    end
-    module Xschema
-    end
-    module Title
-    end
-    module Description
-    end
-    module Default
-    end
-    module MultipleOf
-    end
-    module Maximum
-    end
-    module ExclusiveMaximum
-    end
-    module Minimum
-    end
-    module ExclusiveMinimum
-    end
-    module MaxLength
-    end
-    module MinLength
-    end
-    module Pattern
-    end
-    module AdditionalItems
-    end
-    module Items
-    end
-    module MaxItems
-    end
-    module MinItems
-    end
-    module UniqueItems
-    end
-    module MaxProperties
-    end
-    module MinProperties
-    end
-    module Required
-    end
-    module AdditionalProperties
-    end
-    module Definitions
-    end
-    module Properties
-    end
-    module PatternProperties
-    end
-    module Dependencies
-    end
-    module Enum
-    end
-    module Type
-    end
-    module Format
-    end
-    module AllOf
-    end
-    module AnyOf
-    end
-    module OneOf
-    end
-    module Not
-    end
+    module Id end
+    module Xschema end
+    module Title end
+    module Description end
+    module Default end
+    module MultipleOf end
+    module Maximum end
+    module ExclusiveMaximum end
+    module Minimum end
+    module ExclusiveMinimum end
+    module MaxLength end
+    module MinLength end
+    module Pattern end
+    module AdditionalItems end
+    module Items end
+    module MaxItems end
+    module MinItems end
+    module UniqueItems end
+    module MaxProperties end
+    module MinProperties end
+    module Required end
+    module AdditionalProperties end
+    module Definitions end
+    module Properties end
+    module PatternProperties end
+    module Dependencies end
+    module Enum end
+    module Type end
+    module Format end
+    module AllOf end
+    module AnyOf end
+    module OneOf end
+    module Not end
 
-    module SchemaArray
-    end
-    module PositiveInteger
-    end
-    module PositiveIntegerDefault0
-    end
-    module SimpleType
-    end
-    module StringArray
-    end
+    module SchemaArray end
+    module PositiveInteger end
+    module PositiveIntegerDefault0 end
+    module SimpleType end
+    module StringArray end
 
     AdditionalItems::Boolean = AdditionalItems.anyOf[0]
     AdditionalProperties::Boolean = AdditionalProperties.anyOf[0]
@@ -143,17 +110,11 @@ module JSI
     PositiveIntegerDefault0::Default0 = PositiveIntegerDefault0.allOf[1]
     StringItem = StringArray.items
 
-    module AdditionalItems::Boolean
-    end
-    module AdditionalProperties::Boolean
-    end
-    module Dependencies::Dependency
-    end
-    module Type::Array
-    end
-    module PositiveIntegerDefault0::Default0
-    end
-    module StringItem
-    end
+    module AdditionalItems::Boolean end
+    module AdditionalProperties::Boolean end
+    module Dependencies::Dependency end
+    module Type::Array end
+    module PositiveIntegerDefault0::Default0 end
+    module StringItem end
   end
 end

@@ -43,17 +43,16 @@ JSTS_REGISTRIES = Hash.new do |h, metaschema|
             registry: registry,
           )
         else
-          schema = JSI.new_schema(remote_content,
+          JSI.new_schema(remote_content,
             uri: uri,
             default_metaschema: metaschema,
             registry: registry,
+            after_initialize: proc do |node|
+              if node.jsi_ptr.root? && remote_content['$vocabulary']
+                node.describes_schema!
+              end
+            end,
           )
-
-          if remote_content['$vocabulary']
-            schema.describes_schema!
-          end
-
-          schema
         end
       end
     end
@@ -96,8 +95,10 @@ describe 'JSON Schema Test Suite' do
                   default_metaschema: metaschema,
                 )
 
+                dialect = desc_schema.dialect # typically metaschema.described_dialect but $schema can override
+
                 bootstrap_registry = JSTS_REGISTRIES[metaschema].dup
-                desc_bootstrap_schema = desc_schema.dialect.bootstrap_schema(
+                desc_bootstrap_schema = dialect.bootstrap_schema(
                   tests_desc.jsi_instance['schema'],
                   jsi_registry: bootstrap_registry,
                 )
@@ -131,6 +132,21 @@ describe 'JSON Schema Test Suite' do
 
                         assert_equal(result.valid?, bootstrap_schema.instance_valid?(test.jsi_instance['data']))
 
+                        transform_errors = JSI::Util.ycomb do |rec|
+                          proc do |errors|
+                            errors.map do |error|
+                              error.to_h.merge(
+                                schema: error.schema.schema_content,
+                                nested_errors: rec[error.nested_errors],
+                              )
+                            end
+                          end
+                        end
+
+                        assert_transform_equal(result, bootstrap_schema.instance_validate(test.jsi_instance['data'])) do |r|
+                          transform_errors[r.immediate_validation_errors]
+                        end
+
                         assert_consistent_jsi_descendent_errors(jsi, result: result)
 
                         if test.valid != result.valid?
@@ -161,7 +177,7 @@ describe 'JSON Schema Test Suite' do
                           assert(false, [
                             test.valid ? "expected valid, got errors: " : "expected errors, got valid: ",
                             'file: ' + path.to_s,
-                            'test data: ' + test.data.pretty_inspect.chomp,
+                            "test data: #{test.jsi_node_content['data'].pretty_inspect.chomp}",
                             'test schema: ' + schema.pretty_inspect.chomp,
                             'validation result: ' + result.pretty_inspect.chomp,
                           ].join("\n"))

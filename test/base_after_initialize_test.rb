@@ -40,17 +40,7 @@ describe("Base after_initialize") do
   describe("modified copy") do
     it("is not called on a modified copy") do
       nodes = Set[]
-      metaschema = JSI.new_metaschema_node(BasicMetaSchema.schema_content,
-        dialect: BASIC_DIALECT,
-        after_initialize: nodes.method(:<<),
-      )
-      assert_equal(metaschema.jsi_each_descendent_node.to_set, nodes)
-      metaschema.merge({'modified' => true}).jsi_each_descendent_node { }
-      # unchanged
-      assert_equal(metaschema.jsi_each_descendent_node.to_set, nodes)
-
-      nodes = Set[]
-      schema = metaschema.new_schema({'additionalProperties' => {}},
+      schema = BasicMetaSchema.new_schema({'additionalProperties' => {}},
         after_initialize: nodes.method(:<<),
       )
       assert_equal(schema.jsi_each_descendent_node.to_set, nodes)

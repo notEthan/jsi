@@ -145,7 +145,7 @@ describe 'JSI::Base hash' do
       # still equal
       assert_equal(other_subject, subject)
       # but different instances
-      refute_equal(other_subject['foo'].object_id, subject['foo'].object_id)
+      refute_same(other_subject['foo'], subject['foo'])
     end
     it 'modifies the instance, visible to other references to the same instance' do
       orig_instance = subject.jsi_instance

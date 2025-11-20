@@ -14,6 +14,9 @@ module JSI
   ).jsi_schema_module
 
   module JSONSchemaDraft202012
+    # @!parse extend JSI::SchemaModule::MetaSchemaModule
+
+
     def self.name_vocab_schemas(metaschema_module, namespace: metaschema_module)
       find_module = proc { |uri| metaschema_module.schema.jsi_registry.find(uri).with_dynamic_scope_from(metaschema_module).jsi_schema_module }
       namespace.const_set(:Core,       find_module["https://json-schema.org/draft/2020-12/meta/core"])

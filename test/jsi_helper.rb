@@ -35,7 +35,7 @@ BASIC_DIALECT = JSI::Schema::Dialect.new(
       JSI::Schema::Elements::REF[exclusive: true],
       JSI::Schema::Elements::SELF[],
       JSI::Schema::Elements::PROPERTIES[],
-      JSI::Schema::Elements::DEFINITIONS[keyword: '$defs'],
+      JSI::Schema::Elements::DEFINITIONS[keyword: 'schemas'],
     ]),
   ],
 )
@@ -50,6 +50,9 @@ BasicMetaSchema = JSI.new_metaschema_node(
       additionalProperties:
         "$ref": "#"
       "$ref": {}
+      schemas:
+        additionalProperties:
+          "$ref": "#"
     YAML
   ),
   dialect: BASIC_DIALECT,

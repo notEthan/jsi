@@ -122,8 +122,8 @@ module JSI
           uri: uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
-          mutable: false,
           **conf_kw,
+          mutable: false,
         )
 
         schema_jsi.jsi_schema_module_exec(&block) if block
@@ -332,7 +332,7 @@ module JSI
             result_schema_class.new(schema.jsi_document,
               jsi_ptr: schema.jsi_ptr,
               jsi_indicated_schemas: result_schema_indicated_schemas,
-              jsi_schema_base_uri: schema.jsi_schema_base_uri,
+              jsi_base_uri: schema.jsi_base_uri,
               jsi_schema_resource_ancestors: schema.jsi_schema_resource_ancestors,
               jsi_schema_dynamic_anchor_map: schema.jsi_schema_dynamic_anchor_map,
               jsi_conf: schema.equal?(schema.jsi_root_node) ? schema.jsi_conf : nil,
@@ -419,7 +419,7 @@ module JSI
       anchors.freeze
     end
 
-    # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_schema_base_uri`
+    # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_base_uri`
     # @return [URI, nil]
     def schema_absolute_uri
       schema_absolute_uris.first
@@ -432,10 +432,10 @@ module JSI
 
     # @yield [URI]
     private def schema_absolute_uris_compute
-      root_uri = jsi_schema_base_uri if jsi_ptr.root?
+      root_uri = jsi_base_uri if jsi_ptr.root?
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
-        if jsi_schema_base_uri
-          uri = jsi_schema_base_uri.join(id_without_fragment)
+        if jsi_base_uri
+          uri = jsi_base_uri.join(id_without_fragment)
           root_uri = nil if root_uri == uri
           yield(uri)
         elsif id_without_fragment.absolute?
@@ -463,9 +463,9 @@ module JSI
     private def schema_uris_compute(&block)
       schema_absolute_uris.each(&block)
 
-      if schema_resource_root
+      if jsi_resource_root
         anchors.each do |anchor|
-          schema_resource_root.schema_absolute_uris.each do |uri|
+          jsi_resource_root.schema_absolute_uris.each do |uri|
             yield(uri.merge(fragment: anchor))
           end
         end
@@ -501,6 +501,7 @@ module JSI
 
     # @return [String, nil]
     def jsi_schema_module_name
+      # don't hit #jsi_schema_module - avoid creating module, avoid erroring for MSN::BootstrapSchema
       @memos[:schema_module_connection] && @memos[:schema_module_connection].name
     end
 
@@ -522,12 +523,10 @@ module JSI
       SchemaSet[self].new_jsi(instance, **kw)
     end
 
-    # @param keyword schema keyword e.g. "$ref", "$schema"
+    # @param ref [#to_str] ref URI
     # @return [Schema::Ref]
-    # @raise [Base::ChildNotPresent]
-    def schema_ref(keyword = "$ref")
-      raise(Base::ChildNotPresent, "keyword not present: #{keyword}") unless keyword?(keyword)
-      @schema_ref_map[schema_content[keyword]]
+    def schema_ref(ref = schema_content["$ref"])
+      @schema_ref_map[ref]
     end
 
     # Does this schema itself describe a schema? I.e. is this schema a meta-schema?
@@ -554,10 +553,10 @@ module JSI
       dialect = dialect.first::DIALECT if dialect.is_a?(Array) && dialect.size == 1
 
       if !dialect
-        raise(ArgumentError, "no dialect given and no $vocabulary hash/object") if !self['$vocabulary'].respond_to?(:to_hash)
+        raise(ArgumentError, "no dialect given and no $vocabulary hash/object") if !schema_content['$vocabulary'].respond_to?(:to_hash)
 
         vocabularies = []
-        self['$vocabulary'].each do |vocabulary_uri, required|
+        schema_content['$vocabulary'].each do |vocabulary_uri, required|
           if required || jsi_registry.vocabulary_registered?(vocabulary_uri)
             vocabularies << jsi_registry.find_vocabulary(vocabulary_uri)
           end
@@ -596,15 +595,21 @@ module JSI
     # If no ancestor schema has an absolute uri, the schema_resource_root is the {Base#jsi_root_node document's root node}.
     # In this case, the resource root may or may not be a schema itself.
     #
+    # @deprecated after v0.8
     # @return [JSI::Base] resource containing this schema
     def schema_resource_root
-      jsi_subschema_resource_ancestors.last || jsi_root_node
+      jsi_resource_root
     end
 
     # is this schema the root of a schema resource?
     # @return [Boolean]
+    def jsi_is_resource_root?
+      super || schema_absolute_uris.any?
+    end
+
+    # @deprecated after v0.8
     def schema_resource_root?
-      jsi_ptr.root? || schema_absolute_uris.any?
+      jsi_is_resource_root?
     end
 
     # a subschema of this Schema
@@ -615,13 +620,13 @@ module JSI
       Schema.ensure_schema(jsi_descendent_node(subptr)) { "subschema is not a schema at pointer: #{Ptr.ary_ptr(subptr).pointer}" }
     end
 
-    # a schema in the same schema resource as this one (see {#schema_resource_root}) at the given
+    # A schema in the same schema resource as this one (see {Schema::SchemaAncestorNode#jsi_resource_root}) at the given
     # pointer relative to the root of the schema resource.
     #
     # @param ptr [JSI::Ptr, #to_ary] a pointer to a schema from our schema resource root
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
-          Schema.ensure_schema(schema_resource_root.jsi_descendent_node(ptr),
+          Schema.ensure_schema(jsi_resource_root.jsi_descendent_node(ptr),
             reinstantiate_as: jsi_schemas.select(&:describes_schema?)
           )
     end
@@ -642,7 +647,7 @@ module JSI
       yield(self)
       dialect_invoke_each(:subschema) do |ptr|
         desc = subschema(ptr)
-        if !desc.schema_resource_root?
+        if !desc.jsi_is_resource_root?
           desc.jsi_each_descendent_schema_same_resource(&block)
         end
       end
@@ -906,7 +911,7 @@ module JSI
     # @api private
     # @return [Array<JSI::Schema>]
     def jsi_subschema_resource_ancestors
-      if schema_resource_root?
+      if jsi_is_resource_root?
         jsi_schema_resource_ancestors.dup.push(self).freeze
       else
         jsi_schema_resource_ancestors
@@ -923,7 +928,7 @@ module JSI
 
       map = jsi_schema_dynamic_anchor_map
 
-      anchor_root = schema_resource_root.is_a?(Schema) ? schema_resource_root : self
+      anchor_root = jsi_resource_root.is_a?(Schema) ? jsi_resource_root : self
       descendent_schemas = [[anchor_root, Util::EMPTY_ARY]]
 
       while !descendent_schemas.empty?
@@ -932,7 +937,7 @@ module JSI
         descendent_schema.dialect_invoke_each(:dynamicAnchor) do |anchor|
           next if map.key?(anchor)
           map = map.merge({
-            anchor => [anchor_root, ptrs].freeze,
+            anchor => [anchor_root.jsi_with_schema_dynamic_anchor_map(Schema::DynamicAnchorMap::EMPTY), ptrs].freeze,
           }).freeze
         end
 
@@ -942,13 +947,15 @@ module JSI
           # - check for $dynamicAnchor
           # can't use #subschema here (it would need to pass this method's result to instantiate the subschema);
           # a minimal bootstrap schema is used instead.
-          descendent_subschema = dialect.bootstrap_schema(
+          # note: not using dialect.bootstrap_schema. this bootstrap is only used once, skip memoization.
+          descendent_subschema = MetaSchemaNode::BootstrapSchema.new(
             jsi_document,
+            dialect: dialect,
             jsi_ptr: descendent_schema.jsi_ptr + subptr,
             # note: same as anchor_root.jsi_resource_ancestor_uri since we don't cross resource boundaries.
-            jsi_schema_base_uri: descendent_schema.jsi_resource_ancestor_uri,
+            jsi_base_uri: descendent_schema.jsi_resource_ancestor_uri,
           )
-          if !descendent_subschema.schema_resource_root?
+          if !descendent_subschema.jsi_is_resource_root?
             descendent_schemas.push([descendent_subschema, ptrs.dup.push(subptr).freeze])
           end
         end
@@ -969,6 +976,15 @@ module JSI
     # @return [Boolean]
     attr_reader(:application_requires_evaluated)
 
+    # @private
+    # @return [#to_s, nil]
+    def jsi_schema_identifier(required: false)
+      name = jsi_schema_module_name_from_ancestor
+      return name if name
+      return schema_uri || (required ? jsi_ptr.uri : nil) if jsi_schema_dynamic_anchor_map.empty?
+      -"#{schema_uri || jsi_ptr.uri}#{jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}"
+    end
+
     private
 
     KEY_BY_NONE = proc { nil }
@@ -981,7 +997,7 @@ module JSI
       @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
-        dialect_invoke_each(:described_object_property_names).to_set.freeze
+        Set.new(dialect_invoke_each(:described_object_property_names)).freeze
       end
       @application_requires_evaluated = dialect_invoke_each(:application_requires_evaluated).any?
       @inplace_application_requires_instance = dialect_invoke_each(:inplace_application_requires_instance).any?

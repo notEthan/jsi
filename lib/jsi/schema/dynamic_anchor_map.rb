@@ -13,7 +13,7 @@ module JSI
   #     although this may be a non-resource-root schema when the resource root is the document root and is
   #     not a schema, or the schema is a non-root bootstrap schema with no `jsi_schema_resource_ancestors`.
   #
-  #     Note: the `#jsi_schema_dynamic_anchor_map` of anchor_root should not be used.
+  #     The `#jsi_schema_dynamic_anchor_map` of anchor_root is expected to be empty.
   #     It should be replaced when the anchor schema is resolved.
   #
   #   - `ptrs` [Array<{Ptr}>]
@@ -30,14 +30,14 @@ module JSI
     # @return [Schema::DynamicAnchorMap]
     def without_node(node, document: node.jsi_document, ptr: node.jsi_ptr, registry: node.jsi_registry)
       dynamic_anchor_map = self
-      dynamic_anchor_map.each do |anchor, (anchor_root, anchor_ptrs)|
+      each do |anchor, (anchor_root, anchor_ptrs)|
         # Determine whether this anchor maps to the indicated node.
         # This should strictly use the same fields as the node's #jsi_fingerprint
         # (which is different for Base, MetaSchemaNode, and MetaSchemaNode::BootstrapSchema).
         # However, some fields of the fingerprint are fairly complicated to compute with neither
         # the node being removed nor the anchor schema actually instantiated.
         # Realistically document+ptr is sufficient and correct outside of implausible edge cases.
-        maps_to_node = anchor_root.jsi_document == document &&
+        maps_to_node = anchor_root.jsi_document.equal?(document) &&
           anchor_ptrs.inject(anchor_root.jsi_ptr, &:+) == ptr &&
           anchor_root.jsi_registry == registry
         if maps_to_node
@@ -47,6 +47,15 @@ module JSI
         end
       end
       dynamic_anchor_map.empty? ? EMPTY : dynamic_anchor_map
+    end
+
+    # @private
+    # @return [String]
+    def anchor_schemas_identifier
+      names = map do |anchor, (r, ptrs)|
+        -"#{anchor}→#{ptrs.inject(r, &:subschema).jsi_schema_identifier(required: true)}"
+      end
+      -"«#{names.join(", ")}»"
     end
 
     EMPTY = new.freeze

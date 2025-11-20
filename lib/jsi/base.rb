@@ -177,7 +177,7 @@ module JSI
     # @api private
     # @param jsi_document [Object] the document containing the instance
     # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
-    # @param jsi_schema_base_uri [URI] see {SchemaSet#new_jsi} param uri
+    # @param jsi_base_uri [URI] see {SchemaSet#new_jsi} param uri
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @param jsi_conf [Base::Conf]
@@ -185,7 +185,7 @@ module JSI
     def initialize(jsi_document,
         jsi_ptr: Ptr[],
         jsi_indicated_schemas: ,
-        jsi_schema_base_uri: nil,
+        jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: Schema::DynamicAnchorMap::EMPTY,
         jsi_conf: nil,
@@ -200,7 +200,7 @@ module JSI
       @jsi_ptr = jsi_ptr
       #chkbug fail(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
       @jsi_indicated_schemas = jsi_indicated_schemas
-      self.jsi_schema_base_uri = jsi_schema_base_uri
+      self.jsi_base_uri = jsi_base_uri
       self.jsi_schema_resource_ancestors = jsi_schema_resource_ancestors
       self.jsi_schema_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
       #chkbug fail(Bug) if !jsi_root_node && !jsi_ptr.root?
@@ -339,7 +339,7 @@ module JSI
 
       jsi_each_child_token do |token|
         child = jsi_child_node(token)
-        if !child.is_a?(Schema) || !child.schema_resource_root?
+        if !child.jsi_is_resource_root?
           # note: if child is a Schema, Schema#jsi_each_descendent_schema_same_resource overrides Base
           child.jsi_each_descendent_schema_same_resource(&block)
         end
@@ -671,12 +671,6 @@ module JSI
       end
     end
 
-    # the set of JSI schema modules corresponding to the schemas that describe this JSI
-    # @return [Set<Module>]
-    def jsi_schema_modules
-      Set.new(jsi_schemas, &:jsi_schema_module).freeze
-    end
-
     # Is this JSI described by the given schema (or schema module)?
     #
     # @param schema [Schema, SchemaModule]
@@ -685,7 +679,7 @@ module JSI
       if schema.is_a?(Schema)
         jsi_schemas.include?(schema)
       elsif schema.is_a?(SchemaModule)
-        jsi_schema_modules.include?(schema)
+        jsi_schemas.include?(schema.schema)
       else
         raise(TypeError, "expected a Schema or Schema Module; got: #{schema.pretty_inspect.chomp}")
       end
@@ -710,7 +704,7 @@ module JSI
     def jsi_modified_copy(&block)
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
-          uri: @jsi_root_node.jsi_schema_base_uri,
+          uri: @jsi_root_node.jsi_base_uri,
           register: false, # default is already false but this is a place to be explicit
           mutable: jsi_mutable?,
           **jsi_conf.for_modified_copy.to_h,
@@ -751,7 +745,7 @@ module JSI
 
     # validates this JSI's instance against its schemas
     #
-    # @return [JSI::Validation::FullResult]
+    # @return [JSI::Validation::Result::Full]
     def jsi_validate
       jsi_indicated_schemas.instance_validate(self)
     end
@@ -786,6 +780,15 @@ module JSI
       Util.require_jmespath
 
       JMESPath.search(expression, self, **runtime_options)
+    end
+
+    # The nearest ancestor (including this node) that is a resource root.
+    #
+    # A resource root is a schema with an absolute URI, or the {#jsi_root_node document's root node}
+    # (which might not be a schema and might not have an absolute URI).
+    # @return [Base]
+    def jsi_resource_root
+      super || jsi_root_node
     end
 
     # @private
@@ -828,7 +831,7 @@ module JSI
       self.class.new(jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: jsi_indicated_schemas,
-        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_base_uri: jsi_base_uri,
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,
         jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
         jsi_root_node: jsi_root_node,
@@ -891,14 +894,13 @@ module JSI
       schema_names = []
       schemas_priorities.each do |(priority, _idx, schema)|
         if priority[0] == 0 || (priority == schemas_priorities.first.first && schema_names.size < 2)
-          name = schema.jsi_schema_module_name_from_ancestor || schema.schema_uri
-          name ||= schema.jsi_ptr.uri if priority[0] == 0
+          name = schema.jsi_schema_identifier(required: priority[0] == 0)
           schema_names << name if name
         end
       end
 
       if schema_names.empty?
-        schemas_txt = -"*#{jsi_schemas.size}"
+        schemas_txt = -"*#{self.jsi_schemas ? jsi_schemas.size : '?'}"
       elsif schema_names.size == jsi_schemas.size
         schemas_txt = -" (#{schema_names.join(' + ')})"
       else
@@ -918,6 +920,7 @@ module JSI
       [
         -"JSI#{is_a?(MetaSchemaNode) ? ":MSN" : ""}#{schemas_txt}",
         is_a?(Schema::MetaSchema) ? "Meta-Schema" : is_a?(Schema) ? "Schema" : nil,
+        is_a?(Schema) && !jsi_schema_dynamic_anchor_map.empty? ? jsi_schema_dynamic_anchor_map.anchor_schemas_identifier : nil,
         *content_txt,
       ].compact.freeze
     end
@@ -951,7 +954,7 @@ module JSI
         jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
-        jsi_schema_base_uri: jsi_schema_base_uri,
+        jsi_base_uri: jsi_base_uri,
         # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         # different registries mean references may resolve to different resources so must not be equal
@@ -971,7 +974,6 @@ module JSI
     def jsi_memomaps_initialize
       @child_indicated_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_indicated_schemas_compute))
       @child_applied_schemas_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_applied_schemas_compute))
-      @child_node_map = jsi_memomap(key_by: BY_TOKEN, &method(:jsi_child_node_compute))
       @with_schema_dynamic_anchor_map_map = jsi_memomap(&method(:jsi_with_schema_dynamic_anchor_map_compute))
     end
 
@@ -983,7 +985,7 @@ module JSI
         jsi_class.new(@jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_indicated_schemas: child_indicated_schemas,
-          jsi_schema_base_uri: jsi_resource_ancestor_uri,
+          jsi_base_uri: jsi_resource_ancestor_uri,
           jsi_schema_resource_ancestors: is_a?(Schema) ? jsi_subschema_resource_ancestors : jsi_schema_resource_ancestors,
           jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token]),
           jsi_root_node: @jsi_root_node,
@@ -1041,6 +1043,7 @@ module JSI
     # Places where Base is directly instantiated must call #jsi_initialized.
     # @return [self]
     def jsi_initialized
+      #chkbug fail if defined?(super) # this should be the last jsi_initialized in class ancestry
       jsi_conf.after_initialize.call(self) if jsi_conf.after_initialize
       self
     end

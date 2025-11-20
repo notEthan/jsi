@@ -120,7 +120,7 @@ module JSI
       )
       jsi = jsi_class.new(instance,
         jsi_indicated_schemas: self,
-        jsi_schema_base_uri: uri,
+        jsi_base_uri: uri,
         jsi_conf: conf,
       ).send(:jsi_initialized)
 
@@ -144,6 +144,11 @@ module JSI
     # @return [Boolean]
     def instance_valid?(instance)
       all? { |schema| schema.instance_valid?(instance) }
+    end
+
+    # @return [Set<SchemaModule>]
+    def jsi_schema_modules
+      Set.new(self, &:jsi_schema_module).freeze
     end
 
     # Builds a SchemaSet, yielding each schema and a callable to be called with each schema of the resulting SchemaSet.
