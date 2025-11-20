@@ -103,7 +103,7 @@ module JSI
     # @return [JSI::Base]
     # @raise [ResolutionError]
     def find(uri)
-      internal_find(uri, @resources, @resource_autoloaders, proc { |r, _| register(r) }, 'resource')
+      internal_find(uri, @resources, @resource_autoloaders, proc { |r| register(r) }, 'resource')
     end
 
     private def internal_find(uri, store, autoloaders, registerer, typename)
@@ -127,7 +127,7 @@ module JSI
           end
         end
         autoloaded = autoloaders[uri].block.call(**autoload_param)
-        registerer[autoloaded, uri]
+        registerer[autoloaded]
       end # if autoloaders.key?(uri)
     end # autoloader.mutex.synchronize
   end # if autoloader
@@ -173,7 +173,7 @@ module JSI
     # @return [Schema::Vocabulary]
     # @raise [ResolutionError]
     def find_vocabulary(uri)
-      internal_find(uri, @vocabularies, @vocabulary_autoloaders, proc { |v, uri| register_vocabulary(v, uri: uri) }, 'vocabulary')
+      internal_find(uri, @vocabularies, @vocabulary_autoloaders, proc { |v| register_vocabulary(v, uri: uri) }, 'vocabulary')
     end
 
     # @param uri [#to_str]
@@ -202,7 +202,7 @@ module JSI
     # @return [Schema::Dialect]
     # @raise [ResolutionError]
     def find_dialect(uri)
-      internal_find(uri, @dialects, @dialect_autoloaders, proc { |v, uri| register_dialect(v, uri: uri) }, 'dialect')
+      internal_find(uri, @dialects, @dialect_autoloaders, proc { |v| register_dialect(v, uri: uri) }, 'dialect')
     end
 
     # @param uri [#to_str]
