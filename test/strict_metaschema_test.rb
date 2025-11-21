@@ -4,8 +4,7 @@ describe("strict 2020-12 meta-schema") do
   describe("instantiating") do
     it("instantiates, validates") do
       content = JSI::Util.json_parse_freeze(JSI::RESOURCES_PATH.join('schemas/2020-12_strict.json').read)
-      strict_metaschema = JSI.new_schema(content)
-      strict_metaschema.describes_schema!
+      strict_metaschema = JSI.new_schema(content, after_initialize: proc { |node| node.describes_schema! if node.jsi_ptr.root? })
 
       strict_schema = JSI.new_schema({
         "$schema": "https://json-schema.org/draft/2020-12/strict",
