@@ -37,14 +37,14 @@ describe JSI::Base do
       assert_equal('JSI::Base', JSI::Base.inspect)
       assert_equal(JSI::Base.inspect, JSI::Base.to_s)
     end
-    it 'is (JSI Schema Class) for generated subclass without id' do
-      assert_equal("(JSI Schema Class: # + JSI::Base::HashNode)", subject.class.inspect)
+    it("indicates schema") do
+      assert_equal("(JSI::Base + <#> + JSI::Base::HashNode)", subject.class.inspect)
       assert_equal(subject.class.inspect, subject.class.to_s)
     end
     describe 'with schema id' do
       let(:schema_content) { {'$id' => 'https://jsi/foo'} }
-      it 'is (JSI Schema Class: ...) for generated subclass with id' do
-        assert_equal("(JSI Schema Class: https://jsi/foo + JSI::Base::HashNode)", subject.class.inspect)
+      it("indicates schema") do
+        assert_equal("(JSI::Base + <https://jsi/foo> + JSI::Base::HashNode)", subject.class.inspect)
       end
     end
   end

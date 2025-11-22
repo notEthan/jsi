@@ -111,28 +111,13 @@ module JSI
       # and/or schema URI of each schema the class represents.
       # @return [String]
       def inspect
-        if !respond_to?(:jsi_class_schemas)
-          super
-        else
-          schema_names = jsi_class_schemas.map do |schema|
-            mod_name = schema.jsi_schema_module_name_from_ancestor
-            if mod_name && schema.jsi_resource_uri
-              "#{mod_name} <#{schema.jsi_resource_uri}>"
-            elsif mod_name
-              mod_name
-            elsif schema.schema_uri
-              schema.schema_uri.to_s
-            else
-              schema.jsi_ptr.uri.to_s
-            end
-          end
-
-          if schema_names.empty?
-            "(JSI Schema Class for 0 schemas#{jsi_class_includes.map { |n| " + #{n}" }.join})"
-          else
-            -"(JSI Schema Class: #{(schema_names + jsi_class_includes.map(&:name)).join(' + ')})"
-          end
+        return super unless respond_to?(:jsi_class_schemas)
+        schema_names = jsi_class_schemas.map do |schema|
+          mod_name = schema.jsi_schema_module_name_from_ancestor
+          next "#{mod_name} <#{schema.jsi_resource_uri}>" if mod_name && schema.jsi_resource_uri
+          mod_name || "<#{schema.schema_uri || schema.jsi_ptr.uri}>"
         end
+        "(#{[superclass, *schema_names, *jsi_class_includes].join(' + ')})"
       end
 
       def to_s
