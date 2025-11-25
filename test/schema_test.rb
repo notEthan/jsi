@@ -978,6 +978,26 @@ describe JSI::Schema do
       it '#instance_valid?' do
         assert_equal(false, schema.instance_valid?(instance))
       end
+
+      it("#instance_valid!") do
+        msg = <<~ERR
+          #<JSI::Validation::Result::Full (INVALID)
+            validation errors: JSI::Set[
+              #<JSI::Validation::Error
+                message: "instance type does not match `type` value",
+                instance: ["no"],
+                instance_ptr: JSI::Ptr[],
+                keyword: "type",
+                additional: {},
+                schema uri: JSI::URI["http://jsi/schema/validation"],
+                nested_errors: JSI::Set[]
+              >
+            ]
+          >
+          ERR
+
+        assert_raises_msg(JSI::Invalid, msg.chomp) { schema.instance_valid!(instance) }
+      end
     end
   end
 end

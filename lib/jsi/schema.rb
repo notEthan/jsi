@@ -849,6 +849,15 @@ module JSI
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?
     end
 
+    # Asserts that the given instance is valid against this schema.
+    # {JSI::Invalid} is raised if it is not.
+    #
+    # @raise [Invalid]
+    # @return [nil]
+    def instance_valid!(instance)
+      instance_validate(instance).valid!
+    end
+
     # validates the given instance against this schema
     #
     # @private
