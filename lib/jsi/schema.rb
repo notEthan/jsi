@@ -385,6 +385,12 @@ module JSI
       end
     end
 
+    # @!method dialect
+    #   The dialect of this schema
+    #   @return [Schema::Dialect]
+    # note: defined on a meta-schema's schema module by Schema#describes_schema!
+
+
     # the underlying JSON data used to instantiate this JSI::Schema.
     # this is an alias for {Base#jsi_node_content}, named for clarity in the context of working with
     # a schema.
