@@ -811,7 +811,7 @@ describe JSI::Schema do
 
   describe 'stringification, thorough for draft 7' do
     let(:schema) do
-      JSI::JSONSchemaDraft07.schema.new_jsi(YAML.load(<<~YAML
+      JSI.new_schema(YAML.load(<<~YAML
         $schema: "http://json-schema.org/draft-07/schema#"
         description:
           A schema containing each keyword of the meta-schema with valid and invalid type / structure of the keyword value
