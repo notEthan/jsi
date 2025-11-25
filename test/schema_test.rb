@@ -953,7 +953,7 @@ describe JSI::Schema do
       it '#instance_validate' do
         result = schema.instance_validate(instance)
         assert_equal(true, result.valid?)
-        assert_equal(JSI::Set[], result.immediate_validation_errors)
+        assert_equal(JSI::Set[], result.nested_validation_errors)
       end
       it '#instance_valid?' do
         assert_equal(true, schema.instance_valid?(instance))
@@ -973,7 +973,7 @@ describe JSI::Schema do
             :instance_ptr => JSI::Ptr[], :instance_document => ["no"],
             :nested_errors => JSI::Set[],
           }),
-        ], result.immediate_validation_errors)
+        ], result.nested_validation_errors)
       end
       it '#instance_valid?' do
         assert_equal(false, schema.instance_valid?(instance))

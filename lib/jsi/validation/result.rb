@@ -105,14 +105,14 @@ module JSI
             **additional
         )
           if !valid
-            result.immediate_validation_errors << Validation::Error.new({
+            result.nested_validation_errors << Validation::Error.new({
               message: JSI.t(message_key, default: message_default, **additional),
               keyword: keyword,
               additional: additional,
               schema: schema,
               instance_ptr: instance_ptr,
               instance_document: instance_document,
-              nested_errors: results.map(&:immediate_validation_errors).inject(Set[], &:merge).freeze,
+              nested_errors: results.map(&:nested_validation_errors).inject(Set[], &:merge).freeze,
             })
           end
         end
@@ -121,17 +121,17 @@ module JSI
 
     class Result::Full
       def initialize
-        @immediate_validation_errors = Set.new
+        @nested_validation_errors = Set.new
         @evaluated_tokens = Set.new
       end
 
       # @return [Set<Validation::Error>]
-      attr_reader(:immediate_validation_errors)
+      attr_reader(:nested_validation_errors)
 
       # @yield [Validation::Error]
       def each_validation_error(&block)
         return(to_enum(__method__)) if !block_given?
-        immediate_validation_errors.each do |validation_error|
+        nested_validation_errors.each do |validation_error|
           validation_error.each_validation_error(&block)
         end
         nil
@@ -147,18 +147,18 @@ module JSI
       attr_reader(:evaluated_tokens)
 
       def valid?
-        immediate_validation_errors.empty?
+        nested_validation_errors.empty?
       end
 
       def freeze
-        @immediate_validation_errors.freeze
+        @nested_validation_errors.freeze
         @evaluated_tokens.freeze
         super
       end
 
       def merge(result)
         raise(TypeError, "not a #{Result::Full}: #{result.pretty_inspect.chomp}") unless result.is_a?(Result::Full)
-        immediate_validation_errors.merge(result.immediate_validation_errors)
+        nested_validation_errors.merge(result.nested_validation_errors)
         evaluated_tokens.merge(result.evaluated_tokens)
         self
       end
@@ -166,7 +166,7 @@ module JSI
       def pretty_print(q)
         pretty_print_valid(q) do
           q.text('validation errors: ')
-          q.pp(immediate_validation_errors)
+          q.pp(nested_validation_errors)
         end
       end
 
@@ -175,7 +175,7 @@ module JSI
       def jsi_fingerprint
         {
           class: self.class,
-          immediate_validation_errors: immediate_validation_errors,
+          nested_validation_errors: nested_validation_errors,
           evaluated_tokens: evaluated_tokens,
         }.freeze
       end

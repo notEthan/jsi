@@ -144,7 +144,7 @@ describe 'JSON Schema Test Suite' do
                         end
 
                         assert_transform_equal(result, bootstrap_schema.instance_validate(test.jsi_instance['data'])) do |r|
-                          transform_errors[r.immediate_validation_errors]
+                          transform_errors[r.nested_validation_errors]
                         end
 
                         assert_consistent_jsi_descendent_errors(jsi, result: result)
