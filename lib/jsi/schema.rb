@@ -241,8 +241,6 @@ module JSI
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
       def new_schema(schema_content,
           default_metaschema: nil,
-          # params of Schema::MetaSchema#new_schema have their default values repeated here. delegating in a splat
-          # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
           register: true,
           stringify_symbol_keys: true,
