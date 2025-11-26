@@ -16,10 +16,12 @@ module JSI
       end
     end
 
-    # the base URI used to resolve the ids of schemas at or below this JSI.
-    # this is always an absolute URI (with no fragment).
-    # This may be the absolute schema URI of an ancestor schema or the URI from which the document was retrieved.
-    # @api private
+    # Base URI for URI resolution - always an absolute URI (with no fragment).
+    # If this node is a resource, its {#jsi_resource_uri} (i.e. its `$id`) is resolved against this URI, if that is relative.
+    #
+    # At the root this comes from param `base_uri` of {SchemaSet#new_jsi new_jsi}/{JSI.new_schema new_schema},
+    # or from a configured {Base::Conf#root_uri root_uri}.
+    # Below the root this comes from the parent's {#jsi_next_base_uri}.
     # @return [URI, nil]
     attr_reader(:jsi_base_uri)
 
