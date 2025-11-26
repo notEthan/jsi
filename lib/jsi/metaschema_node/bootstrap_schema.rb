@@ -52,6 +52,10 @@ module JSI
     # JSI::Ptr pointing to this schema within the document
     attr_reader :jsi_ptr
 
+    # @return [nil]
+    def jsi_root_uri
+    end
+
     # @return [Registry, nil]
     attr_reader(:jsi_registry)
 

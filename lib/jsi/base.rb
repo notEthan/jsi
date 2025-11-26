@@ -815,6 +815,12 @@ module JSI
     end
 
     # @private
+    # @return [URI, nil]
+    def jsi_root_uri
+      jsi_conf.root_uri
+    end
+
+    # @private
     # @return [SchemaModule::Connection]
     def jsi_schema_module_connection
       raise(BlockGivenError) if block_given?
