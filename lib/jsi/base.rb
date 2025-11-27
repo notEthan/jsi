@@ -978,6 +978,7 @@ module JSI
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
         jsi_base_uri: jsi_base_uri,
+        jsi_root_uri: jsi_conf.root_uri,
         # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
         # different registries mean references may resolve to different resources so must not be equal
