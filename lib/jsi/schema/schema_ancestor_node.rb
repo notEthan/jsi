@@ -73,10 +73,9 @@ module JSI
       yield jsi_root_uri if jsi_ptr.root? && jsi_root_uri
     end
 
-    # the URI of the resource containing this node.
-    # this is always an absolute URI (with no fragment).
-    # If this node is a schema with an id, this is its absolute URI; otherwise an ancestor resource's URI,
-    # or nil if not contained by a resource with a URI.
+    # URI for resolution of relative URIs at or below this node - always an absolute URI (with no fragment).
+    # Mainly used to resolve relative `$ref`s.
+    # This is self's {#jsi_resource_uri} if this node is a resource; otherwise {#jsi_base_uri}.
     # @return [URI, nil]
     def jsi_next_base_uri
       jsi_resource_uri || jsi_base_uri
