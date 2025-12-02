@@ -152,11 +152,6 @@ module JSI
     def with_dynamic_scope_from(node)
       schema.with_dynamic_scope_from(node).jsi_schema_module
     end
-
-    # `$defs` property reader
-    def defs
-      self['$defs']
-    end
   end
 
   # A module to extend the {SchemaModule} of a schema which describes other schemas (a {Schema::MetaSchema})
