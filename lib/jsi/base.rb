@@ -818,6 +818,13 @@ module JSI
       end
     end
 
+    # @private experimental
+    # a callback to be overridden (remember to call super), called with our #jsi_schema_module_connection when that is created
+    # @param mod [SchemaModule::Connection]
+    # @return [void]
+    def jsi_schema_module_connection_created(mod)
+    end
+
     # @private
     # @return [Boolean]
     def jsi_schema_module_connection_defined?

@@ -397,6 +397,7 @@ module JSI
       node.jsi_schemas.each do |schema|
         extend(JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: [SchemaModule::Connection]))
       end
+      node.jsi_schema_module_connection_created(self)
     end
 
     # @return [String]
