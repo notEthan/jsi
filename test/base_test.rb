@@ -495,7 +495,7 @@ describe JSI::Base do
                 instance_ptr: JSI::Ptr[],
                 keyword: "type",
                 additional: {},
-                schema uri: JSI::URI["http://jsi/base/validation/with errors"],
+                schema_uri: JSI::URI["http://jsi/base/validation/with errors"],
                 nested_errors: JSI::Set[]
               >
             ]
@@ -648,7 +648,7 @@ describe JSI::Base do
                   instance_ptr: JSI::Ptr[],
                   keyword: "properties",
                   additional: \0,
-                  schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
+                  schema_uri: JSI::URI["http://jsi/base/validation/at a depth"],
                   nested_errors: JSI::Set[
                     #<JSI::Validation::Error
                       message: "instance type does not match `type` value",
@@ -656,7 +656,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["foo"],
                       keyword: "type",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/foo"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/foo"],
                       nested_errors: JSI::Set[]
                     >,
                     #<JSI::Validation::Error
@@ -665,7 +665,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["baz"],
                       keyword: "type",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/baz"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/baz"],
                       nested_errors: JSI::Set[]
                     >
                   ]
@@ -676,7 +676,7 @@ describe JSI::Base do
                   instance_ptr: JSI::Ptr[],
                   keyword: "additionalProperties",
                   additional: \0,
-                  schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
+                  schema_uri: JSI::URI["http://jsi/base/validation/at a depth"],
                   nested_errors: JSI::Set[
                     #<JSI::Validation::Error
                       message: "instance is valid against `not` schema",
@@ -684,7 +684,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["more"],
                       keyword: "not",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/additionalProperties"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/additionalProperties"],
                       nested_errors: JSI::Set[]
                     >
                   ]

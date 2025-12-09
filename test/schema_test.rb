@@ -992,7 +992,7 @@ describe JSI::Schema do
                 instance_ptr: JSI::Ptr[],
                 keyword: "type",
                 additional: {},
-                schema uri: JSI::URI["http://jsi/schema/validation"],
+                schema_uri: JSI::URI["http://jsi/schema/validation"],
                 nested_errors: JSI::Set[]
               >
             ]

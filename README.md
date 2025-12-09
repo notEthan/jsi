@@ -128,14 +128,14 @@ bad.phone[0].jsi_validate
 #       instance: {"number" => [5, 5, 5]},
 #       instance_ptr: JSI::Ptr["phone", 0],
 #       keyword: "properties",
-#       schema uri: JSI::URI["#/properties/phone/items"],
+#       schema_uri: JSI::URI["#/properties/phone/items"],
 #       nested_errors: JSI::Set[
 #         #<JSI::Validation::Error
 #           message: "instance type does not match `type` value",
 #           instance: [5, 5, 5],
 #           instance_ptr: JSI::Ptr["phone", 0, "number"],
 #           keyword: "type",
-#           schema uri: JSI::URI["#/properties/phone/items/properties/number"],
+#           schema_uri: JSI::URI["#/properties/phone/items/properties/number"],
 #           nested_errors: JSI::Set[]
 #         >
 #       ]
