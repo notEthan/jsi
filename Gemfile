@@ -20,7 +20,6 @@ end
 
 group(:test) do
   gem 'minitest'
-  gem 'minitest-around'
   gem 'minitest-reporters'
   gem('simplecov')
   gem 'simplecov-lcov'

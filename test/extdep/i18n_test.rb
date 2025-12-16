@@ -18,14 +18,8 @@ I18n.backend.store_translations(I18n.default_locale,
 )
 
 describe("JSI.translator = I18n.method(:translate)") do
-  around do |test|
-    begin
-      JSI.translator = I18n.method(:translate)
-      test.call
-    ensure
-      JSI.translator = JSI::DEFAULT_TRANSLATOR
-    end
-  end
+  before { JSI.translator = I18n.method(:translate) }
+  after  { JSI.translator = JSI::DEFAULT_TRANSLATOR }
 
   let(:schema) { JSI.new_schema(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
