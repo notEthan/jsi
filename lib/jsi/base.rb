@@ -94,16 +94,6 @@ module JSI
         )
         freeze
       end
-
-      NOT_FOR_MODIFIED_COPY = Set[
-        :after_initialize, # a new root is out of the expected scope of after_initialize
-      ].freeze
-      private_constant(:NOT_FOR_MODIFIED_COPY)
-
-      # @private
-      def for_modified_copy
-        self.class.new(**to_h.reject { |k, _| NOT_FOR_MODIFIED_COPY.include?(k) })
-      end
     end
 
     class << self
@@ -702,7 +692,7 @@ module JSI
           uri: @jsi_root_node.jsi_base_uri,
           register: false, # default is already false but this is a place to be explicit
           mutable: jsi_mutable?,
-          **jsi_conf.for_modified_copy.to_h,
+          **jsi_conf.to_h,
           **conf_kw,
         )
         modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
