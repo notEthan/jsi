@@ -31,10 +31,11 @@ jobs:
         - truffleruby
         - truffleruby+graalvm
         - '2.3'
-        - '2.7'
+        - '2'
         - '3.0'
+        - '3'
         - ruby # latest release
-        #- head # commented for 3.5.0dev pending https://bugs.ruby-lang.org/issues/21375
+        - head
         runs-on:
         - ubuntu-latest
 
