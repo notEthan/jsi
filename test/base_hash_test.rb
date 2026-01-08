@@ -427,11 +427,14 @@ describe 'JSI::Base hash' do
     it('#each_value') { assert_equal([subject['foo'], subject['bar'], subject['baz']], subject.each_value.to_a) }
     it('#fetch')       { assert_equal(subject['baz'], subject.fetch('baz')) }
     it('#fetch_values') { assert_equal([subject['baz']], subject.fetch_values('baz')) } if {}.respond_to?(:fetch_values)
+    it('#filter')       { assert_equal({'foo' => subject['foo']}, subject.filter { |_, v| v.respond_to?(:to_hash) }) } if {}.respond_to?(:filter)
     it('#flatten')      { assert_equal(subject.to_a, subject.flatten(0)) }
     it('#has_value?')  { assert_equal(true, subject.has_value?(subject['baz'])) }
     it('#invert')     { assert_equal({subject['foo'] => 'foo', subject['bar'] => 'bar', subject['baz'] => 'baz'}, subject.invert) }
     it('#key')       { assert_equal('baz', subject.key(subject['baz'])) }
     it('#rassoc')   { assert_equal(['baz', subject['baz']], subject.rassoc(subject['baz'])) }
+    it('#reject')  { assert_equal({'foo' => subject['foo']}, subject.reject { |_, v| !v.respond_to?(:to_hash) }) }
+    it('#select')  { assert_equal({'foo' => subject['foo']}, subject.select { |_, v| v.respond_to?(:to_hash) }) }
     it('#to_h')    { assert_equal({'foo' => subject['foo'], 'bar' => subject['bar'], 'baz' => subject['baz']}, subject.to_h) }
     it('#to_proc') { assert_equal(subject['baz'], subject.to_proc.call('baz')) } if {}.respond_to?(:to_proc)
     if {}.respond_to?(:transform_values)
@@ -453,10 +456,10 @@ describe 'JSI::Base hash' do
 
     describe 'modified copy' do
       it 'modifies a copy' do
-        modified_root = subject.foo.select { false }.jsi_root_node
+        modified_root = subject.foo.compact.jsi_root_node
         # modified_root instance ceases to be SortOfHash because SortOfHash has no #[]= method
-        # modified_root.foo instance ceases to be SortOfHash because SortOfHash has no #select method
-        assert_equal(schema.new_jsi({'foo' => {}}), modified_root)
+        # modified_root.foo instance ceases to be SortOfHash because SortOfHash has no #compact method
+        assert_equal(schema.new_jsi({'foo' => {'a' => 'b'}}), modified_root)
       end
     end
   end
@@ -469,23 +472,6 @@ describe 'JSI::Base hash' do
       assert_schemas([schema, schema.anyOf[0]], subject)
       merged = subject.merge({"b" => 1})
       assert_schemas([schema, schema.anyOf[0], schema.anyOf[1]], merged)
-    end
-    it('#reject') { assert_equal(schema.new_jsi({}), subject.reject { true }) }
-    it('#select') { assert_equal(schema.new_jsi({}), subject.select { false }) }
-    it('#filter') { assert_equal(schema.new_jsi({}), subject.filter { false }) } if {}.respond_to?(:filter)
-    describe '#select' do
-      it 'yields property too' do
-        subject.select do |k, v|
-          assert_equal(subject[k], v)
-        end
-      end
-      it 'passes as_jsi' do
-        result = subject.select(as_jsi: true) do |k, v|
-          assert_equal(subject[k, as_jsi: true], v)
-          v.jsi_schemas.empty?
-        end
-        assert_equal(schema.new_jsi({'baz' => [true]}), result)
-      end
     end
     # Hash#compact only available as of ruby 2.5.0
     if {}.respond_to?(:compact)

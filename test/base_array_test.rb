@@ -425,6 +425,7 @@ describe 'JSI::Base array' do
     it('#permutation') { assert_equal([['foo'], [subject[1]], [subject[2]], [subject[3]]], subject.permutation(1).to_a) }
     it('#product')    { assert_equal([], subject.product([])) }
     it('#rassoc')              { assert_equal(subject[2], subject.rassoc('r')) }
+    it('#reject')              { assert_equal([subject[2]], subject.reject { |n| !n.respond_to?(:to_ary) }) }
     it('#repeated_combination') { assert_equal([[]], subject.repeated_combination(0).to_a) }
     it('#repeated_permutation') { assert_equal([[]], subject.repeated_permutation(0).to_a) }
     it('#reverse')             { assert_equal([subject[3], subject[2], subject[1], 'foo'], subject.reverse) }
@@ -433,6 +434,7 @@ describe 'JSI::Base array' do
     it('#rotate')           { assert_equal([subject[1], subject[2], subject[3], 'foo'], subject.rotate) }
     it('#sample')          { assert_equal('a', schema.new_jsi(['a']).sample) }
     it('#sample kw')       { assert_equal('a', schema.new_jsi(['a']).sample(random: Random.new(1))) }
+    it('#select')         { assert_equal([subject[2]], subject.select { |n| n.respond_to?(:to_ary) }) }
     it('#shelljoin')      { assert_equal('a', schema.new_jsi(['a']).shelljoin) } if [].respond_to?(:shelljoin)
     it('#shuffle')       { assert_equal(4, subject.shuffle.size) }
     it('#slice')        { assert_equal(['foo'], subject.slice(0, 1)) }
@@ -459,37 +461,19 @@ describe 'JSI::Base array' do
 
     describe 'modified copy' do
       it 'modifies a copy' do
-        modified_root = subject[2].select { false }.jsi_root_node
+        modified_root = subject[2].compact.jsi_root_node
         # modified_root instance ceases to be SortOfArray because SortOfArray has no #[]= method
-        # modified_root[2] ceases to be SortOfArray because SortOfArray has no #select method
-        assert_equal(schema.new_jsi(['foo', {'lamp' => SortOfArray.new([3])}, []], **subject_opt), modified_root)
+        # modified_root[2] ceases to be SortOfArray because SortOfArray has no #compact method
+        assert_equal(schema.new_jsi(['foo', {'lamp' => SortOfArray.new([3])}, ['q', 'r']], **subject_opt), modified_root)
       end
     end
   end
   describe 'modified copy methods' do
-    it('#reject') { assert_equal(schema.new_jsi(['foo']), subject.reject { |e| e != 'foo' }) }
-    it('#reject block param is Base#[]') do
-      i = 0
-      subject.reject { |e| assert_equal(e, subject[i]); i += 1 }
-    end
-    it('#select') { assert_equal(schema.new_jsi(['foo']), subject.select { |e| e == 'foo' }) }
-    it('#select block param is Base#[]') do
-      i = 0
-      subject.select { |e| assert_equal(e, subject[i]); i += 1 }
-    end
-    describe '#select' do
-      it 'passes as_jsi' do
-        result = subject.select(as_jsi: true) do |e|
-          e.jsi_schemas.empty?
-        end
-        assert_equal(schema.new_jsi([{"four" => 4}]), result)
-      end
-    end
     it('#compact') { assert_equal(subject, subject.compact) }
     describe 'at a depth' do
-      it('#select') do
-        expected = schema.new_jsi(['foo', {'lamp' => [3]}, ['r'], {'four' => 4}])[2]
-        actual = subject[2].select { |e| e == 'r' }
+      it('#compact') do
+        expected = schema.new_jsi(['foo', {'lamp' => [3]}, ['q', 'r'], {'four' => 4}])[2]
+        actual = subject[2].compact
         assert_equal(expected, actual)
       end
     end

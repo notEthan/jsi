@@ -17,13 +17,10 @@ module JSI
     DESTRUCTIVE_METHODS = %w(clear delete delete_if filter! flatten! keep_if reject! replace select! shift).map(&:freeze).freeze
     # these return a modified copy
     safe_modified_copy_methods = %w(compact slice except)
-    # select and reject will return a modified copy but need the yielded block variable value from #[]
-    safe_kv_block_modified_copy_methods = %w(select filter reject)
     SAFE_METHODS = SAFE_KEY_ONLY_METHODS | SAFE_KEY_VALUE_METHODS
     custom_methods = %w(merge) # defined below
     safe_to_hash_methods = SAFE_METHODS -
       safe_modified_copy_methods -
-      safe_kv_block_modified_copy_methods -
       custom_methods
     safe_to_hash_methods.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
@@ -45,16 +42,6 @@ module JSI
           jsi_modified_copy do |object_to_modify|
             responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
             responsive_object.public_send(method_name, *a, **kw, &b)
-          end
-        end
-      end
-    end
-    safe_kv_block_modified_copy_methods.each do |method_name|
-      define_method(method_name) do |**kw, &b|
-        jsi_modified_copy do |object_to_modify|
-          responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_hash
-          responsive_object.public_send(method_name) do |k, _v|
-            b.call(k, self[k, **kw])
           end
         end
       end
@@ -132,11 +119,8 @@ module JSI
     # methods (well, method) that returns a modified copy and doesn't need any handling of block variable(s)
     safe_modified_copy_methods = %w(compact)
 
-    # methods that return a modified copy and do need handling of block variables
-    safe_el_block_methods = %w(reject select)
-
     SAFE_METHODS = SAFE_INDEX_ONLY_METHODS | SAFE_INDEX_ELEMENT_METHODS
-    safe_to_ary_methods = SAFE_METHODS - safe_modified_copy_methods - safe_el_block_methods
+    safe_to_ary_methods = SAFE_METHODS - safe_modified_copy_methods
     safe_to_ary_methods.each do |method_name|
       if Util::LAST_ARGUMENT_AS_KEYWORD_PARAMETERS
         define_method(method_name) { |*a, &b| to_ary.public_send(method_name, *a, &b) }
@@ -157,17 +141,6 @@ module JSI
           jsi_modified_copy do |object_to_modify|
             responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
             responsive_object.public_send(method_name, *a, **kw, &b)
-          end
-        end
-      end
-    end
-    safe_el_block_methods.each do |method_name|
-      define_method(method_name) do |**kw, &b|
-        jsi_modified_copy do |object_to_modify|
-          i = 0
-          responsive_object = object_to_modify.respond_to?(method_name) ? object_to_modify : object_to_modify.to_ary
-          responsive_object.public_send(method_name) do |_e|
-            b.call(self[i, **kw]).tap { i += 1 }
           end
         end
       end
