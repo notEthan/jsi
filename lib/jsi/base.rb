@@ -35,6 +35,7 @@ module JSI
 
     Conf = Struct.subclass(*%i(
       registry
+      reinstantiate_nonschemas
       after_initialize
       child_as_jsi
       child_use_default
@@ -53,6 +54,8 @@ module JSI
     #
     #   Default: {JSI.registry}
     #   @return [Registry, nil]
+    # @!attribute reinstantiate_nonschemas
+    #   _private, not officially supported_. whether Schema#resource_root_subschema reinstantiates.
     # @!attribute after_initialize
     #   _EXPERIMENTAL_ - a callback that is called with each JSI node in the document after the node is initialized.
     #   @return [#call, nil]
@@ -113,8 +116,8 @@ module JSI
         else
           schema_names = jsi_class_schemas.map do |schema|
             mod_name = schema.jsi_schema_module_name_from_ancestor
-            if mod_name && schema.schema_absolute_uri
-              "#{mod_name} <#{schema.schema_absolute_uri}>"
+            if mod_name && schema.jsi_resource_uri
+              "#{mod_name} <#{schema.jsi_resource_uri}>"
             elsif mod_name
               mod_name
             elsif schema.schema_uri
@@ -203,6 +206,7 @@ module JSI
       @jsi_conf = jsi_conf = jsi_conf || jsi_root_node.jsi_conf
       @jsi_document = jsi_document
       #chkbug fail(Bug) unless jsi_ptr.is_a?(Ptr)
+      #chkbug fail(Bug) unless jsi_ptr.resolve_against(jsi_document).equal?(jsi_ptr)
       @jsi_ptr = jsi_ptr
       #chkbug fail(Bug) unless jsi_indicated_schemas.is_a?(SchemaSet)
       @jsi_indicated_schemas = jsi_indicated_schemas
@@ -707,13 +711,14 @@ module JSI
     # @yield [Object] this JSI's instance. the block should result
     #   in a nondestructively modified copy of this.
     # @return [Base] the modified copy of self
-    def jsi_modified_copy(&block)
+    def jsi_modified_copy(**conf_kw, &block)
         modified_document = @jsi_ptr.modified_document_copy(@jsi_document, &block)
         modified_jsi_root_node = @jsi_root_node.jsi_indicated_schemas.new_jsi(modified_document,
           uri: @jsi_root_node.jsi_base_uri,
           register: false, # default is already false but this is a place to be explicit
           mutable: jsi_mutable?,
           **jsi_conf.for_modified_copy.to_h,
+          **conf_kw,
         )
         modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
         modified_copy.jsi_with_schema_dynamic_anchor_map(jsi_schema_dynamic_anchor_map)
@@ -879,7 +884,7 @@ module JSI
             0
           : schema.jsi_schema_module_name_from_ancestor ?
             1
-          : schema.schema_absolute_uri ?
+          : schema.jsi_resource_uri ?
             2
           : schema.schema_uri ?
             3

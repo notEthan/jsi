@@ -23,7 +23,7 @@ describe("JSON Referencing Test Suite") do
           schema_content = ref_tests['registry'][uri]
           auri = JSI::Util.uri(uri)
           auri = auri.merge(fragment: nil) if auri.fragment == ''
-          metaschema.new_schema(schema_content, uri: auri, registry: descr_registry)
+          metaschema.new_schema(schema_content, uri: auri, registry: descr_registry, reinstantiate_nonschemas: true)
         end
 
         let(:registry) { descr_registry }

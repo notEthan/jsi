@@ -86,6 +86,9 @@ module JSI
       # Schemas instantiated with `new_schema` are immutable, their content transformed using
       # the {Base::Conf configured} {Base::Conf#to_immutable `to_immutable`}.
       #
+      # Parameters are passed to {SchemaSet#new_jsi} and are documented there, but some have
+      # different defaults for new_schema.
+      #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
       # @param uri [#to_str, URI] The retrieval URI of the schema document.
       #   If specified, the root schema will be identified by this URI, in addition
@@ -101,42 +104,37 @@ module JSI
       #     - Another schema refers with `$ref` to the schema being instantiated by this retrieval URI,
       #       rather than an id declared in the schema - the schema is resolvable by this URI in the
       #       {Base::Conf configured} {Base::Conf#registry `registry`}.
-      # @param register [Boolean] Whether the instantiated schema and any subschemas with absolute URIs
-      #   will be registered in the {Base::Conf configured} {Base::Conf#registry `registry`}.
-      # @param stringify_symbol_keys [Boolean] Whether the schema content will have any Symbol keys of Hashes
-      #   replaced with Strings (recursively through the document).
-      #   Replacement is done on a copy; the given schema content is not modified.
+      # @param register
+      # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
-      # @yield If a block is given, it is evaluated in the context of the schema's {Schema#jsi_schema_module JSI schema module}
-      #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
       def new_schema(schema_content,
           uri: nil,
           register: true,
           stringify_symbol_keys: true,
-          **conf_kw,
-          &block
+          **conf_kw
       )
-        schema_jsi = new_jsi(schema_content,
+        raise(BlockGivenError) if block_given?
+        new_jsi(schema_content,
           uri: uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
           mutable: false,
         )
-
-        schema_jsi.jsi_schema_module_exec(&block) if block
-
-        schema_jsi
       end
 
       # Instantiates the given schema content as a JSI Schema, passing all params to
       # {Schema::MetaSchema#new_schema}, and returns its {Schema#jsi_schema_module JSI Schema Module}.
       #
+      # @yield If a block is given, it is evaluated in the context of the schema module
+      #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::SchemaModule] the JSI Schema Module of the instantiated schema
       def new_schema_module(schema_content, **kw, &block)
-        new_schema(schema_content, **kw, &block).jsi_schema_module
+        schema_jsi = new_schema(schema_content, **kw)
+        schema_jsi.jsi_schema_module_exec(&block) if block
+        schema_jsi.jsi_schema_module
       end
     end
 
@@ -227,28 +225,28 @@ module JSI
       # Schemas instantiated with `new_schema` are immutable, their content transformed using
       # the {Base::Conf configured} {Base::Conf#to_immutable `to_immutable`}.
       #
+      # Most parameters are passed to {SchemaSet#new_jsi} and are documented there, but some have
+      # different defaults for JSI.new_schema.
+      #
       # @param schema_content (see Schema::MetaSchema#new_schema)
       # @param default_metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
       #   Indicates the meta-schema to use if the given `schema_content` does not have a `$schema` property.
       #   This may be a meta-schema or a meta-schema's schema module (e.g. `JSI::JSONSchemaDraft07`),
       #   or a URI (as would be in a `$schema` keyword).
-      # @param uri (see Schema::MetaSchema#new_schema)
-      # @param register (see Schema::MetaSchema#new_schema)
-      # @param stringify_symbol_keys (see Schema::MetaSchema#new_schema)
+      # @param uri
+      # @param register
+      # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
-      # @yield (see Schema::MetaSchema#new_schema)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
       def new_schema(schema_content,
           default_metaschema: nil,
-          # params of Schema::MetaSchema#new_schema have their default values repeated here. delegating in a splat
-          # would remove repetition, but yard doesn't display delegated defaults with its (see X) directive.
           uri: nil,
           register: true,
           stringify_symbol_keys: true,
-          **conf_kw,
-          &block
+          **conf_kw
       )
+        raise(BlockGivenError) if block_given?
         new_schema_params = {
           uri: uri,
           register: register,
@@ -273,7 +271,7 @@ module JSI
               "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
             ].join("\n"))
           end
-          default_metaschema.new_schema(schema_content, **new_schema_params, &block)
+          default_metaschema.new_schema(schema_content, **new_schema_params)
         }
         if schema_content.is_a?(Schema)
           raise(TypeError, [
@@ -292,7 +290,7 @@ module JSI
               raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
             end
             metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: conf.registry)
-            metaschema.new_schema(schema_content, **new_schema_params, &block)
+            metaschema.new_schema(schema_content, **new_schema_params)
           else
             default_metaschema_new_schema.call
           end
@@ -385,6 +383,12 @@ module JSI
       end
     end
 
+    # @!method dialect
+    #   The dialect of this schema
+    #   @return [Schema::Dialect]
+    # note: defined on a meta-schema's schema module by Schema#describes_schema!
+
+
     # the underlying JSON data used to instantiate this JSI::Schema.
     # this is an alias for {Base#jsi_node_content}, named for clarity in the context of working with
     # a schema.
@@ -420,29 +424,28 @@ module JSI
     end
 
     # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_base_uri`
+    # @deprecated after v0.8 - use `#jsi_resource_uri`
     # @return [URI, nil]
     def schema_absolute_uri
-      schema_absolute_uris.first
+      jsi_resource_uri
     end
 
+    # @deprecated after v0.8 - use `#jsi_resource_uris`
     # @return [Enumerable<URI>]
     def schema_absolute_uris
-      @schema_absolute_uris_map[schema_content: schema_content]
+      jsi_resource_uris
     end
 
     # @yield [URI]
-    private def schema_absolute_uris_compute
-      root_uri = jsi_base_uri if jsi_ptr.root?
+    private def jsi_each_resource_uri_compute
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
         if jsi_base_uri
-          uri = jsi_base_uri.join(id_without_fragment)
-          root_uri = nil if root_uri == uri
-          yield(uri)
+          yield(jsi_base_uri.join(id_without_fragment))
         elsif id_without_fragment.absolute?
           yield(id_without_fragment)
         end
       end
-      yield(root_uri) if root_uri
+      super
     end
 
     # a nonrelative URI which refers to this schema.
@@ -461,11 +464,11 @@ module JSI
 
     # @yield [URI]
     private def schema_uris_compute(&block)
-      schema_absolute_uris.each(&block)
+      jsi_resource_uris.each(&block)
 
       if jsi_resource_root
         anchors.each do |anchor|
-          jsi_resource_root.schema_absolute_uris.each do |uri|
+          jsi_resource_root.jsi_resource_uris.each do |uri|
             yield(uri.merge(fragment: anchor))
           end
         end
@@ -473,7 +476,7 @@ module JSI
 
       jsi_subschema_resource_ancestors.reverse_each do |ancestor_schema|
         relative_ptr = jsi_ptr.relative_to(ancestor_schema.jsi_ptr)
-        ancestor_schema.schema_absolute_uris.each do |uri|
+        ancestor_schema.jsi_resource_uris.each do |uri|
           yield(uri.merge(fragment: relative_ptr.fragment))
         end
       end
@@ -604,7 +607,7 @@ module JSI
     # is this schema the root of a schema resource?
     # @return [Boolean]
     def jsi_is_resource_root?
-      super || schema_absolute_uris.any?
+      super || jsi_resource_uris.any?
     end
 
     # @deprecated after v0.8
@@ -627,7 +630,7 @@ module JSI
     # @return [JSI::Schema] the schema pointed to by ptr
     def resource_root_subschema(ptr)
           Schema.ensure_schema(jsi_resource_root.jsi_descendent_node(ptr),
-            reinstantiate_as: jsi_schemas.select(&:describes_schema?)
+            reinstantiate_as: jsi_conf.reinstantiate_nonschemas && jsi_schemas.select(&:describes_schema?),
           )
     end
 
@@ -843,6 +846,15 @@ module JSI
       internal_validate_instance(Ptr[], instance, validate_only: true).valid?
     end
 
+    # Asserts that the given instance is valid against this schema.
+    # {JSI::Invalid} is raised if it is not.
+    #
+    # @raise [Invalid]
+    # @return [nil]
+    def instance_valid!(instance)
+      instance_validate(instance).valid!
+    end
+
     # validates the given instance against this schema
     #
     # @private
@@ -994,7 +1006,6 @@ module JSI
       # both extends need to initialize for edge case of draft4's boolean schema that is not described by meta-schema.
       instance_variable_defined?(:@jsi_schema_initialized) ? return : (@jsi_schema_initialized = true)
       @schema_ref_map = Hash.new { |h, ref| h[ref] = Schema::Ref.new(ref, referrer: self) }
-      @schema_absolute_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_absolute_uris_compute).to_a.freeze }
       @schema_uris_map = jsi_memomap(key_by: KEY_BY_NONE) { to_enum(:schema_uris_compute).to_a.freeze }
       @described_object_property_names_map = jsi_memomap(key_by: KEY_BY_NONE) do
         Set.new(dialect_invoke_each(:described_object_property_names)).freeze

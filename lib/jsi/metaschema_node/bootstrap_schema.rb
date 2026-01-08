@@ -29,6 +29,7 @@ module JSI
         jsi_registry: nil
     )
       @dialect = dialect
+      #chkbug fail(Bug) unless jsi_ptr.resolve_against(jsi_document).equal?(jsi_ptr)
       @jsi_ptr = jsi_ptr
       @jsi_document = jsi_document
       self.jsi_base_uri = jsi_base_uri
@@ -58,6 +59,7 @@ module JSI
 
     # overrides {Schema#subschema}
     def subschema(subptr)
+      subptr = Ptr.ary_ptr(subptr).resolve_against(jsi_node_content)
       dialect.bootstrap_schema(
         jsi_document,
         jsi_ptr: jsi_ptr + subptr,
@@ -95,7 +97,7 @@ module JSI
       # result schema is instantiated relative to document root.
       dialect.bootstrap_schema(
         jsi_document,
-        jsi_ptr: ptr,
+        jsi_ptr: ptr.resolve_against(jsi_document),
         jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
         jsi_schema_dynamic_anchor_map: jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: ptr),

@@ -18,14 +18,8 @@ I18n.backend.store_translations(I18n.default_locale,
 )
 
 describe("JSI.translator = I18n.method(:translate)") do
-  around do |test|
-    begin
-      JSI.translator = I18n.method(:translate)
-      test.call
-    ensure
-      JSI.translator = JSI::DEFAULT_TRANSLATOR
-    end
-  end
+  before { JSI.translator = I18n.method(:translate) }
+  after  { JSI.translator = JSI::DEFAULT_TRANSLATOR }
 
   let(:schema) { JSI.new_schema(schema_content) }
   let(:subject) { schema.new_jsi(instance) }
@@ -50,21 +44,21 @@ describe("JSI.translator = I18n.method(:translate)") do
     end
 
     it("uses i18n stored message, falling back to default message") do
-      assert_equal(Set[
+      assert_equal(JSI::Set[
         JSI::Validation::Error.new({
           message: "instance object properties are not all valid against corresponding `properties` schemas",
           keyword: "properties",
           additional: {instance_properties_valid: {"i18n msg" => false, "i18n msg additional" => false, "default msg" => false}},
           schema: schema,
           instance_ptr: JSI::Ptr[], instance_document: instance,
-          nested_errors: Set[
+          nested_errors: JSI::Set[
             JSI::Validation::Error.new({
               message: "i18n type not_match",
               keyword: "type",
               additional: {},
               schema: schema["properties"]["i18n msg"],
               instance_ptr: JSI::Ptr["i18n msg"], instance_document: instance,
-              nested_errors: Set[],
+              nested_errors: JSI::Set[],
             }),
             JSI::Validation::Error.new({
               message: "i18n maxItems 1 is too many",
@@ -72,7 +66,7 @@ describe("JSI.translator = I18n.method(:translate)") do
               additional: {instance_size: 1},
               schema: schema["properties"]["i18n msg additional"],
               instance_ptr: JSI::Ptr["i18n msg additional"], instance_document: instance,
-              nested_errors: Set[],
+              nested_errors: JSI::Set[],
             }),
             JSI::Validation::Error.new({
               message: "instance is not valid against `false` schema",
@@ -80,11 +74,11 @@ describe("JSI.translator = I18n.method(:translate)") do
               additional: {},
               schema: schema["properties"]["default msg"],
               instance_ptr: JSI::Ptr["default msg"], instance_document: instance,
-              nested_errors: Set[],
+              nested_errors: JSI::Set[],
             })
           ],
         }),
-      ], subject.jsi_validate.immediate_validation_errors)
+      ], subject.jsi_validate.nested_validation_errors)
     end
   end
 end

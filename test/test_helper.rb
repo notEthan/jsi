@@ -35,7 +35,6 @@ require_relative 'jsi_helper'
 ENV["MT_NO_EXPECTATIONS"] = ''
 
 require 'minitest/autorun'
-require 'minitest/around/spec'
 require 'minitest/reporters'
 require('ansi/code')
 
@@ -140,6 +139,13 @@ end
 
 Minitest::Reporters.use!(mkreporter.call.extend(Minitest::WithEndSummary))
 Minitest::Test.make_my_diffs_pretty!
+
+# make backtrace_filter only discard from the end until the first location outside minitest
+Minitest.backtrace_filter.define_singleton_method(:filter) do |bt|
+    bt = bt.dup
+    bt.pop while bt.last =~ %r(lib/minitest|internal:warning)
+    bt
+end
 
 class JSISpec < Minitest::Spec
   if ENV['JSI_TEST_ALPHA']

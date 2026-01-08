@@ -19,8 +19,7 @@ group(:dev) do
 end
 
 group(:test) do
-  gem 'minitest'
-  gem 'minitest-around'
+  gem('minitest', '~> 5.0')
   gem 'minitest-reporters'
   gem('simplecov')
   gem 'simplecov-lcov'

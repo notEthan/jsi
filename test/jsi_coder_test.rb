@@ -4,8 +4,7 @@ describe JSI::JSICoder do
   let(:schema_content) do
     {properties: {foo: {}, bar: {}}}
   end
-  let(:schema_block) { nil }
-  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07, &schema_block) }
+  let(:schema) { JSI.new_schema(schema_content, default_metaschema: JSI::JSONSchemaDraft07) }
   let(:options) { {} }
   let(:jsi_opt) { {} }
   let(:coder) { JSI::JSICoder.new(schema, jsi_opt: jsi_opt, **options) }
@@ -95,7 +94,7 @@ describe JSI::JSICoder do
       describe 'as_json options' do
         let(:options) { {as_json_opt: {from: 'as_json'}} }
         let(:schema_content) { {'$id': 'tag:uthb'} }
-        let(:schema_block) { proc { redef_method(:as_json) { |**kw| kw } } }
+        before { schema.jsi_schema_module_exec { redef_method(:as_json) { |**kw| kw } } }
 
         it 'passes options' do
           assert_equal({from: 'as_json'}, coder.dump(schema.new_jsi({'foo' => 'x'})))

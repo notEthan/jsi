@@ -81,6 +81,8 @@ module JSI
     end
 
     # See {JSI.new_metaschema_node} to instantiate.
+    #
+    # Note: when instantiating MetaSchemaNode directly, the caller must invoke #jsi_initialize_finish.
     # @api private
     # @param jsi_document the document containing the meta-schema.
     #   this must be frozen recursively; MetaSchemaNode does support mutation.
@@ -88,7 +90,6 @@ module JSI
     def initialize(
         jsi_document,
         jsi_ptr: Ptr[],
-        initialize_finish: true,
         jsi_root_node: nil,
         **kw
     )
@@ -116,7 +117,7 @@ module JSI
 
         if ref_uri_nofrag.empty?
           ptr = Ptr.from_fragment(ref_uri.fragment).resolve_against(jsi_document) # anchor not supported
-          msn_dialect.bootstrap_schema(
+          jsi_conf.dialect.bootstrap_schema(
             jsi_document,
             jsi_ptr: ptr,
             jsi_base_uri: nil, # not supported
@@ -153,27 +154,26 @@ module JSI
       @bootstrap_schemas.each do |bootstrap_schema|
         if instance_exec(bootstrap_schema, &jsi_conf.is_metaschema)
           # this is described by the meta-schema, i.e. this is a schema
-          define_singleton_method(:dialect) { msn_dialect }
+          define_singleton_method(:dialect) { jsi_conf.dialect }
           extend(Schema)
 
-          if jsi_registry && schema_absolute_uris.any? { |uri| !jsi_registry.registered?(uri) }
+          if jsi_registry && jsi_resource_uris.any? { |uri| !jsi_registry.registered?(uri) }
             jsi_registry.register_immediate(self)
           end
         end
       end
-
-      jsi_initialize_finish if initialize_finish
     end
 
-    private def jsi_initialize_finish
-      return if @initialize_finish_started
+    # @api private
+    def jsi_initialize_finish
+      return self if @initialize_finish_started
       @initialize_finish_started = true
 
       @jsi_schemas = SchemaSet.new(@bootstrap_schemas) { |s| bootstrap_schema_to_msn(s) }
 
       # note: jsi_schemas must already be set for jsi_schema_module to be used/extended
       if instance_exec(self, &jsi_conf.is_metaschema)
-        describes_schema!(msn_dialect)
+        describes_schema!(jsi_conf.dialect)
       end
 
       extends_for_instance = JSI::SchemaClasses.includes_for(jsi_node_content)
@@ -199,15 +199,10 @@ module JSI
       @initialize_finished = true
       while !@to_initialize_finish.empty?
         node = @to_initialize_finish.shift
-        node.send(:jsi_initialize_finish)
+        node.jsi_initialize_finish
       end
 
       jsi_initialized
-    end
-
-    # @return [Schema::Dialect]
-    def msn_dialect
-      jsi_conf.dialect
     end
 
     # JSI Schemas describing this MetaSchemaNode
@@ -222,8 +217,7 @@ module JSI
 
     # see {Base#jsi_child_node}
     def jsi_child_node(token)
-      dynamic_anchor_map = jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token])
-      root_descendent_node(jsi_ptr[token], dynamic_anchor_map: dynamic_anchor_map)
+      root_descendent_node(jsi_ptr[token], dynamic_anchor_map: jsi_schema_dynamic_anchor_map)
     end
 
     # See {Base#jsi_default_child}
@@ -233,7 +227,7 @@ module JSI
     private :jsi_default_child # internals for #[] but idk, could be public
 
     # @raise [NotImplementedError] not implemented for MetaSchemaNode
-    def jsi_modified_copy(&block)
+    def jsi_modified_copy(**)
       # this had an implementation previously (see git history). but for 2020-12, support for multiple
       # mutually-descriptive schemas as well as dynamic scope makes instantiating a modified copy that
       # preserves self-descriptive/mutually-descriptive relationships generally infeasible.
@@ -257,12 +251,15 @@ module JSI
       {
         class: self.class,
         jsi_document: jsi_document,
-        msn_dialect: msn_dialect,
+        jsi_ptr: jsi_ptr,
+        jsi_base_uri: jsi_base_uri,
+        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
+        dialect: jsi_conf.dialect,
         metaschema_root_ref: jsi_conf.metaschema_root_ref,
         root_schema_ref: jsi_conf.root_schema_ref,
         jsi_registry: jsi_registry,
         bootstrap_registry: jsi_conf.bootstrap_registry,
-      }.merge(our_initialize_params).freeze
+      }.freeze
     end
 
     protected
@@ -279,15 +276,6 @@ module JSI
       end
     end
 
-    # note: does not include jsi_root_node or jsi_conf
-    def our_initialize_params
-      {
-        jsi_ptr: jsi_ptr,
-        jsi_base_uri: jsi_base_uri,
-        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-      }.freeze
-    end
-
     def jsi_root_descendent_node_compute(ptr: , dynamic_anchor_map: )
       # note: self is jsi_root_node
       #chkbug fail(Bug) unless equal?(jsi_root_node)
@@ -296,11 +284,9 @@ module JSI
         self
       else
         MetaSchemaNode.new(jsi_document,
-          **our_initialize_params,
           jsi_ptr: ptr,
           jsi_base_uri: ptr.root? ? nil : jsi_resource_ancestor_uri,
           jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
-          initialize_finish: false,
           jsi_root_node: jsi_root_node,
         )
       end
@@ -318,7 +304,7 @@ module JSI
 
     def to_initialize_finish(node)
       if @initialize_finished
-        node.send(:jsi_initialize_finish)
+        node.jsi_initialize_finish
       else
         @to_initialize_finish.push(node)
       end
@@ -342,7 +328,7 @@ module JSI
       else
         jsi_registry || raise(ResolutionError, "no jsi_registry")
         bootstrap_resource = bootstrap_schema.jsi_resource_root
-        resource_uri = bootstrap_resource.schema_absolute_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
+        resource_uri = bootstrap_resource.jsi_resource_uri || raise(ResolutionError, "no URI: #{bootstrap_resource}")
         if jsi_registry.registered?(resource_uri)
           resource = jsi_registry.find(resource_uri)
           relative_ptr = bootstrap_schema.jsi_ptr.relative_to(bootstrap_resource.jsi_ptr)
@@ -350,10 +336,9 @@ module JSI
         else
           root = to_initialize_finish(MetaSchemaNode.new(
             bootstrap_schema.jsi_document,
-            **our_initialize_params,
             jsi_ptr: Ptr[],
             jsi_base_uri: nil,
-            initialize_finish: false,
+            jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
             jsi_conf: jsi_conf,
           ))
           root.jsi_descendent_node(bootstrap_schema.jsi_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)

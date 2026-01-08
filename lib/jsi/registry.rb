@@ -11,6 +11,9 @@ module JSI
     # an exception raised when a URI we are looking for has not been registered
     ResourceNotFound = ResolutionError
 
+    # @private
+    Autoloader = Struct.subclass(:block, :mutex)
+
     include(Util::Pretty)
 
     def initialize
@@ -43,22 +46,18 @@ module JSI
         raise(ArgumentError, "undefined behavior: registration of a JSI which is not a schema and is not at the root of a document")
       end
 
-      # allow for registration of resources at the root of a document whether or not they are schemas.
-      # jsi_base_uri at the root comes from the `uri` parameter to new_jsi / new_schema.
-      if resource.jsi_base_uri && resource.jsi_ptr.root?
-        internal_store(@resources, resource.jsi_base_uri, resource)
-      end
+      register_immediate(resource) if !resource.is_a?(Schema)
 
       resource.jsi_each_descendent_schema do |node|
         register_immediate(node)
       end
     end
 
-    # @param schema [Schema]
+    # @param node [Base, Schema]
     # @return [void]
-    def register_immediate(schema)
-      schema.schema_absolute_uris.each do |uri|
-        internal_store(@resources, uri, schema)
+    def register_immediate(node)
+      node.jsi_resource_uris.each do |uri|
+        internal_store(@resources, uri, node)
       end
     end
 
@@ -91,12 +90,12 @@ module JSI
         raise(ArgumentError, ["#{Registry} autoload must be invoked with a block", "URI: #{uri}"].join("\n"))
       end
       if autoloaders.key?(uri)
-        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{autoloaders[uri]}"].join("\n"))
+        raise(Collision, ["already registered URI for autoload", "URI: #{uri}", "loader: #{autoloaders[uri].block}"].join("\n"))
       end
       if store.key?(uri)
         raise(Collision, ["already registered URI", "URI: #{uri}", "existing: #{store[uri].pretty_inspect.chomp}"].join("\n"))
       end
-      autoloaders[uri] = block
+      autoloaders[uri] = Autoloader.new(block: block, mutex: nil)
       nil
     end
 
@@ -109,22 +108,31 @@ module JSI
 
     private def internal_find(uri, store, autoloaders, registerer, typename)
       uri = registration_uri(uri)
-      if autoloaders.key?(uri)
+      autoloaded = nil
+      autoloader = autoloaders[uri]
+  if autoloader
+    mutating
+    @mutex.synchronize { autoloader.mutex ||= Mutex.new }
+    autoloader.mutex.synchronize do
+      if autoloaders.key?(uri) # check against race
         autoload_param = {
           registry: self,
           uri: uri,
         }
         # remove params the autoload proc does not accept
         autoload_param.select! do |name, _|
-          autoloaders[uri].parameters.any? do |type, pname|
+          autoloaders[uri].block.parameters.any? do |type, pname|
             # dblsplat (**k) ||   required (k: )  || optional (k: nil)
             type == :keyrest || ((type == :keyreq || type == :key) && pname == name)
           end
         end
-        autoloaded = autoloaders[uri].call(**autoload_param)
+        autoloaded = autoloaders[uri].block.call(**autoload_param)
         registerer[autoloaded, uri]
         autoloaders.delete(uri)
-      end
+      end # if autoloaders.key?(uri)
+    end # autoloader.mutex.synchronize
+  end # if autoloader
+
       if !store.key?(uri)
         if autoloaded
           msg = [
