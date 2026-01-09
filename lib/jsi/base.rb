@@ -36,6 +36,7 @@ module JSI
     Conf = Struct.subclass(*%i(
       root_uri
       registry
+      application_collect_evaluated_validate
       reinstantiate_nonschemas
       after_initialize
       child_as_jsi
@@ -64,6 +65,30 @@ module JSI
     #
     #   Default: {JSI.registry}
     #   @return [Registry, nil]
+    # @!attribute application_collect_evaluated_validate
+    #   Shall schema application perform validation when collecting child evaluation
+    #   (for `unevaluatedProperties`, `unevaluatedItems`)?
+    #
+    #   A child should not be considered evaluated by a schema when it fails to validate[^1].
+    #   This means that `unevaluatedItems` or `unevaluatedProperties` should
+    #   only apply to a child if no other applicator schema validates the child.
+    #   The computational cost of this validation is significant, however, and may be unacceptable for performance.
+    #
+    #   Set to `true`, child evaluation will perform validation, and `unevaluated*` will applicate
+    #   correctly, at some cost in CPU time.
+    #
+    #   Set to `false`, a child will be considered evaluated when a child applicator schema applies to it,
+    #   regardless of validity, which will result in an `unevaluated*` schema incorrectly failing to
+    #   applicate when the child is not valid.
+    #
+    #   The default is false. It is expected that application of `unevaluated*` schemas to such children
+    #   is not typically relied on, so validation is not typically worth the cost of its computation.
+    #
+    #   [^1]: (ref: the JSON Schema spec states, "Schema objects that produce a false assertion result MUST
+    #   NOT produce any annotation results, whether from their own keywords or from keywords in subschemas.")
+    #
+    #   Default: false
+    #   @return [Boolean]
     # @!attribute reinstantiate_nonschemas
     #   _private, not officially supported_. whether Schema#resource_root_subschema reinstantiates.
     # @!attribute after_initialize
@@ -91,6 +116,7 @@ module JSI
       def initialize(
           root_uri: nil,
           registry: JSI.registry,
+          application_collect_evaluated_validate: false,
           child_as_jsi: false,
           child_use_default: false,
           to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
@@ -99,22 +125,13 @@ module JSI
         super(
           root_uri: Util.uri(root_uri, nnil: false, yabs: true),
           registry: registry,
+          application_collect_evaluated_validate: application_collect_evaluated_validate,
           child_as_jsi: child_as_jsi,
           child_use_default: child_use_default,
           to_immutable: to_immutable,
           **kw,
         )
         freeze
-      end
-
-      NOT_FOR_MODIFIED_COPY = Set[
-        :after_initialize, # a new root is out of the expected scope of after_initialize
-      ].freeze
-      private_constant(:NOT_FOR_MODIFIED_COPY)
-
-      # @private
-      def for_modified_copy
-        self.class.new(**to_h.reject { |k, _| NOT_FOR_MODIFIED_COPY.include?(k) })
       end
     end
 
@@ -123,28 +140,13 @@ module JSI
       # and/or schema URI of each schema the class represents.
       # @return [String]
       def inspect
-        if !respond_to?(:jsi_class_schemas)
-          super
-        else
-          schema_names = jsi_class_schemas.map do |schema|
-            mod_name = schema.jsi_schema_module_name_from_ancestor
-            if mod_name && schema.jsi_resource_uri
-              "#{mod_name} <#{schema.jsi_resource_uri}>"
-            elsif mod_name
-              mod_name
-            elsif schema.schema_uri
-              schema.schema_uri.to_s
-            else
-              schema.jsi_ptr.uri.to_s
-            end
-          end
-
-          if schema_names.empty?
-            "(JSI Schema Class for 0 schemas#{jsi_class_includes.map { |n| " + #{n}" }.join})"
-          else
-            -"(JSI Schema Class: #{(schema_names + jsi_class_includes.map(&:name)).join(' + ')})"
-          end
+        return super unless respond_to?(:jsi_class_schemas)
+        schema_names = jsi_class_schemas.map do |schema|
+          mod_name = schema.jsi_schema_module_name_from_ancestor
+          next "#{mod_name} <#{schema.jsi_resource_uri}>" if mod_name && schema.jsi_resource_uri
+          mod_name || "<#{schema.schema_uri || schema.jsi_ptr.uri}>"
         end
+        "(#{[superclass, *schema_names, *jsi_class_includes].join(' + ')})"
       end
 
       def to_s
@@ -203,7 +205,8 @@ module JSI
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @param jsi_conf [Base::Conf]
     # @param jsi_root_node [JSI::Base] the JSI of the root of the document containing this JSI
-    def initialize(jsi_document,
+    def initialize(
+        jsi_document: ,
         jsi_ptr: Ptr[],
         jsi_indicated_schemas: ,
         jsi_base_uri: nil,
@@ -729,7 +732,7 @@ module JSI
           base_uri: @jsi_root_node.jsi_base_uri,
           register: false, # default is already false but this is a place to be explicit
           mutable: jsi_mutable?,
-          **jsi_conf.for_modified_copy.to_h,
+          **jsi_conf.to_h,
           **conf_kw,
         )
         modified_copy = modified_jsi_root_node.jsi_descendent_node(@jsi_ptr)
@@ -836,6 +839,13 @@ module JSI
       end
     end
 
+    # @private experimental
+    # a callback to be overridden (remember to call super), called with our #jsi_schema_module_connection when that is created
+    # @param mod [SchemaModule::Connection]
+    # @return [void]
+    def jsi_schema_module_connection_created(mod)
+    end
+
     # @private
     # @return [Boolean]
     def jsi_schema_module_connection_defined?
@@ -857,7 +867,8 @@ module JSI
       # we instantiate a node the same as self but with the given dynamic_anchor_map,
       # under the same root node - so this node is not a descendent of its root node,
       # which is odd but does not cause problems at the moment.
-      self.class.new(jsi_document,
+      self.class.new(
+        jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_indicated_schemas: jsi_indicated_schemas,
         jsi_base_uri: jsi_base_uri,
@@ -1012,7 +1023,8 @@ module JSI
           includes: includes,
           mutable: jsi_mutable?,
         )
-        jsi_class.new(@jsi_document,
+        jsi_class.new(
+          jsi_document: @jsi_document,
           jsi_ptr: @jsi_ptr[token],
           jsi_indicated_schemas: child_indicated_schemas,
           jsi_base_uri: jsi_next_base_uri,
@@ -1027,7 +1039,10 @@ module JSI
         # if application_requires_evaluated, in-place application needs to collect token evaluation
         # recursively to inform child application, so must be recomputed.
         jsi_indicated_schemas.each_yield_set do |is, y|
-          is.each_inplace_child_applicator_schema(token, content, &y)
+          is.each_inplace_child_applicator_schema(token, content,
+            collect_evaluated_validate: jsi_conf.application_collect_evaluated_validate,
+            &y
+          )
         end
       else
         # if token evaluation does not need to be collected, use our already-computed #jsi_schemas.

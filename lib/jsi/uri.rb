@@ -3,8 +3,9 @@
 module JSI
   # JSI::URI adds to Addressable::URI:
   #
-  # - always immutable
   # - `JSI::URI["http://x"]` parses, and JSI::URI#inspect shows this form, copy/pastable
+  # - Immutable when instantiated with `.[]`, `.parse`, or modified-copy instance methods join, merge, or normalize.
+  #   However `.new` and `#dup` do not freeze for compatibility with some libraries (Faraday) that dup and mutate URIs.
   # @private
   class URI < Addressable::URI
     class << self
@@ -13,16 +14,22 @@ module JSI
       def [](uri)
         parse(uri)
       end
+
+      def parse(uri)
+        super.freeze
+      end
     end
 
-    def initialize(options={})
-      super
-      freeze
+    def join(uri)
+      super.freeze
     end
 
     def merge(hash)
-      # Addressable::URI#merge instantiates and mutates, not compatible with #initialize freezing. work around.
-      self.class.new(Addressable::URI.new(to_hash).merge(hash).to_hash)
+      super.freeze
+    end
+
+    def normalize
+      super.freeze
     end
 
     # @return [String]

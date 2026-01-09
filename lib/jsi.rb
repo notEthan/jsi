@@ -157,12 +157,15 @@ module JSI
     to_register.push(metaschema_document) if register_bootstrap_metaschema
     to_register.each do |document|
       conf.bootstrap_registry.register_immediate(conf.dialect.bootstrap_schema(
-        document,
+        jsi_document: document,
         jsi_registry: conf.bootstrap_registry,
       ))
     end
 
-    MetaSchemaNode.new(metaschema_document, jsi_conf: conf).jsi_initialize_finish
+    MetaSchemaNode.new(
+      jsi_document: metaschema_document,
+      jsi_conf: conf,
+    ).jsi_initialize_finish
   end
 
   # `JSI.registry` is the default {JSI::Registry} in which schemas are registered and from

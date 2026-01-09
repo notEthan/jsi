@@ -20,8 +20,8 @@ module JSI
     # @param jsi_ptr [JSI::Ptr] pointer to the schema in the document
     # @param jsi_document [#to_hash, #to_ary, Boolean, Object] document containing the schema
     def initialize(
-        jsi_document,
         dialect: ,
+        jsi_document: ,
         jsi_ptr: Ptr[],
         jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
@@ -65,7 +65,7 @@ module JSI
     def subschema(subptr)
       subptr = Ptr.ary_ptr(subptr).resolve_against(jsi_node_content)
       dialect.bootstrap_schema(
-        jsi_document,
+        jsi_document: jsi_document,
         jsi_ptr: jsi_ptr + subptr,
         jsi_base_uri: jsi_next_base_uri,
         jsi_schema_resource_ancestors: jsi_subschema_resource_ancestors,
@@ -100,7 +100,7 @@ module JSI
       # no jsi_resource_root means the root is not a schema and no parent schema has an absolute uri.
       # result schema is instantiated relative to document root.
       dialect.bootstrap_schema(
-        jsi_document,
+        jsi_document: jsi_document,
         jsi_ptr: ptr.resolve_against(jsi_document),
         jsi_base_uri: nil,
         jsi_schema_resource_ancestors: Util::EMPTY_ARY,
@@ -118,7 +118,7 @@ module JSI
       return(self) if new_dynamic_anchor_map == jsi_schema_dynamic_anchor_map
 
       dialect.bootstrap_schema(
-        jsi_document,
+        jsi_document: jsi_document,
         jsi_ptr: jsi_ptr,
         jsi_base_uri: jsi_base_uri,
         jsi_schema_resource_ancestors: jsi_schema_resource_ancestors,

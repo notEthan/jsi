@@ -53,5 +53,10 @@ module JSI
     def defs
       self['$defs']
     end
+
+    def jsi_schema_module_connection_created(mod)
+      mod.define_singleton_method(:defs) { |**kw| self['$defs', **kw] }
+      super
+    end
   end
 end

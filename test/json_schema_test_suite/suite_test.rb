@@ -100,7 +100,7 @@ describe 'JSON Schema Test Suite' do
 
                 bootstrap_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_bootstrap_schema = dialect.bootstrap_schema(
-                  tests_desc.jsi_instance['schema'],
+                  jsi_document: tests_desc.jsi_instance['schema'],
                   jsi_registry: bootstrap_registry,
                 )
                 bootstrap_registry.register(desc_bootstrap_schema)
@@ -122,7 +122,10 @@ describe 'JSON Schema Test Suite' do
                   tests_desc.tests.each do |test|
                       it(test.description) do
                         begin
-                          jsi = schema.new_jsi(test.jsi_instance['data'], registry: nil)
+                          jsi = schema.new_jsi(test.jsi_instance['data'],
+                            registry: nil,
+                            application_collect_evaluated_validate: true,
+                          )
                         rescue JSI::ResolutionError => e
                           raise unless e.uri.to_s == 'https://json-schema.org/draft/2019-09/schema'
                           skip("unsupported URI: #{e.uri}")

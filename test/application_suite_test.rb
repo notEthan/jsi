@@ -20,7 +20,9 @@ describe("application") do
             test.description || JSON.generate(test.instance),
           ].freeze
 
-          jsi = schema.new_jsi(test.jsi_node_content['instance'])
+          jsi = schema.new_jsi(test.jsi_node_content['instance'],
+            application_collect_evaluated_validate: true,
+          )
 
           it([*test_descr, 'validation'].join(' : ')) do
             assert_consistent_jsi_descendent_errors(jsi)
