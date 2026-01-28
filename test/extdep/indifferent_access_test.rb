@@ -47,6 +47,10 @@ other_instantiations.each do |inst|
       assert_equal('gangsta', subject['c'][:f][0][:g])
       assert_equal('i', subject[:c][:h][0]['i'])
       assert_equal(nil, subject['c']['h'][0][:i]) # hwia recurses down array containers to reinstantiate contained hashes as hwia on instantiation, not retrieval, so modifying h later results in a plain hash
+
+      # however, the node's jsi_ptr is not the same with symbol vs string so nodes are not equal
+      refute_equal(subject[:c], subject['c'])
+      refute_equal(subject['c']['f'], subject['c'][:f])
     end
 
     it 'merges' do
