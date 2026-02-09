@@ -13,6 +13,8 @@ A JSI instance aims to offer a fairly unobtrusive wrapper around its JSON data, 
 
 Note: The canonical location of this README is on [RubyDoc](http://rubydoc.info/gems/jsi/). When viewed on [Github](https://github.com/notEthan/jsi/), it may be inconsistent with the latest released gem, and Yardoc links will not work.
 
+JSI documents a {file:docs/Glossary.md Glossary} of relevant terms.
+
 ## Example
 
 Words are boring, let's code. You can follow along from the code blocks - install the gem (`gem install jsi`), load an irb (`irb -r jsi`), and copy/paste/hack.
