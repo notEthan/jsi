@@ -13,6 +13,8 @@ A JSI instance aims to offer a fairly unobtrusive wrapper around its JSON data, 
 
 Note: The canonical location of this README is on [RubyDoc](http://rubydoc.info/gems/jsi/). When viewed on [Github](https://github.com/notEthan/jsi/), it may be inconsistent with the latest released gem, and Yardoc links will not work.
 
+JSI documents a {file:docs/Glossary.md Glossary} of relevant terms.
+
 ## Example
 
 Words are boring, let's code. You can follow along from the code blocks - install the gem (`gem install jsi`), load an irb (`irb -r jsi`), and copy/paste/hack.
@@ -220,7 +222,7 @@ For `#name` and `#name=`, we're overriding existing accessor methods. note the u
 
 Working with subschemas to add methods is just about as easy as with root schemas.
 
-You can subscript or use property accessors on a JSI schema module to refer to the schema modules of its subschemas, e.g.:
+You can use `#[]` or property accessors on a JSI schema module to refer to the schema modules of its subschemas, e.g.:
 
 ```ruby
 Contact.properties['phone'].items
@@ -299,7 +301,7 @@ A really excellent place to use JSI is when dealing with serialized columns in A
 
 Let's say you're sticking to JSON types in the database - you have to do so if you're using JSON columns, or JSON serialization, and if you have dealt with arbitrary yaml- or marshal-serialized objects in ruby, you have probably found that approach has its shortcomings when the implementation of your classes changes.
 
-But if your database contains JSON, then your deserialized objects in ruby are likewise Hash / Array / simple types. You have to use subscripts instead of accessors, and you don't have any way to add methods to your data types.
+But if your database contains JSON, then your deserialized objects in ruby are likewise Hash / Array / simple types. You have to use `#[]` instead of accessors, and you don't have any way to add methods to your data types.
 
 JSI gives you the best of both with {JSI::JSICoder}. This coder dumps objects which are simple JSON types, and loads instances of a specified JSON Schema. Here's an example, supposing a `users` table with a JSON column `contact_info` to be instantiated using the `Contact` schema module defined in the Example section above:
 
@@ -313,9 +315,26 @@ Now `user.contact_info` will be instantiated as a `Contact` JSI instance, from t
 
 See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize the dumped JSON-compatible objects further as text.
 
-## Keying Hashes (JSON Objects)
+## Hash keys (JSON Object property names)
 
-Unlike Ruby, JSON only supports string keys. It is recommended to use strings as hash keys for all JSI instances, but JSI does not enforce this, nor does it do any key conversion. You may also use [ActiveSupport::HashWithIndifferentAccess](https://api.rubyonrails.org/classes/ActiveSupport/HashWithIndifferentAccess.html) as the instance of a JSI in order to gain the benefits that offers over a plain hash. Note that activesupport is not a dependency of jsi and would be required separately for this.
+For JSI instances containing Hashes, their keys should be strings. Hashes keyed with symbols are popular in Ruby, but this is not compatible with JSON.
+
+JSI generally does not accommodate symbol keys. However, the syntax for Hash literals with symbol keys (`key: "value"` or `"key": "value"` rather than `"key" => "value"`) conveniently resembles JSON such that you can often paste JSON right into your Ruby (apart from Ruby's `nil` vs JSON's `null`). To enable this, JSI offers key conversion on instantiation: methods `new_jsi` and `new_schema` take a boolean param `stringify_symbol_keys` to recursively convert. This _only_ affects instantiation - no key conversion is done once the JSI has been initialized, e.g. by {JSI::Base#[]} or any methods of {JSI::Base::HashNode}.
+
+```ruby
+# instantiate schema s and instance j, converting keys
+s = JSI.new_schema(
+  # valid JSON
+  {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "array"
+  },
+  stringify_symbol_keys: true,
+)
+j = s.new_jsi([{"foo": "bar"}, {"foo": "baz"}], stringify_symbol_keys: true)
+```
+
+Third party libraries such as [ActiveSupport::HashWithIndifferentAccess](https://api.rubyonrails.org/classes/ActiveSupport/HashWithIndifferentAccess.html) or [Hashie](https://github.com/hashie/hashie) with [IndifferentAccess](https://github.com/hashie/hashie#indifferentaccess) exist to make symbol keys interchangeable with string keys. A JSI can be instantiated with an indifferent Hash as its content, but there will be various inconsistencies when accessing values with a string vs a symbol, and this is not recommended or supported.
 
 ## Contributing
 

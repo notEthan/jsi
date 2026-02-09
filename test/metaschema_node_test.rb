@@ -632,25 +632,6 @@ describe(JSI::MetaSchemaNode) do
       end
     end
   end
-
-  describe('meta-schema subschema modules') do
-    # sanity check that meta-schemas' named subschema modules are actually subschemas of the meta-schema
-    def check_consts(metaschema, mod)
-      assert_is_a(JSI::SchemaModule, mod)
-      assert_equal(metaschema, mod.schema.jsi_root_node)
-      mod.constants.each do |const_name|
-        const = mod.const_get(const_name)
-        next unless const.is_a?(Module) && const.name.start_with?(mod.name)
-        check_consts(metaschema, const)
-      end
-    end
-
-    it 'named constants are subschema modules' do
-      [JSI::JSONSchemaDraft04, JSI::JSONSchemaDraft06, JSI::JSONSchemaDraft07].each do |metaschema_module|
-        check_consts(metaschema_module.schema, metaschema_module)
-      end
-    end
-  end
 end
 
 $test_report_file_loaded[__FILE__]

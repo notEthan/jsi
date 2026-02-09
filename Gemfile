@@ -37,5 +37,5 @@ end
 
 group(:doc) do
   gem 'yard'
-  platform(:mri, :truffleruby) { gem 'commonmarker' }
+  gem('redcarpet')
 end

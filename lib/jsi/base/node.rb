@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 module JSI
-  # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
-  # is a Hash (or responds to `#to_hash`)
+  # Included on {Base} subclasses for instances that are Hash or
+  # [#to_hash](https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html#label-Hash-Convertible+Objects).
+  #
+  # Dynamically defines most methods of Hash to make the JSI duck-type like a Hash.
   module Base::HashNode
     # instantiates and yields each property name (hash key) as a JSI described by any `propertyNames` schemas.
     #
@@ -172,8 +174,10 @@ module JSI
     end
   end
 
-  # module extending a {JSI::Base} object when its instance (its {Base#jsi_node_content})
-  # is an Array (or responds to `#to_ary`)
+  # Included on {Base} subclasses for instances that are Array or
+  # [#to_ary](https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html#label-Array-Convertible+Objects).
+  #
+  # Dynamically defines most methods of Array to make the JSI duck-type like an Array.
   module Base::ArrayNode
     # See {Base#jsi_array?}. Always true for ArrayNode.
     def jsi_array?
@@ -343,6 +347,10 @@ module JSI
     end
   end
 
+  # Included on {Base} subclasses for instances that are String or
+  # [#to_str](https://docs.ruby-lang.org/en/master/implicit_conversion_rdoc.html#label-String-Convertible+Objects).
+  #
+  # Dynamically defines most methods of String to make the JSI duck-type like a String.
   module Base::StringNode
     delegate_methods = %w(% * + << =~ [] []=
       ascii_only? b byteindex byterindex bytes bytesize byteslice bytesplice capitalize capitalize!

@@ -36,7 +36,7 @@ module JSI
     private
 
     def jsi_mutability_initialize
-      @child_node_by_token_map = Hash.new { |h, token| h[token] = jsi_child_node_by_token_compute(token) }
+      @child_node_by_token_map = jsi_memomap(&method(:jsi_child_node_by_token_compute))
       @child_node_map = method(:jsi_child_node_compute)
       @jsi_node_content = @jsi_ptr.evaluate(@jsi_document)
     end

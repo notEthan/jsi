@@ -131,4 +131,11 @@ module JSI
     module NonNegativeIntegerDefault0::Default0 end
     module StringItem end
   end
+
+  module JSONSchemaDraft07::PropertyReaders
+    def ref(**kw) self['$ref', **kw] end
+    def comment(**kw) self['$comment', **kw] end
+    def format(**kw) self['format', **kw] end
+  end
+  JSONSchemaDraft07.include(JSONSchemaDraft07::PropertyReaders)
 end

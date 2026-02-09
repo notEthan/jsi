@@ -48,15 +48,20 @@ module JSI
   end
 
   module JSONSchemaDraft202012
-    # `$defs` property reader
-    # @return [Base + JSONSchemaDraft202012::Defs, nil]
-    def defs
-      self['$defs']
-    end
-
     def jsi_schema_module_connection_created(mod)
       mod.define_singleton_method(:defs) { |**kw| self['$defs', **kw] }
       super
     end
   end
+
+  module JSONSchemaDraft202012::PropertyReaders
+    def ref(**kw) self['$ref', **kw] end
+    def anchor(**kw) self['$anchor', **kw] end
+    def dynamicRef(**kw) self['$dynamicRef', **kw] end
+    def dynamicAnchor(**kw) self['$dynamicAnchor', **kw] end
+    def comment(**kw) self['$comment', **kw] end
+    def defs(**kw) self['$defs', **kw] end
+    def format(**kw) self['format', **kw] end
+  end
+  JSONSchemaDraft202012.include(JSONSchemaDraft202012::PropertyReaders)
 end

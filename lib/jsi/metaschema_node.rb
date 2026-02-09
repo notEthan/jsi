@@ -34,13 +34,16 @@ module JSI
 
     include(Base::Immutable)
 
-    Conf = Base::Conf.subclass(*%i(
-      dialect
-      metaschema_root_ref
-      root_schema_ref
-      bootstrap_registry
-      is_metaschema
-    ))
+    conf_attrs = {
+      dialect:             {fingerprint: true },
+      metaschema_root_ref: {fingerprint: true },
+      root_schema_ref:     {fingerprint: true },
+      bootstrap_registry:  {fingerprint: true },
+      is_metaschema:       {fingerprint: true },
+    }.freeze
+    Conf = Base::Conf.subclass(*conf_attrs.keys)
+    class Conf end
+    Conf::ATTRS = Base::Conf::ATTRS.merge(conf_attrs)
 
     # {Base::Conf} with additional configuration for MetaSchemaNode.
     #
@@ -258,11 +261,7 @@ module JSI
         jsi_ptr: jsi_ptr,
         jsi_base_uri: jsi_base_uri,
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        dialect: jsi_conf.dialect,
-        metaschema_root_ref: jsi_conf.metaschema_root_ref,
-        root_schema_ref: jsi_conf.root_schema_ref,
-        jsi_registry: jsi_registry,
-        bootstrap_registry: jsi_conf.bootstrap_registry,
+        **jsi_conf.for_fingerprint,
       }.freeze
     end
 
@@ -342,7 +341,8 @@ module JSI
             jsi_document: bootstrap_schema.jsi_document,
             jsi_ptr: Ptr[],
             jsi_base_uri: nil,
-            jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
+            # this seems like the best dynamic_anchor_map to pass
+            jsi_schema_dynamic_anchor_map: dynamic_anchor_map.without_node(nil, document: bootstrap_schema.jsi_document, ptr: Ptr[], registry: jsi_registry),
             jsi_conf: jsi_conf,
           ))
           root.jsi_descendent_node(bootstrap_schema.jsi_ptr).jsi_with_schema_dynamic_anchor_map(dynamic_anchor_map)

@@ -117,4 +117,10 @@ module JSI
     module PositiveIntegerDefault0::Default0 end
     module StringItem end
   end
+
+  module JSONSchemaDraft04::PropertyReaders
+    def ref(**kw) self['$ref', **kw] end
+    def format(**kw) self['format', **kw] end
+  end
+  JSONSchemaDraft04.include(JSONSchemaDraft04::PropertyReaders)
 end
