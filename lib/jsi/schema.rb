@@ -32,7 +32,7 @@ module JSI
     end
 
     # an exception raised when a thing is expected to be a JSI::Schema, but is not
-    class NotASchemaError < Error
+    class NotASchemaError < TypeError
     end
 
     class NotAMetaSchemaError < TypeError
