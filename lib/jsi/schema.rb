@@ -394,19 +394,6 @@ module JSI
       anchors.freeze
     end
 
-    # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_base_uri`
-    # @deprecated after v0.8 - use `#jsi_resource_uri`
-    # @return [URI, nil]
-    def schema_absolute_uri
-      jsi_resource_uri
-    end
-
-    # @deprecated after v0.8 - use `#jsi_resource_uris`
-    # @return [Enumerable<URI>]
-    def schema_absolute_uris
-      jsi_resource_uris
-    end
-
     # @yield [URI]
     private def jsi_each_resource_uri_compute
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
@@ -553,29 +540,10 @@ module JSI
       nil
     end
 
-    # a resource containing this schema.
-    #
-    # If any ancestor, or this schema itself, is a schema with an absolute uri (see {#schema_absolute_uri}),
-    # the resource root is the closest schema with an absolute uri.
-    #
-    # If no ancestor schema has an absolute uri, the schema_resource_root is the {Base#jsi_root_node document's root node}.
-    # In this case, the resource root may or may not be a schema itself.
-    #
-    # @deprecated after v0.8
-    # @return [JSI::Base] resource containing this schema
-    def schema_resource_root
-      jsi_resource_root
-    end
-
     # is this schema the root of a schema resource?
     # @return [Boolean]
     def jsi_is_resource_root?
       super || jsi_resource_uris.any?
-    end
-
-    # @deprecated after v0.8
-    def schema_resource_root?
-      jsi_is_resource_root?
     end
 
     # a subschema of this Schema
