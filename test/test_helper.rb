@@ -169,7 +169,7 @@ class JSISpec < Minitest::Spec
   end
 
   def assert_equal exp, act, msg = nil
-    msg = message(msg, E) do
+    msg = message(msg, '') do
       [].tap do |ms|
         ms << diff(exp, act)
         ms << "#{ANSI.red   { 'expected' }}: #{exp.inspect}"
