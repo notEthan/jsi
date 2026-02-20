@@ -25,11 +25,6 @@ module JSI
     # @return [URI, nil]
     attr_reader(:jsi_base_uri)
 
-    # @deprecated after v0.8
-    def jsi_schema_base_uri
-      jsi_base_uri
-    end
-
     # resources which are ancestors of this JSI in the document. this does not include self.
     # @api private
     # @return [Array<JSI::Schema>]
