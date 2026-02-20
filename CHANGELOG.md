@@ -1,3 +1,7 @@
+# v1.0.0
+
+- A stable API
+
 # v0.9.0
 
 - JSON Schema draft 2020-12 (JSI::JSONSchemaDraft202012)
