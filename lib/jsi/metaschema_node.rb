@@ -248,14 +248,7 @@ module JSI
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
-      {
-        class: self.class,
-        jsi_document: jsi_document,
-        jsi_ptr: jsi_ptr,
-        jsi_base_uri: jsi_base_uri,
-        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        **jsi_conf.for_fingerprint,
-      }.freeze
+      jsi_fingerprint_no_schemas
     end
 
     protected

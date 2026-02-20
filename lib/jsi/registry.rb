@@ -118,12 +118,12 @@ module JSI
         }
         # remove params the autoload proc does not accept
         autoload_param.select! do |name, _|
-          autoloaders[uri].block.parameters.any? do |type, pname|
+          autoloader.block.parameters.any? do |type, pname|
             # dblsplat (**k) ||   required (k: )  || optional (k: nil)
             type == :keyrest || ((type == :keyreq || type == :key) && pname == name)
           end
         end
-        autoloaded = autoloaders[uri].block.call(**autoload_param)
+        autoloaded = autoloader.block.call(**autoload_param)
         registerer[autoloaded]
       end # if autoloaders.key?(uri)
     end # autoloader.mutex.synchronize
