@@ -510,9 +510,6 @@ module JSI
     # @param dialect [Schema::Dialect, nil] dialect may be passed, or inferred from `$vocabulary`
     # @return [void]
     def describes_schema!(dialect = nil)
-      # TODO rm bridge code hax
-      dialect = dialect.first::DIALECT if dialect.is_a?(Array) && dialect.size == 1
-
       if !dialect
         raise(ArgumentError, "no dialect given and no $vocabulary hash/object") if !schema_content['$vocabulary'].respond_to?(:to_hash)
         dialect = Schema::Dialect.from_xvocabulary(schema_content['$vocabulary'], registry: jsi_registry)
