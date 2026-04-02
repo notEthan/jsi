@@ -3,7 +3,7 @@
 module JSI
   module Schema
     module Draft04
-      VOCABULARY = Vocabulary.new(
+      VOCABULARY = Schema::Vocabulary.new(
         elements: [
           # the schema itself
           Schema::Elements::SELF[],
@@ -111,7 +111,7 @@ module JSI
         ],
       )
 
-      DIALECT = Dialect.new(
+      DIALECT = Schema::Dialect.new(
         id: "http://json-schema.org/draft-04/schema",
         vocabularies: [VOCABULARY],
         integer_disallows_0_fraction: true,
