@@ -985,7 +985,7 @@ describe JSI::Schema do
       it("#instance_valid!") do
         msg = <<~ERR
           #<JSI::Validation::Result::Full (INVALID)
-            validation errors: JSI::Set[
+            nested_validation_errors: JSI::Set[
               #<JSI::Validation::Error
                 message: "instance type does not match `type` value",
                 instance: ["no"],

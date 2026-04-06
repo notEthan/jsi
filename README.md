@@ -122,7 +122,7 @@ bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 bad.phone[0].jsi_validate
 # =>
 # #<JSI::Validation::Result::Full (INVALID)
-#   validation errors: JSI::Set[
+#   nested_validation_errors: JSI::Set[
 #     #<JSI::Validation::Error
 #       message: "instance object properties are not all valid against corresponding `properties` schemas",
 #       instance: {"number" => [5, 5, 5]},
