@@ -703,9 +703,10 @@ module JSI
     # {JSI::Invalid} is raised if it is not.
     #
     # @raise [Invalid]
-    # @return [nil]
+    # @return [self]
     def jsi_valid!
       jsi_validate.valid!
+      self
     end
 
     # queries this JSI using the [JMESPath Ruby](https://rubygems.org/gems/jmespath) gem.
