@@ -40,7 +40,7 @@ module JSI
     end
 
     # we won't use #to_json on classes where it is defined by
-    # JSON::Ext::Generator::GeneratorMethods / JSON::Pure::Generator::GeneratorMethods
+    # JSON::GeneratorMethods or (older) JSON::Ext::Generator::GeneratorMethods / JSON::Pure::Generator::GeneratorMethods
     # this is a bit of a kluge and disregards any singleton class to_json, but it will do.
     USE_TO_JSON_METHOD = Hash.new do |h, klass|
       h[klass] = klass.method_defined?(:to_json) &&
