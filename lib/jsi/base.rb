@@ -423,7 +423,7 @@ module JSI
     # @return [nil]
     def jsi_child_ensure_present(token)
       if !jsi_child_token_present?(token)
-        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
+        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nin: #{pretty_inspect.chomp}")
       end
       nil
     end
