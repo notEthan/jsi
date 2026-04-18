@@ -63,7 +63,7 @@ describe JSI::Util do
 
       # responds to #as_json; does not use #to_json from JSON gem
       o = HashAsJson.new
-      assert_match(/\AJSON::\w+::Generator::GeneratorMethods::Hash\z/, o.method(:to_json).owner.name)
+      assert_match(/\AJSON:.*:GeneratorMethods\b/, o.method(:to_json).owner.name)
       assert_equal({'from' => 'HashAsJson#as_json'}, JSI::Util.as_json(o))
       assert_equal(%q({"from":"HashAsJson#as_json"}), JSI::Util.to_json(o))
 
