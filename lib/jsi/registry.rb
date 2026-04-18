@@ -274,7 +274,11 @@ module JSI
       @mutex.synchronize do
         uri = registration_uri(uri)
         if store.key?(uri)
-          if !store[uri].equal?(entity)
+          if store[uri].equal?(entity)
+            # pass
+          elsif store[uri] == entity
+            raise(Collision, "URI collision on #{uri} - given entity is equal (==) but not identical (#equal?) to existing\nregistering:\n#{entity.pretty_inspect.chomp}")
+          else
             raise(Collision, "URI collision on #{uri}.\nexisting:\n#{store[uri].pretty_inspect.chomp}\nnew:\n#{entity.pretty_inspect.chomp}")
           end
         else
