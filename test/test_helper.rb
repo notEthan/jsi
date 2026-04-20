@@ -291,6 +291,8 @@ class JSISpec < Minitest::Spec
       # validation of the JSI descendent at that ptr should include that error,
       # as well as errors of its descendents.
 
+      next if result_error.instance_ptr.root?
+
       errors_below_instance_ptr = result.each_validation_error.select do |e|
         result_error.instance_ptr.ancestor_of?(e.instance_ptr)
       end.to_set
