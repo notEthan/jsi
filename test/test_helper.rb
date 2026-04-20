@@ -294,14 +294,21 @@ class JSISpec < Minitest::Spec
 
       next if result_error.instance_ptr.root?
 
-      errors_below_instance_ptr = result.each_validation_error.select do |e|
-        result_error.instance_ptr.ancestor_of?(e.instance_ptr)
-      end.to_set
+      transform_errors = JSI::Util.ycomb do |rec|
+        proc do |errors|
+          errors.map do |error|
+            if result_error.instance_ptr.ancestor_of?(error.instance_ptr)
+              [error.merge(nested_errors: rec[error.nested_errors])]
+            else
+              rec[error.nested_errors]
+            end
+          end.inject(Set[], &:merge)
+        end
+      end
 
-      descendent = jsi.jsi_descendent_node(result_error.instance_ptr)
-      descendent_errors = descendent.jsi_validate.each_validation_error.to_set
+      descendent_errors = jsi.jsi_descendent_node(result_error.instance_ptr).jsi_validate.nested_validation_errors
 
-      assert_equal(errors_below_instance_ptr, descendent_errors)
+      assert_transform_equal(result.nested_validation_errors, descendent_errors, &transform_errors)
     end
   end
 
