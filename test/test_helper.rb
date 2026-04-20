@@ -286,6 +286,7 @@ class JSISpec < Minitest::Spec
   end
 
   def assert_consistent_jsi_descendent_errors(jsi, result: jsi.jsi_validate)
+    raise unless jsi.jsi_ptr.root?
     result.each_validation_error do |result_error|
       # since the instance has an error at result_error.instance_ptr,
       # validation of the JSI descendent at that ptr should include that error,
