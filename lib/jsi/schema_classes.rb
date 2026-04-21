@@ -7,8 +7,9 @@ module JSI
   # class to subclass Module, so that a JSI that isn't a Schema can have a named module, and schemas
   # within that JSI's document have a useful name_from_ancestor when inspecting their instances.
   begin # shenanigans to get classes configured while not confusing yard
-    SchemaModule = Class.new(Class.new(Module))
-    SchemaModule.const_set(:Connection, SchemaModule.superclass)
+    schema_module_connection_class = Class.new(Module)
+    SchemaModule = Class.new(schema_module_connection_class)
+    SchemaModule.const_set(:Connection, schema_module_connection_class)
   end
 
   # A Module associated with a JSI Schema (its {Schema#jsi_schema_module #jsi_schema_module}).
