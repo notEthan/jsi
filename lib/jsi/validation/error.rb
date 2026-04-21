@@ -2,7 +2,7 @@
 
 module JSI
   module Validation
-    Error = Struct.subclass(*%i(
+    Error = Struct::Frozen.subclass(*%i(
       message
       keyword
       additional
@@ -36,11 +36,6 @@ module JSI
     # @!attribute nested_errors
     #   @return [Set<Validation::Error>]
     class Error
-      def initialize(attributes = {})
-        super
-        freeze
-      end
-
       # @yield [Validation::Error]
       def each_validation_error(&block)
         return(to_enum(__method__)) if !block_given?

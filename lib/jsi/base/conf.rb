@@ -11,7 +11,7 @@ module JSI
     child_use_default:                      {fingerprint: false},
     to_immutable:                           {fingerprint: false},
   }.freeze
-  Base::Conf = Struct.subclass(*conf_attrs.keys)
+  Base::Conf = Struct::Frozen.subclass(*conf_attrs.keys)
   class Base::Conf end
   Base::Conf::ATTRS = conf_attrs
 
@@ -102,7 +102,6 @@ module JSI
         to_immutable: to_immutable,
         **kw,
       )
-      freeze
     end
 
     # @private
