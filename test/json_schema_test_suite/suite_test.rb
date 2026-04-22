@@ -65,12 +65,13 @@ describe 'JSON Schema Test Suite' do
             path = base.join(subpath)
             describe(subpath) do
                 tests_desc_object = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
+              reinstantiate_nonschemas = File.basename(subpath, File.extname(subpath)) == 'refOfUnknownKeyword'
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
                 desc_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
                   registry: desc_registry,
                   default_metaschema: metaschema,
-                  reinstantiate_nonschemas: File.basename(subpath) == 'refOfUnknownKeyword.json',
+                  reinstantiate_nonschemas: reinstantiate_nonschemas,
                 )
 
                 dialect = desc_schema.dialect # typically metaschema.described_dialect but $schema can override
