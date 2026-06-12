@@ -49,6 +49,14 @@ module JSI
         nil
       end
 
+      # @yield [Validation::Error]
+      def each_leaf_validation_error(&block)
+        return(to_enum(__method__)) if !block_given?
+        nested_errors.each { |nested_error| nested_error.each_leaf_validation_error(&block) }
+        yield(self) if nested_errors.empty?
+        nil
+      end
+
       # @return [Object]
       def instance
         instance_ptr.evaluate(instance_document)

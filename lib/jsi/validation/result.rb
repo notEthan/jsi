@@ -137,6 +137,15 @@ module JSI
         nil
       end
 
+      # @yield [Validation::Error]
+      def each_leaf_validation_error(&block)
+        return(to_enum(__method__)) if !block_given?
+        nested_validation_errors.each do |validation_error|
+          validation_error.each_leaf_validation_error(&block)
+        end
+        nil
+      end
+
       # @deprecated after v0.8
       # iterating (recursively) is better done with #each_validation_error
       def validation_errors
