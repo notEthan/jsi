@@ -397,14 +397,12 @@ describe JSI::Base do
     describe 'resulting in a different type' do
       let(:schema_content) { {'type' => 'object'} }
       it 'works' do
-        # I'm not really sure the best thing to do here, but this is how it is for now. this is subject to change.
         modified = subject.jsi_modified_copy do |o|
           o.to_s
         end
         assert_equal('{}', modified.jsi_instance)
         assert_equal({}, subject.jsi_instance)
         refute_equal(instance, modified)
-        # interesting side effect
         assert(subject.respond_to?(:to_hash))
         assert(!modified.respond_to?(:to_hash))
       end
