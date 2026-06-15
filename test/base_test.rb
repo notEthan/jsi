@@ -360,7 +360,7 @@ describe JSI::Base do
     end
   end
   describe '#jsi_modified_copy' do
-    describe 'with an instance that does not have #jsi_modified_copy' do
+    describe("with an instance of Object") do
       let(:instance) { Object.new }
       let(:subject_opt) { {to_immutable: nil} }
       it 'yields the instance to modify' do
