@@ -285,7 +285,11 @@ Schemas can automatically be lazily loaded by registering a block which instanti
 
 ## Validation
 
-JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications. To validate instances, see methods {JSI::Base#jsi_validate}, {JSI::Base#jsi_valid?}, {JSI::Schema#instance_validate}, {JSI::Schema#instance_valid?}.
+JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications.
+
+- To check validity (boolean), see {JSI::Schema#instance_valid?} and {JSI::Base#jsi_valid?}
+- For full validation results, see {JSI::Schema#instance_validate} and {JSI::Base#jsi_validate}
+- For exception-based validation, see {JSI::Schema#instance_valid!} and {JSI::Base#jsi_valid!}
 
 ## Meta-Schemas
 
