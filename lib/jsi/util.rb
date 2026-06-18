@@ -50,6 +50,9 @@ module JSI
     autoload :Arraylike, 'jsi/util/typelike'
     autoload :Hashlike, 'jsi/util/typelike'
 
+    # sentinel value. a module so it has a name it knows.
+    UNDEFINED = Module.new
+
     # yields the content of the given param `object`. for objects which have a #jsi_modified_copy
     # method of their own (JSI::Base, JSI::MetaSchemaNode) that method is invoked with the given
     # block. otherwise the given object itself is yielded.
