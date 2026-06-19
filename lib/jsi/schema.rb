@@ -101,12 +101,14 @@ module JSI
       )
         raise(BlockGivenError) if block_given?
         raise(ArgumentError, "this method does not instantiate mutable schemas") if conf_kw[:mutable]
-        new_jsi(schema_content,
+        conf = Base::Conf::Schema.new(
+          root_indicated_schemas: SchemaSet[self],
           base_uri: base_uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
         )
+        conf[schema_content]
       end
 
       # Instantiates the given schema content as a JSI Schema, passing all params to
