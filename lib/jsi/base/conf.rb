@@ -13,6 +13,7 @@ module JSI
     child_as_jsi:                           {fingerprint: false},
     child_use_default:                      {fingerprint: false},
     jsi_in_content:                         {fingerprint: false},
+    stringify_symbol_keys:                  {fingerprint: false},
     to_immutable:                           {fingerprint: false},
     mutable:                                {fingerprint: false},
   }.freeze
@@ -101,6 +102,13 @@ module JSI
   #
   #   Default: `:raise`
   #   @return [:raise, :strip, :ignore]
+  # @!attribute stringify_symbol_keys
+  #   Whether the instance content will have any Symbol keys of Hashes
+  #   replaced with Strings (recursively through the document).
+  #   Replacement is done on a copy; the given instance is not modified.
+  #
+  #   Default: `false`
+  #   @return [Boolean]
   # @!attribute to_immutable
   #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.
   #
@@ -128,6 +136,7 @@ module JSI
         child_as_jsi: :auto,
         child_use_default: false,
         jsi_in_content: :raise,
+        stringify_symbol_keys: false,
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         mutable: false,
         **
@@ -140,6 +149,8 @@ module JSI
     # @return [Base]
     def call(input)
       raise(BlockGivenError) if block_given?
+
+      input = Util.deep_stringify_symbol_keys(input) if stringify_symbol_keys
 
       input = to_immutable.call(input) if !mutable && to_immutable
 

@@ -74,14 +74,10 @@ module JSI
     #   If the instance is mutable, writers as well.
     #
     # @param instance [Object] the instance to be represented as a JSI
-    # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
-    #   replaced with Strings (recursively through the document).
-    #   Replacement is done on a copy; the given instance is not modified.
     # @param conf_kw Additional keyword params are passed to initialize a {Base::Conf}, the JSI's {Base#jsi_conf}.
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of the schemas in this set.
     def new_jsi(instance,
-        stringify_symbol_keys: false,
         **conf_kw
     )
       raise(BlockGivenError) if block_given?
@@ -89,8 +85,6 @@ module JSI
       conf = Base::Conf.new(root_indicated_schemas: self, **conf_kw)
 
       instance = Util.jsi_in_content(instance, action: conf.jsi_in_content)
-
-      instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
       jsi = conf[instance]
 
