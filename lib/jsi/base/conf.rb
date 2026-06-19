@@ -132,6 +132,8 @@ module JSI
     def call(input)
       raise(BlockGivenError) if block_given?
 
+      input = to_immutable.call(input) if !mutable && to_immutable
+
       # input has been transformed into instance
       instance = input
 

@@ -96,8 +96,6 @@ module JSI
 
       instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
-      instance = conf.to_immutable.call(instance) if !conf.mutable && conf.to_immutable
-
       jsi = conf[instance]
 
       conf.registry.register(jsi) if register && conf.registry
