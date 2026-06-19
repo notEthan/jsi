@@ -5,6 +5,7 @@ module JSI
     root_indicated_schemas:                 {fingerprint: false},
     base_uri:                               {fingerprint: false},
     root_uri:                               {fingerprint: true },
+    register:                               {fingerprint: false},
     registry:                               {fingerprint: true },
     application_collect_evaluated_validate: {fingerprint: false},
     reinstantiate_nonschemas:               {fingerprint: false},
@@ -46,6 +47,13 @@ module JSI
   #   However, there are cases when a resource may be referenced using a retrieval URI
   #   that does not match the resource's `$id`, and `root_uri` enables resolution.
   #   @return [URI, nil]
+  # @!attribute register
+  #   Whether schema resources in the instantiated JSI will be registered
+  #   in the {Base::Conf configured} {Base::Conf#registry `registry`}.
+  #   This is only useful when the JSI is a schema or contains schemas.
+  #
+  #   Default: `false`
+  #   @return [Boolean]
   # @!attribute registry
   #   The registry from which references are resolved.
   #   For schemas (or documents containing schemas), this is mainly used with `$ref` values.
@@ -114,6 +122,7 @@ module JSI
   #   @return [Boolean]
   class Base::Conf
     def initialize(
+        register: false,
         registry: JSI.registry,
         application_collect_evaluated_validate: false,
         child_as_jsi: :auto,
@@ -152,6 +161,8 @@ module JSI
         jsi_base_uri: base_uri || root_uri,
         jsi_conf: self,
       ).send(:jsi_initialized)
+
+      registry.register(jsi) if register && registry
 
       jsi
     end

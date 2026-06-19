@@ -74,9 +74,6 @@ module JSI
     #   If the instance is mutable, writers as well.
     #
     # @param instance [Object] the instance to be represented as a JSI
-    # @param register [Boolean] Whether schema resources in the instantiated JSI will be registered
-    #   in the {Base::Conf configured} {Base::Conf#registry `registry`}.
-    #   This is only useful when the JSI is a schema or contains schemas.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
@@ -84,7 +81,6 @@ module JSI
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of the schemas in this set.
     def new_jsi(instance,
-        register: false,
         stringify_symbol_keys: false,
         **conf_kw
     )
@@ -97,8 +93,6 @@ module JSI
       instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
       jsi = conf[instance]
-
-      conf.registry.register(jsi) if register && conf.registry
 
       jsi
     end
