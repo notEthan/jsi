@@ -2,6 +2,7 @@
 
 module JSI
   conf_attrs = {
+    root_indicated_schemas:                 {fingerprint: false},
     root_uri:                               {fingerprint: true },
     registry:                               {fingerprint: true },
     application_collect_evaluated_validate: {fingerprint: false},
@@ -21,6 +22,9 @@ module JSI
   # Configuration parameters are set from `**conf_kw` params passed to {SchemaSet#new_jsi #new_jsi},
   # {Schema::MetaSchema#new_schema #new_schema} and related methods.
   #
+  # @!attribute root_indicated_schemas
+  #   See {Base#jsi_indicated_schemas}
+  #   @return [SchemaSet]
   # @!attribute root_uri
   #   A URI identifying the document root resource.
   #   References (e.g. a schema `$ref`) can resolve the resource with this URI.
