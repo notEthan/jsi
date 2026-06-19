@@ -74,61 +74,31 @@ module JSI
     #   If the instance is mutable, writers as well.
     #
     # @param instance [Object] the instance to be represented as a JSI
-    # @param base_uri [#to_str, URI, nil]
-    #   The base URI of the instance document. An absolute URI.
-    #
-    #   It is rare that this needs to be specified. It is useful when the instance contains schemas,
-    #   and schemas in the document use relative URIs for `$id` or `$ref` without an absolute id
-    #   in an ancestor schema - those URIs will be resolved relative to `base_uri`.
-    #
-    #   See also {Base::Conf conf} {Base::Conf#root_uri `root_uri`}. `base_uri` is not used to identify
-    #   any resource, only to resolve relative URIs. `root_uri` does identify the root resource.
     # @param register [Boolean] Whether schema resources in the instantiated JSI will be registered
     #   in the {Base::Conf configured} {Base::Conf#registry `registry`}.
     #   This is only useful when the JSI is a schema or contains schemas.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
     #   Replacement is done on a copy; the given instance is not modified.
-    # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
-    #   The instance content will be transformed with the {Base::Conf configured}
-    #   {Base::Conf#to_immutable `to_immutable`} if the JSI will be immutable.
     # @param conf_kw Additional keyword params are passed to initialize a {Base::Conf}, the JSI's {Base#jsi_conf}.
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of the schemas in this set.
     def new_jsi(instance,
-        base_uri: nil,
         register: false,
         stringify_symbol_keys: false,
-        mutable: false,
         **conf_kw
     )
       raise(BlockGivenError) if block_given?
 
-      conf = Base::Conf.new(**conf_kw)
+      conf = Base::Conf.new(root_indicated_schemas: self, **conf_kw)
 
       instance = Util.jsi_in_content(instance, action: conf.jsi_in_content)
 
       instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
 
-      instance = conf.to_immutable.call(instance) if !mutable && conf.to_immutable
+      instance = conf.to_immutable.call(instance) if !conf.mutable && conf.to_immutable
 
-      applied_schemas = SchemaSet.build do |y|
-        c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
-        each { |is| is.each_inplace_applicator_schema(instance, &c) }
-      end
-
-      base_uri = Util.uri(base_uri, nnil: false, yabs: true) || conf.root_uri
-
-      jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
-        includes: SchemaClasses.includes_for(instance),
-        mutable: mutable,
-      )
-      jsi = jsi_class.new(
-        jsi_document: instance,
-        jsi_indicated_schemas: self,
-        jsi_base_uri: base_uri,
-        jsi_conf: conf,
-      ).send(:jsi_initialized)
+      jsi = conf[instance]
 
       conf.registry.register(jsi) if register && conf.registry
 

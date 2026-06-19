@@ -3,6 +3,7 @@
 module JSI
   conf_attrs = {
     root_indicated_schemas:                 {fingerprint: false},
+    base_uri:                               {fingerprint: false},
     root_uri:                               {fingerprint: true },
     registry:                               {fingerprint: true },
     application_collect_evaluated_validate: {fingerprint: false},
@@ -12,6 +13,7 @@ module JSI
     child_use_default:                      {fingerprint: false},
     jsi_in_content:                         {fingerprint: false},
     to_immutable:                           {fingerprint: false},
+    mutable:                                {fingerprint: false},
   }.freeze
   Base::Conf = Struct::Frozen.subclass(*conf_attrs.keys)
   class Base::Conf end
@@ -25,6 +27,16 @@ module JSI
   # @!attribute root_indicated_schemas
   #   See {Base#jsi_indicated_schemas}
   #   @return [SchemaSet]
+  # @!attribute base_uri
+  #   The base URI of the instance document. An absolute URI.
+  #
+  #   It is rare that this needs to be specified. It is useful when the instance contains schemas,
+  #   and schemas in the document use relative URIs for `$id` or `$ref` without an absolute id
+  #   in an ancestor schema - those URIs will be resolved relative to `base_uri`.
+  #
+  #   See also {Base::Conf conf} {Base::Conf#root_uri `root_uri`}. `base_uri` is not used to identify
+  #   any resource, only to resolve relative URIs. `root_uri` does identify the root resource.
+  #   @return [#to_str, URI, nil]
   # @!attribute root_uri
   #   A URI identifying the document root resource.
   #   References (e.g. a schema `$ref`) can resolve the resource with this URI.
@@ -93,6 +105,13 @@ module JSI
   #
   #   Default: {DEFAULT_CONTENT_TO_IMMUTABLE}
   #   @return [#call, nil]
+  # @!attribute mutable
+  #   Whether the instantiated JSI will be mutable.
+  #   The instance content will be transformed with the {Base::Conf configured}
+  #   {Base::Conf#to_immutable `to_immutable`} if the JSI will be immutable.
+  #
+  #   Default: `false`
+  #   @return [Boolean]
   class Base::Conf
     def initialize(
         registry: JSI.registry,
@@ -101,6 +120,7 @@ module JSI
         child_use_default: false,
         jsi_in_content: :raise,
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
+        mutable: false,
         **
     )
       super
@@ -109,6 +129,30 @@ module JSI
 
     # @return [Base]
     def call(input)
+      raise(BlockGivenError) if block_given?
+
+      # input has been transformed into instance
+      instance = input
+
+      applied_schemas = SchemaSet.build do |y|
+        c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
+        root_indicated_schemas.each { |is| is.each_inplace_applicator_schema(instance, &c) }
+      end
+
+      base_uri = Util.uri(self.base_uri, nnil: false, yabs: true) || root_uri
+
+      jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
+        includes: SchemaClasses.includes_for(instance),
+        mutable: mutable,
+      )
+      jsi = jsi_class.new(
+        jsi_document: instance,
+        jsi_indicated_schemas: root_indicated_schemas,
+        jsi_base_uri: base_uri,
+        jsi_conf: self,
+      ).send(:jsi_initialized)
+
+      jsi
     end
 
     # see {#call} (note this does not access member values as Struct#[] normally does)
