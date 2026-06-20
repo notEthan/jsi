@@ -219,10 +219,31 @@ module JSI
 
   Base::Conf::SchemaInferMetaSchema::ATTRS = Base::Conf::Schema::ATTRS.merge(conf_schema_infer_metaschema_attrs)
 
+  # @!attribute default_metaschema
+  #   Indicates the meta-schema to use if the given `schema_content` does not have a `$schema` property.
+  #   This may be a meta-schema or a meta-schema's schema module (e.g. `JSI::JSONSchemaDraft07`),
+  #   or a URI (as would be in a `$schema` keyword).
+  #   @return [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
   class Base::Conf::SchemaInferMetaSchema < Base::Conf::Schema
     private def instance_root_indicated_schemas(schema_content)
-      # $schema
-      # default_metaschema
+      if schema_content.respond_to?(:to_hash) && (id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema'])
+        SchemaSet[Schema.ensure_metaschema(id, name: '$schema', registry: registry)]
+      elsif default_metaschema
+        SchemaSet[Schema.ensure_metaschema(default_metaschema, name: 'default_metaschema', registry: registry)]
+      elsif JSI.default_metaschema
+        SchemaSet[JSI.default_metaschema]
+      else
+        raise(ArgumentError, [
+          "When instantiating a schema with no `$schema` property, you must specify its meta-schema by one of these methods:",
+          "- pass the `default_metaschema` param to this method",
+          "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaDraft07)",
+          "- invoke `new_schema` on the appropriate meta-schema or its schema module",
+          "  e.g.: JSI::JSONSchemaDraft07.new_schema(...)",
+          "- set JSI.default_metaschema to an application-wide default meta-schema initially",
+          "  e.g.: JSI.default_metaschema = JSI::JSONSchemaDraft07",
+          "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
+        ].join("\n"))
+      end
     end
   end
 end
