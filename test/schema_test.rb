@@ -48,9 +48,7 @@ describe JSI::Schema do
     end
 
     it("does not instantiate a mutable schema") do
-      # an ArgumentError might be better than silently overriding the param
-      assert_equal(false, JSI::JSONSchemaDraft07.new_schema({}, mutable: true).jsi_mutable?)
-      # this does ArgumentError. **conf_kw are passed to Base::Conf.new before being passed to Schema::MetaSchema#new_schema
+      assert_raises(ArgumentError) { JSI::JSONSchemaDraft07.new_schema({}, mutable: true) }
       assert_raises(ArgumentError) { JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#"}, mutable: true) }
     end
   end
