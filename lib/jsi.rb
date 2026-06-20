@@ -112,7 +112,7 @@ module JSI
   #
   # @yield (see Schema::MetaSchema#new_schema_module)
   # @return (see JSI::Schema::MetaSchema#new_schema_module)
-  def self.new_schema_module(schema_content, **kw, &block)
+  def self.new_schema_module(schema_content = Util::UNDEFINED, **kw, &block)
     conf = Base::Conf::SchemaModuleInferMetaSchema.new(schema_module_exec: block, **kw)
     conf[schema_content]
   end

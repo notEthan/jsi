@@ -90,7 +90,7 @@ module JSI
       # @param conf_kw (see SchemaSet#new_jsi)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
-      def new_schema(schema_content, **conf_kw)
+      def new_schema(schema_content = Util::UNDEFINED, **conf_kw)
         raise(BlockGivenError) if block_given?
         conf = Base::Conf::Schema.new(root_indicated_schemas: SchemaSet[self], **conf_kw)
         conf[schema_content]
@@ -102,7 +102,7 @@ module JSI
       # @yield If a block is given, it is evaluated in the context of the schema module
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::SchemaModule] the JSI Schema Module of the instantiated schema
-      def new_schema_module(schema_content, **kw, &block)
+      def new_schema_module(schema_content = Util::UNDEFINED, **kw, &block)
         conf = Base::Conf::SchemaModule.new(
           root_indicated_schemas: SchemaSet[self],
           schema_module_exec: block,
@@ -206,7 +206,7 @@ module JSI
       # @param conf_kw (see SchemaSet#new_jsi)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
-      def new_schema(schema_content, **conf_kw)
+      def new_schema(schema_content = Util::UNDEFINED, **conf_kw)
         raise(BlockGivenError) if block_given?
         conf = Base::Conf::SchemaInferMetaSchema.new(**conf_kw)
         conf[schema_content]

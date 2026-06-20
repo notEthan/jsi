@@ -163,12 +163,12 @@ module JSI
     #
     # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
     #   the given `schema_content` and whose schemas are in-place applicators of this module's schema.
-    def new_schema(schema_content, **kw, &block)
+    def new_schema(schema_content = Util::UNDEFINED, **kw, &block)
       schema.new_schema(schema_content, **kw, &block)
     end
 
     # (see Schema::MetaSchema#new_schema_module)
-    def new_schema_module(schema_content, **kw, &block)
+    def new_schema_module(schema_content = Util::UNDEFINED, **kw, &block)
       schema.new_schema_module(schema_content, **kw, &block)
     end
 
