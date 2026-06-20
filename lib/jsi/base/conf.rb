@@ -195,6 +195,7 @@ module JSI
         **
     )
       super
+      raise(ArgumentError, "this method does not instantiate mutable schemas") if mutable
     end
   end
 end

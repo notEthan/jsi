@@ -100,7 +100,6 @@ module JSI
           **conf_kw
       )
         raise(BlockGivenError) if block_given?
-        raise(ArgumentError, "this method does not instantiate mutable schemas") if conf_kw[:mutable]
         conf = Base::Conf::Schema.new(
           root_indicated_schemas: SchemaSet[self],
           base_uri: base_uri,
