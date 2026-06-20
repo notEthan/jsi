@@ -8,8 +8,8 @@ describe JSI::Schema do
     end
 
     it 'cannot instantiate from a non-string $schema' do
-      err = assert_raises(ArgumentError) { JSI.new_schema({'$schema' => Object.new}) }
-      assert_equal("given schema_content keyword `$schema` is not a string", err.message)
+      err = assert_raises(JSI::Schema::NotAMetaSchemaError) { JSI.new_schema({'$schema' => []}) }
+      assert_equal("$schema does not indicate a meta-schema: []", err.message)
     end
 
     it '$schema resolves but does not describe schemas' do
