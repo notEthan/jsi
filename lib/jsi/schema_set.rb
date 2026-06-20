@@ -77,7 +77,7 @@ module JSI
     # @param conf_kw Additional keyword params are passed to initialize a {Base::Conf}, the JSI's {Base#jsi_conf}.
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of the schemas in this set.
-    def new_jsi(instance, **conf_kw)
+    def new_jsi(instance = Util::UNDEFINED, **conf_kw)
       raise(BlockGivenError) if block_given?
       conf = Base::Conf.new(root_indicated_schemas: self, **conf_kw)
       conf[instance]
