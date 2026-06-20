@@ -211,6 +211,10 @@ module JSI
     end
   end
 
+  Base::Conf::SchemaInferMetaSchema = Base::Conf::Schema.subclass(*%i(
+    default_metaschema
+  ))
+
   class Base::Conf::SchemaInferMetaSchema < Base::Conf::Schema
     private def instance_root_indicated_schemas(schema_content)
       # $schema
