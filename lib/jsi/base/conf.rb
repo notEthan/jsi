@@ -260,6 +260,26 @@ module JSI
   #   or a URI (as would be in a `$schema` keyword).
   #   @return [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
   class Base::Conf::SchemaInferMetaSchema < Base::Conf::Schema
+    # merge {#default_metaschema}: {JSONSchemaDraft04}
+    def d4
+      merge(default_metaschema: JSONSchemaDraft04)
+    end
+
+    # merge {#default_metaschema}: {JSONSchemaDraft06}
+    def d6
+      merge(default_metaschema: JSONSchemaDraft06)
+    end
+
+    # merge {#default_metaschema}: {JSONSchemaDraft07}
+    def d7
+      merge(default_metaschema: JSONSchemaDraft07)
+    end
+
+    # merge {#default_metaschema}: {JSONSchemaDraft202012}
+    def d20
+      merge(default_metaschema: JSONSchemaDraft202012)
+    end
+
     private def instance_root_indicated_schemas(schema_content)
       if schema_content.respond_to?(:to_hash) && (id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema'])
         SchemaSet[Schema.ensure_metaschema(id, name: '$schema', registry: registry)]
