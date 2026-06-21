@@ -155,6 +155,11 @@ module JSI
       merge(stringify_symbol_keys: true)
     end
 
+    # merge {#mutable}: `true`
+    def mut
+      merge(mutable: true)
+    end
+
     # @return [SchemaSet]
     private def instance_root_indicated_schemas(instance)
       root_indicated_schemas
