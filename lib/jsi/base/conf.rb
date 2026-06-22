@@ -204,4 +204,7 @@ module JSI
       raise(ArgumentError, "this method does not instantiate mutable schemas") if mutable
     end
   end
+
+  class Base::Conf::SchemaInferMetaSchema < Base::Conf::Schema
+  end
 end
