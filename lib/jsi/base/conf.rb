@@ -150,6 +150,11 @@ module JSI
       self.root_uri = Util.uri(root_uri, nnil: false, yabs: true)
     end
 
+    # @return [SchemaSet]
+    private def instance_root_indicated_schemas(instance)
+      root_indicated_schemas
+    end
+
     # @return [Base]
     def call(input)
       raise(BlockGivenError) if block_given?
@@ -163,6 +168,7 @@ module JSI
       # input has been transformed into instance
       instance = input
 
+      root_indicated_schemas = instance_root_indicated_schemas(instance)
       applied_schemas = SchemaSet.build do |y|
         c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
         root_indicated_schemas.each { |is| is.each_inplace_applicator_schema(instance, &c) }
