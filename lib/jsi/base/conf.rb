@@ -191,5 +191,10 @@ module JSI
   end
 
   class Base::Conf::Schema < Base::Conf
+    def initialize(
+        **
+    )
+      super
+    end
   end
 end
