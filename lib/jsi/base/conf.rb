@@ -150,6 +150,8 @@ module JSI
     def call(input)
       raise(BlockGivenError) if block_given?
 
+      input = Util.jsi_in_content(input, action: jsi_in_content)
+
       input = Util.deep_stringify_symbol_keys(input) if stringify_symbol_keys
 
       input = to_immutable.call(input) if !mutable && to_immutable

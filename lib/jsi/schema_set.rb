@@ -84,8 +84,6 @@ module JSI
 
       conf = Base::Conf.new(root_indicated_schemas: self, **conf_kw)
 
-      instance = Util.jsi_in_content(instance, action: conf.jsi_in_content)
-
       jsi = conf[instance]
 
       jsi
