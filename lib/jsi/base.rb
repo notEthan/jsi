@@ -140,10 +140,6 @@ module JSI
       jsi_mutability_initialize
 
       super()
-
-      if jsi_node_content.is_a?(JSI::Base)
-        raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_node_content.pretty_inspect.chomp}")
-      end
     end
 
     # @!method jsi_schemas

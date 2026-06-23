@@ -130,7 +130,7 @@ describe JSI::Base do
       let(:subject_opt) { {to_immutable: nil} }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI*1> "foo" => "bar"}), err.message)
+        assert_equal(%q(JSI instance in node content: #{<JSI*1> "foo" => "bar"}), err.message)
       end
     end
     describe 'Schema invalid' do
@@ -138,7 +138,7 @@ describe JSI::Base do
       let(:subject_opt) { {to_immutable: nil} }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI (JSI::JSONSchemaDraft06) Schema>}), err.message)
+        assert_equal(%q(JSI instance in node content: #{<JSI (JSI::JSONSchemaDraft06) Schema>}), err.message)
       end
     end
   end

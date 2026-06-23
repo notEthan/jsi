@@ -106,6 +106,8 @@ module JSI
 
       conf = Base::Conf.new(**conf_kw)
 
+      document = Util.jsi_in_content(document, action: conf.jsi_in_content)
+
       document = Util.deep_stringify_symbol_keys(document) if stringify_symbol_keys
 
       document = conf.to_immutable.call(document) if !mutable && conf.to_immutable
