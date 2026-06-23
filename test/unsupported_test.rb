@@ -439,7 +439,7 @@ describe 'unsupported behavior' do
         child = {'a' => ['turtle']}
         child['on'] = child
         root = {'a' => ['world'], 'on' => child}
-        jsi = schema.new_jsi(root, to_immutable: nil)
+        jsi = schema.new_jsi(root, to_immutable: nil, jsi_in_content: :ignore)
         assert_schemas([schema.properties['a']], jsi.a)
         assert_schemas([schema], jsi.on)
         # little deeper
