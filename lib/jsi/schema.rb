@@ -87,26 +87,12 @@ module JSI
       # different defaults for new_schema.
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
-      # @param base_uri
-      # @param register
-      # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
-      def new_schema(schema_content,
-          base_uri: nil,
-          register: true,
-          stringify_symbol_keys: true,
-          **conf_kw
-      )
+      def new_schema(schema_content, **conf_kw)
         raise(BlockGivenError) if block_given?
-        conf = Base::Conf::Schema.new(
-          root_indicated_schemas: SchemaSet[self],
-          base_uri: base_uri,
-          register: register,
-          stringify_symbol_keys: stringify_symbol_keys,
-          **conf_kw,
-        )
+        conf = Base::Conf::Schema.new(root_indicated_schemas: SchemaSet[self], **conf_kw)
         conf[schema_content]
       end
 

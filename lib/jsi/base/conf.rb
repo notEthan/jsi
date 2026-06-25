@@ -54,6 +54,8 @@ module JSI
   #   This is only useful when the JSI is a schema or contains schemas.
   #
   #   Default: `false`
+  #
+  #   Default overridden to `true` for {Base::Conf::Schema} / `new_schema`
   #   @return [Boolean]
   # @!attribute registry
   #   The registry from which references are resolved.
@@ -108,6 +110,8 @@ module JSI
   #   Replacement is done on a copy; the given instance is not modified.
   #
   #   Default: `false`
+  #
+  #   Default overridden to `true` for {Base::Conf::Schema} / `new_schema`
   #   @return [Boolean]
   # @!attribute to_immutable
   #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.
@@ -192,6 +196,8 @@ module JSI
 
   class Base::Conf::Schema < Base::Conf
     def initialize(
+        register: true,
+        stringify_symbol_keys: true,
         **
     )
       super
