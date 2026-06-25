@@ -28,23 +28,21 @@ end
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
   jsts_registry = base_registry.dup
 
-  Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
-    Dir.glob('**/*.json').each do |subpath|
-      remote_content = JSON.parse(File.open(subpath, 'r:UTF-8', &:read), freeze: true)
+  remotes_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')
+  Dir.chdir(remotes_path) { Dir.glob('**/*.json') }.each do |subpath|
       uri = File.join('http://localhost:1234/', subpath)
       jsts_registry.autoload_uri(uri) do |registry: |
-          JSI.new_schema(remote_content,
+          JSI.new_schema(JSON.parse((remotes_path / subpath).open('r:UTF-8', &:read), freeze: true),
             root_uri: uri,
             default_metaschema: metaschema,
             registry: registry,
             after_initialize: proc do |node|
-              if node.jsi_ptr.root? && remote_content['$vocabulary']
+              if node.jsi_ptr.root? && node.keyword?('$vocabulary')
                 node.describes_schema!
               end
             end,
           )
       end
-    end
   end
   $test_report_time["remotes set up"]
 
