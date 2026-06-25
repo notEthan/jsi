@@ -229,6 +229,13 @@ module JSI
     end
   end
 
+  class Base::Conf::SchemaModule < Base::Conf::Schema
+    # @return [SchemaModule]
+    def call(*)
+      super.jsi_schema_module
+    end
+  end
+
   conf_schema_infer_metaschema_attrs = {
     default_metaschema: {fingerprint: false},
   }.freeze
@@ -262,6 +269,13 @@ module JSI
           "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
         ].join("\n"))
       end
+    end
+  end
+
+  class Base::Conf::SchemaModuleInferMetaSchema < Base::Conf::SchemaInferMetaSchema
+    # @return [SchemaModule]
+    def call(*)
+      super.jsi_schema_module
     end
   end
 end

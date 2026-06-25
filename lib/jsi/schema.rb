@@ -103,9 +103,12 @@ module JSI
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::SchemaModule] the JSI Schema Module of the instantiated schema
       def new_schema_module(schema_content, **kw, &block)
-        schema_jsi = new_schema(schema_content, **kw)
-        schema_jsi.jsi_schema_module_exec(&block) if block
-        schema_jsi.jsi_schema_module
+        conf = Base::Conf::SchemaModule.new(
+          root_indicated_schemas: SchemaSet[self],
+          schema_module_exec: block,
+          **kw,
+        )
+        conf[schema_content]
       end
     end
 
