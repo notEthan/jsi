@@ -621,6 +621,7 @@ module JSI
 
         conf = jsi_conf.merge(**conf_kw)
 
+        modified_document = Util.jsi_in_content(modified_document, action: conf.jsi_in_content)
         modified_document = conf.to_immutable.call(modified_document) if !jsi_mutable? && conf.to_immutable
 
         root_content = jsi_root_node.jsi_ptr.evaluate(modified_document)
