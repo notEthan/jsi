@@ -77,17 +77,7 @@ describe 'JSON Schema Test Suite' do
           subpaths.each do |subpath|
             path = base.join(subpath)
             describe(subpath) do
-              begin
                 tests_desc_object = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
-              rescue JSON::ParserError => e
-                # :nocov:
-                # known json/pure issue https://github.com/flori/json/pull/483
-                raise unless e.message =~ /Encoding::CompatibilityError/
-                warn("JSON Schema Test Suite skipping #{path}")
-                warn(e)
-                tests_desc_object = []
-                # :nocov:
-              end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
                 desc_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
