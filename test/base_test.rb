@@ -466,6 +466,25 @@ describe JSI::Base do
       end
     end
 
+    describe("jsi_in_content") do
+      it("applies") do
+        j = JSI::SchemaSet[].new_jsi({})
+        # default jsi_in_content raises
+        assert_raises(TypeError) { subject.merge({'x' => j}) }
+        # strip
+        a = schema.new_jsi(instance, jsi_in_content: :strip)
+        assert_equal({'x' => {}}, a.merge({'x' => j}).jsi_node_content)
+        # strip from jsi_modified_copy conf_kw
+        assert_equal({'x' => {}}, subject.jsi_modified_copy(jsi_in_content: :strip) { {'x' => j} }.jsi_node_content)
+        # ignore
+        assert_raises(TypeError) { subject.merge({'x' => j}) }
+        a = schema.new_jsi(instance, jsi_in_content: :ignore, to_immutable: nil)
+        assert_equal({'x' => j}, a.merge({'x' => j}).jsi_node_content)
+        # ignore from jsi_modified_copy conf_kw
+        assert_equal({'x' => j}, subject.jsi_modified_copy(jsi_in_content: :ignore, to_immutable: nil) { {'x' => j} }.jsi_node_content)
+      end
+    end
+
     describe("with conf_kw") do
       let(:instance) { {"foo" => "bar"} }
 
