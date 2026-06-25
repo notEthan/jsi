@@ -209,6 +209,12 @@ module JSI
       super
       raise(ArgumentError, "this method does not instantiate mutable schemas") if mutable
     end
+
+    # @return [Base + Schema]
+    def call(*)
+      jsi = super
+      jsi
+    end
   end
 
   conf_schema_infer_metaschema_attrs = {
