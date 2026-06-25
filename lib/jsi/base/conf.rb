@@ -200,6 +200,13 @@ module JSI
     end
   end
 
+  Base::Conf::Schema = Base::Conf.subclass(*%i(
+    schema_module_exec
+  ))
+
+  # @!attribute schema_module_exec
+  #   Passed to {JSI::Schema#jsi_schema_module_exec}
+  #   @return [#to_proc, nil]
   class Base::Conf::Schema < Base::Conf
     def initialize(
         register: true,
@@ -213,6 +220,7 @@ module JSI
     # @return [Base + Schema]
     def call(*)
       jsi = super
+      jsi.jsi_schema_module_exec(&schema_module_exec) if schema_module_exec
       jsi
     end
   end
