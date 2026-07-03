@@ -39,6 +39,27 @@ describe("Base::Conf") do
         jsi = conf.merge(register: true)[{}]
         assert_equal(jsi, JSI.registry.find('tag:x'))
       end
+
+      it("stringify_symbol_keys") do
+        # default value
+        assert_equal(false, schema.new_jsi.stringify_symbol_keys)
+        # does not stringify_symbol_keys by default
+        assert_equal([:a], schema.new_jsi[{a: {}}].keys)
+        # does stringify_symbol_keys
+        assert_equal(['a'], schema.new_jsi.merge(stringify_symbol_keys: true)[{a: {}}].keys)
+      end
+
+      it("mutable") do
+        # default value
+        assert_equal(false, schema.new_jsi.mutable)
+        # is not mutable by default
+        jsi = schema.new_jsi[{}]
+        assert_raises(JSI::FrozenError) { jsi['a'] = {} }
+        # is mutable
+        jsi = schema.new_jsi.merge(mutable: true)[{}]
+        jsi['a'] = {}
+        assert_equal(schema.new_jsi[{'a' => {}}], jsi)
+      end
     end
   end
 end
