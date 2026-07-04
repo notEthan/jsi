@@ -128,6 +128,22 @@ describe("Base::Conf") do
         assert_raises(JSI::ResolutionError) { registry.find('tag:d') }
       end
 
+      it("jsi_in_content") do
+        # default value
+        assert_equal(:raise, schema.new_jsi.jsi_in_content)
+
+        j = JSI::SchemaSet[].new_jsi[{}]
+        # raises by default
+        assert_raises_msg(TypeError, /JSI instance in node content: /) { schema.new_jsi(to_immutable: nil)[{'a' => j}] }
+        assert_raises_msg(TypeError, /JSI instance in node content: /) { schema.new_jsi(mutable: true)[{'a' => j}] }
+        # allow
+        assert_equal({'a' => j}, schema.new_jsi(jsi_in_content: :ignore, to_immutable: nil)[{'a' => j}].jsi_node_content)
+        assert_equal({'a' => j}, schema.new_jsi(jsi_in_content: :ignore, mutable: true)[{'a' => j}].jsi_node_content)
+        # strip
+        assert_equal({'a' => {}}, schema.new_jsi(jsi_in_content: :strip, to_immutable: nil)[{'a' => j}].jsi_node_content)
+        assert_equal({'a' => {}}, schema.new_jsi(jsi_in_content: :strip, mutable: true)[{'a' => j}].jsi_node_content)
+      end
+
       it("to_immutable + mutable") do
         # to_immutable ignored if mutable
         # default to_immutable
