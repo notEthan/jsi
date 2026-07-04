@@ -11,6 +11,28 @@ describe("Base::Conf") do
       assert_is_a(JSI::Base, schema.new_jsi[{}])
     end
 
+    describe("specifying member values") do
+      it("from new_jsi kw") do
+        # using base_uri and register as representative member values, without and with a default value
+
+        # default base_uri
+        assert_equal(nil, schema.new_jsi[{}].jsi_base_uri)
+        assert_equal(nil, schema.new_jsi.base_uri)
+        # not default base_uri
+        assert_uri('tag:x', schema.new_jsi(base_uri: 'tag:x')[{}].jsi_base_uri)
+        assert_uri('tag:x', schema.new_jsi(base_uri: 'tag:x').base_uri)
+
+        # default register
+        jsi = schema.new_jsi(root_uri: 'tag:x')[{}]
+        assert_raises(JSI::ResolutionError) { JSI.registry.find('tag:x') }
+        assert_equal(false, schema.new_jsi.register)
+        # not default register
+        jsi = schema.new_jsi(register: true, root_uri: 'tag:x')[{}]
+        assert_equal(jsi, JSI.registry.find('tag:x'))
+        assert_equal(true, schema.new_jsi(register: true).register)
+      end
+    end
+
     describe("behavior according to instantiator member values") do
       it("root_indicated_schemas") do
         assert_equal(JSI::SchemaSet[schema], schema.new_jsi.root_indicated_schemas)
