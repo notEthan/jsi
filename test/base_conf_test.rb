@@ -245,6 +245,24 @@ describe("Base::Conf") do
       assert_is_a(JSI::Base, JSI.new_schema[{"$schema" => "http://json-schema.org/draft-07/schema#"}])
       assert_is_a(JSI::Schema, JSI.new_schema[{"$schema" => "http://json-schema.org/draft-07/schema#"}])
     end
+
+    describe("member helper methods") do
+      it("d4") do
+        assert_equal(JSI::SchemaSet[JSI::JSONSchemaDraft04.schema], JSI.new_schema.d4['{}'].jsi_indicated_schemas)
+      end
+
+      it("d6") do
+        assert_equal(JSI::SchemaSet[JSI::JSONSchemaDraft06.schema], JSI.new_schema.d6['{}'].jsi_indicated_schemas)
+      end
+
+      it("d7") do
+        assert_equal(JSI::SchemaSet[JSI::JSONSchemaDraft07.schema], JSI.new_schema.d7['{}'].jsi_indicated_schemas)
+      end
+
+      it("d20") do
+        assert_equal(JSI::SchemaSet[JSI::JSONSchemaDraft202012.schema], JSI.new_schema.d20['{}'].jsi_indicated_schemas)
+      end
+    end
   end
 
   describe("Base::Conf::SchemaModuleInferMetaSchema / JSI.new_schema_module") do
