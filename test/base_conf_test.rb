@@ -185,6 +185,15 @@ describe("Base::Conf") do
         jsi = metaschema.new_schema.merge(register: false)[{'$id' => 'tag:z'}]
         assert_raises(JSI::ResolutionError) { JSI.registry.find('tag:z') }
       end
+
+      it("stringify_symbol_keys") do
+        # default value
+        assert_equal(true, metaschema.new_schema.stringify_symbol_keys)
+        # does stringify_symbol_keys by default
+        assert_equal(['items'], metaschema.new_schema[{items: {}}].keys)
+        # does not stringify_symbol_keys
+        assert_equal([:items], metaschema.new_schema.merge(stringify_symbol_keys: false)[{items: {}}].keys)
+      end
     end
 
     describe("mutable") do
