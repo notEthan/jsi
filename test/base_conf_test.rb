@@ -162,6 +162,16 @@ describe("Base::Conf") do
       assert_is_a(JSI::Base, metaschema.new_schema[{}])
       assert_is_a(JSI::Schema, metaschema.new_schema[{}])
     end
+
+    describe("behavior according to instantiator member values") do
+      it("schema_module_exec") do
+        # default value
+        assert_equal(nil, metaschema.new_schema.schema_module_exec)
+        # passed to jsi_schema_module_exec
+        schema = metaschema.new_schema.merge(schema_module_exec: proc { define_method(:x) { :x } })[{}]
+        assert_equal(:x, schema.new_jsi({}).x)
+      end
+    end
   end
 end
 
