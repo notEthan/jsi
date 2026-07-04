@@ -441,6 +441,33 @@ describe JSI::Base do
       end
     end
 
+    describe("mutability") do
+      describe("mutable") do
+        let(:subject_opt) { {mutable: true} }
+
+        it("remains mutable") do
+          m = subject.jsi_modified_copy { [] }
+          refute_frozen(m.jsi_node_content)
+          assert_equal(true, m.jsi_mutable?)
+          c = Object.new
+          assert_same(c, subject.jsi_modified_copy { c }.jsi_node_content)
+        end
+      end
+
+      describe("immutable") do
+        let(:subject_opt) { {mutable: false} }
+
+        it("remains immutable; content transformed to_immutable") do
+          m = subject.jsi_modified_copy { [] }
+          assert_frozen(m.jsi_node_content)
+          assert_equal(false, m.jsi_mutable?)
+          c = Object.new
+          assert_raises_msg(ArgumentError, /immutable/) { subject.jsi_modified_copy { c } }
+          assert_same(c, subject.jsi_modified_copy(to_immutable: nil) { c }.jsi_node_content)
+        end
+      end
+    end
+
     describe("with conf_kw") do
       let(:instance) { {"foo" => "bar"} }
 
