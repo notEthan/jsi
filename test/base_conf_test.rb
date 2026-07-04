@@ -171,6 +171,20 @@ describe("Base::Conf") do
         schema = metaschema.new_schema.merge(schema_module_exec: proc { define_method(:x) { :x } })[{}]
         assert_equal(:x, schema.new_jsi({}).x)
       end
+
+      it("register") do
+        # default value
+        assert_equal(true, metaschema.new_schema.register)
+        # does register by default
+        jsi = metaschema.new_schema[{'$id' => 'tag:x'}]
+        assert_equal(jsi, JSI.registry.find('tag:x'))
+        # does register with true
+        jsi = metaschema.new_schema.merge(register: true)[{'$id' => 'tag:y'}]
+        assert_equal(jsi, JSI.registry.find('tag:y'))
+        # does not register with false
+        jsi = metaschema.new_schema.merge(register: false)[{'$id' => 'tag:z'}]
+        assert_raises(JSI::ResolutionError) { JSI.registry.find('tag:z') }
+      end
     end
   end
 end
