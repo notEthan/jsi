@@ -175,6 +175,12 @@ describe("Base::Conf") do
       it("symkey") do
         assert_equal(['a'], schema.new_jsi.symkey[{a: {}}].keys)
       end
+
+      it("mut") do
+        jsi = schema.new_jsi.mut[{}]
+        jsi['a'] = {}
+        assert_equal(schema.new_jsi[{'a' => {}}], jsi)
+      end
     end
   end
 
