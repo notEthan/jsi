@@ -186,6 +186,13 @@ describe("Base::Conf") do
         assert_raises(JSI::ResolutionError) { JSI.registry.find('tag:z') }
       end
     end
+
+    describe("mutable") do
+      it("does not instantiate mutable") do
+        assert_raises(ArgumentError) { metaschema.new_schema(mutable: true) }
+        assert_raises(ArgumentError) { metaschema.new_schema.merge(mutable: true) }
+      end
+    end
   end
 end
 
