@@ -203,6 +203,13 @@ describe("Base::Conf") do
       end
     end
   end
+
+  describe("Base::Conf::SchemaModule / Schema::MetaSchema#new_schema_module") do
+    it("returns an instantiator; the instantiator instantiates") do
+      assert_instance_of(JSI::Base::Conf::SchemaModule, metaschema.new_schema_module)
+      assert_is_a(JSI::SchemaModule, metaschema.new_schema_module[{}])
+    end
+  end
 end
 
 $test_report_file_loaded[__FILE__]
