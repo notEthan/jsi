@@ -155,6 +155,14 @@ describe("Base::Conf") do
       end
     end
   end
+
+  describe("Base::Conf::Schema / Schema::MetaSchema#new_schema") do
+    it("returns a conf; it instantiates") do
+      assert_instance_of(JSI::Base::Conf::Schema, metaschema.new_schema)
+      assert_is_a(JSI::Base, metaschema.new_schema[{}])
+      assert_is_a(JSI::Schema, metaschema.new_schema[{}])
+    end
+  end
 end
 
 $test_report_file_loaded[__FILE__]
