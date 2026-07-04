@@ -83,6 +83,77 @@ describe("Base::Conf") do
         assert_equal(schema.new_jsi[{'a' => {}}], jsi)
       end
     end
+
+    describe("behavior according to conf member values") do
+      # just the conf that affects instantiation
+
+      it("root_uri + base_uri") do
+        # conf.root_uri informs base_uri
+        assert_uri('tag:x', schema.new_jsi(root_uri: 'tag:x')[{}].jsi_base_uri)
+      end
+
+      it("registry + register") do
+        # conf.registry affects registration
+
+        registry = JSI::Registry.new
+
+        # overriding registry does not override default register = false
+        jsi = schema.new_jsi(registry: registry, root_uri: 'tag:a')[{}]
+        assert_uri('tag:a', jsi.jsi_resource_uri)
+        # not registered
+        assert_raises(JSI::ResolutionError) { registry.find('tag:a') }
+        # nor in the default registry
+        assert_raises(JSI::ResolutionError) { JSI.registry.find('tag:a') }
+
+        # override registry with register = true
+        jsi = schema.new_jsi(registry: registry, register: true, root_uri: 'tag:b')[{}]
+        assert_uri('tag:b', jsi.jsi_resource_uri)
+        # registered
+        assert_equal(jsi, registry.find('tag:b'))
+        # but not in default registry
+        assert_raises(JSI::ResolutionError) { JSI.registry.find('tag:b') }
+
+        # with registry: nil
+        # does not register (though it wouldn't have done anyway with default register=false)
+        jsi = schema.new_jsi(registry: nil, root_uri: 'tag:c')[{}]
+        assert_uri('tag:c', jsi.jsi_resource_uri)
+        # not registered in the default registry. (local `registry` not passed, no way it could be registered there, but ensure anyway why not)
+        assert_raises(JSI::ResolutionError) { JSI.registry.find('tag:c') }
+        assert_raises(JSI::ResolutionError) { registry.find('tag:c') }
+        # with register=true, still does not register without a registry
+        jsi = schema.new_jsi(registry: nil, register: true, root_uri: 'tag:d')[{}]
+        assert_uri('tag:d', jsi.jsi_resource_uri)
+        # not registered
+        assert_raises(JSI::ResolutionError) { JSI.registry.find('tag:d') }
+        assert_raises(JSI::ResolutionError) { registry.find('tag:d') }
+      end
+
+      it("to_immutable + mutable") do
+        # to_immutable ignored if mutable
+        # default to_immutable
+        c = {}
+        jsi = schema.new_jsi(mutable: true)[c]
+        assert_same(c, jsi.jsi_node_content)
+        assert(!jsi.jsi_node_content.frozen?)
+        # to_immutable = nil
+        jsi = schema.new_jsi(to_immutable: nil, mutable: true)[c]
+        assert_same(c, jsi.jsi_node_content)
+        assert(!jsi.jsi_node_content.frozen?)
+        # overridden to_immutable
+        schema.new_jsi(to_immutable: proc { raise }, mutable: true)[{}]
+
+        # to_immutable: nil + !mutable
+        jsi = schema.new_jsi(to_immutable: nil)[c]
+        assert_same(c, jsi.jsi_node_content)
+        assert(!jsi.jsi_mutable?)
+        assert(!jsi.jsi_node_content.frozen?)
+        # same as default mutable=false
+        jsi = schema.new_jsi(mutable: false, to_immutable: nil)[c]
+        assert_same(c, jsi.jsi_node_content)
+        assert(!jsi.jsi_mutable?)
+        assert(!jsi.jsi_node_content.frozen?)
+      end
+    end
   end
 end
 
