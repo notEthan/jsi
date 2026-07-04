@@ -170,6 +170,12 @@ describe("Base::Conf") do
         assert(!jsi.jsi_node_content.frozen?)
       end
     end
+
+    describe("member helper methods") do
+      it("symkey") do
+        assert_equal(['a'], schema.new_jsi.symkey[{a: {}}].keys)
+      end
+    end
   end
 
   describe("Base::Conf::Schema / Schema::MetaSchema#new_schema") do
