@@ -218,6 +218,13 @@ describe("Base::Conf") do
       assert_is_a(JSI::Schema, JSI.new_schema[{"$schema" => "http://json-schema.org/draft-07/schema#"}])
     end
   end
+
+  describe("Base::Conf::SchemaModuleInferMetaSchema / JSI.new_schema_module") do
+    it("returns an instantiator; the instantiator instantiates") do
+      assert_instance_of(JSI::Base::Conf::SchemaModuleInferMetaSchema, JSI.new_schema_module)
+      assert_is_a(JSI::SchemaModule, JSI.new_schema_module[{"$schema" => "http://json-schema.org/draft-07/schema#"}])
+    end
+  end
 end
 
 $test_report_file_loaded[__FILE__]
