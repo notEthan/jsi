@@ -20,74 +20,32 @@ module JSI
   #       # objects to a string. the symbol `:jsi` is a shortcut for JSI::JSICoder.
   #       arms_serialize 'preferences_txt', [:jsi, Preferences], :json
   #     end
-  #
-  # the column data may be either a single instance of the schema class
-  # (represented as one json object) or an array of them (represented as a json
-  # array of json objects), indicated by the keyword argument `array`.
   class JSICoder
     # @param schema [#new_jsi] a Schema, SchemaSet, or JSI schema module. #load
     #   will instantiate column data using the JSI schemas represented.
-    # @param array [Boolean] whether the dumped data represent one instance of the schema,
-    #   or an array of them. note that it may be preferable to simply use an array schema.
     # @param jsi_opt [Hash] keyword arguments to pass to {Schema#new_jsi} when loading
     # @param as_json_opt [Hash] keyword arguments to pass to `#as_json` when dumping
-    def initialize(schema, array: false, jsi_opt: Util::EMPTY_HASH, as_json_opt: Util::EMPTY_HASH)
+    def initialize(schema, jsi_opt: Util::EMPTY_HASH, as_json_opt: Util::EMPTY_HASH)
       unless schema.respond_to?(:new_jsi)
         raise(ArgumentError, "schema param does not respond to #new_jsi: #{schema.inspect}")
       end
       @schema = schema
-      @array = array
       @jsi_opt = jsi_opt
       @as_json_opt = as_json_opt
     end
 
-    # loads the database column to JSI instances of our schema
-    #
-    # @param data [Object, Array, nil] the dumped schema instance(s) of the JSI(s)
-    # @return [JSI::Base, Array<JSI::Base>, nil] the JSI or JSIs containing the schema
-    #   instance(s), or nil if data is nil
+    # loads database column data to JSI instance
+    # @param data [Object, nil]
+    # @return [Base, nil]
     def load(data)
       return nil if data.nil?
-
-      if @array
-        unless data.respond_to?(:to_ary)
-          raise TypeError, "expected array-like column data; got: #{data.class}: #{data.inspect}"
-        end
-        data.to_ary.map { |el| load_object(el) }
-      else
-        load_object(data)
-      end
-    end
-
-    # dumps the object for the database
-    # @param object [JSI::Base, Array<JSI::Base>, nil] the JSI or array of JSIs containing
-    #   the schema instance(s)
-    # @return [Object, Array, nil] the schema instance(s) of the JSI(s), or nil if object is nil
-    def dump(object)
-      return nil if object.nil?
-
-      if @array
-        unless object.respond_to?(:to_ary)
-          raise(TypeError, "expected array-like attribute; got: #{object.class}: #{object.inspect}")
-        end
-        object.to_ary.map do |el|
-          dump_object(el)
-        end
-      else
-        dump_object(object)
-      end
-    end
-
-    private
-    # @param data [Object]
-    # @return [JSI::Base]
-    def load_object(data)
       @schema.new_jsi(data, **@jsi_opt)
     end
 
-    # @param object [JSI::Base, Object]
-    # @return [Object]
-    def dump_object(object)
+    # dumps the object for the database
+    # @param object [Base, nil]
+    # @return [Object, nil]
+    def dump(object)
       JSI::Util.as_json(object, **@as_json_opt)
     end
   end
