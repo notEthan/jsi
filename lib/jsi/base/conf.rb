@@ -182,7 +182,7 @@ module JSI
 
     # see {#call} (note this does not access member values as Struct#[] normally does)
     def [](input)
-      call(input)
+      input.equal?(Util::UNDEFINED) ? self : call(input)
     end
 
     def to_proc
