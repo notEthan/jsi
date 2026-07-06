@@ -313,8 +313,6 @@ end
 
 Now `user.contact_info` will be instantiated as a `Contact` JSI instance, from the JSON type in the database, with Contact's accessors, validations, and application-defined instance methods.
 
-See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize the dumped JSON-compatible objects further as text.
-
 ## Hash keys (JSON Object property names)
 
 For JSI instances containing Hashes, their keys should be strings. Hashes keyed with symbols are popular in Ruby, but this is not compatible with JSON.
