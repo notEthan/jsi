@@ -200,9 +200,13 @@ module JSI
     end
   end
 
-  Base::Conf::Schema = Base::Conf.subclass(*%i(
-    schema_module_exec
-  ))
+  conf_schema_attrs = {
+    schema_module_exec: {fingerprint: false},
+  }.freeze
+
+  Base::Conf::Schema = Base::Conf.subclass(*conf_schema_attrs.keys)
+
+  Base::Conf::Schema::ATTRS = Base::Conf::ATTRS.merge(conf_schema_attrs)
 
   # @!attribute schema_module_exec
   #   Passed to {JSI::Schema#jsi_schema_module_exec}
