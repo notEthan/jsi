@@ -56,9 +56,8 @@ module JSI
   end
 
   class Struct::Frozen < Struct
-    def initialize(h = {})
-      super
-      freeze
+    def self.new(h = {})
+      super.freeze
     end
   end
 end
