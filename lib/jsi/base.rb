@@ -938,7 +938,7 @@ module JSI
         jsi_root_uri: jsi_conf.root_uri,
         # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        **jsi_conf.for_fingerprint,
+        **jsi_conf.to_h.select { |k, _| jsi_conf.class::ATTRS.fetch(k).fetch(:fingerprint) }.freeze,
       }.freeze
     end
 

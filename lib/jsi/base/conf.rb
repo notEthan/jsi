@@ -104,11 +104,5 @@ module JSI
       )
       freeze
     end
-
-    # @private
-    # @return [Hash]
-    def for_fingerprint
-      to_h.select { |k, _| self.class::ATTRS.fetch(k).fetch(:fingerprint) }.freeze
-    end
   end
 end
