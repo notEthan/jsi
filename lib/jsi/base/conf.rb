@@ -85,23 +85,15 @@ module JSI
   #   @return [#call, nil]
   class Base::Conf
     def initialize(
-        root_uri: nil,
         registry: JSI.registry,
         application_collect_evaluated_validate: false,
         child_as_jsi: false,
         child_use_default: false,
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
-        **kw
+        **
     )
-      super(
-        root_uri: Util.uri(root_uri, nnil: false, yabs: true),
-        registry: registry,
-        application_collect_evaluated_validate: application_collect_evaluated_validate,
-        child_as_jsi: child_as_jsi,
-        child_use_default: child_use_default,
-        to_immutable: to_immutable,
-        **kw,
-      )
+      super
+      self.root_uri = Util.uri(root_uri, nnil: false, yabs: true)
     end
 
     # @private

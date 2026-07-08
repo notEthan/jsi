@@ -70,16 +70,11 @@ module JSI
           root_schema_ref: metaschema_root_ref,
           registry: nil, # overrides Base::Conf default value JSI.registry
           is_metaschema: DEFAULT_IS_METASCHEMA,
-          **kw
+          **
       )
-        super(
-          dialect: dialect,
-          metaschema_root_ref: Util.uri(metaschema_root_ref, nnil: true),
-          root_schema_ref: Util.uri(root_schema_ref, nnil: true),
-          registry: registry,
-          is_metaschema: is_metaschema,
-          **kw,
-        )
+        super
+        self.metaschema_root_ref = Util.uri(metaschema_root_ref, nnil: true)
+        self.root_schema_ref = Util.uri(root_schema_ref, nnil: true)
       end
     end
 
