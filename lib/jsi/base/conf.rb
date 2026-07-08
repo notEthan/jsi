@@ -211,9 +211,13 @@ module JSI
     end
   end
 
-  Base::Conf::SchemaInferMetaSchema = Base::Conf::Schema.subclass(*%i(
-    default_metaschema
-  ))
+  conf_schema_infer_metaschema_attrs = {
+    default_metaschema: {fingerprint: false},
+  }.freeze
+
+  Base::Conf::SchemaInferMetaSchema = Base::Conf::Schema.subclass(*conf_schema_infer_metaschema_attrs.keys)
+
+  Base::Conf::SchemaInferMetaSchema::ATTRS = Base::Conf::Schema::ATTRS.merge(conf_schema_infer_metaschema_attrs)
 
   class Base::Conf::SchemaInferMetaSchema < Base::Conf::Schema
     private def instance_root_indicated_schemas(schema_content)
