@@ -178,7 +178,7 @@ module JSI
     # @return [JSI::Base]
     attr_reader :jsi_root_node
 
-    # the content of this node in our {#jsi_document} at our {#jsi_ptr}. the same as {#jsi_instance}.
+    # The content of this node in our {#jsi_document} at our {#jsi_ptr}.
     def jsi_node_content
       # stub method for doc, overridden by Mutable/Immutable
     end
@@ -441,7 +441,7 @@ module JSI
       jsi_simple_node_child_error(token)
     end
 
-    # A child JSI node, or the child of our {#jsi_instance}, identified by the given token.
+    # A child JSI node, or the child of our {#jsi_node_content}, identified by the given token.
     #
     # @param token (see Base#[])
     # @param as_jsi (see Base#[])

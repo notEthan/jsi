@@ -166,7 +166,7 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 - a "JSI schema class" is a subclass of `JSI::Base` representing any number of JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
-  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_instance`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
+  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_node_content`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
 - "schema" refers to either a parsed JSON schema (generally a ruby Hash) or a JSI schema.
 
 ## Supported specification versions
