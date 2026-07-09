@@ -274,9 +274,9 @@ module JSI
     # @yield [JSI::Base] each descendent node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_descendents_node_first(&block)
-      jsi_modified_copy do |instance|
+      jsi_modified_copy do |content|
         if jsi_array? || jsi_hash?
-          res = instance.class.new
+          res = content.class.new
           jsi_each_child_token do |token|
             v = jsi_child_node(token)
             if yield(v)
@@ -290,7 +290,7 @@ module JSI
           end
           res
         else
-          instance
+          content
         end
       end
     end
@@ -304,9 +304,9 @@ module JSI
     # @yield [JSI::Base] each descendent node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_descendents_leaf_first(&block)
-      jsi_modified_copy do |instance|
+      jsi_modified_copy do |content|
         if jsi_array? || jsi_hash?
-          res = instance.class.new
+          res = content.class.new
           jsi_each_child_token do |token|
             v = jsi_child_node(token).jsi_select_descendents_leaf_first(&block)
             if yield(v)
@@ -320,7 +320,7 @@ module JSI
           end
           res
         else
-          instance
+          content
         end
       end
     end

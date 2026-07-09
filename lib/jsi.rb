@@ -70,12 +70,12 @@ module JSI
   SCHEMAS_PATH = RESOURCES_PATH.join('schemas')
 
   DEFAULT_CONTENT_TO_IMMUTABLE = proc do |content|
-    Util.deep_to_frozen(content, not_implemented: proc do |instance|
+    Util.deep_to_frozen(content, not_implemented: proc do |content|
       raise(ArgumentError, [
-        "JSI does not know how to make the given instance immutable.",
+        "JSI does not know how to make the given content immutable.",
         "See new_jsi / new_schema `mutable` param and `to_immutable` configuration documentation for options.",
         "https://www.rubydoc.info/gems/jsi/#{VERSION}/JSI/SchemaSet#new_jsi-instance_method",
-        "Given instance: #{instance.pretty_inspect.chomp}",
+        "Given content: #{content.pretty_inspect.chomp}",
       ].join("\n"))
     end)
   end
