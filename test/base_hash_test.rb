@@ -129,8 +129,8 @@ describe 'JSI::Base hash' do
       subject['foo'] = subject['baz']
 
       # the content of the subscripts' instances is the same but the subscripts' classes are different
-      assert_equal([true], subject['foo'].jsi_instance)
-      assert_equal([true], subject['baz'].jsi_instance)
+      assert_equal([true], subject['foo'].jsi_node_content)
+      assert_equal([true], subject['baz'].jsi_node_content)
       assert_schemas([schema.properties['foo']], subject['foo'])
       assert_schemas([], subject['baz'])
     end
