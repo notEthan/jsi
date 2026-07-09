@@ -184,11 +184,11 @@ module JSI
     class << self
       # @private
       # @return [Set<Module>]
-      def includes_for(instance)
+      def includes_for(content)
         includes = Set[]
-        includes << Base::ArrayNode if instance.respond_to?(:to_ary)
-        includes << Base::HashNode if instance.respond_to?(:to_hash)
-        includes << Base::StringNode if instance.respond_to?(:to_str)
+        includes << Base::ArrayNode if content.respond_to?(:to_ary)
+        includes << Base::HashNode if content.respond_to?(:to_hash)
+        includes << Base::StringNode if content.respond_to?(:to_str)
         includes.freeze
       end
 
