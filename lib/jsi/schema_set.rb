@@ -59,10 +59,10 @@ module JSI
       freeze
     end
 
-    # Instantiates a new JSI whose content comes from the given `instance` param.
+    # Instantiates a new JSI instance representing the given `content`.
     #
     # The schemas of the JSI (its {Base#jsi_schemas}) are in-place
-    # applicators of this set's schemas which apply to the given instance.
+    # applicators of this set's schemas which apply to the instance.
     # The JSI's {Base#jsi_indicated_schemas} set is this set.
     #
     # The resulting JSI is an instance of a number of modules:
@@ -73,7 +73,7 @@ module JSI
     # - A module defining readers for properties described by applicator schemas.
     #   If the instance is mutable, writers as well.
     #
-    # @param instance [Object] the instance to be represented as a JSI
+    # @param content [Object] the instance content to be represented as a JSI
     # @param base_uri [#to_str, URI, nil]
     #   The base URI of the instance document. An absolute URI.
     #
@@ -88,14 +88,14 @@ module JSI
     #   This is only useful when the JSI is a schema or contains schemas.
     # @param stringify_symbol_keys [Boolean] Whether the instance content will have any Symbol keys of Hashes
     #   replaced with Strings (recursively through the document).
-    #   Replacement is done on a copy; the given instance is not modified.
+    #   Replacement is done on a copy; the given content is not modified.
     # @param mutable [Boolean] Whether the instantiated JSI will be mutable.
     #   The instance content will be transformed with the {Base::Conf configured}
     #   {Base::Conf#to_immutable `to_immutable`} if the JSI will be immutable.
     # @param conf_kw Additional keyword params are passed to initialize a {Base::Conf}, the JSI's {Base#jsi_conf}.
-    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI representing the given instance content, whose schemas are
     #   in-place applicators of the schemas in this set.
-    def new_jsi(instance,
+    def new_jsi(content,
         base_uri: nil,
         register: false,
         stringify_symbol_keys: false,
@@ -106,23 +106,23 @@ module JSI
 
       conf = Base::Conf.new(**conf_kw)
 
-      instance = Util.deep_stringify_symbol_keys(instance) if stringify_symbol_keys
+      content = Util.deep_stringify_symbol_keys(content) if stringify_symbol_keys
 
-      instance = conf.to_immutable.call(instance) if !mutable && conf.to_immutable
+      content = conf.to_immutable.call(content) if !mutable && conf.to_immutable
 
       applied_schemas = SchemaSet.build do |y|
         c = y.method(:yield) # TODO drop c, just pass y, when all supported Enumerator::Yielder.method_defined?(:to_proc)
-        each { |is| is.each_inplace_applicator_schema(instance, &c) }
+        each { |is| is.each_inplace_applicator_schema(content, &c) }
       end
 
       base_uri = Util.uri(base_uri, nnil: false, yabs: true) || conf.root_uri
 
       jsi_class = JSI::SchemaClasses.class_for_schemas(applied_schemas,
-        includes: SchemaClasses.includes_for(instance),
+        includes: SchemaClasses.includes_for(content),
         mutable: mutable,
       )
       jsi = jsi_class.new(
-        jsi_document: instance,
+        jsi_document: content,
         jsi_indicated_schemas: self,
         jsi_base_uri: base_uri,
         jsi_conf: conf,

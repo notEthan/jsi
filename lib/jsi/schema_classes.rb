@@ -121,11 +121,11 @@ module JSI
 
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given parameters.
     #
-    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI node representing the given instance content, whose schemas are
     #   in-place applicators of this module's schema.
-    def new_jsi(instance, **kw)
+    def new_jsi(content, **kw)
       raise(BlockGivenError) if block_given?
-      schema.new_jsi(instance, **kw)
+      schema.new_jsi(content, **kw)
     end
 
     # See {Schema#schema_content}
