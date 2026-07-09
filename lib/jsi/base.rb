@@ -89,7 +89,7 @@ module JSI
       end
     end
 
-    # initializes a JSI whose instance is in the given document at the given pointer.
+    # initializes a JSI whose content is in the given document at the given pointer.
     #
     # this is a private api - users should look elsewhere to instantiate JSIs, in particular:
     #
@@ -154,10 +154,10 @@ module JSI
     # note: defined on subclasses by JSI::SchemaClasses.class_for_schemas
 
 
-    # document containing the instance of this JSI at our {#jsi_ptr}
+    # document containing the content of this JSI at our {#jsi_ptr}
     attr_reader :jsi_document
 
-    # {JSI::Ptr} pointing to this JSI's instance within our {#jsi_document}
+    # {JSI::Ptr} pointing to this JSI node's content within our {#jsi_document}
     # @return [JSI::Ptr]
     attr_reader :jsi_ptr
 
@@ -428,7 +428,7 @@ module JSI
     # or the value of the instance hash/object for the given key.
     #
     # @return [Object, nil]
-    # @raise [SimpleNodeChildError] if this node is not complex (its instance is not array or hash)
+    # @raise [SimpleNodeChildError] if this node is not complex (its content is not array or hash)
     def jsi_node_content_child(token)
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
@@ -525,7 +525,7 @@ module JSI
     #
     #   `nil` is returned (regardless of `as_jsi`) when there is no value to return because the token
     #   is not a hash key or array index of the instance and no default value applies.
-    #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
+    #   (one exception is when this JSI's content is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
     # @param use_default [true, false] (default is `false`)
     #   Whether to return a schema default value when the token refers to a child that is not in the document.
@@ -587,14 +587,14 @@ module JSI
       false
     end
 
-    # yields the content of this JSI's instance. the block must result in
-    # a modified copy of the yielded instance (not modified in place, which would alter this JSI
+    # Yields the content of this node. The block must result in
+    # a modified copy of the yielded content (not modified in place, which would alter this JSI
     # as well) which will be used to instantiate and return a new JSI with the modified content.
     #
     # the result may have different schemas which describe it than this JSI's schemas,
-    # if conditional applicator schemas apply differently to the modified instance.
+    # if conditional applicator schemas apply differently to the modified content.
     #
-    # @yield [Object] this JSI's instance. the block should result
+    # @yield [Object] this JSI node's content. the block should result
     #   in a nondestructively modified copy of this.
     # @return [Base] the modified copy of self
     def jsi_modified_copy(**conf_kw, &block)
@@ -659,14 +659,14 @@ module JSI
       # note: overridden by Base::Mutable / Immutable
     end
 
-    # validates this JSI's instance against its schemas
+    # validates this JSI instance against its schemas
     #
     # @return [JSI::Validation::Result::Full]
     def jsi_validate
       jsi_indicated_schemas.instance_validate(self)
     end
 
-    # whether this JSI's instance is valid against all of its schemas
+    # whether this JSI instance is valid against all of its schemas
     # @return [Boolean]
     def jsi_valid?
       jsi_indicated_schemas.instance_valid?(self)
@@ -875,19 +875,19 @@ module JSI
     end
 
     # A structure coerced to JSONifiable types from the instance content.
-    # Calls {Util.as_json} with the instance and any given options.
+    # Calls {Util.as_json} with the content and any given options.
     def as_json(options = {})
       Util.as_json(jsi_node_content, **options)
     end
 
     # A JSON encoded string of the instance content.
-    # Calls {Util.to_json} with the instance and any given options.
+    # Calls {Util.to_json} with the content and any given options.
     # @return [String]
     def to_json(options = {})
       Util.to_json(jsi_node_content, options)
     end
 
-    # Psych/YAML .dump calls this method; dumping a JSI as YAML will dump its instance.
+    # Psych/YAML .dump calls this method; dumping a JSI as YAML will dump its content.
     # @param coder [Psych::Coder]
     def encode_with(coder)
       coder.represent_object(nil, jsi_node_content)
@@ -1000,7 +1000,7 @@ module JSI
       raise(SimpleNodeChildError, [
         "cannot access a child of this JSI node because this node is not complex",
         "using token: #{token.inspect}",
-        "instance: #{jsi_node_content.pretty_inspect.chomp}",
+        "node content: #{jsi_node_content.pretty_inspect.chomp}",
       ].join("\n"))
     end
 
