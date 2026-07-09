@@ -47,7 +47,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_schemas([schema.properties['foo']], subject.foo)
-        assert_equal([2], subject.foo.jsi_instance)
+        assert_equal([2], subject.foo.jsi_node_content)
       end
     end
   end
@@ -68,7 +68,7 @@ describe 'JSI::Base hash' do
       it 'returns the default value' do
         assert_schemas([schema.properties['foo']], subject.foo)
         assert_nil(subject.foo(use_default: false))
-        assert_equal({'foo' => 2}, subject.foo.jsi_instance)
+        assert_equal({'foo' => 2}, subject.foo.jsi_node_content)
       end
     end
     describe("nondefault value (simple type)") do
@@ -82,7 +82,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'foo' => [2]} }
       it 'returns the nondefault value' do
         assert_schemas([schema.properties['foo']], subject.foo)
-        assert_equal([2], subject.foo.jsi_instance)
+        assert_equal([2], subject.foo.jsi_node_content)
       end
     end
   end
@@ -114,7 +114,7 @@ describe 'JSI::Base hash' do
 
       subject['foo'] = {'y' => 'z'}
 
-      assert_equal({'y' => 'z'}, subject['foo'].jsi_instance)
+      assert_equal({'y' => 'z'}, subject['foo'].jsi_node_content)
       assert_schemas([schema.properties['foo']], orig_foo)
       assert_schemas([schema.properties['foo']], subject['foo'])
     end
@@ -148,14 +148,14 @@ describe 'JSI::Base hash' do
       refute_same(other_subject['foo'], subject['foo'])
     end
     it 'modifies the instance, visible to other references to the same instance' do
-      orig_instance = subject.jsi_instance
+      orig_instance = subject.jsi_node_content
 
       subject['foo'] = {'y' => 'z'}
 
-      assert_equal(orig_instance, subject.jsi_instance)
+      assert_equal(orig_instance, subject.jsi_node_content)
       assert_equal({'y' => 'z'}, orig_instance['foo'])
-      assert_equal({'y' => 'z'}, subject.jsi_instance['foo'])
-      assert_equal(orig_instance.class, subject.jsi_instance.class)
+      assert_equal({'y' => 'z'}, subject.jsi_node_content['foo'])
+      assert_equal(orig_instance.class, subject.jsi_node_content.class)
     end
     describe 'when the instance is not hashlike' do
       let(:instance) { nil }
@@ -317,8 +317,8 @@ describe 'JSI::Base hash' do
         assert_equal(jsis, subject.jsi_each_propertyName.to_a)
 
         valid, invalid = subject.jsi_each_propertyName.partition(&:jsi_valid?)
-        assert_equal(['str'], valid.map(&:jsi_instance))
-        assert_equal(['longstr'], invalid.map(&:jsi_instance))
+        assert_equal(['str'], valid.map(&:jsi_node_content))
+        assert_equal(['longstr'], invalid.map(&:jsi_node_content))
       end
     end
 
@@ -450,7 +450,7 @@ describe 'JSI::Base hash' do
     describe 'delegating instance methods to #to_hash' do
       it('#each_key') { assert_equal(['foo'], subject.each_key.to_a) }
       it('#each_pair') { assert_equal([['foo', subject['foo']]], subject.each_pair.to_a) }
-      it('#[]')       { assert_equal(SortOfHash.new({'a' => 'b'}), subject['foo'].jsi_instance) }
+      it('#[]')       { assert_equal(SortOfHash.new({'a' => 'b'}), subject['foo'].jsi_node_content) }
       it('#as_json') { assert_equal({'foo' => {'a' => 'b'}}, subject.as_json) }
     end
 

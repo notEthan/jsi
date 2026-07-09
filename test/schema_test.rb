@@ -4,7 +4,7 @@ describe JSI::Schema do
   describe 'new_schema' do
     it 'initializes from a hash' do
       schema = JSI.new_schema({'type' => 'object'}, default_metaschema: JSI::JSONSchemaDraft07)
-      assert_equal({'type' => 'object'}, schema.jsi_instance)
+      assert_equal({'type' => 'object'}, schema.jsi_node_content)
     end
 
     it 'cannot instantiate from a non-string $schema' do
@@ -61,7 +61,7 @@ describe JSI::Schema do
     it '#[]' do
       schema_items = schema['items']
       assert_is_a(metaschema_jsi_module, schema_items)
-      assert_equal({'description' => 'items!'}, schema_items.jsi_instance)
+      assert_equal({'description' => 'items!'}, schema_items.jsi_node_content)
     end
   end
   describe '#schema_uri' do

@@ -141,8 +141,8 @@ module JSI
 
       super()
 
-      if jsi_instance.is_a?(JSI::Base)
-        raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
+      if jsi_node_content.is_a?(JSI::Base)
+        raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_node_content.pretty_inspect.chomp}")
       end
     end
 
@@ -832,7 +832,7 @@ module JSI
     # If this JSI is a simple type, the node's content is inspected; if complex, its children are inspected.
     def pretty_print(q)
       jsi_pp_object_group(q, jsi_object_group_text) do
-          q.pp jsi_instance
+        q.pp(jsi_node_content)
       end
     end
 
@@ -903,14 +903,14 @@ module JSI
     # A structure coerced to JSONifiable types from the instance content.
     # Calls {Util.as_json} with the instance and any given options.
     def as_json(options = {})
-      Util.as_json(jsi_instance, **options)
+      Util.as_json(jsi_node_content, **options)
     end
 
     # A JSON encoded string of the instance content.
     # Calls {Util.to_json} with the instance and any given options.
     # @return [String]
     def to_json(options = {})
-      Util.to_json(jsi_instance, options)
+      Util.to_json(jsi_node_content, options)
     end
 
     # Psych/YAML .dump calls this method; dumping a JSI as YAML will dump its instance.
@@ -1032,7 +1032,7 @@ module JSI
       raise(SimpleNodeChildError, [
         "cannot access a child of this JSI node because this node is not complex",
         "using token: #{token.inspect}",
-        "instance: #{jsi_instance.pretty_inspect.chomp}",
+        "instance: #{jsi_node_content.pretty_inspect.chomp}",
       ].join("\n"))
     end
 
