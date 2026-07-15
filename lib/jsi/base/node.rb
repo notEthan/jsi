@@ -112,7 +112,7 @@ module JSI
     # @return [Hash]
     def to_hash(**kw)
       hash = {}
-      each_key { |k| hash[k] = self[k, **kw] }
+      each(**kw) { |k, v| hash[k] = v }
       hash.freeze
     end
 
