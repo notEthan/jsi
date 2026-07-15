@@ -599,13 +599,9 @@ module JSI
     # @param schema [Schema, SchemaModule]
     # @return [Boolean]
     def described_by?(schema)
-      if schema.is_a?(Schema)
-        jsi_schemas.include?(schema)
-      elsif schema.is_a?(SchemaModule)
-        jsi_schemas.include?(schema.schema)
-      else
-        raise(TypeError, "expected a Schema or Schema Module; got: #{schema.pretty_inspect.chomp}")
-      end
+      return jsi_schemas.include?(schema) if schema.is_a?(Schema)
+      return jsi_schemas.include?(schema.schema) if schema.is_a?(SchemaModule)
+      raise(TypeError, "expected a Schema or Schema Module; got: #{schema.pretty_inspect.chomp}")
     end
 
     # Is this a JSI Schema?
