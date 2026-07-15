@@ -370,10 +370,13 @@ describe 'JSI::Base hash' do
       blocks = [
         proc   { |k, v| res << [k, v] },
         proc   { |a|    res << a },
+        proc   { |*a|   res << a },
         lambda { |k, v| res << [k, v] },
         lambda { |a|    res << a },
+        lambda { |*a|   res << a },
         -> (k, v) {     res << [k, v] }, # -> is the same as lambda, so this is redundant, but w/e
         -> (a) {        res << a },
+        -> (*a) {       res << a },
       ]
       # none of these raise ArgumentError: wrong number of arguments
       blocks.each { |blk| subject.each(&blk) }

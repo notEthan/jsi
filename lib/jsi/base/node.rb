@@ -84,7 +84,7 @@ module JSI
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
     def each(key_as_jsi: false, **kw, &block)
       return to_enum(__method__, key_as_jsi: key_as_jsi, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
-      if block.arity > 1
+      if block.arity != 1
         each_key(key_as_jsi: key_as_jsi) { |k| yield(k, self[k, **kw]) }
       else
         each_key(key_as_jsi: key_as_jsi) { |k| yield([k, self[k, **kw]]) }
