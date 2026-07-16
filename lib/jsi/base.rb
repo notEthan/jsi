@@ -210,7 +210,7 @@ module JSI
     #   name (Hash key) of any descendent which is a hash/object.
     #   These are described by `propertyNames` subshemas of that object's schemas.
     #   They are not actual descendents of this node.
-    #   See {HashNode#jsi_each_propertyName}.
+    #   See {HashNode#each_key} param `key_as_jsi`.
     # @yield [JSI::Base] each descendent node, starting with self
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def jsi_each_descendent_node(propertyNames: false, &block)
@@ -234,7 +234,7 @@ module JSI
       yield self
 
       if propertyNames && is_a?(HashNode)
-        jsi_each_propertyName do |propertyName|
+        each_key(key_as_jsi: true) do |propertyName|
           propertyName.jsi_each_descendent_node(propertyNames: propertyNames, &block)
         end
       end
