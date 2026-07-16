@@ -210,7 +210,6 @@ module JSI
     # See {Base#[]}
     def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
       raise(BlockGivenError) if block_given?
-      token = token.jsi_node_content if token.is_a?(Schema::SchemaAncestorNode)
       size = jsi_node_content_ary_pubsend(:size)
       if token.is_a?(Integer)
         if token < 0
