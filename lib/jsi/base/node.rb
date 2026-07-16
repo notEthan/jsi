@@ -78,21 +78,33 @@ module JSI
     #
     # each yielded key is a key of the instance hash, and each yielded value is the result of {Base#[]}.
     #
+    # @param as_jsi (see #jsi_each_kv)
     # @param key_as_jsi (see #each_key)
-    # @param kw keyword arguments are passed to {Base#[]}
     # @yield [Object, Object] each key and value of this hash node
     # @return [self, Enumerator] an Enumerator if invoked without a block; otherwise self
-    def each(key_as_jsi: false, **kw, &block)
-      return to_enum(__method__, key_as_jsi: key_as_jsi, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
+    def each(**kw, &block)
+      return to_enum(__method__, **kw) { jsi_node_content_hash_pubsend(:size) } unless block
       if block.arity != 1
-        each_key(key_as_jsi: key_as_jsi) { |k| yield(k, self[k, **kw]) }
+        jsi_each_kv(**kw, &block)
       else
-        each_key(key_as_jsi: key_as_jsi) { |k| yield([k, self[k, **kw]]) }
+        jsi_each_kv(**kw) { |k, v| yield([k, v]) }
       end
-      self
     end
 
     alias_method(:each_pair, :each)
+
+    # must be given a block (does not return Enumerator). block must take 2 args.
+    # @param as_jsi Whether each child value is yielded as a JSI instance; see {Base#[]} param `as_jsi`.
+    # @return [self]
+    private def jsi_each_kv(key_as_jsi: false, as_jsi: jsi_conf.child_as_jsi)
+      if key_as_jsi
+        property_schemas = jsi_schemas.each_yield_set { |s, y| s.dialect_invoke_each(:propertyNames, &y) }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield(property_schemas.new_jsi(k), jsi_child_as_jsi(jsi_child_node(k), as_jsi)) }
+      else
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield(k, jsi_child_as_jsi(jsi_child_node(k), as_jsi)) }
+      end
+      self
+    end
 
     # Yields each key (property name)
     # @param key_as_jsi [Boolean] Yield each key as a JSI instance, per {#jsi_each_propertyName}
@@ -112,7 +124,7 @@ module JSI
     # @return [Hash]
     def to_hash(**kw)
       hash = {}
-      each_key { |k| hash[k] = self[k, **kw] }
+      jsi_each_kv(**kw) { |k, v| hash[k] = v }
       hash.freeze
     end
 
