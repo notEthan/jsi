@@ -211,6 +211,7 @@ module JSI
 
     # see {Base#jsi_child_node}
     def jsi_child_node(token)
+      jsi_child_ensure_present(token) if @initialize_finished # until initialize_finished, jsi_child_token_present? is wrong (Base::HashNode/ArrayNode not extended)
       root_descendent_node(jsi_ptr[token])
     end
 
