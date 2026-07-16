@@ -283,7 +283,7 @@ describe 'JSI::Base hash' do
     end
   end
 
-  describe 'jsi_each_propertyName' do
+  describe("each_key(key_as_jsi: true") do
     describe 'valid and invalid propertyNames' do
       let(:schema_content) do
         {
@@ -298,7 +298,7 @@ describe 'JSI::Base hash' do
                 'minLength' => 1,
               },
             },
-            true, # does not apply but ensures jsi_each_propertyName doesn't choke on boolean schema
+            true, # does not apply but ensures it doesn't choke on boolean schema
           ]
         }
       end
@@ -306,7 +306,7 @@ describe 'JSI::Base hash' do
       let(:instance) { {'str' => [], 'longstr' => []} }
 
       it 'yields each as a jsi' do
-        subject.jsi_each_propertyName do |propertyName|
+        subject.each_key(key_as_jsi: true) do |propertyName|
           assert_schemas([schema.allOf[0].propertyNames, schema.allOf[1].propertyNames], propertyName)
         end
         jsis = %w(str longstr).map do |k|
@@ -315,9 +315,9 @@ describe 'JSI::Base hash' do
             schema.allOf[1].propertyNames,
           ].new_jsi(k)
         end
-        assert_equal(jsis, subject.jsi_each_propertyName.to_a)
+        assert_equal(jsis, subject.each_key(key_as_jsi: true).to_a)
 
-        valid, invalid = subject.jsi_each_propertyName.partition(&:jsi_valid?)
+        valid, invalid = subject.each_key(key_as_jsi: true).partition(&:jsi_valid?)
         assert_equal(['str'], valid.map(&:jsi_node_content))
         assert_equal(['longstr'], invalid.map(&:jsi_node_content))
       end
@@ -327,13 +327,13 @@ describe 'JSI::Base hash' do
       # note: schema_content and instance not redefined from the top-level describe
 
       it 'yields each as a jsi' do
-        subject.jsi_each_propertyName do |propertyName|
+        subject.each_key(key_as_jsi: true) do |propertyName|
           assert_schemas([], propertyName)
           assert(propertyName.jsi_valid?)
         end
 
-        assert_equal(%w(foo bar baz).map { |k| JSI::SchemaSet[].new_jsi(k) }, subject.jsi_each_propertyName.to_a)
-        assert(subject.jsi_each_propertyName.all?(&:jsi_valid?))
+        assert_equal(%w(foo bar baz).map { |k| JSI::SchemaSet[].new_jsi(k) }, subject.each_key(key_as_jsi: true).to_a)
+        assert(subject.each_key(key_as_jsi: true).all?(&:jsi_valid?))
       end
     end
 
@@ -350,8 +350,8 @@ describe 'JSI::Base hash' do
 
       it 'applies no propertyNames schemas' do
         assert_schemas([], schema['propertyNames']) # not what we're testing, just checking propertyNames isn't a schema
-        assert_equal(%w(foo bar baz).map { |k| JSI::SchemaSet[].new_jsi(k) }, subject.jsi_each_propertyName.to_a)
-        assert(subject.jsi_each_propertyName.all?(&:jsi_valid?))
+        assert_equal(%w(foo bar baz).map { |k| JSI::SchemaSet[].new_jsi(k) }, subject.each_key(key_as_jsi: true).to_a)
+        assert(subject.each_key(key_as_jsi: true).all?(&:jsi_valid?))
       end
     end
   end

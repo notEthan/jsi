@@ -152,7 +152,7 @@ An array has [child] nodes on each [index].
 
 A [token] identifying a [child] of a [hash/object] [node]. In Ruby, a Hash key; in JSON Schema, an object property name. Property names are always strings in JSON. Note that symbols are not compatible and generally should not be used.
 
-Property names can be described by schemas (using the `propertyNames` keyword), and can be JSI instances of those schemas. See {JSI::Base::HashNode#jsi_each_propertyName}.
+Property names can be described by schemas (using the `propertyNames` keyword), and can be JSI instances of those schemas. See {JSI::Base::HashNode#each_key} with param `key_as_jsi`.
 
 
 ### index
