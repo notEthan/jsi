@@ -6,23 +6,6 @@ module JSI
   #
   # Dynamically defines most methods of Hash to make the JSI duck-type like a Hash.
   module Base::HashNode
-    # instantiates and yields each property name (hash key) as a JSI described by any `propertyNames` schemas.
-    #
-    # @yield [JSI::Base]
-    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def jsi_each_propertyName
-      return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block_given?
-
-      property_schemas = jsi_schemas.each_yield_set do |s, y|
-        s.dialect_invoke_each(:propertyNames, &y)
-      end
-      jsi_node_content_hash_pubsend(:each_key) do |key|
-        yield property_schemas.new_jsi(key)
-      end
-
-      nil
-    end
-
     # See {Base#jsi_hash?}. Always true for HashNode.
     def jsi_hash?
       true
@@ -95,12 +78,15 @@ module JSI
     alias_method(:each_pair, :each)
 
     # Yields each key (property name)
-    # @param key_as_jsi [Boolean] Yield each key as a JSI instance, per {#jsi_each_propertyName}
+    # @param key_as_jsi [Boolean]
+    #   Instantiates and yields each property name (Hash key) as a JSI described by each `propertyNames` schema.
     # @yield [String, Base]
+    # @return [self, Enumerator] an Enumerator if invoked without a block, otherwise self
     def each_key(key_as_jsi: false, &block)
       return to_enum(__method__, key_as_jsi: key_as_jsi) { size } unless block
       if key_as_jsi
-        jsi_each_propertyName(&block)
+        property_schemas = jsi_schemas.each_yield_set { |s, y| s.dialect_invoke_each(:propertyNames, &y) }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield(property_schemas.new_jsi(k)) }
       else
         jsi_node_content_hash_pubsend(:each_key, &block)
       end
