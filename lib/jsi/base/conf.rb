@@ -69,7 +69,8 @@ module JSI
   #   Default value for {Base#jsi_child_as_jsi_default}.
   #   @return [true, false, :auto]
   # @!attribute child_use_default
-  #   Default value for {Base#jsi_child_use_default_default}.
+  #   The default value for the param `use_default` of {Base#[]}, controlling
+  #   whether a schema default value is returned when accessing a child that is not present in the document.
   #   @return [Boolean]
   # @!attribute to_immutable
   #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.

@@ -546,7 +546,7 @@ module JSI
     #   if the child instance's schemas do not indicate a single default value (that is, if zero or multiple
     #   defaults are specified across those schemas), nil is returned.
     # @return [Base, Object, Array, nil] the child or children identified by `token`
-    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
+    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_conf.child_use_default)
       raise(BlockGivenError) if block_given?
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
@@ -568,14 +568,6 @@ module JSI
     # @return [:auto, true, false] a valid value of the `as_jsi` param of {#[]}
     def jsi_child_as_jsi_default
       jsi_conf.child_as_jsi
-    end
-
-    # The default value for the param `use_default` of {#[]}, controlling whether a schema default value is
-    # returned when a token refers to a child that is not in the document.
-    # {Base::Conf Configurable} using {Base::Conf#child_use_default `child_use_default`}.
-    # @return [true, false] a valid value of the `use_default` param of {#[]}
-    def jsi_child_use_default_default
-      jsi_conf.child_use_default
     end
 
     # Assigns a child identified by the given token to the given value.
