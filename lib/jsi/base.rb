@@ -559,7 +559,7 @@ module JSI
     # @return [Boolean]
     def jsi_as_child_default_as_jsi
       # base default is false, for simple types. overridden by complex types (HashNode, ArrayNode), Schema, and others.
-      jsi_conf.child_as_jsi
+      false
     end
 
     # The default value for the param `as_jsi` of {#[]}, controlling whether a child is returned as a JSI instance.
@@ -567,7 +567,7 @@ module JSI
     #   is better for a child to indicate whether it should be a JSI by overriding {#jsi_as_child_default_as_jsi}.
     # @return [:auto, true, false] a valid value of the `as_jsi` param of {#[]}
     def jsi_child_as_jsi_default
-      :auto
+      jsi_conf.child_as_jsi
     end
 
     # The default value for the param `use_default` of {#[]}, controlling whether a schema default value is
