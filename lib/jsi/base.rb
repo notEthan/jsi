@@ -843,6 +843,8 @@ module JSI
           : schema.all? { |k, _| k == '$ref' || k == '$dynamicRef' } ?
             7
           : 5,
+
+          jsi_indicated_schemas.include?(schema) ? 0 : 1,
         ]
         [priority, i, schema]
       end.sort
