@@ -1013,19 +1013,9 @@ module JSI
     end
 
     def jsi_child_as_jsi(child_node, as_jsi)
-      if [true, false].include?(as_jsi)
-        child_as_jsi = as_jsi
-      elsif as_jsi == :auto
-        child_as_jsi = child_node.jsi_as_child_default_as_jsi
-      else
-        raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
-      end
-
-      if child_as_jsi
-        child_node
-      else
-        child_node.jsi_node_content
-      end
+      as_jsi = child_node.jsi_as_child_default_as_jsi if as_jsi == :auto
+      raise(ArgumentError, "as_jsi must be one of: :auto, true, false") if as_jsi != true && as_jsi != false
+      as_jsi ? child_node : child_node.jsi_node_content
     end
 
     def jsi_simple_node_child_error(token)
