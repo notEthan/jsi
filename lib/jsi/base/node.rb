@@ -59,7 +59,7 @@ module JSI
         if use_default
           jsi_default_child(token, as_jsi: as_jsi)
         else
-          nil
+          jsi_node_content_child(token)
         end
       end
     end

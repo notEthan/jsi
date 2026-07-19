@@ -96,13 +96,14 @@ describe 'JSI::Base hash' do
       }
     end
 
-    let(:subject_opt) { {child_use_default: true} }
-
     describe 'default value' do
       let(:instance) { Hash.new({'foo' => 2}).merge({'bar' => 3}) }
       it 'returns the default value' do
         assert_is_a(Hash, subject.foo)
         assert_equal({'foo' => 2}, subject.foo)
+        # use_default controls whether schema default is returned as a child; Hash#default is unaffected
+        assert_equal({'foo' => 2}, subject.foo(use_default: true))
+        assert_equal({'foo' => 2}, subject.foo(use_default: false))
       end
     end
   end
