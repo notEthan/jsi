@@ -1,7 +1,7 @@
 require_relative 'test_helper'
 
 describe 'JSI::Base hash' do
-  let(:default_instance) { {'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]} }
+  let(:default_instance) { {'foo' => {'x' => 'y'}, 'bar' => '9', 'baz' => [true]} }
   let(:instance) { default_instance }
   let(:schema_content) do
     {
@@ -120,21 +120,21 @@ describe 'JSI::Base hash' do
     end
     it("sets a property with #store") do
       subject.store('foo', {})
-      assert_equal(schema.new_jsi({'foo' => {}, 'bar' => [9], 'baz' => [true]}), subject)
+      assert_equal(schema.new_jsi({'foo' => {}, 'bar' => '9', 'baz' => [true]}), subject)
     end
     it 'sets a property to a schema instance with a different schema' do
       assert(subject['foo'])
 
-      subject['foo'] = subject['bar']
+      subject['foo'] = subject['baz']
 
       # the content of the subscripts' instances is the same but the subscripts' classes are different
-      assert_equal([9], subject['foo'].jsi_instance)
-      assert_equal([9], subject['bar'].jsi_instance)
+      assert_equal([true], subject['foo'].jsi_instance)
+      assert_equal([true], subject['baz'].jsi_instance)
       assert_schemas([schema.properties['foo']], subject['foo'])
-      assert_schemas([schema.properties['bar']], subject['bar'])
+      assert_schemas([], subject['baz'])
     end
     it 'sets a property to a schema instance with the same schema' do
-      other_subject = schema.new_jsi({'foo' => {'x' => 'y'}, 'bar' => [9], 'baz' => [true]})
+      other_subject = schema.new_jsi({'foo' => {'x' => 'y'}, 'bar' => '9', 'baz' => [true]})
       # Given
       assert_equal(other_subject, subject)
 
@@ -169,7 +169,7 @@ describe 'JSI::Base hash' do
   describe("pretty") do
     describe '#inspect, #to_s' do
       it 'inspects' do
-        assert_equal("\#{<JSI*1> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => #[<JSI*1> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
+        assert_equal("\#{<JSI*1> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => \"9\", \"baz\" => #[<JSI*0> true]}", subject.inspect)
         assert_equal(subject.inspect, subject.to_s)
       end
     end
@@ -178,7 +178,7 @@ describe 'JSI::Base hash' do
         pp = <<~PP
           \#{<JSI*1>
             "foo" => \#{<JSI*1> "x" => "y"},
-            "bar" => #[<JSI*1> 9],
+            "bar" => "9",
             "baz" => #[<JSI*0> true]
           }
           PP
@@ -198,7 +198,7 @@ describe 'JSI::Base hash' do
       let(:instance) { SortOfHash.new(default_instance) }
       let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
-        assert_equal("\#{<JSI*1 SortOfHash> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => #[<JSI*1> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
+        assert_equal("\#{<JSI*1 SortOfHash> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => \"9\", \"baz\" => #[<JSI*0> true]}", subject.inspect)
       end
     end
     describe '#pretty_print SortOfHash' do
@@ -208,7 +208,7 @@ describe 'JSI::Base hash' do
         pp = <<~PP
           \#{<JSI*1 SortOfHash>
             "foo" => \#{<JSI*1> "x" => "y"},
-            "bar" => #[<JSI*1> 9],
+            "bar" => "9",
             "baz" => #[<JSI*0> true]
           }
           PP
@@ -218,7 +218,7 @@ describe 'JSI::Base hash' do
     describe '#inspect with id' do
       let(:schema_content) { {'$id' => 'http://jsi/base_hash/withid', 'properties' => {'foo' => {}, 'bar' => {}}} }
       it 'inspects' do
-        assert_equal("\#{<JSI (http://jsi/base_hash/withid)> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
+        assert_equal("\#{<JSI (http://jsi/base_hash/withid)> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => \"9\", \"baz\" => #[<JSI*0> true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id' do
@@ -227,7 +227,7 @@ describe 'JSI::Base hash' do
         pp = <<~PP
           \#{<JSI (http://jsi/base_hash/withid)>
             "foo" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> "x" => "y"},
-            "bar" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9],
+            "bar" => "9",
             "baz" => #[<JSI*0> true]
           }
           PP
@@ -239,7 +239,7 @@ describe 'JSI::Base hash' do
       let(:instance) { SortOfHash.new(default_instance) }
       let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
-        assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
+        assert_equal("\#{<JSI (http://jsi/base_hash/withid) SortOfHash> \"foo\" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> \"x\" => \"y\"}, \"bar\" => \"9\", \"baz\" => #[<JSI*0> true]}", subject.inspect)
       end
     end
     describe '#pretty_print with id SortOfHash' do
@@ -250,7 +250,7 @@ describe 'JSI::Base hash' do
         pp = <<~PP
           \#{<JSI (http://jsi/base_hash/withid) SortOfHash>
             "foo" => \#{<JSI (http://jsi/base_hash/withid#/properties/foo)> "x" => "y"},
-            "bar" => #[<JSI (http://jsi/base_hash/withid#/properties/bar)> 9],
+            "bar" => "9",
             "baz" => #[<JSI*0> true]
           }
           PP
@@ -262,7 +262,7 @@ describe 'JSI::Base hash' do
       let(:instance) { instance_class.new(default_instance) }
       let(:subject_opt) { {to_immutable: nil} }
       it 'inspects' do
-        assert_equal("\#{<JSI*1 ☺> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => #[<JSI*1> 9], \"baz\" => #[<JSI*0> true]}", subject.inspect)
+        assert_equal("\#{<JSI*1 ☺> \"foo\" => \#{<JSI*1> \"x\" => \"y\"}, \"bar\" => \"9\", \"baz\" => #[<JSI*0> true]}", subject.inspect)
       end
     end
     describe '#pretty_print jsi_object_group_text' do
@@ -273,7 +273,7 @@ describe 'JSI::Base hash' do
         pp = <<~PP
           \#{<JSI*1 ☺>
             "foo" => \#{<JSI*1> "x" => "y"},
-            "bar" => #[<JSI*1> 9],
+            "bar" => "9",
             "baz" => #[<JSI*0> true]
           }
           PP
@@ -357,7 +357,7 @@ describe 'JSI::Base hash' do
 
   describe 'each' do
     it 'yields each element' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, String, JSI::Base::ArrayNode]
       subject.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'yields each element as_jsi' do
@@ -382,7 +382,7 @@ describe 'JSI::Base hash' do
   end
   describe 'to_hash' do
     it 'includes each element' do
-      expect_modules = [schema.properties['foo'].jsi_schema_module, schema.properties['bar'].jsi_schema_module, JSI::Base::ArrayNode]
+      expect_modules = [schema.properties['foo'].jsi_schema_module, String, JSI::Base::ArrayNode]
       subject.to_hash.each { |_, v| assert_is_a(expect_modules.shift, v) }
     end
     it 'includes each element as_jsi' do
@@ -398,7 +398,7 @@ describe 'JSI::Base hash' do
     end
 
     it 'is an array of keys + JSIs' do
-      expect_ary = [['foo', subject.foo], ['bar', subject.bar], ['baz', subject['baz', as_jsi: true]]]
+      expect_ary = [['foo', subject.foo], ['bar', subject.bar(as_jsi: true)], ['baz', subject['baz']]]
       assert_equal(expect_ary, subject.to_a(as_jsi: true))
     end
   end
@@ -422,7 +422,7 @@ describe 'JSI::Base hash' do
     it('#>=')    { assert_equal(false, subject >= {'foo' => 'bar'}) } if {}.respond_to?(:>=)
     it('#any?')   { assert_equal(false, subject.any? { |k, v| v == 3 }) }
     it('#assoc')   { assert_equal(['foo', subject['foo']], subject.assoc('foo')) }
-    it('#dig')      { assert_equal(9, subject.dig('bar', 0)) } if {}.respond_to?(:dig)
+    it('#dig')      { assert_equal('y', subject.dig('foo', 'x')) } if {}.respond_to?(:dig)
     it('#each_pair') { assert_equal([['foo', subject['foo']], ['bar', subject['bar']], ['baz', subject['baz']]], subject.each_pair.to_a) }
     it('#each_value') { assert_equal([subject['foo'], subject['bar'], subject['baz']], subject.each_value.to_a) }
     it('#fetch')       { assert_equal(subject['baz'], subject.fetch('baz')) }
