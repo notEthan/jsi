@@ -79,9 +79,10 @@ module JSI
     #   is determined by calling the block with the key, its value in self and its value in other.
     # @return duplicate of this hash with the other hash merged in
     # @raise [TypeError] when `other` does not respond to #to_hash
-    def merge(other, &block)
+    def merge(*other_hashes, **kw, &block)
+      other_hashes << kw
       jsi_modified_copy do |instance|
-        instance.merge(other.is_a?(Base) ? other.jsi_node_content : other, &block)
+        instance.merge(*other_hashes.map { |other| other.is_a?(Base) ? other.jsi_node_content : other }, &block)
       end
     end
 
