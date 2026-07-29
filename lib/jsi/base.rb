@@ -530,7 +530,7 @@ module JSI
     #   - true: the result will always be returned as a JSI.
     #   - false: the result will always be the node's content.
     #
-    #   note that nil is returned (regardless of as_jsi) when there is no value to return because the token
+    #   `nil` is returned (regardless of `as_jsi`) when there is no value to return because the token
     #   is not a hash key or array index of the instance and no default value applies.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
