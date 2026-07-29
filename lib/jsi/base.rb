@@ -539,7 +539,7 @@ module JSI
     #   If the token is not an array index or hash key of the instance, and one schema for the child
     #   instance specifies a default value, that default is returned.
     #
-    #   if the result with the default value is a JSI (per the `as_jsi` param), that JSI is not a child of
+    #   When the default value is returned, if it is a JSI (per the `as_jsi` param), that JSI is not a child of
     #   this JSI - this JSI is not modified to fill in the default value. the result is a JSI within a new
     #   document containing the filled-in default.
     #
