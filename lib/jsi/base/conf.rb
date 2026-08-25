@@ -107,7 +107,7 @@ module JSI
     def call(input)
     end
 
-    # see {#call}
+    # see {#call} (note this does not access member values as Struct#[] normally does)
     def [](input)
       call(input)
     end
