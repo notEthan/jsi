@@ -622,7 +622,7 @@ module JSI
         conf = jsi_conf.merge(**conf_kw)
 
         modified_document = Util.jsi_in_content(modified_document, action: conf.jsi_in_content)
-        modified_document = conf.to_immutable.call(modified_document) if !jsi_mutable? && conf.to_immutable
+        modified_document = conf.to_immutable.call(modified_document) if !conf.mutable && conf.to_immutable
 
         root_content = jsi_root_node.jsi_ptr.evaluate(modified_document)
 
@@ -635,7 +635,7 @@ module JSI
 
         root_class = JSI::SchemaClasses.class_for_schemas(root_applied_schemas,
           includes: SchemaClasses.includes_for(root_content),
-          mutable: jsi_mutable?,
+          mutable: conf.mutable,
         )
         modified_jsi_root_node = root_class.new(
           jsi_document: modified_document,
