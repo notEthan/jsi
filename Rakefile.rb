@@ -15,7 +15,6 @@ namespace 'test' do
         t.description = description
         t.pattern = pattern
         t.test_files = test_files
-        t.verbose = true
         t.warning = true
       end
     end
@@ -31,7 +30,7 @@ namespace 'test' do
       puts "#{ANSI::Code.magenta('𐡷')} #{ANSI::Code.cyan(@title.upcase)} #{ANSI::Code.magenta('𐡸')}"
       puts
 
-      sh(@env, "#{RUBY} #{cmd_args}", &block)
+      sh(@env, "#{RUBY} #{cmd_args}", verbose: true, &block)
     end
   end
 
