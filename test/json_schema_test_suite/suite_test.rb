@@ -28,34 +28,21 @@ end
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
   jsts_registry = base_registry.dup
 
-  Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
-    Dir.glob('**/*.json').each do |subpath|
-      remote_content = JSON.parse(File.open(subpath, 'r:UTF-8', &:read), freeze: true)
+  remotes_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')
+  Dir.chdir(remotes_path) { Dir.glob('**/*.json') }.each do |subpath|
       uri = File.join('http://localhost:1234/', subpath)
       jsts_registry.autoload_uri(uri) do |registry: |
-        if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
-          subSchemas_schema = JSI.new_schema({
-            '$schema' => 'http://json-schema.org/draft-07/schema',
-            'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
-          })
-          subSchemas_schema.new_jsi(remote_content,
-            root_uri: uri,
-            registry: registry,
-          )
-        else
-          JSI.new_schema(remote_content,
+          JSI.new_schema(JSON.parse((remotes_path / subpath).open('r:UTF-8', &:read), freeze: true),
             root_uri: uri,
             default_metaschema: metaschema,
             registry: registry,
             after_initialize: proc do |node|
-              if node.jsi_ptr.root? && remote_content['$vocabulary']
+              if node.jsi_ptr.root? && node.keyword?('$vocabulary')
                 node.describes_schema!
               end
             end,
           )
-        end
       end
-    end
   end
   $test_report_time["remotes set up"]
 
@@ -77,23 +64,14 @@ describe 'JSON Schema Test Suite' do
           subpaths.each do |subpath|
             path = base.join(subpath)
             describe(subpath) do
-              begin
                 tests_desc_object = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
-              rescue JSON::ParserError => e
-                # :nocov:
-                # known json/pure issue https://github.com/flori/json/pull/483
-                raise unless e.message =~ /Encoding::CompatibilityError/
-                warn("JSON Schema Test Suite skipping #{path}")
-                warn(e)
-                tests_desc_object = []
-                # :nocov:
-              end
+              reinstantiate_nonschemas = File.basename(subpath, File.extname(subpath)) == 'refOfUnknownKeyword'
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
                 desc_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
                   registry: desc_registry,
                   default_metaschema: metaschema,
-                  reinstantiate_nonschemas: File.basename(subpath) == 'refOfUnknownKeyword.json',
+                  reinstantiate_nonschemas: reinstantiate_nonschemas,
                 )
 
                 dialect = desc_schema.dialect # typically metaschema.described_dialect but $schema can override

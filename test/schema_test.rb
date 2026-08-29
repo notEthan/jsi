@@ -8,8 +8,8 @@ describe JSI::Schema do
     end
 
     it 'cannot instantiate from a non-string $schema' do
-      err = assert_raises(ArgumentError) { JSI.new_schema({'$schema' => Object.new}) }
-      assert_equal("given schema_content keyword `$schema` is not a string", err.message)
+      err = assert_raises(JSI::Schema::NotAMetaSchemaError) { JSI.new_schema({'$schema' => []}) }
+      assert_equal("$schema does not indicate a meta-schema: []", err.message)
     end
 
     it '$schema resolves but does not describe schemas' do
@@ -48,9 +48,7 @@ describe JSI::Schema do
     end
 
     it("does not instantiate a mutable schema") do
-      # an ArgumentError might be better than silently overriding the param
-      assert_equal(false, JSI::JSONSchemaDraft07.new_schema({}, mutable: true).jsi_mutable?)
-      # this does ArgumentError. **conf_kw are passed to Base::Conf.new before being passed to Schema::MetaSchema#new_schema
+      assert_raises(ArgumentError) { JSI::JSONSchemaDraft07.new_schema({}, mutable: true) }
       assert_raises(ArgumentError) { JSI.new_schema({"$schema": "http://json-schema.org/draft-07/schema#"}, mutable: true) }
     end
   end
@@ -985,14 +983,14 @@ describe JSI::Schema do
       it("#instance_valid!") do
         msg = <<~ERR
           #<JSI::Validation::Result::Full (INVALID)
-            validation errors: JSI::Set[
+            nested_validation_errors: JSI::Set[
               #<JSI::Validation::Error
                 message: "instance type does not match `type` value",
                 instance: ["no"],
                 instance_ptr: JSI::Ptr[],
                 keyword: "type",
                 additional: {},
-                schema uri: JSI::URI["http://jsi/schema/validation"],
+                schema_uri: JSI::URI["http://jsi/schema/validation"],
                 nested_errors: JSI::Set[]
               >
             ]

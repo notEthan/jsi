@@ -82,14 +82,8 @@ module JSI
     #
     # Note: when instantiating MetaSchemaNode directly, the caller must invoke #jsi_initialize_finish.
     # @api private
-    def initialize(
-        **kw
-    )
-      super(
-        jsi_indicated_schemas: SchemaSet[],
-        **kw,
-      )
-
+    def initialize(**kw)
+      super(jsi_indicated_schemas: SchemaSet[], **kw)
       @initialize_finish_started = false
       @initialize_finished = false
       @to_initialize_finish = []

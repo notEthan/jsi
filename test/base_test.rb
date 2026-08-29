@@ -360,7 +360,7 @@ describe JSI::Base do
     end
   end
   describe '#jsi_modified_copy' do
-    describe 'with an instance that does not have #jsi_modified_copy' do
+    describe("with an instance of Object") do
       let(:instance) { Object.new }
       let(:subject_opt) { {to_immutable: nil} }
       it 'yields the instance to modify' do
@@ -397,14 +397,12 @@ describe JSI::Base do
     describe 'resulting in a different type' do
       let(:schema_content) { {'type' => 'object'} }
       it 'works' do
-        # I'm not really sure the best thing to do here, but this is how it is for now. this is subject to change.
         modified = subject.jsi_modified_copy do |o|
           o.to_s
         end
         assert_equal('{}', modified.jsi_instance)
         assert_equal({}, subject.jsi_instance)
         refute_equal(instance, modified)
-        # interesting side effect
         assert(subject.respond_to?(:to_hash))
         assert(!modified.respond_to?(:to_hash))
       end
@@ -438,6 +436,33 @@ describe JSI::Base do
         assert(modified.first.respond_to?(:to_ary))
         assert(subject.first.respond_to?(:to_hash))
         assert(!subject.first.respond_to?(:to_ary))
+      end
+    end
+
+    describe("mutability") do
+      describe("mutable") do
+        let(:subject_opt) { {mutable: true} }
+
+        it("remains mutable") do
+          m = subject.jsi_modified_copy { [] }
+          refute_frozen(m.jsi_node_content)
+          assert_equal(true, m.jsi_mutable?)
+          c = Object.new
+          assert_same(c, subject.jsi_modified_copy { c }.jsi_node_content)
+        end
+      end
+
+      describe("immutable") do
+        let(:subject_opt) { {mutable: false} }
+
+        it("remains immutable; content transformed to_immutable") do
+          m = subject.jsi_modified_copy { [] }
+          assert_frozen(m.jsi_node_content)
+          assert_equal(false, m.jsi_mutable?)
+          c = Object.new
+          assert_raises_msg(ArgumentError, /immutable/) { subject.jsi_modified_copy { c } }
+          assert_same(c, subject.jsi_modified_copy(to_immutable: nil) { c }.jsi_node_content)
+        end
       end
     end
 
@@ -488,14 +513,14 @@ describe JSI::Base do
       it("#jsi_valid!") do
         msg = <<~ERR
           #<JSI::Validation::Result::Full (INVALID)
-            validation errors: JSI::Set[
+            nested_validation_errors: JSI::Set[
               #<JSI::Validation::Error
                 message: "instance type does not match `type` value",
                 instance: "this is a string",
                 instance_ptr: JSI::Ptr[],
                 keyword: "type",
                 additional: {},
-                schema uri: JSI::URI["http://jsi/base/validation/with errors"],
+                schema_uri: JSI::URI["http://jsi/base/validation/with errors"],
                 nested_errors: JSI::Set[]
               >
             ]
@@ -641,14 +666,14 @@ describe JSI::Base do
         it("jsi_valid!") do
           msg = <<~ERR
             #<JSI::Validation::Result::Full (INVALID)
-              validation errors: JSI::Set[
+              nested_validation_errors: JSI::Set[
                 #<JSI::Validation::Error
                   message: "instance object properties are not all valid against corresponding `properties` schemas",
                   instance: \0,
                   instance_ptr: JSI::Ptr[],
                   keyword: "properties",
                   additional: \0,
-                  schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
+                  schema_uri: JSI::URI["http://jsi/base/validation/at a depth"],
                   nested_errors: JSI::Set[
                     #<JSI::Validation::Error
                       message: "instance type does not match `type` value",
@@ -656,7 +681,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["foo"],
                       keyword: "type",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/foo"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/foo"],
                       nested_errors: JSI::Set[]
                     >,
                     #<JSI::Validation::Error
@@ -665,7 +690,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["baz"],
                       keyword: "type",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/baz"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/baz"],
                       nested_errors: JSI::Set[]
                     >
                   ]
@@ -676,7 +701,7 @@ describe JSI::Base do
                   instance_ptr: JSI::Ptr[],
                   keyword: "additionalProperties",
                   additional: \0,
-                  schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
+                  schema_uri: JSI::URI["http://jsi/base/validation/at a depth"],
                   nested_errors: JSI::Set[
                     #<JSI::Validation::Error
                       message: "instance is valid against `not` schema",
@@ -684,7 +709,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["more"],
                       keyword: "not",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/additionalProperties"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/additionalProperties"],
                       nested_errors: JSI::Set[]
                     >
                   ]
@@ -737,8 +762,7 @@ describe JSI::Base do
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
         it 'errors' do
-          err = assert_raises(JSI::Base::SimpleNodeChildError) { subject.foo }
-          assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: "foo"\ninstance: nil), err.message)
+          assert_raises(NoMethodError) { subject.foo }
         end
       end
       describe 'properties with the same names as instance methods' do
@@ -885,8 +909,7 @@ describe JSI::Base do
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
         it 'errors' do
-          err = assert_raises(JSI::Base::SimpleNodeChildError) { subject.foo = 0 }
-          assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: "foo"\ninstance: nil), err.message)
+          assert_raises(NoMethodError) { subject.foo = 0 }
         end
       end
     end

@@ -100,12 +100,12 @@ module JSI
           **conf_kw
       )
         raise(BlockGivenError) if block_given?
+        raise(ArgumentError, "this method does not instantiate mutable schemas") if conf_kw[:mutable]
         new_jsi(schema_content,
           base_uri: base_uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
-          mutable: false,
         )
       end
 
@@ -270,9 +270,6 @@ module JSI
         elsif schema_content.respond_to?(:to_hash)
           id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema']
           if id
-            unless id.respond_to?(:to_str)
-              raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
-            end
             metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: conf.registry)
             metaschema.new_schema(schema_content, **new_schema_params)
           else
