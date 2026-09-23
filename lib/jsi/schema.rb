@@ -929,6 +929,12 @@ module JSI
       -"#{schema_uri || jsi_ptr.uri}#{jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}"
     end
 
+    # Override Base#jsi_fingerprint; compare Schema instances by identity
+    # @api private
+    def jsi_fingerprint
+      __id__
+    end
+
     private
 
     KEY_BY_NONE = proc { nil }

@@ -23,7 +23,7 @@ describe JSI::Schema do
       end
 
       it 'initializes, stringifying symbol keys' do
-        assert_equal(JSI.new_schema(schema_content_from_json), schema)
+        assert_equal(JSI.new_schema(schema_content_from_json).schema_content, schema.schema_content)
 
         assert_equal("http://json-schema.org/draft-06/schema#", schema['$schema'])
         # check that the meta-schema id actually corresponds to $schema, particularly since checking
