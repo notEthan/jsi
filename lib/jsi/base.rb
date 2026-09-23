@@ -990,7 +990,7 @@ module JSI
 
     def jsi_child_indicated_schemas_compute(token: , content: )
       if jsi_schemas.any?(&:application_requires_evaluated)
-        # if application_requires_evaluated, in-place application needs to collect token evaluation
+        # if application_requires_evaluated, in-place application needs to collect child evaluation
         # recursively to inform child application, so must be recomputed.
         jsi_indicated_schemas.each_yield_set do |is, y|
           is.each_inplace_child_applicator_schema(token, content,
@@ -999,7 +999,7 @@ module JSI
           )
         end
       else
-        # if token evaluation does not need to be collected, use our already-computed #jsi_schemas.
+        # if child evaluation does not need to be collected, use our already-computed #jsi_schemas.
         jsi_schemas.each_yield_set do |s, y|
           s.each_child_applicator_schema(token, content, &y)
         end
