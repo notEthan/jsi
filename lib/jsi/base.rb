@@ -772,6 +772,7 @@ module JSI
     private def jsi_dynamic_root_compute(resource_root_ptr: , dynamic_anchor_map: )
       # self is always the originally instantiated root node (with jsi_ptr = Ptr[])
       resource_root = jsi_descendent_node(resource_root_ptr)
+      # return descendent of the original root if it has the given dynamic_anchor_map
       if resource_root.jsi_schema_dynamic_anchor_map == dynamic_anchor_map
         return resource_root
       end
