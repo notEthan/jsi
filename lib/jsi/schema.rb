@@ -980,7 +980,7 @@ module JSI
     def jsi_schema_identifier(required: false)
       name = jsi_schema_module_name_from_ancestor
       return name if name
-      return schema_uri || (required ? jsi_ptr.uri : nil) if jsi_schema_dynamic_anchor_map.empty?
+      return schema_uri ? schema_uri.to_s : required ? jsi_ptr.uri.to_s : nil if jsi_schema_dynamic_anchor_map.empty?
       -"#{schema_uri || jsi_ptr.uri}#{jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}"
     end
 
