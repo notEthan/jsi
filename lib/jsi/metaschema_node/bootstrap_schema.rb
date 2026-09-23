@@ -166,14 +166,7 @@ module JSI
     # see {Util::Private::FingerprintHash}
     # @api private
     def jsi_fingerprint
-      {
-        class: self.class,
-        dialect: dialect,
-        jsi_ptr: @jsi_ptr,
-        jsi_document: @jsi_document,
-        jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        jsi_registry: jsi_registry,
-      }.freeze
+      __id__
     end
 
     private
