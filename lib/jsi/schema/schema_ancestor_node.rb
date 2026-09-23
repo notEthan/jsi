@@ -152,9 +152,9 @@ module JSI
     end
 
     def jsi_anchor_subschemas_compute(anchor: , content: )
-      SchemaSet.new(jsi_each_descendent_schema_same_resource.select do |schema|
+      jsi_each_descendent_schema_same_resource.select do |schema|
         schema.anchors.include?(anchor)
-      end)
+      end.to_set.freeze
     end
 
     # @return [Util::MemoMap]
