@@ -660,15 +660,12 @@ module JSI
         # memoize: if the instance is not used by any in-place applicator present in this schema,
         # the schema can do in-place application once instead of for every instance,
         # for a very substantial performance gain.
-        #
-        # :inplace_applicate yields (schema, **keywords)
-        # so @memos[:immediate_inplace_applicators] is a 2D Array of tuples (schema, keywords)
         @memos[:immediate_inplace_applicators] ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
             visited_refs: visited_refs,
-          ) do |s, **kw|
-            immediate_inplace_applicators.push([s, kw])
+          ) do |schema, **kw|
+            immediate_inplace_applicators.push([schema, kw])
           end
           immediate_inplace_applicators.freeze
         end
