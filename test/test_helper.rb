@@ -244,9 +244,10 @@ class JSISpec < Minitest::Spec
       expected_missing = schemas - instance.jsi_schemas
       actual_missing = instance.jsi_schemas - schemas
       common = JSI::Set[].merge(schemas) & instance.jsi_schemas # TODO should compare_by_identity when available
+      ids = proc { |ss| ss.map { |s| s.jsi_schema_identifier(required: true) }.join(', ') }
       [
         msg.respond_to?(:call) ? msg.call : msg,
-        "Expected different schemas. #{common.size} in common; #{expected_missing.size} expected not in actual; #{actual_missing.size} actual not in expected",
+        "Expected different schemas. #{common.size} in common (#{ids[common]}); #{expected_missing.size} expected not in actual (#{ids[expected_missing]}); #{actual_missing.size} actual not in expected (#{ids[actual_missing]})",
         "diff schemas:",
         diff(schemas, instance.jsi_schemas),
         "expected not in actual:",
@@ -324,7 +325,7 @@ describe("test helper assert_schemas") do
   it("errors informatively") do
     instance = BasicMetaSchema.new_schema('actual').new_jsi({})
     exp_schemas = [BasicMetaSchema.new_schema('expected')]
-    exp_msg = /custom message\nExpected different schemas\. 0 in common; 1 expected not in actual; 1 actual not in expected\ndiff schemas:\n.*\n-.*"expected".*\n\+.*"actual".*\nexpected not in actual:\n.*"expected".*\nactual not in expected:\n.*"actual"/m
+    exp_msg = /custom message\nExpected different schemas\. 0 in common \(\); 1 expected not in actual \(#\); 1 actual not in expected \(#\)\ndiff schemas:\n.*\n-.*"expected".*\n\+.*"actual".*\nexpected not in actual:\n.*"expected".*\nactual not in expected:\n.*"actual"/m
     assert_raises_msg(Minitest::Assertion, exp_msg) { assert_schemas(exp_schemas, instance, 'custom message') }
     assert_raises_msg(Minitest::Assertion, exp_msg) { assert_schemas(exp_schemas, instance, proc { 'custom message' }) }
   end
