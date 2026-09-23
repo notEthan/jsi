@@ -760,7 +760,7 @@ module JSI
       resource_root.jsi_descendent_node(jsi_ptr.relative_to(jsi_resource_root.jsi_ptr))
     end
 
-    # This instantiates a new root node (its #jsi_root_node is itself).
+    # This instantiates a new root node (its #jsi_root_node is itself), if needed.
     # When the resource at `resource_root_ptr` is not the document root, the new root node has the
     # unusual property that its jsi_ptr is not the root ptr; it is the given `resource_root_ptr`.
     # (Calling this a 'root node' is questionable, but that is the name we use.)
