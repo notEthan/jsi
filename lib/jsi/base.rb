@@ -961,11 +961,18 @@ module JSI
         # note: no memoized dialect.bootstrap_schema; this is only used once.
         if metaschema && MetaSchemaNode::BootstrapSchema.new(dialect: metaschema.dialect, jsi_document: jsi_document, jsi_ptr: jsi_ptr[token], jsi_base_uri: jsi_next_base_uri).jsi_is_resource_root?
           # if the child is a resource root, compute dynamic scope for it.
-          # TODO if without_node removes the child, that probably means the child is equal to a descendent
-          # of another dynamic_root. not sure if this should find/return that child - on one hand
-          # instantiating multiple equal nodes via different dynamic scopes isn't ideal; on the other
-          # hand having child_node return a node with a different jsi_root_node may also be problematic.
           child_dynamic_anchor_map = jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token])
+          if child_dynamic_anchor_map != jsi_next_schema_dynamic_anchor_map
+            # if DAM#without_node removes the child, the child is a dynamic root,
+            # or a descendent of the original root if its dynamic_anchor_map == child_dynamic_anchor_map.
+            # the latter is more usual; typically both are empty in this case.
+            #
+            # child_node returning a node with a different jsi_root_node than its parent is unusual but not known to cause any problems. 🐦‍⬛
+            return jsi_dynamic_root_map[
+              resource_root_ptr: jsi_ptr[token],
+              dynamic_anchor_map: child_dynamic_anchor_map,
+            ]
+          end
         else
           # child is not a resource, has the same dynamic scope as self.
           child_dynamic_anchor_map = jsi_schema_dynamic_anchor_map
