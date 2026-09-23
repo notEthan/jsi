@@ -38,15 +38,7 @@ module JSI
         raise(ArgumentError, "#{SchemaSet} initialized with non-Enumerable: #{enum.pretty_inspect.chomp}")
       end
 
-      super(&nil) # note super() does implicitly pass block without &nil
-
-      compare_by_identity
-
-      if block
-        enum.each_entry { |o| add(block[o]) }
-      else
-        merge(enum)
-      end
+      super
 
       not_schemas = reject { |s| s.is_a?(Schema) }
       if !not_schemas.empty?
