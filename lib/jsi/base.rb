@@ -772,31 +772,31 @@ module JSI
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [Base]
     private def jsi_dynamic_root_descendent(dynamic_anchor_map)
-      root = jsi_dynamic_root_map[
-        ptr: jsi_resource_root.jsi_ptr,
+      resource_root = jsi_dynamic_root_map[
+        resource_root_ptr: jsi_resource_root.jsi_ptr,
         dynamic_anchor_map: dynamic_anchor_map,
       ]
-      root.jsi_descendent_node(jsi_ptr.relative_to(jsi_resource_root.jsi_ptr))
+      resource_root.jsi_descendent_node(jsi_ptr.relative_to(jsi_resource_root.jsi_ptr))
     end
 
     # This instantiates a new root node (its #jsi_root_node is itself).
-    # When the resource at `ptr` is not the document root, the new root node has the
-    # unusual property that its jsi_ptr is not the root ptr; it is the given `ptr`.
+    # When the resource at `resource_root_ptr` is not the document root, the new root node has the
+    # unusual property that its jsi_ptr is not the root ptr; it is the given `resource_root_ptr`.
     # (Calling this a 'root node' is questionable, but that is the name we use.)
     # From the new root node, no JSI node represents locations in the document above it.
-    # @param ptr [Ptr]
+    # @param resource_root_ptr [Ptr]
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [Base]
-    private def jsi_dynamic_root_compute(ptr: , dynamic_anchor_map: )
+    private def jsi_dynamic_root_compute(resource_root_ptr: , dynamic_anchor_map: )
       # self is always the originally instantiated root node (with jsi_ptr = Ptr[])
-      resource_root = jsi_descendent_node(ptr)
+      resource_root = jsi_descendent_node(resource_root_ptr)
       if resource_root.jsi_schema_dynamic_anchor_map == dynamic_anchor_map
         return resource_root
       end
 
       resource_root.jsi_dynamic_root_instantiate(
         jsi_document: resource_root.jsi_document,
-        jsi_ptr: ptr,
+        jsi_ptr: resource_root_ptr,
         jsi_base_uri: resource_root.jsi_base_uri,
         #jsi_schema_resource_ancestors: none (new root),
         jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
