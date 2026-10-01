@@ -19,8 +19,7 @@ describe("JSON Referencing Test Suite") do
       describe(subpath) do
         ref_tests = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
         descr_registry = JSI.registry.dup
-        ref_tests['registry'].each_key do |uri|
-          schema_content = ref_tests['registry'][uri]
+        ref_tests['registry'].each do |uri, schema_content|
           auri = JSI::Util.uri(uri)
           auri = auri.merge(fragment: nil) if auri.fragment == ''
           metaschema.new_schema(schema_content, root_uri: auri, registry: descr_registry, reinstantiate_nonschemas: true)

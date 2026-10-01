@@ -165,7 +165,7 @@ module JSI
 
       def pretty_print(q)
         pretty_print_valid(q) do
-          q.text('validation errors: ')
+          q.text('nested_validation_errors: ')
           q.pp(nested_validation_errors)
         end
       end

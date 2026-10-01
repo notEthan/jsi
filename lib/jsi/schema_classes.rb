@@ -7,8 +7,9 @@ module JSI
   # class to subclass Module, so that a JSI that isn't a Schema can have a named module, and schemas
   # within that JSI's document have a useful name_from_ancestor when inspecting their instances.
   begin # shenanigans to get classes configured while not confusing yard
-    SchemaModule = Class.new(Class.new(Module))
-    SchemaModule.const_set(:Connection, SchemaModule.superclass)
+    schema_module_connection_class = Class.new(Module)
+    SchemaModule = Class.new(schema_module_connection_class)
+    SchemaModule.const_set(:Connection, schema_module_connection_class)
   end
 
   # A Module associated with a JSI Schema (its {Schema#jsi_schema_module #jsi_schema_module}).
@@ -219,7 +220,7 @@ module JSI
 
             include(mutability_module)
 
-            reader_modules = schemas.map do |schema|
+            reader_modules = (includes.include?(Base::HashNode) ? schemas : Util::EMPTY_ARY).map do |schema|
               JSI::SchemaClasses.schema_property_reader_module(schema, conflicting_modules: conflicting_modules)
             end
             reader_modules.each { |m| include m }
@@ -228,7 +229,7 @@ module JSI
             define_singleton_method(:jsi_property_readers) { readers }
 
             if mutable
-              writer_modules = schemas.map do |schema|
+              writer_modules = (includes.include?(Base::HashNode) ? schemas : Util::EMPTY_ARY).map do |schema|
                 JSI::SchemaClasses.schema_property_writer_module(schema, conflicting_modules: conflicting_modules)
               end
               writer_modules.each { |m| include(m) }
@@ -348,16 +349,16 @@ module JSI
     def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
       @jsi_node.jsi_child_ensure_present(token)
-      sub = @jsi_node[token]
+      sub = @jsi_node.jsi_child_node(token)
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module_exec(&block) if block
         sub.jsi_schema_module
       elsif block
         raise(BlockGivenError, "block given but token #{token.inspect} does not identify a schema")
-      elsif sub.is_a?(JSI::Base)
+      elsif sub.jsi_hash? || sub.jsi_array?
         sub.jsi_schema_module_connection
       else
-        sub
+        sub.jsi_node_content
       end
     end
 

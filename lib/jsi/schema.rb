@@ -100,12 +100,12 @@ module JSI
           **conf_kw
       )
         raise(BlockGivenError) if block_given?
+        raise(ArgumentError, "this method does not instantiate mutable schemas") if conf_kw[:mutable]
         new_jsi(schema_content,
           base_uri: base_uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
-          mutable: false,
         )
       end
 
@@ -270,9 +270,6 @@ module JSI
         elsif schema_content.respond_to?(:to_hash)
           id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema']
           if id
-            unless id.respond_to?(:to_str)
-              raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
-            end
             metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: conf.registry)
             metaschema.new_schema(schema_content, **new_schema_params)
           else
@@ -660,15 +657,12 @@ module JSI
         # memoize: if the instance is not used by any in-place applicator present in this schema,
         # the schema can do in-place application once instead of for every instance,
         # for a very substantial performance gain.
-        #
-        # :inplace_applicate yields (schema, **keywords)
-        # so @memos[:immediate_inplace_applicators] is a 2D Array of tuples (schema, keywords)
         @memos[:immediate_inplace_applicators] ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
             visited_refs: visited_refs,
-          ) do |s, **kw|
-            immediate_inplace_applicators.push([s, kw])
+          ) do |schema, **kw|
+            immediate_inplace_applicators.push([schema, kw])
           end
           immediate_inplace_applicators.freeze
         end
@@ -980,7 +974,7 @@ module JSI
     def jsi_schema_identifier(required: false)
       name = jsi_schema_module_name_from_ancestor
       return name if name
-      return schema_uri || (required ? jsi_ptr.uri : nil) if jsi_schema_dynamic_anchor_map.empty?
+      return schema_uri ? schema_uri.to_s : required ? jsi_ptr.uri.to_s : nil if jsi_schema_dynamic_anchor_map.empty?
       -"#{schema_uri || jsi_ptr.uri}#{jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}"
     end
 

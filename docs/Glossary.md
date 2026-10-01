@@ -45,7 +45,7 @@ It is generally a Ruby Hash, Array, String, Integer, Float or BigDecimal, true, 
 
 This content is referred to as the 'instance' in relation to [schema]s that describe it.
 
-See {JSI::Base#jsi_node_content} (also aliased as {JSI::Base#jsi_instance}.
+See {JSI::Base#jsi_node_content}.
 
 
 ### document

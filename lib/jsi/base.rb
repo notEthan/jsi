@@ -141,8 +141,8 @@ module JSI
 
       super()
 
-      if jsi_instance.is_a?(JSI::Base)
-        raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_instance.pretty_inspect.chomp}")
+      if jsi_node_content.is_a?(JSI::Base)
+        raise(TypeError, "a JSI::Base instance must not be another JSI::Base. received: #{jsi_node_content.pretty_inspect.chomp}")
       end
     end
 
@@ -178,7 +178,7 @@ module JSI
     # @return [JSI::Base]
     attr_reader :jsi_root_node
 
-    # the content of this node in our {#jsi_document} at our {#jsi_ptr}. the same as {#jsi_instance}.
+    # The content of this node in our {#jsi_document} at our {#jsi_ptr}.
     def jsi_node_content
       # stub method for doc, overridden by Mutable/Immutable
     end
@@ -423,7 +423,7 @@ module JSI
     # @return [nil]
     def jsi_child_ensure_present(token)
       if !jsi_child_token_present?(token)
-        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nself = #{pretty_inspect.chomp}")
+        raise(ChildNotPresent, -"token does not identify a child that is present: #{token.inspect}\nin: #{pretty_inspect.chomp}")
       end
       nil
     end
@@ -441,7 +441,7 @@ module JSI
       jsi_simple_node_child_error(token)
     end
 
-    # A child JSI node, or the child of our {#jsi_instance}, identified by the given token.
+    # A child JSI node, or the child of our {#jsi_node_content}, identified by the given token.
     #
     # @param token (see Base#[])
     # @param as_jsi (see Base#[])
@@ -530,7 +530,7 @@ module JSI
     #   - true: the result will always be returned as a JSI.
     #   - false: the result will always be the node's content.
     #
-    #   note that nil is returned (regardless of as_jsi) when there is no value to return because the token
+    #   `nil` is returned (regardless of `as_jsi`) when there is no value to return because the token
     #   is not a hash key or array index of the instance and no default value applies.
     #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
@@ -539,7 +539,7 @@ module JSI
     #   If the token is not an array index or hash key of the instance, and one schema for the child
     #   instance specifies a default value, that default is returned.
     #
-    #   if the result with the default value is a JSI (per the `as_jsi` param), that JSI is not a child of
+    #   When the default value is returned, if it is a JSI (per the `as_jsi` param), that JSI is not a child of
     #   this JSI - this JSI is not modified to fill in the default value. the result is a JSI within a new
     #   document containing the filled-in default.
     #
@@ -559,7 +559,7 @@ module JSI
     # @return [Boolean]
     def jsi_as_child_default_as_jsi
       # base default is false, for simple types. overridden by complex types (HashNode, ArrayNode), Schema, and others.
-      jsi_conf.child_as_jsi
+      false
     end
 
     # The default value for the param `as_jsi` of {#[]}, controlling whether a child is returned as a JSI instance.
@@ -567,7 +567,7 @@ module JSI
     #   is better for a child to indicate whether it should be a JSI by overriding {#jsi_as_child_default_as_jsi}.
     # @return [:auto, true, false] a valid value of the `as_jsi` param of {#[]}
     def jsi_child_as_jsi_default
-      :auto
+      jsi_conf.child_as_jsi
     end
 
     # The default value for the param `use_default` of {#[]}, controlling whether a schema default value is
@@ -599,13 +599,9 @@ module JSI
     # @param schema [Schema, SchemaModule]
     # @return [Boolean]
     def described_by?(schema)
-      if schema.is_a?(Schema)
-        jsi_schemas.include?(schema)
-      elsif schema.is_a?(SchemaModule)
-        jsi_schemas.include?(schema.schema)
-      else
-        raise(TypeError, "expected a Schema or Schema Module; got: #{schema.pretty_inspect.chomp}")
-      end
+      return jsi_schemas.include?(schema) if schema.is_a?(Schema)
+      return jsi_schemas.include?(schema.schema) if schema.is_a?(SchemaModule)
+      raise(TypeError, "expected a Schema or Schema Module; got: #{schema.pretty_inspect.chomp}")
     end
 
     # Is this a JSI Schema?
@@ -703,9 +699,10 @@ module JSI
     # {JSI::Invalid} is raised if it is not.
     #
     # @raise [Invalid]
-    # @return [nil]
+    # @return [self]
     def jsi_valid!
       jsi_validate.valid!
+      self
     end
 
     # queries this JSI using the [JMESPath Ruby](https://rubygems.org/gems/jmespath) gem.
@@ -772,11 +769,11 @@ module JSI
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [Base]
     private def jsi_dynamic_root_descendent(dynamic_anchor_map)
-      root = jsi_dynamic_root_map[
-        ptr: jsi_resource_root.jsi_ptr,
+      resource_root = jsi_dynamic_root_map[
+        resource_root_ptr: jsi_resource_root.jsi_ptr,
         dynamic_anchor_map: dynamic_anchor_map,
       ]
-      root.jsi_descendent_node(jsi_ptr.relative_to(jsi_resource_root.jsi_ptr))
+      resource_root.jsi_descendent_node(jsi_ptr.relative_to(jsi_resource_root.jsi_ptr))
     end
 
     # This instantiates a new root node (its #jsi_root_node is itself).
@@ -787,16 +784,16 @@ module JSI
     # @param ptr [Ptr]
     # @param dynamic_anchor_map [Schema::DynamicAnchorMap]
     # @return [Base]
-    private def jsi_dynamic_root_compute(ptr: , dynamic_anchor_map: )
+    private def jsi_dynamic_root_compute(resource_root_ptr: , dynamic_anchor_map: )
       # self is always the originally instantiated root node (with jsi_ptr = Ptr[])
-      resource_root = jsi_descendent_node(ptr)
+      resource_root = jsi_descendent_node(resource_root_ptr)
       if resource_root.jsi_schema_dynamic_anchor_map == dynamic_anchor_map
         return resource_root
       end
 
       resource_root.jsi_dynamic_root_instantiate(
         jsi_document: resource_root.jsi_document,
-        jsi_ptr: ptr,
+        jsi_ptr: resource_root_ptr,
         jsi_base_uri: resource_root.jsi_base_uri,
         #jsi_schema_resource_ancestors: none (new root),
         jsi_schema_dynamic_anchor_map: dynamic_anchor_map,
@@ -832,7 +829,7 @@ module JSI
     # If this JSI is a simple type, the node's content is inspected; if complex, its children are inspected.
     def pretty_print(q)
       jsi_pp_object_group(q, jsi_object_group_text) do
-          q.pp jsi_instance
+        q.pp(jsi_node_content)
       end
     end
 
@@ -903,14 +900,14 @@ module JSI
     # A structure coerced to JSONifiable types from the instance content.
     # Calls {Util.as_json} with the instance and any given options.
     def as_json(options = {})
-      Util.as_json(jsi_instance, **options)
+      Util.as_json(jsi_node_content, **options)
     end
 
     # A JSON encoded string of the instance content.
     # Calls {Util.to_json} with the instance and any given options.
     # @return [String]
     def to_json(options = {})
-      Util.to_json(jsi_instance, options)
+      Util.to_json(jsi_node_content, options)
     end
 
     # Psych/YAML .dump calls this method; dumping a JSI as YAML will dump its instance.
@@ -935,10 +932,9 @@ module JSI
         jsi_ptr: jsi_ptr,
         # for instances in documents with schemas:
         jsi_base_uri: jsi_base_uri,
-        jsi_root_uri: jsi_conf.root_uri,
         # different dynamic anchor map means dynamic references may resolve to different resources so must not be equal
         jsi_schema_dynamic_anchor_map: jsi_schema_dynamic_anchor_map,
-        **jsi_conf.for_fingerprint,
+        **jsi_conf.to_h.select { |k, _| jsi_conf.class::ATTRS.fetch(k).fetch(:fingerprint) }.freeze,
       }.freeze
     end
 
@@ -990,7 +986,7 @@ module JSI
 
     def jsi_child_indicated_schemas_compute(token: , content: )
       if jsi_schemas.any?(&:application_requires_evaluated)
-        # if application_requires_evaluated, in-place application needs to collect token evaluation
+        # if application_requires_evaluated, in-place application needs to collect child evaluation
         # recursively to inform child application, so must be recomputed.
         jsi_indicated_schemas.each_yield_set do |is, y|
           is.each_inplace_child_applicator_schema(token, content,
@@ -999,7 +995,7 @@ module JSI
           )
         end
       else
-        # if token evaluation does not need to be collected, use our already-computed #jsi_schemas.
+        # if child evaluation does not need to be collected, use our already-computed #jsi_schemas.
         jsi_schemas.each_yield_set do |s, y|
           s.each_child_applicator_schema(token, content, &y)
         end
@@ -1013,26 +1009,16 @@ module JSI
     end
 
     def jsi_child_as_jsi(child_node, as_jsi)
-      if [true, false].include?(as_jsi)
-        child_as_jsi = as_jsi
-      elsif as_jsi == :auto
-        child_as_jsi = child_node.jsi_as_child_default_as_jsi
-      else
-        raise(ArgumentError, "as_jsi must be one of: :auto, true, false")
-      end
-
-      if child_as_jsi
-        child_node
-      else
-        child_node.jsi_node_content
-      end
+      as_jsi = child_node.jsi_as_child_default_as_jsi if as_jsi == :auto
+      raise(ArgumentError, "as_jsi must be one of: :auto, true, false") if as_jsi != true && as_jsi != false
+      as_jsi ? child_node : child_node.jsi_node_content
     end
 
     def jsi_simple_node_child_error(token)
       raise(SimpleNodeChildError, [
         "cannot access a child of this JSI node because this node is not complex",
         "using token: #{token.inspect}",
-        "instance: #{jsi_instance.pretty_inspect.chomp}",
+        "instance: #{jsi_node_content.pretty_inspect.chomp}",
       ].join("\n"))
     end
 

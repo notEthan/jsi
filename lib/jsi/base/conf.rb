@@ -66,8 +66,8 @@ module JSI
   #   _EXPERIMENTAL_ - a callback that is called with each JSI node in the document after the node is initialized.
   #   @return [#call, nil]
   # @!attribute child_as_jsi
-  #   Default value for {Base#jsi_as_child_default_as_jsi}.
-  #   @return [Boolean]
+  #   Default value for {Base#jsi_child_as_jsi_default}.
+  #   @return [true, false, :auto]
   # @!attribute child_use_default
   #   Default value for {Base#jsi_child_use_default_default}.
   #   @return [Boolean]
@@ -87,19 +87,13 @@ module JSI
     def initialize(
         registry: JSI.registry,
         application_collect_evaluated_validate: false,
-        child_as_jsi: false,
+        child_as_jsi: :auto,
         child_use_default: false,
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         **
     )
       super
       self.root_uri = Util.uri(root_uri, nnil: false, yabs: true)
-    end
-
-    # @private
-    # @return [Hash]
-    def for_fingerprint
-      to_h.select { |k, _| self.class::ATTRS.fetch(k).fetch(:fingerprint) }.freeze
     end
   end
 end
