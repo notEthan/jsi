@@ -22,4 +22,10 @@ describe(JSI::Schema::Vocabulary) do
   end
 end
 
+describe("2020-12 schema module .defs") do
+  it("defines") do
+    assert(JSI::JSONSchemaDraft202012.schema.jsi_each_descendent_schema.all? { |s| s.jsi_schema_module.respond_to?(:defs) })
+  end
+end
+
 $test_report_file_loaded[__FILE__]
