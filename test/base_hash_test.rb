@@ -491,12 +491,47 @@ describe 'JSI::Base hash' do
   describe("instance mutating methods") do
     describe("#update (mutable)") do
       let(:subject_opt) { {mutable: true} }
-      it("updates") do
+      let(:instance) { {'p' => 0} }
+      it("updates one positional param") do
+        assert(!subject.key?('q'))
+        subject.update({'q' => 1})
+        assert_equal(1, subject['q'])
+        assert_equal({'p' => 0, 'q' => 1}, subject.jsi_node_content)
+        subject.update({'q' => 2, 'r' => 2}) { |_k, o, n| o + n }
+        assert_equal(3, subject['q'])
+        assert_equal({'p' => 0, 'q' => 3, 'r' => 2}, subject.jsi_node_content)
+      end
+
+      it("updates one kw param") do
         assert(!subject.key?('q'))
         subject.update('q' => 1)
         assert_equal(1, subject['q'])
+        assert_equal({'p' => 0, 'q' => 1}, subject.jsi_node_content)
         subject.update('q' => 2) { |_k, o, n| o + n }
         assert_equal(3, subject['q'])
+        assert_equal({'p' => 0, 'q' => 3}, subject.jsi_node_content)
+      end
+
+      it("multiple positional") do
+        subject.update({'q' => 1, 'r' => 1}, {'q' => 2, 's' => 2})
+        assert_equal({'p' => 0, 'q' => 2, 'r' => 1, 's' => 2}, subject.jsi_node_content)
+      end
+
+      it("multiple positional + kw") do
+        subject.update({'q' => 1}, {'r' => 2}, 'q' => 3, 's' => 3)
+        assert_equal({'p' => 0, 'q' => 3, 'r' => 2, 's' => 3}, subject.jsi_node_content)
+      end
+
+      it("multiple hashes, positional + kw + block") do
+        subject.update({'q' => 1}, {'r' => 2}, 'q' => 3, 's' => 3) { |_k, o, n| o + n }
+        assert_equal({'p' => 0, 'q' => 4, 'r' => 2, 's' => 3}, subject.jsi_node_content)
+      end
+
+      it("wrong type") do
+        e = assert_raises(TypeError) { subject.update({'q' => 1}, ['r', 1]) }
+        assert_equal(%q(cannot update with argument that does not respond to #to_hash: ["r", 1]), e.message)
+        # like Hash, update does process arguments before the bad one
+        assert_equal({'p' => 0, 'q' => 1}, subject.jsi_node_content)
       end
     end
 
