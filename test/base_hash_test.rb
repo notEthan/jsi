@@ -468,7 +468,49 @@ describe 'JSI::Base hash' do
     end
   end
   describe 'modified copy methods' do
-    it('#merge') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge({'a' => ['b']})) }
+    describe("#merge") do
+      let(:subject_opt) { {mutable: true} }
+      let(:instance) { {'p' => 0} }
+      it("merges one positional param") do
+        assert(!subject.key?('q'))
+        s1 = subject.merge({'q' => 1})
+        assert(!subject.key?('q'))
+        assert_equal(1, s1['q'])
+        assert_equal({'p' => 0, 'q' => 1}, s1.jsi_node_content)
+        s2 = s1.merge({'q' => 2, 'r' => 2}) { |_k, o, n| o + n }
+        assert_equal({'p' => 0, 'q' => 3, 'r' => 2}, s2.jsi_node_content)
+      end
+
+      it("merges one kw param") do
+        assert(!subject.key?('q'))
+        s1 = subject.merge('q' => 1)
+        assert_equal(1, s1['q'])
+        assert_equal({'p' => 0, 'q' => 1}, s1.jsi_node_content)
+        s2 = s1.merge('q' => 2) { |_k, o, n| o + n }
+        assert_equal(3, s2['q'])
+        assert_equal({'p' => 0, 'q' => 3}, s2.jsi_node_content)
+      end
+
+      it("multiple positional") do
+        s1 = subject.merge({'q' => 1, 'r' => 1}, {'q' => 2, 's' => 2})
+        assert_equal({'p' => 0, 'q' => 2, 'r' => 1, 's' => 2}, s1.jsi_node_content)
+      end
+
+      it("multiple positional + kw") do
+        s1 = subject.merge({'q' => 1}, {'r' => 2}, 'q' => 3, 's' => 3)
+        assert_equal({'p' => 0, 'q' => 3, 'r' => 2, 's' => 3}, s1.jsi_node_content)
+      end
+
+      it("multiple hashes, positional + kw + block") do
+        s1 = subject.merge({'q' => 1}, {'r' => 2}, 'q' => 3, 's' => 3) { |_k, o, n| o + n }
+        assert_equal({'p' => 0, 'q' => 4, 'r' => 2, 's' => 3}, s1.jsi_node_content)
+      end
+
+      it("wrong type") do
+        e = assert_raises(TypeError) { subject.merge({'q' => 1}, ['r', 1]) }
+      end
+    end
+
     it('#merge Base') { assert_equal(schema.new_jsi(instance.merge({'a' => ['b']})), subject.merge(schema.new_jsi({'a' => ['b']}))) }
     it('#merge applied schemas') do
       schema = JSI::JSONSchemaDraft07.new_schema({anyOf: [{required: ["a"]}, {required: ["b"]}]})
