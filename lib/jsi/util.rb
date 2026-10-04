@@ -197,13 +197,13 @@ module JSI
         object.each do |k, v|
           fk = dtf[k]
           fv = dtf[v]
-          identical &&= fk.__id__ == k.__id__
-          identical &&= fv.__id__ == v.__id__
+          identical &&= fk.equal?(k)
+          identical &&= fv.equal?(v)
           out[fk] = fv
         end
         if !object.default.nil?
           out.default = dtf[object.default]
-          identical &&= out.default.__id__ == object.default.__id__
+          identical &&= out.default.equal?(object.default)
         end
         if object.default_proc
           raise(ArgumentError, "cannot make immutable copy of a Hash with default_proc")
@@ -218,7 +218,7 @@ module JSI
         out = Array.new(object.size)
         object.each_with_index do |e, i|
           fe = dtf[e]
-          identical &&= fe.__id__ == e.__id__
+          identical &&= fe.equal?(e)
           out[i] = fe
         end
         if identical

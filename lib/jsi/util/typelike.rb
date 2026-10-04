@@ -55,15 +55,18 @@ module JSI
     #   is determined by calling the block with the key, its value in self and its value in other.
     # @return self, updated with other
     # @raise [TypeError] when `other` does not respond to #to_hash
-    def update(other, &block)
-      unless other.respond_to?(:to_hash)
-        raise(TypeError, "cannot update with argument that does not respond to #to_hash: #{other.pretty_inspect.chomp}")
-      end
-      other.to_hash.each_pair do |key, value|
-        if block && key?(key)
-          value = yield(key, self[key], value)
+    def update(*other_hashes, **kw, &block)
+      other_hashes << kw
+      other_hashes.each do |other|
+        unless other.respond_to?(:to_hash)
+          raise(TypeError, "cannot update with argument that does not respond to #to_hash: #{other.pretty_inspect.chomp}")
         end
-        self[key] = value
+        other.to_hash.each_pair do |key, value|
+          if block && key?(key)
+            value = yield(key, self[key], value)
+          end
+          self[key] = value
+        end
       end
       self
     end
@@ -76,9 +79,10 @@ module JSI
     #   is determined by calling the block with the key, its value in self and its value in other.
     # @return duplicate of this hash with the other hash merged in
     # @raise [TypeError] when `other` does not respond to #to_hash
-    def merge(other, &block)
+    def merge(*other_hashes, **kw, &block)
+      other_hashes << kw
       jsi_modified_copy do |instance|
-        instance.merge(other.is_a?(Base) ? other.jsi_node_content : other, &block)
+        instance.merge(*other_hashes.map { |other| other.is_a?(Base) ? other.jsi_node_content : other }, &block)
       end
     end
 

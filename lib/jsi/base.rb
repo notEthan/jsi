@@ -997,7 +997,7 @@ module JSI
       raise(SimpleNodeChildError, [
         "cannot access a child of this JSI node because this node is not complex",
         "using token: #{token.inspect}",
-        "instance: #{jsi_node_content.pretty_inspect.chomp}",
+        "node content: #{jsi_node_content.pretty_inspect.chomp}",
       ].join("\n"))
     end
 
