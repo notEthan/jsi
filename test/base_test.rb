@@ -450,6 +450,15 @@ describe JSI::Base do
           c = Object.new
           assert_same(c, subject.jsi_modified_copy { c }.jsi_node_content)
         end
+
+        it("becomes immutable; content transformed to_immutable") do
+          m = subject.jsi_modified_copy(mutable: false) { [] }
+          assert_frozen(m.jsi_node_content)
+          assert_equal(false, m.jsi_mutable?)
+          c = Object.new
+          assert_raises_msg(ArgumentError, /immutable/) { subject.jsi_modified_copy(mutable: false) { c } }
+          assert_same(c, subject.jsi_modified_copy(mutable: false, to_immutable: nil) { c }.jsi_node_content)
+        end
       end
 
       describe("immutable") do
@@ -461,6 +470,14 @@ describe JSI::Base do
           assert_equal(false, m.jsi_mutable?)
           c = Object.new
           assert_raises_msg(ArgumentError, /immutable/) { subject.jsi_modified_copy { c } }
+          assert_same(c, subject.jsi_modified_copy(to_immutable: nil) { c }.jsi_node_content)
+        end
+
+        it("becomes mutable") do
+          m = subject.jsi_modified_copy(mutable: true) { [] }
+          refute_frozen(m.jsi_node_content)
+          assert_equal(true, m.jsi_mutable?)
+          c = Object.new
           assert_same(c, subject.jsi_modified_copy(to_immutable: nil) { c }.jsi_node_content)
         end
       end
