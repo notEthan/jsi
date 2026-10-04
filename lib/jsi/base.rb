@@ -179,13 +179,6 @@ module JSI
       # stub method for doc, overridden by Mutable/Immutable
     end
 
-    # The JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI.
-    # The same as {#jsi_node_content} - 'node content' is usually preferable terminology, to avoid
-    # ambiguity in the heavily overloaded term 'instance'.
-    def jsi_instance
-      jsi_node_content
-    end
-
     # The schemas indicated as describing this instance, prior to in-place application.
     #
     # This is different from {#jsi_schemas}, which are the in-place applicator schemas
