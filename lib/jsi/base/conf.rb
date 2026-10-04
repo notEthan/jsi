@@ -94,10 +94,11 @@ module JSI
   #   _EXPERIMENTAL_ - a callback that is called with each JSI node in the document after the node is initialized.
   #   @return [#call, nil]
   # @!attribute child_as_jsi
-  #   Default value for {Base#jsi_child_as_jsi_default}.
+  #   Default value for {Base#[]} param `as_jsi`.
   #   @return [true, false, :auto]
   # @!attribute child_use_default
-  #   Default value for {Base#jsi_child_use_default_default}.
+  #   The default value for the param `use_default` of {Base#[]}, controlling
+  #   whether a schema default value is returned when accessing a child that is not present in the document.
   #   @return [Boolean]
   # @!attribute jsi_in_content
   #   A JSI node's content shuld not contain another JSI instance. This controls how it is handled if that is encountered.

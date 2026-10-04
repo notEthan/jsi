@@ -6,23 +6,6 @@ module JSI
   #
   # Dynamically defines most methods of Hash to make the JSI duck-type like a Hash.
   module Base::HashNode
-    # instantiates and yields each property name (hash key) as a JSI described by any `propertyNames` schemas.
-    #
-    # @yield [JSI::Base]
-    # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
-    def jsi_each_propertyName
-      return to_enum(__method__) { jsi_node_content_hash_pubsend(:size) } unless block_given?
-
-      property_schemas = jsi_schemas.each_yield_set do |s, y|
-        s.dialect_invoke_each(:propertyNames, &y)
-      end
-      jsi_node_content_hash_pubsend(:each_key) do |key|
-        yield property_schemas.new_jsi(key)
-      end
-
-      nil
-    end
-
     # See {Base#jsi_hash?}. Always true for HashNode.
     def jsi_hash?
       true
@@ -50,7 +33,7 @@ module JSI
     end
 
     # See {Base#[]}
-    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
+    def [](token, as_jsi: jsi_conf.child_as_jsi, use_default: jsi_conf.child_use_default)
       raise(BlockGivenError) if block_given?
       token = token.jsi_node_content if token.is_a?(Schema::SchemaAncestorNode)
       if jsi_node_content_hash_pubsend(:key?, token)
@@ -95,12 +78,15 @@ module JSI
     alias_method(:each_pair, :each)
 
     # Yields each key (property name)
-    # @param key_as_jsi [Boolean] Yield each key as a JSI instance, per {#jsi_each_propertyName}
+    # @param key_as_jsi [Boolean]
+    #   Instantiates and yields each property name (Hash key) as a JSI described by each `propertyNames` schema.
     # @yield [String, Base]
+    # @return [self, Enumerator] an Enumerator if invoked without a block, otherwise self
     def each_key(key_as_jsi: false, &block)
       return to_enum(__method__, key_as_jsi: key_as_jsi) { size } unless block
       if key_as_jsi
-        jsi_each_propertyName(&block)
+        property_schemas = jsi_schemas.each_yield_set { |s, y| s.dialect_invoke_each(:propertyNames, &y) }
+        jsi_node_content_hash_pubsend(:each_key) { |k| yield(property_schemas.new_jsi(k)) }
       else
         jsi_node_content_hash_pubsend(:each_key, &block)
       end
@@ -208,9 +194,8 @@ module JSI
     end
 
     # See {Base#[]}
-    def [](token, as_jsi: jsi_child_as_jsi_default, use_default: jsi_child_use_default_default)
+    def [](token, as_jsi: jsi_conf.child_as_jsi, use_default: jsi_conf.child_use_default)
       raise(BlockGivenError) if block_given?
-      token = token.jsi_node_content if token.is_a?(Schema::SchemaAncestorNode)
       size = jsi_node_content_ary_pubsend(:size)
       if token.is_a?(Integer)
         if token < 0
@@ -231,37 +216,7 @@ module JSI
           end
         end
       elsif token.is_a?(Range)
-        type_err = proc do
-          raise(TypeError, [
-            "given range does not contain Integers",
-            "range: #{token.inspect}",
-          ].join("\n"))
-        end
-
-        start_idx = token.begin
-        if start_idx.is_a?(Integer)
-          start_idx += size if start_idx < 0
-          return Util::EMPTY_ARY if start_idx == size
-          return nil if start_idx < 0 || start_idx > size
-        elsif start_idx.nil?
-          start_idx = 0
-        else
-          type_err.call
-        end
-
-        end_idx = token.end
-        if end_idx.is_a?(Integer)
-          end_idx += size if end_idx < 0
-          end_idx += 1 unless token.exclude_end?
-          end_idx = size if end_idx > size
-          return Util::EMPTY_ARY if start_idx >= end_idx
-        elsif end_idx.nil?
-          end_idx = size
-        else
-          type_err.call
-        end
-
-        (start_idx...end_idx).map { |i| jsi_child(i, as_jsi: as_jsi) }.freeze
+        to_a(as_jsi: as_jsi)[token]
       else
         raise(TypeError, [
           "expected `token` param to be an Integer or Range",
