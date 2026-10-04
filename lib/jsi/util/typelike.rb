@@ -50,11 +50,11 @@ module JSI
     end
 
     # like [Hash#update](https://ruby-doc.org/core/Hash.html#method-i-update)
-    # @param other [#to_hash] the other hash to update this hash from
+    # @param other_hashes [#to_hash] other hashes to update this hash from
     # @yield [key, oldval, newval] for entries with duplicate keys, the value of each duplicate key
-    #   is determined by calling the block with the key, its value in self and its value in other.
-    # @return self, updated with other
-    # @raise [TypeError] when `other` does not respond to #to_hash
+    #   is determined by calling the block with the key, its value in self and its value in the other hash.
+    # @return self, updated with the other hashes
+    # @raise [TypeError] when any of `other_hashes` does not respond to #to_hash
     def update(*other_hashes, **kw, &block)
       other_hashes << kw
       other_hashes.each do |other|
