@@ -73,26 +73,13 @@ module JSI
       # different defaults for new_schema.
       #
       # @param schema_content an object to be instantiated as a JSI Schema - typically a Hash
-      # @param base_uri
-      # @param register
-      # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are this meta-schema's in-place applicators.
-      def new_schema(schema_content,
-          base_uri: nil,
-          register: true,
-          stringify_symbol_keys: true,
-          **conf_kw
-      )
+      def new_schema(schema_content = Util::UNDEFINED, **conf_kw)
         raise(BlockGivenError) if block_given?
-        new_jsi(schema_content,
-          base_uri: base_uri,
-          register: register,
-          stringify_symbol_keys: stringify_symbol_keys,
-          **conf_kw,
-          mutable: false,
-        )
+        conf = Base::Conf::Schema.new(root_indicated_schemas: SchemaSet[self], **conf_kw)
+        conf[schema_content]
       end
 
       # Instantiates the given schema content as a JSI Schema, passing all params to
@@ -101,10 +88,13 @@ module JSI
       # @yield If a block is given, it is evaluated in the context of the schema module
       #   using [Module#module_exec](https://ruby-doc.org/core/Module.html#method-i-module_exec).
       # @return [JSI::SchemaModule] the JSI Schema Module of the instantiated schema
-      def new_schema_module(schema_content, **kw, &block)
-        schema_jsi = new_schema(schema_content, **kw)
-        schema_jsi.jsi_schema_module_exec(&block) if block
-        schema_jsi.jsi_schema_module
+      def new_schema_module(schema_content = Util::UNDEFINED, **kw, &block)
+        conf = Base::Conf::SchemaModule.new(
+          root_indicated_schemas: SchemaSet[self],
+          schema_module_exec: block,
+          **kw,
+        )
+        conf[schema_content]
       end
     end
 
@@ -199,74 +189,13 @@ module JSI
       # different defaults for JSI.new_schema.
       #
       # @param schema_content (see Schema::MetaSchema#new_schema)
-      # @param default_metaschema [Schema::MetaSchema, SchemaModule::MetaSchemaModule, #to_str]
-      #   Indicates the meta-schema to use if the given `schema_content` does not have a `$schema` property.
-      #   This may be a meta-schema or a meta-schema's schema module (e.g. `JSI::JSONSchemaDraft07`),
-      #   or a URI (as would be in a `$schema` keyword).
-      # @param base_uri
-      # @param register
-      # @param stringify_symbol_keys
       # @param conf_kw (see SchemaSet#new_jsi)
       # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
       #   the given `schema_content` and whose schemas are in-place applicators of the indicated meta-schema.
-      def new_schema(schema_content,
-          default_metaschema: nil,
-          base_uri: nil,
-          register: true,
-          stringify_symbol_keys: true,
-          **conf_kw
-      )
+      def new_schema(schema_content = Util::UNDEFINED, **conf_kw)
         raise(BlockGivenError) if block_given?
-        new_schema_params = {
-          base_uri: base_uri,
-          register: register,
-          stringify_symbol_keys: stringify_symbol_keys,
-          **conf_kw,
-        }
-        conf = Base::Conf.new(**conf_kw) # some redundancy instantiating this - not passed to MetaSchema#new_schema, just used in this method
-        default_metaschema_new_schema = -> {
-          default_metaschema = if default_metaschema
-            Schema.ensure_metaschema(default_metaschema, name: "default_metaschema", registry: conf.registry)
-          elsif self.default_metaschema
-            self.default_metaschema
-          else
-            raise(ArgumentError, [
-              "When instantiating a schema with no `$schema` property, you must specify its meta-schema by one of these methods:",
-              "- pass the `default_metaschema` param to this method",
-              "  e.g.: JSI.new_schema(..., default_metaschema: JSI::JSONSchemaDraft07)",
-              "- invoke `new_schema` on the appropriate meta-schema or its schema module",
-              "  e.g.: JSI::JSONSchemaDraft07.new_schema(...)",
-              "- set JSI.default_metaschema to an application-wide default meta-schema initially",
-              "  e.g.: JSI.default_metaschema = JSI::JSONSchemaDraft07",
-              "instantiating schema_content: #{schema_content.pretty_inspect.chomp}",
-            ].join("\n"))
-          end
-          default_metaschema.new_schema(schema_content, **new_schema_params)
-        }
-        if schema_content.is_a?(Schema)
-          raise(TypeError, [
-            "Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.",
-            "given: #{schema_content.pretty_inspect.chomp}",
-          ].join("\n"))
-        elsif schema_content.is_a?(JSI::Base)
-          raise(TypeError, [
-            "Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.",
-            "given: #{schema_content.pretty_inspect.chomp}",
-          ].join("\n"))
-        elsif schema_content.respond_to?(:to_hash)
-          id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema']
-          if id
-            unless id.respond_to?(:to_str)
-              raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
-            end
-            metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: conf.registry)
-            metaschema.new_schema(schema_content, **new_schema_params)
-          else
-            default_metaschema_new_schema.call
-          end
-        else
-          default_metaschema_new_schema.call
-        end
+        conf = Base::Conf::SchemaInferMetaSchema.new(**conf_kw)
+        conf[schema_content]
       end
   end
 
@@ -479,7 +408,7 @@ module JSI
     #
     # @return [Base] a JSI whose content comes from the given instance and whose schemas are
     #   in-place applicators of this schema.
-    def new_jsi(instance, **kw)
+    def new_jsi(instance = Util::UNDEFINED, **kw)
       raise(BlockGivenError) if block_given?
       SchemaSet[self].new_jsi(instance, **kw)
     end
@@ -611,15 +540,12 @@ module JSI
         # memoize: if the instance is not used by any in-place applicator present in this schema,
         # the schema can do in-place application once instead of for every instance,
         # for a very substantial performance gain.
-        #
-        # :inplace_applicate yields (schema, **keywords)
-        # so @memos[:immediate_inplace_applicators] is a 2D Array of tuples (schema, keywords)
         @memos[:immediate_inplace_applicators] ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
             visited_refs: visited_refs,
-          ) do |s, **kw|
-            immediate_inplace_applicators.push([s, kw])
+          ) do |schema, **kw|
+            immediate_inplace_applicators.push([schema, kw])
           end
           immediate_inplace_applicators.freeze
         end
@@ -931,7 +857,7 @@ module JSI
     def jsi_schema_identifier(required: false)
       name = jsi_schema_module_name_from_ancestor
       return name if name
-      return schema_uri || (required ? jsi_ptr.uri : nil) if jsi_schema_dynamic_anchor_map.empty?
+      return schema_uri ? schema_uri.to_s : required ? jsi_ptr.uri.to_s : nil if jsi_schema_dynamic_anchor_map.empty?
       -"#{schema_uri || jsi_ptr.uri}#{jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}"
     end
 

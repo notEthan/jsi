@@ -50,6 +50,9 @@ module JSI
     autoload :Arraylike, 'jsi/util/typelike'
     autoload :Hashlike, 'jsi/util/typelike'
 
+    # sentinel value. a module so it has a name it knows.
+    UNDEFINED = Module.new
+
     # yields the content of the given param `object`. for objects which have a #jsi_modified_copy
     # method of their own (JSI::Base, JSI::MetaSchemaNode) that method is invoked with the given
     # block. otherwise the given object itself is yielded.
@@ -240,6 +243,65 @@ module JSI
             "object: #{object.pretty_inspect.chomp}",
           ].join("\n"))
         end
+      end
+    end
+
+    # handle JSI::Base instance within node content
+    # @param action [:raise, :strip, :ignore]
+    def jsi_in_content(object, action: :raise)
+      return object if action == :ignore
+      jic = proc { |o| jsi_in_content(o, action: action) }
+      if object.is_a?(JSI::Base)
+        if action == :raise
+          raise(TypeError, "JSI instance in node content: #{object.pretty_inspect.chomp}")
+        elsif action == :strip
+          # recursing is redundant, except if the object is a JSI with jsi_in_content: :ignore
+          jic[object.jsi_node_content]
+        else
+          raise(ArgumentError, "unrecognized action: #{action.inspect}")
+        end
+      elsif object.is_a?(Delegator)
+        delobj = object.__getobj__
+        rdelobj = jic[delobj]
+        if rdelobj.equal?(delobj)
+          object
+        else
+          object.class.new(rdelobj) # possibly overridden initializer not handled
+        end
+      elsif object.instance_of?(Hash)
+        out = {}
+        identical = true
+        object.each do |k, v|
+          rk = jic[k]
+          rv = jic[v]
+          identical &&= rk.equal?(k)
+          identical &&= rv.equal?(v)
+          out[rk] = rv
+        end
+        if identical
+          object
+        else
+          # default not recursed; a Hash default does not become JSI node content
+          out.default = object.default
+          out.default_proc = object.default_proc
+          out
+        end
+      elsif object.instance_of?(Array)
+        identical = true
+        out = Array.new(object.size)
+        object.each_with_index do |e, i|
+          re = jic[e]
+          identical &&= re.equal?(e)
+          out[i] = re
+        end
+        if identical
+          object
+        else
+          out
+        end
+      else
+        # could recurse if respond_to? :to_ary or :to_hash, but I think no value in that
+        object
       end
     end
   end

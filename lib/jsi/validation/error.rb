@@ -2,7 +2,7 @@
 
 module JSI
   module Validation
-    Error = Struct.subclass(*%i(
+    Error = Struct::Frozen.subclass(*%i(
       message
       keyword
       additional
@@ -36,11 +36,6 @@ module JSI
     # @!attribute nested_errors
     #   @return [Set<Validation::Error>]
     class Error
-      def initialize(attributes = {})
-        super
-        freeze
-      end
-
       # @yield [Validation::Error]
       def each_validation_error(&block)
         return(to_enum(__method__)) if !block_given?
@@ -54,6 +49,11 @@ module JSI
         instance_ptr.evaluate(instance_document)
       end
 
+      # @return [URI]
+      def schema_uri
+        schema.schema_uri || schema.jsi_ptr.uri
+      end
+
       def pretty_print(q)
         info = {
           message: message,
@@ -61,7 +61,7 @@ module JSI
           instance_ptr: instance_ptr,
           keyword: keyword,
           additional: additional,
-          'schema uri': schema.schema_uri || schema.jsi_ptr.uri,
+          schema_uri: schema_uri,
           nested_errors: nested_errors,
         }
         jsi_pp_object_group(q) do

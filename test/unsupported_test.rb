@@ -218,17 +218,17 @@ describe 'unsupported behavior' do
 
           assert(subject.jsi_valid?)
 
-          subject.jsi_each_propertyName do |propertyName|
+          subject.each_key(key_as_jsi: true) do |propertyName|
             assert_schemas([schema.propertyNames], propertyName)
           end
           # child application of propertyNames' `items` subschema
-          pn_item = subject.jsi_each_propertyName.detect { |j| j.size > 0 }[0, as_jsi: true]
+          pn_item = subject.each_key(key_as_jsi: true).detect { |j| j.size > 0 }[0, as_jsi: true]
           assert_schemas([schema.propertyNames.items], pn_item)
 
-          assert(subject.jsi_each_propertyName.to_a.all?(&:jsi_valid?))
+          assert(subject.each_key(key_as_jsi: true).to_a.all?(&:jsi_valid?))
 
           exp_jsis = [schema.propertyNames.new_jsi([]), schema.propertyNames.new_jsi([1])]
-          assert_equal(exp_jsis, subject.jsi_each_propertyName.to_a) # this test seems unnecessary, w/e
+          assert_equal(exp_jsis, subject.each_key(key_as_jsi: true).to_a) # this test seems unnecessary, w/e
         end
       end
       describe 'invalid' do
@@ -249,13 +249,13 @@ describe 'unsupported behavior' do
             "instance object property names are not all valid against `propertyNames` schema",
           ], subject.jsi_validate.each_validation_error.map(&:message))
 
-          subject.jsi_each_propertyName do |propertyName|
+          subject.each_key(key_as_jsi: true) do |propertyName|
             assert_schemas([schema.propertyNames], propertyName)
           end
 
-          valid, invalid = subject.jsi_each_propertyName.partition(&:jsi_valid?)
-          assert_equal([[], [1]], valid.map(&:jsi_instance))
-          assert_equal([{}], invalid.map(&:jsi_instance))
+          valid, invalid = subject.each_key(key_as_jsi: true).partition(&:jsi_valid?)
+          assert_equal([[], [1]], valid.map(&:jsi_node_content))
+          assert_equal([{}], invalid.map(&:jsi_node_content))
         end
       end
     end
@@ -439,7 +439,7 @@ describe 'unsupported behavior' do
         child = {'a' => ['turtle']}
         child['on'] = child
         root = {'a' => ['world'], 'on' => child}
-        jsi = schema.new_jsi(root, to_immutable: nil)
+        jsi = schema.new_jsi(root, to_immutable: nil, jsi_in_content: :ignore)
         assert_schemas([schema.properties['a']], jsi.a)
         assert_schemas([schema], jsi.on)
         # little deeper

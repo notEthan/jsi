@@ -25,10 +25,15 @@ module JSI
         # but that is still possible by binding Struct.new to the class and calling
         # that with both existing and new members.
         if HAS_KEYWORD_INIT
-          STRUCT_NEW.bind(self).call(*self_members, *members, keyword_init: true)
+          subclass = STRUCT_NEW.bind(self).call(*self_members, *members, keyword_init: true)
         else
-          STRUCT_NEW.bind(self).call(*self_members, *members)
+          subclass = STRUCT_NEW.bind(self).call(*self_members, *members)
         end
+        self_members.each do |self_member|
+          subclass.send(:remove_method, self_member)
+          subclass.send(:remove_method, :"#{self_member}=")
+        end
+        subclass
       end
     end
 
@@ -52,6 +57,12 @@ module JSI
           q.pp(v)
         end
       end
+    end
+  end
+
+  class Struct::Frozen < Struct
+    def self.new(h = {})
+      super.freeze
     end
   end
 end

@@ -2,7 +2,7 @@
 
 module JSI
   module Schema
-    Issue = Struct.subclass(*%i(
+    Issue = Struct::Frozen.subclass(*%i(
       level
       message
       keyword
