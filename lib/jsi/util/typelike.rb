@@ -74,11 +74,11 @@ module JSI
     alias_method :merge!, :update
 
     # like [Hash#merge](https://ruby-doc.org/core/Hash.html#method-i-merge)
-    # @param other [#to_hash] the other hash to merge into this
+    # @param other_hashes [#to_hash] other hashes to merge into this
     # @yield [key, oldval, newval] for entries with duplicate keys, the value of each duplicate key
-    #   is determined by calling the block with the key, its value in self and its value in other.
-    # @return duplicate of this hash with the other hash merged in
-    # @raise [TypeError] when `other` does not respond to #to_hash
+    #   is determined by calling the block with the key, its value in self and its value in the other hash.
+    # @return duplicate of this hash with the other hashes merged in
+    # @raise [TypeError] when any of `other_hashes` does not respond to #to_hash
     def merge(*other_hashes, **kw, &block)
       other_hashes << kw
       jsi_modified_copy do |instance|
