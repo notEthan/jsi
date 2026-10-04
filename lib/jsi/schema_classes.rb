@@ -163,8 +163,9 @@ module JSI
     #
     # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
     #   the given `schema_content` and whose schemas are in-place applicators of this module's schema.
-    def new_schema(schema_content, **kw, &block)
-      schema.new_schema(schema_content, **kw, &block)
+    def new_schema(schema_content, **conf_kw)
+      raise(BlockGivenError) if block_given?
+      schema.new_schema(schema_content, **conf_kw)
     end
 
     # (see Schema::MetaSchema#new_schema_module)
