@@ -261,7 +261,7 @@ For a given node, its *resource root* is the nearest ancestor that is a resource
 
 Relative URIs and [pointer]s used by a schema (e.g. in `$ref` or `$id`) are resolved relative to its resource root and that resource's id.
 
-See {JSI::Schema#schema_resource_root}.
+See {JSI::Base#jsi_resource_root}.
 
 
 ### schema application
