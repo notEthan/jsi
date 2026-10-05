@@ -35,26 +35,12 @@ module JSI
     class NotAMetaSchemaError < TypeError
     end
 
-    # @deprecated alias after v0.8
-    # an exception raised when we are unable to resolve a schema reference
-    ReferenceError = ResolutionError
-
     # A reference to a schema identified by a given URI.
     # {#resolve} will return a Schema, and param `referrer` must be a Schema.
     class Ref < Ref
-      # @param ref_schema [Schema] deprecated; use `referrer`
-      def initialize(ref, ref_schema: nil, **kw)
-        super(ref, referrer: ref_schema, **kw)
-      end
-
       # @return [Boolean]
       def resolve_schema?
         true
-      end
-
-      # @deprecated after v0.8
-      def deref_schema
-        resolve
       end
     end
 
@@ -100,12 +86,12 @@ module JSI
           **conf_kw
       )
         raise(BlockGivenError) if block_given?
+        raise(ArgumentError, "this method does not instantiate mutable schemas") if conf_kw[:mutable]
         new_jsi(schema_content,
           base_uri: base_uri,
           register: register,
           stringify_symbol_keys: stringify_symbol_keys,
           **conf_kw,
-          mutable: false,
         )
       end
 
@@ -270,9 +256,6 @@ module JSI
         elsif schema_content.respond_to?(:to_hash)
           id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema']
           if id
-            unless id.respond_to?(:to_str)
-              raise(ArgumentError, "given schema_content keyword `$schema` is not a string")
-            end
             metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: conf.registry)
             metaschema.new_schema(schema_content, **new_schema_params)
           else
@@ -408,19 +391,6 @@ module JSI
       anchors.freeze
     end
 
-    # the URI of this schema, from an `$id` keyword, resolved against our `#jsi_base_uri`
-    # @deprecated after v0.8 - use `#jsi_resource_uri`
-    # @return [URI, nil]
-    def schema_absolute_uri
-      jsi_resource_uri
-    end
-
-    # @deprecated after v0.8 - use `#jsi_resource_uris`
-    # @return [Enumerable<URI>]
-    def schema_absolute_uris
-      jsi_resource_uris
-    end
-
     # @yield [URI]
     private def jsi_each_resource_uri_compute
       dialect_invoke_each(:id_without_fragment) do |id_without_fragment|
@@ -537,9 +507,6 @@ module JSI
     # @param dialect [Schema::Dialect, nil] dialect may be passed, or inferred from `$vocabulary`
     # @return [void]
     def describes_schema!(dialect = nil)
-      # TODO rm bridge code hax
-      dialect = dialect.first::DIALECT if dialect.is_a?(Array) && dialect.size == 1
-
       if !dialect
         raise(ArgumentError, "no dialect given and no $vocabulary hash/object") if !schema_content['$vocabulary'].respond_to?(:to_hash)
         dialect = Schema::Dialect.from_xvocabulary(schema_content['$vocabulary'], registry: jsi_registry)
@@ -567,29 +534,10 @@ module JSI
       nil
     end
 
-    # a resource containing this schema.
-    #
-    # If any ancestor, or this schema itself, is a schema with an absolute uri (see {#schema_absolute_uri}),
-    # the resource root is the closest schema with an absolute uri.
-    #
-    # If no ancestor schema has an absolute uri, the schema_resource_root is the {Base#jsi_root_node document's root node}.
-    # In this case, the resource root may or may not be a schema itself.
-    #
-    # @deprecated after v0.8
-    # @return [JSI::Base] resource containing this schema
-    def schema_resource_root
-      jsi_resource_root
-    end
-
     # is this schema the root of a schema resource?
     # @return [Boolean]
     def jsi_is_resource_root?
       super || jsi_resource_uris.any?
-    end
-
-    # @deprecated after v0.8
-    def schema_resource_root?
-      jsi_is_resource_root?
     end
 
     # a subschema of this Schema
@@ -660,15 +608,12 @@ module JSI
         # memoize: if the instance is not used by any in-place applicator present in this schema,
         # the schema can do in-place application once instead of for every instance,
         # for a very substantial performance gain.
-        #
-        # :inplace_applicate yields (schema, **keywords)
-        # so @memos[:immediate_inplace_applicators] is a 2D Array of tuples (schema, keywords)
         @memos[:immediate_inplace_applicators] ||= begin
           immediate_inplace_applicators = []
           dialect_invoke_each(:inplace_applicate, Cxt::InplaceApplication,
             visited_refs: visited_refs,
-          ) do |s, **kw|
-            immediate_inplace_applicators.push([s, kw])
+          ) do |schema, **kw|
+            immediate_inplace_applicators.push([schema, kw])
           end
           immediate_inplace_applicators.freeze
         end
@@ -980,7 +925,7 @@ module JSI
     def jsi_schema_identifier(required: false)
       name = jsi_schema_module_name_from_ancestor
       return name if name
-      return schema_uri || (required ? jsi_ptr.uri : nil) if jsi_schema_dynamic_anchor_map.empty?
+      return schema_uri ? schema_uri.to_s : required ? jsi_ptr.uri.to_s : nil if jsi_schema_dynamic_anchor_map.empty?
       -"#{schema_uri || jsi_ptr.uri}#{jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}"
     end
 

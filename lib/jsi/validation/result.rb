@@ -137,12 +137,6 @@ module JSI
         nil
       end
 
-      # @deprecated after v0.8
-      # iterating (recursively) is better done with #each_validation_error
-      def validation_errors
-        each_validation_error.to_set
-      end
-
       # @return [Set]
       attr_reader(:evaluated_tokens)
 
@@ -165,7 +159,7 @@ module JSI
 
       def pretty_print(q)
         pretty_print_valid(q) do
-          q.text('validation errors: ')
+          q.text('nested_validation_errors: ')
           q.pp(nested_validation_errors)
         end
       end

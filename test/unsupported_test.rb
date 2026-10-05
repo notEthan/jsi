@@ -254,8 +254,8 @@ describe 'unsupported behavior' do
           end
 
           valid, invalid = subject.jsi_each_propertyName.partition(&:jsi_valid?)
-          assert_equal([[], [1]], valid.map(&:jsi_instance))
-          assert_equal([{}], invalid.map(&:jsi_instance))
+          assert_equal([[], [1]], valid.map(&:jsi_node_content))
+          assert_equal([{}], invalid.map(&:jsi_node_content))
         end
       end
     end

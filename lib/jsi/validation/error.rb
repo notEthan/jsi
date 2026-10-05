@@ -49,6 +49,11 @@ module JSI
         instance_ptr.evaluate(instance_document)
       end
 
+      # @return [URI]
+      def schema_uri
+        schema.schema_uri || schema.jsi_ptr.uri
+      end
+
       def pretty_print(q)
         info = {
           message: message,
@@ -56,7 +61,7 @@ module JSI
           instance_ptr: instance_ptr,
           keyword: keyword,
           additional: additional,
-          'schema uri': schema.schema_uri || schema.jsi_ptr.uri,
+          schema_uri: schema_uri,
           nested_errors: nested_errors,
         }
         jsi_pp_object_group(q) do

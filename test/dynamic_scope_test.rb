@@ -253,12 +253,12 @@ describe("dynamic scope") do
       x«y» = x.with_dynamic_scope_from(y)
       assert_schemas([r, y, z«y»], i)
       assert_schemas([z«y».additionalProperties, x«y»], i['a'])
-      # note: arguably a bug; TODO address this when possible.
-      # it _should_ be the case that y is the same schema as x«y»['$defs']['y'].
-      # they are equal (#==) but not identical (#equal?), and it would be better if there was one instance.
-      # they are different instances because they have different parents - one from x with empty dynamic scope,
-      # the other from x with y in its dynamic scope, but removed descending to /$defs/y.
-      refute_same(y, x«y»['$defs']['y'])
+      # x«y»['$defs']['y'] is the same schema as y.
+      # x«y»['$defs'] has y in its dynamic_anchor_map; when descending from it to x«y»['$defs']['y'],
+      # y is removed, resulting in an empty dynamic_anchor_map. Since that is the same as the dynamic_anchor_map
+      # of the original root (x), its descendent (y) is returned; the child is not a descendent of root x«y».
+      assert_same(y, x«y»['$defs']['y'])
+      refute_same(y.jsi_parent_node, x«y»['$defs'])
       assert_schemas([x«y».additionalProperties, x«y»['$defs']['y'], z«y»], i['a']['a'])
     end
   end

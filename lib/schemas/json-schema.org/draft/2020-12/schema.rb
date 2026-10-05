@@ -11,6 +11,12 @@ module JSI
     dialect: Schema::Draft202012::DIALECT,
     metaschema_root_ref: 'https://json-schema.org/draft/2020-12/schema',
     schema_documents: vocabulary_schema_documents,
+    after_initialize: proc do |node|
+      if node.jsi_is_schema? && !node.jsi_schema_module.respond_to?(:defs)
+        # #jsi_schema_module_connection_created (defined below) does this but doesn't apply to MSN schemas instantiated earlier.
+        node.jsi_schema_module.define_singleton_method(:defs) { |**kw| self['$defs', **kw] }
+      end
+    end,
   ).jsi_schema_module
 
   module JSONSchemaDraft202012

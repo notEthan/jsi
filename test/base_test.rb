@@ -72,7 +72,7 @@ describe JSI::Base do
     describe 'nil' do
       let(:instance) { nil }
       it 'initializes with nil instance' do
-        assert_equal(nil, subject.jsi_instance)
+        assert_equal(nil, subject.jsi_node_content)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -81,7 +81,7 @@ describe JSI::Base do
       let(:instance) { Object.new }
       let(:subject_opt) { {to_immutable: nil} }
       it 'initializes' do
-        assert_equal(instance, subject.jsi_instance)
+        assert_equal(instance, subject.jsi_node_content)
         assert(!subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -90,7 +90,7 @@ describe JSI::Base do
       let(:instance) { {'foo' => 'bar'} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal({'foo' => 'bar'}, subject.jsi_instance)
+        assert_equal({'foo' => 'bar'}, subject.jsi_node_content)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -100,7 +100,7 @@ describe JSI::Base do
       let(:subject_opt) { {to_immutable: nil} }
       let(:schema_content) { {'type' => 'object'} }
       it 'initializes' do
-        assert_equal(SortOfHash.new({'foo' => 'bar'}), subject.jsi_instance)
+        assert_equal(SortOfHash.new({'foo' => 'bar'}), subject.jsi_node_content)
         assert(!subject.respond_to?(:to_ary))
         assert(subject.respond_to?(:to_hash))
       end
@@ -109,7 +109,7 @@ describe JSI::Base do
       let(:instance) { ['foo'] }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(['foo'], subject.jsi_instance)
+        assert_equal(['foo'], subject.jsi_node_content)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -119,7 +119,7 @@ describe JSI::Base do
       let(:subject_opt) { {to_immutable: nil} }
       let(:schema_content) { {'type' => 'array'} }
       it 'initializes' do
-        assert_equal(SortOfArray.new(['foo']), subject.jsi_instance)
+        assert_equal(SortOfArray.new(['foo']), subject.jsi_node_content)
         assert(subject.respond_to?(:to_ary))
         assert(!subject.respond_to?(:to_hash))
       end
@@ -360,7 +360,7 @@ describe JSI::Base do
     end
   end
   describe '#jsi_modified_copy' do
-    describe 'with an instance that does not have #jsi_modified_copy' do
+    describe("with an instance of Object") do
       let(:instance) { Object.new }
       let(:subject_opt) { {to_immutable: nil} }
       it 'yields the instance to modify' do
@@ -369,8 +369,8 @@ describe JSI::Base do
           assert_equal(instance, o)
           new_instance
         end
-        assert_equal(new_instance, modified.jsi_instance)
-        assert_equal(instance, subject.jsi_instance)
+        assert_equal(new_instance, modified.jsi_node_content)
+        assert_equal(instance, subject.jsi_node_content)
         refute_equal(instance, modified)
       end
     end
@@ -380,8 +380,8 @@ describe JSI::Base do
           assert_equal({}, o)
           {'a' => 'b'}
         end
-        assert_equal({'a' => 'b'}, modified.jsi_instance)
-        assert_equal({}, subject.jsi_instance)
+        assert_equal({'a' => 'b'}, modified.jsi_node_content)
+        assert_equal({}, subject.jsi_node_content)
         refute_equal(instance, modified)
       end
     end
@@ -389,7 +389,7 @@ describe JSI::Base do
       it 'yields the instance to modify' do
         modified = subject.jsi_modified_copy { |o| o }
         # this doesn't really need to be tested but ... whatever
-        assert_same(subject.jsi_instance, modified.jsi_instance)
+        assert_same(subject.jsi_node_content, modified.jsi_node_content)
         assert_equal(subject, modified)
         refute_same(subject, modified)
       end
@@ -397,14 +397,12 @@ describe JSI::Base do
     describe 'resulting in a different type' do
       let(:schema_content) { {'type' => 'object'} }
       it 'works' do
-        # I'm not really sure the best thing to do here, but this is how it is for now. this is subject to change.
         modified = subject.jsi_modified_copy do |o|
           o.to_s
         end
-        assert_equal('{}', modified.jsi_instance)
-        assert_equal({}, subject.jsi_instance)
+        assert_equal('{}', modified.jsi_node_content)
+        assert_equal({}, subject.jsi_node_content)
         refute_equal(instance, modified)
-        # interesting side effect
         assert(subject.respond_to?(:to_hash))
         assert(!modified.respond_to?(:to_hash))
       end
@@ -430,14 +428,41 @@ describe JSI::Base do
         modified = subject.jsi_modified_copy do |o|
           o.map(&:to_a)
         end
-        assert_equal([[]], modified.jsi_instance)
-        assert_equal([{}], subject.jsi_instance)
+        assert_equal([[]], modified.jsi_node_content)
+        assert_equal([{}], subject.jsi_node_content)
         assert_schemas([schema.items, schema.items.oneOf[1]], modified.first)
         assert_schemas([schema.items, schema.items.oneOf[0]], subject.first)
         assert(!modified.first.respond_to?(:to_hash))
         assert(modified.first.respond_to?(:to_ary))
         assert(subject.first.respond_to?(:to_hash))
         assert(!subject.first.respond_to?(:to_ary))
+      end
+    end
+
+    describe("mutability") do
+      describe("mutable") do
+        let(:subject_opt) { {mutable: true} }
+
+        it("remains mutable") do
+          m = subject.jsi_modified_copy { [] }
+          refute_frozen(m.jsi_node_content)
+          assert_equal(true, m.jsi_mutable?)
+          c = Object.new
+          assert_same(c, subject.jsi_modified_copy { c }.jsi_node_content)
+        end
+      end
+
+      describe("immutable") do
+        let(:subject_opt) { {mutable: false} }
+
+        it("remains immutable; content transformed to_immutable") do
+          m = subject.jsi_modified_copy { [] }
+          assert_frozen(m.jsi_node_content)
+          assert_equal(false, m.jsi_mutable?)
+          c = Object.new
+          assert_raises_msg(ArgumentError, /immutable/) { subject.jsi_modified_copy { c } }
+          assert_same(c, subject.jsi_modified_copy(to_immutable: nil) { c }.jsi_node_content)
+        end
       end
     end
 
@@ -488,14 +513,14 @@ describe JSI::Base do
       it("#jsi_valid!") do
         msg = <<~ERR
           #<JSI::Validation::Result::Full (INVALID)
-            validation errors: JSI::Set[
+            nested_validation_errors: JSI::Set[
               #<JSI::Validation::Error
                 message: "instance type does not match `type` value",
                 instance: "this is a string",
                 instance_ptr: JSI::Ptr[],
                 keyword: "type",
                 additional: {},
-                schema uri: JSI::URI["http://jsi/base/validation/with errors"],
+                schema_uri: JSI::URI["http://jsi/base/validation/with errors"],
                 nested_errors: JSI::Set[]
               >
             ]
@@ -641,14 +666,14 @@ describe JSI::Base do
         it("jsi_valid!") do
           msg = <<~ERR
             #<JSI::Validation::Result::Full (INVALID)
-              validation errors: JSI::Set[
+              nested_validation_errors: JSI::Set[
                 #<JSI::Validation::Error
                   message: "instance object properties are not all valid against corresponding `properties` schemas",
                   instance: \0,
                   instance_ptr: JSI::Ptr[],
                   keyword: "properties",
                   additional: \0,
-                  schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
+                  schema_uri: JSI::URI["http://jsi/base/validation/at a depth"],
                   nested_errors: JSI::Set[
                     #<JSI::Validation::Error
                       message: "instance type does not match `type` value",
@@ -656,7 +681,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["foo"],
                       keyword: "type",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/foo"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/foo"],
                       nested_errors: JSI::Set[]
                     >,
                     #<JSI::Validation::Error
@@ -665,7 +690,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["baz"],
                       keyword: "type",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/baz"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/properties/baz"],
                       nested_errors: JSI::Set[]
                     >
                   ]
@@ -676,7 +701,7 @@ describe JSI::Base do
                   instance_ptr: JSI::Ptr[],
                   keyword: "additionalProperties",
                   additional: \0,
-                  schema uri: JSI::URI["http://jsi/base/validation/at a depth"],
+                  schema_uri: JSI::URI["http://jsi/base/validation/at a depth"],
                   nested_errors: JSI::Set[
                     #<JSI::Validation::Error
                       message: "instance is valid against `not` schema",
@@ -684,7 +709,7 @@ describe JSI::Base do
                       instance_ptr: JSI::Ptr["more"],
                       keyword: "not",
                       additional: {},
-                      schema uri: JSI::URI["http://jsi/base/validation/at a depth#/additionalProperties"],
+                      schema_uri: JSI::URI["http://jsi/base/validation/at a depth#/additionalProperties"],
                       nested_errors: JSI::Set[]
                     >
                   ]
@@ -717,11 +742,11 @@ describe JSI::Base do
     end
     describe 'readers' do
       it 'reads attributes described as properties' do
-        assert_equal({'x' => 'y'}, subject.foo.jsi_instance)
+        assert_equal({'x' => 'y'}, subject.foo.jsi_node_content)
         assert_schemas([schema.properties['foo']], subject.foo)
         assert_respond_to(subject.foo, :to_hash)
         refute_respond_to(subject.foo, :to_ary)
-        assert_equal([3.14159], subject.bar.jsi_instance)
+        assert_equal([3.14159], subject.bar.jsi_node_content)
         assert_schemas([schema.properties['bar']], subject.bar)
         refute_respond_to(subject.bar, :to_hash)
         assert_respond_to(subject.bar, :to_ary)
@@ -737,8 +762,7 @@ describe JSI::Base do
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
         it 'errors' do
-          err = assert_raises(JSI::Base::SimpleNodeChildError) { subject.foo }
-          assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: "foo"\ninstance: nil), err.message)
+          assert_raises(NoMethodError) { subject.foo }
         end
       end
       describe 'properties with the same names as instance methods' do
@@ -754,7 +778,7 @@ describe JSI::Base do
               'as_json' => {},        # Base
               'each' => {},           # Base::HashNode / Base::ArrayNode
               'instance_exec' => {},  # BasicObject
-              'jsi_instance' => {},   # Base
+              'jsi_node_content' => {}, # Base
               'jsi_schemas' => {},    # Base subclass (from class_for_schemas)
             },
           }
@@ -769,7 +793,7 @@ describe JSI::Base do
             'as_json' => 'hi',
             'each' => 'hi',
             'instance_exec' => 'hi',
-            'jsi_instance' => 'hi',
+            'jsi_node_content' => 'hi',
             'jsi_schemas' => 'hi',
           }
         end
@@ -780,13 +804,13 @@ describe JSI::Base do
 
           refute_respond_to(subject.method(:initialize).owner, :jsi_property_readers) # refute owner of #initialize is a schema property reader module
           assert_equal('hi', subject['initialize'])
-          assert_equal(%q(#{<JSI*1> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_instance" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
+          assert_equal(%q(#{<JSI*1> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_node_content" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
-          assert_equal(%Q(\#{<JSI*1>\n  "foo" => "bar",\n  "to_ary" => "not ary",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_instance" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
+          assert_equal(%Q(\#{<JSI*1>\n  "foo" => "bar",\n  "to_ary" => "not ary",\n  "initialize" => "hi",\n  "inspect" => "hi",\n  "pretty_inspect" => "hi",\n  "as_json" => "hi",\n  "each" => "hi",\n  "instance_exec" => "hi",\n  "jsi_node_content" => "hi",\n  "jsi_schemas" => "hi"\n}\n), subject.pretty_inspect)
           assert_equal(instance, subject.as_json)
           assert_equal(subject, subject.each { })
           assert_equal(2, subject.instance_exec { 2 })
-          assert_equal(instance, subject.jsi_instance)
+          assert_equal(instance, subject.jsi_node_content)
           assert_equal(JSI::SchemaSet[schema], subject.jsi_schemas)
         end
       end
@@ -868,25 +892,24 @@ describe JSI::Base do
 
         subject.foo = {'y' => 'z'}
 
-        assert_equal({'y' => 'z'}, subject.foo.jsi_instance)
+        assert_equal({'y' => 'z'}, subject.foo.jsi_node_content)
         assert_schemas([schema.properties['foo']], orig_foo)
         assert_schemas([schema.properties['foo']], subject.foo)
       end
       it 'modifies the instance, visible to other references to the same instance' do
-        orig_instance = subject.jsi_instance
+        orig_instance = subject.jsi_node_content
 
         subject.foo = {'y' => 'z'}
 
-        assert_equal(orig_instance, subject.jsi_instance)
+        assert_equal(orig_instance, subject.jsi_node_content)
         assert_equal({'y' => 'z'}, orig_instance['foo'])
-        assert_equal({'y' => 'z'}, subject.jsi_instance['foo'])
-        assert_equal(orig_instance.class, subject.jsi_instance.class)
+        assert_equal({'y' => 'z'}, subject.jsi_node_content['foo'])
+        assert_equal(orig_instance.class, subject.jsi_node_content.class)
       end
       describe 'when the instance is not hashlike' do
         let(:instance) { nil }
         it 'errors' do
-          err = assert_raises(JSI::Base::SimpleNodeChildError) { subject.foo = 0 }
-          assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: "foo"\ninstance: nil), err.message)
+          assert_raises(NoMethodError) { subject.foo = 0 }
         end
       end
     end

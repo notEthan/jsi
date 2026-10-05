@@ -7,6 +7,7 @@ describe(JSI::MetaSchemaNode) do
   let(:registry) { nil }
   let(:bootstrap_registry) { nil }
   let(:schema_documents) { nil }
+  let(:metaschema_conf) { {} }
 
   let(:root_node) do
     JSI.new_metaschema_node(metaschema_document,
@@ -16,6 +17,7 @@ describe(JSI::MetaSchemaNode) do
       registry: registry,
       bootstrap_registry: bootstrap_registry,
       schema_documents: schema_documents,
+      **metaschema_conf,
     )
   end
   let(:metaschema) do
@@ -457,10 +459,9 @@ describe(JSI::MetaSchemaNode) do
         default: {}
         YAML
     )
+    let(:metaschema_conf) { {child_use_default: true} }
 
     it 'does not insert a default value' do
-      metaschema.jsi_schema_module_exec { define_method(:jsi_child_use_default_default) { true } }
-
       assert_nil(metaschema.additionalProperties)
       assert_nil(metaschema.properties['additionalProperties'].default)
       assert_nil(metaschema.properties['additionalProperties'].default(as_jsi: true))
