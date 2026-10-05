@@ -469,8 +469,8 @@ describe 'JSI::Base hash' do
   end
   describe 'modified copy methods' do
     describe("#merge") do
-      let(:subject_opt) { {mutable: true} }
       let(:instance) { {'p' => 0} }
+
       it("merges one positional param") do
         assert(!subject.key?('q'))
         s1 = subject.merge({'q' => 1})
@@ -491,6 +491,16 @@ describe 'JSI::Base hash' do
         assert_equal({'p' => 0, 'q' => 3}, s2.jsi_node_content)
       end
 
+      it("wrong type") do
+        assert_raises_msg(TypeError, "no implicit conversion of Array into Hash") { subject.merge(['r', 1]) }
+      end
+    end
+
+    describe("#merge multiple") do
+      before { skip("Hash#merge multiple other hashes") if !({}.merge({}, {}) rescue false) }
+
+      let(:instance) { {'p' => 0} }
+
       it("multiple positional") do
         s1 = subject.merge({'q' => 1, 'r' => 1}, {'q' => 2, 's' => 2})
         assert_equal({'p' => 0, 'q' => 2, 'r' => 1, 's' => 2}, s1.jsi_node_content)
@@ -507,7 +517,7 @@ describe 'JSI::Base hash' do
       end
 
       it("wrong type") do
-        e = assert_raises(TypeError) { subject.merge({'q' => 1}, ['r', 1]) }
+        assert_raises_msg(TypeError, "no implicit conversion of Array into Hash") { subject.merge({'q' => 1}, ['r', 1]) }
       end
     end
 
