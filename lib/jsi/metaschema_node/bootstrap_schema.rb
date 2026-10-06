@@ -12,7 +12,6 @@ module JSI
   #
   # @api private
   class MetaSchemaNode::BootstrapSchema
-    include(Util::FingerprintHash::Immutable)
     include Schema::SchemaAncestorNode
     include Schema
     include(Util::Pretty)
@@ -161,12 +160,6 @@ module JSI
         !jsi_schema_dynamic_anchor_map.empty? ? jsi_schema_dynamic_anchor_map.anchor_schemas_identifier : nil,
         jsi_ptr.uri,
       ].compact.freeze
-    end
-
-    # see {Util::Private::FingerprintHash}
-    # @api private
-    def jsi_fingerprint
-      __id__
     end
 
     private
