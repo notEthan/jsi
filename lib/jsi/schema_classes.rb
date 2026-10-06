@@ -182,6 +182,9 @@ module JSI
   # this module is a namespace for building schema classes and schema modules.
   # @private
   module SchemaClasses
+    class PropertyModule < Module
+    end
+
     class << self
       # @private
       # @return [Set<Module>]
@@ -259,7 +262,7 @@ module JSI
       end
 
       private def schema_property_reader_module_compute(readers)
-          Module.new do
+          PropertyModule.new do
             define_singleton_method(:inspect) { -"(JSI Schema Property Reader Module: #{readers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_readers) { readers }
@@ -285,7 +288,7 @@ module JSI
       end
 
       private def schema_property_writer_module_compute(writers)
-          Module.new do
+          PropertyModule.new do
             define_singleton_method(:inspect) { -"(JSI Schema Property Writer Module: #{writers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_writers) { writers }
