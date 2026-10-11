@@ -195,28 +195,27 @@ module JSI
       # a JSI Schema Class which represents the given schemas.
       # an instance of the class is a JSON Schema instance described by all of the given schemas.
       # @api private
-      # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
+      # @param schemas [SchemaSet] schemas which the class will represent
       # @param includes [Enumerable<Module>] modules which will be included on the class
       # @return [Class subclass of JSI::Base]
       def class_for_schemas(schemas, includes: , mutable: )
+        #chkbug fail(Bug) if !schemas.is_a?(SchemaSet)
         @class_for_schemas_map[
-          schema_modules: schemas.map(&:jsi_schema_module).to_set.freeze,
+          schemas: schemas,
           includes: includes.to_set.freeze,
           mutable: mutable,
         ]
       end
 
-      private def class_for_schemas_compute(schema_modules: , includes: , mutable: )
+      private def class_for_schemas_compute(schemas: , includes: , mutable: )
           Class.new(Base) do
-            schemas = SchemaSet.new(schema_modules.map(&:schema))
-
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
 
             define_singleton_method(:jsi_class_includes) { includes }
 
             mutability_module = mutable ? Base::Mutable : Base::Immutable
-            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schema_modules
+            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schemas.map(&:jsi_schema_module)
 
             include(mutability_module)
 
@@ -236,7 +235,7 @@ module JSI
             end
 
             includes.each { |m| include(m) }
-            schema_modules.to_a.reverse_each { |m| include(m) }
+            schemas.map(&:jsi_schema_module).reverse_each { |m| include(m) }
           end
       end
 
