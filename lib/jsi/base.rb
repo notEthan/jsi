@@ -97,8 +97,8 @@ module JSI
     # - {Schema#new_jsi} to instantiate schema instances
     #
     # @api private
-    # @param jsi_document [Object] the document containing the instance
-    # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
+    # @param jsi_document [Object]
+    # @param jsi_ptr [Ptr]
     # @param jsi_base_uri [URI, nil] see {SchemaSet#new_jsi} param `base_uri`
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
