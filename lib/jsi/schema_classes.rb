@@ -121,11 +121,11 @@ module JSI
 
     # invokes {JSI::Schema#new_jsi} on this module's schema, passing the given parameters.
     #
-    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI node representing the given instance content, whose schemas are
     #   in-place applicators of this module's schema.
-    def new_jsi(instance, **kw)
+    def new_jsi(content, **kw)
       raise(BlockGivenError) if block_given?
-      schema.new_jsi(instance, **kw)
+      schema.new_jsi(content, **kw)
     end
 
     # See {Schema#schema_content}
@@ -163,8 +163,9 @@ module JSI
     #
     # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
     #   the given `schema_content` and whose schemas are in-place applicators of this module's schema.
-    def new_schema(schema_content, **kw, &block)
-      schema.new_schema(schema_content, **kw, &block)
+    def new_schema(schema_content, **conf_kw)
+      raise(BlockGivenError) if block_given?
+      schema.new_schema(schema_content, **conf_kw)
     end
 
     # (see Schema::MetaSchema#new_schema_module)
@@ -181,14 +182,17 @@ module JSI
   # this module is a namespace for building schema classes and schema modules.
   # @private
   module SchemaClasses
+    class PropertyModule < Module
+    end
+
     class << self
       # @private
       # @return [Set<Module>]
-      def includes_for(instance)
+      def includes_for(content)
         includes = Set[]
-        includes << Base::ArrayNode if instance.respond_to?(:to_ary)
-        includes << Base::HashNode if instance.respond_to?(:to_hash)
-        includes << Base::StringNode if instance.respond_to?(:to_str)
+        includes << Base::ArrayNode if content.respond_to?(:to_ary)
+        includes << Base::HashNode if content.respond_to?(:to_hash)
+        includes << Base::StringNode if content.respond_to?(:to_str)
         includes.freeze
       end
 
@@ -257,7 +261,7 @@ module JSI
       end
 
       private def schema_property_reader_module_compute(readers)
-          Module.new do
+          PropertyModule.new do
             define_singleton_method(:inspect) { -"(JSI Schema Property Reader Module: #{readers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_readers) { readers }
@@ -283,7 +287,7 @@ module JSI
       end
 
       private def schema_property_writer_module_compute(writers)
-          Module.new do
+          PropertyModule.new do
             define_singleton_method(:inspect) { -"(JSI Schema Property Writer Module: #{writers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_writers) { writers }
@@ -347,7 +351,6 @@ module JSI
     # @return [SchemaModule, SchemaModule::Connection, Object]
     def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
-      @jsi_node.jsi_child_ensure_present(token)
       sub = @jsi_node.jsi_child_node(token)
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module_exec(&block) if block

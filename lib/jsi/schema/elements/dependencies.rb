@@ -58,6 +58,7 @@ module JSI
               #> value MUST be an array or a valid JSON Schema.
               next if !keyword_value_hash?('dependencies')
               next if !instance.respond_to?(:to_hash)
+              results = {}
               schema_content['dependencies'].each_pair do |property_name, dependency|
                 if dependency.respond_to?(:to_ary)
                   # If the dependency value is an array, each element in the array, if
@@ -80,18 +81,18 @@ module JSI
                   # property in the instance, the entire instance must validate against
                   # the dependency value.
                   if instance.key?(property_name)
-                    dependency_result = inplace_subschema_validate(['dependencies', property_name])
-                    inplace_results_validate(
-                      dependency_result.valid?,
-                      'validation.keyword.dependencies.dependent_schema.invalid',
-                      'instance object is not valid against the schema corresponding to a matched property name specified by `dependencies` value',
-                      keyword: 'dependencies',
-                      results: [dependency_result],
-                      property_name: property_name,
-                    )
+                    results[property_name] = inplace_subschema_validate(['dependencies', property_name])
                   end
                 end
               end
+              inplace_results_validate(
+                results.each_value.all?(&:valid?),
+                'validation.keyword.dependencies.dependent_schema.invalid',
+                "instance object is not valid against all schemas corresponding to matched property names specified by `dependencies`",
+                keyword: 'dependencies',
+                results: results.each_value,
+                dependencies_schema_properties_valid: results.inject({}) { |h, (k, r)| h.update({k => r.valid?}) }.freeze,
+              )
         end # element.add_action(:validate)
       end # Schema::Element.new
     end # DEPENDENCIES = element_map

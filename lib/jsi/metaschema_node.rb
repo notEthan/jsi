@@ -81,6 +81,21 @@ module JSI
     # See {JSI.new_metaschema_node} to instantiate.
     #
     # Note: when instantiating MetaSchemaNode directly, the caller must invoke #jsi_initialize_finish.
+    #
+    # Initialization is complex, and occurs in several stages:
+    # - MetaSchemaNode.new / #initialize (@initialize_finish_started = false, @initialize_finished = false)
+    #   - other new MSNs are not instantiated
+    #   - node's jsi_schemas will be bootstrap schemas
+    #   - node extends self with Schema if it is a schema; other nodes in the process of initializing,
+    #     whose jsi_schemas include node, can extend themselves with node's jsi_schema_module
+    # - #jsi_initialize_finish starts (@initialize_finish_started = true, @initialize_finished = false)
+    #   - instantiate and initialize MSN schema nodes to replace node's bootstrap jsi_schemas
+    #     - schema MSNs #initialize, do not yet start #jsi_initialize_finish
+    #   - other initialization steps that need schemas that are MSN - node is extended by their schema modules, adds reader methods, etc
+    #   - node's MSN schemas, and any other MSN nodes instantiated during initialization, start #jsi_initialize_finish (recursive)
+    # - initialization finishes (@initialize_finished = true)
+    #   - node's jsi_schemas and those schemas' jsi_schemas etc are all initialized + finished MSN schema nodes
+    #   - descendent nodes instantiated subsequently will proceed to immediately finish initialization; no need to defer anymore
     # @api private
     def initialize(**kw)
       super(jsi_indicated_schemas: SchemaSet[], **kw)
@@ -211,6 +226,7 @@ module JSI
 
     # see {Base#jsi_child_node}
     def jsi_child_node(token)
+      jsi_child_ensure_present(token) if @initialize_finished # until initialize_finished, jsi_child_token_present? is wrong (Base::HashNode/ArrayNode not extended)
       root_descendent_node(jsi_ptr[token])
     end
 

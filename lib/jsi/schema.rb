@@ -468,17 +468,17 @@ module JSI
       is_a?(Base) ? jsi_schema_module.name_from_ancestor : nil
     end
 
-    # Instantiates a new JSI whose content comes from the given `instance` param.
+    # Instantiates a new JSI instance representing the given `content`.
     # This schema indicates the schemas of the JSI - its schemas are in-place
-    # applicators of this schema which apply to the given instance.
+    # applicators of this schema which apply to the instance.
     #
     # All parameters are passed to {SchemaSet#new_jsi}.
     #
-    # @return [Base] a JSI whose content comes from the given instance and whose schemas are
+    # @return [Base] a JSI representing the given instance content, whose schemas are
     #   in-place applicators of this schema.
-    def new_jsi(instance, **kw)
+    def new_jsi(content, **kw)
       raise(BlockGivenError) if block_given?
-      SchemaSet[self].new_jsi(instance, **kw)
+      SchemaSet[self].new_jsi(content, **kw)
     end
 
     # @param ref [#to_str] ref URI

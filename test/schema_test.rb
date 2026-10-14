@@ -767,17 +767,14 @@ describe JSI::Schema do
     end
 
     it '#inspect' do
-      assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaDraft06::Type + JSI::JSONSchemaDraft06::Type::Array)> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaDraft06 + 1) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaDraft06::Items + JSI::JSONSchemaDraft06::SchemaArray)> #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency + JSI::JSONSchemaDraft06::StringArray)> "b"]}}, #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaDraft06 + 1) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaDraft06::Enum)>]}}}), schema.inspect)
+      assert_equal(%q(#{<JSI (JSI::JSONSchemaDraft06) Schema> "$schema" => "http://json-schema.org/draft-06/schema", "$id" => "http://jsi/schema/stringification", "type" => #[<JSI (JSI::JSONSchemaDraft06::Type + 1)> "object", "array"], "properties" => #{<JSI (JSI::JSONSchemaDraft06::Properties)> "foo" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "items" => #{<JSI (JSI::JSONSchemaDraft06 + 1) Schema> "$ref" => "#/definitions/no"}}}, "items" => #[<JSI (JSI::JSONSchemaDraft06::Items + 1)> #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency + 1)> "b"]}}, #{<JSI (JSI::JSONSchemaDraft06) Schema> "dependencies" => #{<JSI (JSI::JSONSchemaDraft06::Dependencies)> "a" => #{<JSI (JSI::JSONSchemaDraft06 + 1) Schema>}}}], "definitions" => #{<JSI (JSI::JSONSchemaDraft06::Definitions)> "no" => #{<JSI (JSI::JSONSchemaDraft06) Schema> "enum" => #[<JSI (JSI::JSONSchemaDraft06::Enum)>]}}}), schema.inspect)
     end
     it '#pretty_print' do
       pp = <<~PP
         \#{<JSI (JSI::JSONSchemaDraft06) Schema>
           "$schema" => "http://json-schema.org/draft-06/schema",
           "$id" => "http://jsi/schema/stringification",
-          "type" => #[<JSI (JSI::JSONSchemaDraft06::Type + JSI::JSONSchemaDraft06::Type::Array)>
-            "object",
-            "array"
-          ],
+          "type" => #[<JSI (JSI::JSONSchemaDraft06::Type + 1)> "object", "array"],
           "properties" => \#{<JSI (JSI::JSONSchemaDraft06::Properties)>
             "foo" => \#{<JSI (JSI::JSONSchemaDraft06) Schema>
               "items" => \#{<JSI (JSI::JSONSchemaDraft06 + 1) Schema>
@@ -785,10 +782,10 @@ describe JSI::Schema do
               }
             }
           },
-          "items" => #[<JSI (JSI::JSONSchemaDraft06::Items + JSI::JSONSchemaDraft06::SchemaArray)>
+          "items" => #[<JSI (JSI::JSONSchemaDraft06::Items + 1)>
             \#{<JSI (JSI::JSONSchemaDraft06) Schema>
               "dependencies" => \#{<JSI (JSI::JSONSchemaDraft06::Dependencies)>
-                "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency + JSI::JSONSchemaDraft06::StringArray)>
+                "a" => #[<JSI (JSI::JSONSchemaDraft06::Dependencies::Dependency + 1)>
                   "b"
                 ]
               }

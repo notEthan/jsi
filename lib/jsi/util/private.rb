@@ -192,7 +192,7 @@ module JSI
     module FingerprintHash
       # overrides BasicObject#==
       def ==(other)
-        __id__ == other.__id__ || (other.is_a?(FingerprintHash) && jsi_fingerprint == other.jsi_fingerprint)
+        equal?(other) || (other.is_a?(FingerprintHash) && jsi_fingerprint == other.jsi_fingerprint)
       end
 
       alias_method :eql?, :==
@@ -207,7 +207,7 @@ module JSI
       include FingerprintHash
 
       def ==(other)
-        return true if __id__ == other.__id__
+        return true if equal?(other)
         return false unless other.is_a?(FingerprintHash)
         # FingerprintHash::Immutable#hash being memoized, comparing that is basically free.
         # not done with FingerprintHash, its #hash can be expensive.
