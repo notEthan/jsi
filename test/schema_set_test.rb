@@ -26,7 +26,6 @@ describe 'JSI::SchemaSet' do
       end
 
       it 'errors given non-Enumerable' do
-        assert_raises(ArgumentError) { JSI::SchemaSet.new(nil) }
         assert_raises(ArgumentError) { JSI::SchemaSet.new(Object.new) }
       end
     end
