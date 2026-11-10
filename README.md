@@ -144,7 +144,7 @@ bad.phone[0].jsi_validate
 # >
 ```
 
-Since the underlying instance is a ruby hash (json object), we can use it like a hash with `#[]` or, say, `#transform_values`:
+Since the underlying instance content is a Ruby Hash (JSON object), we can use it like a hash with `#[]` or, say, `#transform_values`:
 
 ```ruby
 # note that #size here is actually referring to multiple different methods;

@@ -243,17 +243,7 @@ module JSI
           end
           default_metaschema.new_schema(schema_content, **new_schema_params)
         }
-        if schema_content.is_a?(Schema)
-          raise(TypeError, [
-            "Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.",
-            "given: #{schema_content.pretty_inspect.chomp}",
-          ].join("\n"))
-        elsif schema_content.is_a?(JSI::Base)
-          raise(TypeError, [
-            "Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.",
-            "given: #{schema_content.pretty_inspect.chomp}",
-          ].join("\n"))
-        elsif schema_content.respond_to?(:to_hash)
+        if schema_content.respond_to?(:to_hash)
           id = schema_content['$schema'] || stringify_symbol_keys && schema_content[:'$schema']
           if id
             metaschema = Schema.ensure_metaschema(id, name: '$schema', registry: conf.registry)
@@ -927,6 +917,12 @@ module JSI
       return name if name
       return schema_uri ? schema_uri.to_s : required ? jsi_ptr.uri.to_s : nil if jsi_schema_dynamic_anchor_map.empty?
       -"#{schema_uri || jsi_ptr.uri}#{jsi_schema_dynamic_anchor_map.anchor_schemas_identifier}"
+    end
+
+    # Override Base#jsi_fingerprint; compare Schema instances by identity
+    # @api private
+    def jsi_fingerprint
+      __id__
     end
 
     private

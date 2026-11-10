@@ -20,12 +20,12 @@ describe JSI::Schema do
 
     it 'cannot instantiate from a JSI Schema' do
       err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaDraft07.new_schema({}), default_metaschema: JSI::JSONSchemaDraft07) }
-      assert_equal("Given schema_content is already a JSI::Schema. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI (JSI::JSONSchemaDraft07) Schema>}", err.message)
+      assert_equal("JSI instance in node content: \#{<JSI (JSI::JSONSchemaDraft07) Schema>}", err.message)
     end
 
     it 'cannot instantiate from a JSI' do
       err = assert_raises(TypeError) { JSI.new_schema(JSI::JSONSchemaDraft07.new_schema({}).new_jsi({}), default_metaschema: JSI::JSONSchemaDraft07) }
-      assert_equal("Given schema_content is a JSI::Base. It cannot be instantiated as the content of a schema.\ngiven: \#{<JSI*1>}", err.message)
+      assert_equal("JSI instance in node content: \#{<JSI*1>}", err.message)
     end
 
     it 'instantiates using default_metaschema' do

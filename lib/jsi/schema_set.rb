@@ -34,19 +34,7 @@ module JSI
         ].join("\n"))
       end
 
-      unless enum.is_a?(Enumerable)
-        raise(ArgumentError, "#{SchemaSet} initialized with non-Enumerable: #{enum.pretty_inspect.chomp}")
-      end
-
-      super(&nil) # note super() does implicitly pass block without &nil
-
-      compare_by_identity
-
-      if block
-        enum.each_entry { |o| add(block[o]) }
-      else
-        merge(enum)
-      end
+      super
 
       not_schemas = reject { |s| s.is_a?(Schema) }
       if !not_schemas.empty?
@@ -105,6 +93,8 @@ module JSI
       raise(BlockGivenError) if block_given?
 
       conf = Base::Conf.new(**conf_kw)
+
+      document = Util.jsi_in_content(document, action: conf.jsi_in_content)
 
       document = Util.deep_stringify_symbol_keys(document) if stringify_symbol_keys
 

@@ -633,6 +633,45 @@ describe(JSI::MetaSchemaNode) do
       end
     end
   end
+
+  describe("Base::HashNode/ArrayNode methods not overridden by readers") do
+    it("does not override") do
+      metaschema = JSI.new_metaschema_node(
+        YAML.load(<<~YAML
+          properties:
+            properties:
+              additionalProperties:
+                $ref: "#"
+            additionalProperties:
+              $ref: "#"
+            array: []
+            $ref: {}
+            each_key: {}
+            each_index: {}
+          each_key: each_key
+          each_index: each_index
+          YAML
+        ),
+        dialect: JSI::Schema::Dialect.new(
+          vocabularies: [
+            JSI::Schema::Vocabulary.new(elements: [
+              JSI::Schema::Elements::REF[exclusive: true],
+              JSI::Schema::Elements::SELF[],
+              JSI::Schema::Elements::PROPERTIES[],
+            ]),
+          ],
+        ),
+      )
+
+      assert_equal(JSI::Base::HashNode, metaschema.method(:each_key).owner)
+      assert_equal('each_index', metaschema.each_index)
+      assert_is_a(JSI::SchemaClasses::PropertyModule, metaschema.method(:each_index).owner)
+
+      assert_equal(JSI::Base::ArrayNode, metaschema.properties['array'].method(:each_index).owner)
+      # currently MetaSchemaNode does define property readers regardless whether node is HashNode; that could change
+      assert_is_a(JSI::SchemaClasses::PropertyModule, metaschema.properties['array'].method(:each_key).owner)
+    end
+  end
 end
 
 $test_report_file_loaded[__FILE__]

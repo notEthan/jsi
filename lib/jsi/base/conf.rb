@@ -9,6 +9,7 @@ module JSI
     after_initialize:                       {fingerprint: false},
     child_as_jsi:                           {fingerprint: false},
     child_use_default:                      {fingerprint: false},
+    jsi_in_content:                         {fingerprint: false},
     to_immutable:                           {fingerprint: false},
   }.freeze
   Base::Conf = Struct::Frozen.subclass(*conf_attrs.keys)
@@ -72,6 +73,11 @@ module JSI
   #   The default value for the param `use_default` of {Base#[]}, controlling
   #   whether a schema default value is returned when accessing a child that is not present in the document.
   #   @return [Boolean]
+  # @!attribute jsi_in_content
+  #   A JSI node's content shuld not contain another JSI instance. This controls how it is handled if that is encountered.
+  #
+  #   Default: `:raise`
+  #   @return [:raise, :strip, :ignore]
   # @!attribute to_immutable
   #   A callable that transforms given instance content to an immutable (i.e. deeply frozen) object equal to it.
   #
@@ -90,6 +96,7 @@ module JSI
         application_collect_evaluated_validate: false,
         child_as_jsi: :auto,
         child_use_default: false,
+        jsi_in_content: :raise,
         to_immutable: DEFAULT_CONTENT_TO_IMMUTABLE,
         **
     )

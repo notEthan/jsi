@@ -163,8 +163,9 @@ module JSI
     #
     # @return [Base + Schema] A JSI which is a {Schema} whose content comes from
     #   the given `schema_content` and whose schemas are in-place applicators of this module's schema.
-    def new_schema(schema_content, **kw, &block)
-      schema.new_schema(schema_content, **kw, &block)
+    def new_schema(schema_content, **conf_kw)
+      raise(BlockGivenError) if block_given?
+      schema.new_schema(schema_content, **conf_kw)
     end
 
     # (see Schema::MetaSchema#new_schema_module)
@@ -181,42 +182,44 @@ module JSI
   # this module is a namespace for building schema classes and schema modules.
   # @private
   module SchemaClasses
+    class PropertyModule < Module
+    end
+
     class << self
       # @private
       # @return [Set<Module>]
-      def includes_for(instance)
+      def includes_for(content)
         includes = Set[]
-        includes << Base::ArrayNode if instance.respond_to?(:to_ary)
-        includes << Base::HashNode if instance.respond_to?(:to_hash)
-        includes << Base::StringNode if instance.respond_to?(:to_str)
+        includes << Base::ArrayNode if content.respond_to?(:to_ary)
+        includes << Base::HashNode if content.respond_to?(:to_hash)
+        includes << Base::StringNode if content.respond_to?(:to_str)
         includes.freeze
       end
 
       # a JSI Schema Class which represents the given schemas.
       # an instance of the class is a JSON Schema instance described by all of the given schemas.
       # @api private
-      # @param schemas [Enumerable<JSI::Schema>] schemas which the class will represent
+      # @param schemas [SchemaSet] schemas which the class will represent
       # @param includes [Enumerable<Module>] modules which will be included on the class
       # @return [Class subclass of JSI::Base]
       def class_for_schemas(schemas, includes: , mutable: )
+        #chkbug fail(Bug) if !schemas.is_a?(SchemaSet)
         @class_for_schemas_map[
-          schema_modules: schemas.map(&:jsi_schema_module).to_set.freeze,
+          schemas: schemas,
           includes: includes.to_set.freeze,
           mutable: mutable,
         ]
       end
 
-      private def class_for_schemas_compute(schema_modules: , includes: , mutable: )
+      private def class_for_schemas_compute(schemas: , includes: , mutable: )
           Class.new(Base) do
-            schemas = SchemaSet.new(schema_modules.map(&:schema))
-
             define_singleton_method(:jsi_class_schemas) { schemas }
             define_method(:jsi_schemas) { schemas }
 
             define_singleton_method(:jsi_class_includes) { includes }
 
             mutability_module = mutable ? Base::Mutable : Base::Immutable
-            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schema_modules
+            conflicting_modules = Set[JSI::Base, mutability_module] + includes + schemas.map(&:jsi_schema_module)
 
             include(mutability_module)
 
@@ -236,7 +239,7 @@ module JSI
             end
 
             includes.each { |m| include(m) }
-            schema_modules.to_a.reverse_each { |m| include(m) }
+            schemas.map(&:jsi_schema_module).reverse_each { |m| include(m) }
           end
       end
 
@@ -258,7 +261,7 @@ module JSI
       end
 
       private def schema_property_reader_module_compute(readers)
-          Module.new do
+          PropertyModule.new do
             define_singleton_method(:inspect) { -"(JSI Schema Property Reader Module: #{readers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_readers) { readers }
@@ -284,7 +287,7 @@ module JSI
       end
 
       private def schema_property_writer_module_compute(writers)
-          Module.new do
+          PropertyModule.new do
             define_singleton_method(:inspect) { -"(JSI Schema Property Writer Module: #{writers.to_a.join(', ')})" }
 
             define_singleton_method(:jsi_property_writers) { writers }
@@ -348,7 +351,6 @@ module JSI
     # @return [SchemaModule, SchemaModule::Connection, Object]
     def [](token, **kw, &block)
       raise(ArgumentError) unless kw.empty? # TODO remove eventually (keyword argument compatibility)
-      @jsi_node.jsi_child_ensure_present(token)
       sub = @jsi_node.jsi_child_node(token)
       if sub.is_a?(JSI::Schema)
         sub.jsi_schema_module_exec(&block) if block

@@ -130,7 +130,7 @@ describe JSI::Base do
       let(:subject_opt) { {to_immutable: nil} }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI*1> "foo" => "bar"}), err.message)
+        assert_equal(%q(JSI instance in node content: #{<JSI*1> "foo" => "bar"}), err.message)
       end
     end
     describe 'Schema invalid' do
@@ -138,7 +138,7 @@ describe JSI::Base do
       let(:subject_opt) { {to_immutable: nil} }
       it 'initializes with an error' do
         err = assert_raises(TypeError) { subject }
-        assert_equal(%q(a JSI::Base instance must not be another JSI::Base. received: #{<JSI (JSI::JSONSchemaDraft06) Schema>}), err.message)
+        assert_equal(%q(JSI instance in node content: #{<JSI (JSI::JSONSchemaDraft06) Schema>}), err.message)
       end
     end
   end
@@ -463,6 +463,25 @@ describe JSI::Base do
           assert_raises_msg(ArgumentError, /immutable/) { subject.jsi_modified_copy { c } }
           assert_same(c, subject.jsi_modified_copy(to_immutable: nil) { c }.jsi_node_content)
         end
+      end
+    end
+
+    describe("jsi_in_content") do
+      it("applies") do
+        j = JSI::SchemaSet[].new_jsi({})
+        # default jsi_in_content raises
+        assert_raises(TypeError) { subject.merge({'x' => j}) }
+        # strip
+        a = schema.new_jsi(instance, jsi_in_content: :strip)
+        assert_equal({'x' => {}}, a.merge({'x' => j}).jsi_node_content)
+        # strip from jsi_modified_copy conf_kw
+        assert_equal({'x' => {}}, subject.jsi_modified_copy(jsi_in_content: :strip) { {'x' => j} }.jsi_node_content)
+        # ignore
+        assert_raises(TypeError) { subject.merge({'x' => j}) }
+        a = schema.new_jsi(instance, jsi_in_content: :ignore, to_immutable: nil)
+        assert_equal({'x' => j}, a.merge({'x' => j}).jsi_node_content)
+        # ignore from jsi_modified_copy conf_kw
+        assert_equal({'x' => j}, subject.jsi_modified_copy(jsi_in_content: :ignore, to_immutable: nil) { {'x' => j} }.jsi_node_content)
       end
     end
 
@@ -799,10 +818,10 @@ describe JSI::Base do
         end
         it 'does not define readers' do
           assert_equal('bar', subject.foo) # this one is defined
-          assert_respond_to(subject.method(:foo).owner, :jsi_property_readers) # assert owner of #foo is a schema property reader module
+          assert_is_a(JSI::SchemaClasses::PropertyModule, subject.method(:foo).owner)
           assert_equal('not ary', subject.to_ary) # this one is defined but would not be for an Array instance
 
-          refute_respond_to(subject.method(:initialize).owner, :jsi_property_readers) # refute owner of #initialize is a schema property reader module
+          refute_is_a(JSI::SchemaClasses::PropertyModule, subject.method(:initialize).owner)
           assert_equal('hi', subject['initialize'])
           assert_equal(%q(#{<JSI*1> "foo" => "bar", "to_ary" => "not ary", "initialize" => "hi", "inspect" => "hi", "pretty_inspect" => "hi", "as_json" => "hi", "each" => "hi", "instance_exec" => "hi", "jsi_node_content" => "hi", "jsi_schemas" => "hi"}), subject.inspect)
           assert_equal('hi', subject['inspect'])
