@@ -122,20 +122,20 @@ bad = Contact.new_jsi({'phone' => [{'number' => [5, 5, 5]}]})
 bad.phone[0].jsi_validate
 # =>
 # #<JSI::Validation::Result::Full (INVALID)
-#   validation errors: JSI::Set[
+#   nested_validation_errors: JSI::Set[
 #     #<JSI::Validation::Error
 #       message: "instance object properties are not all valid against corresponding `properties` schemas",
 #       instance: {"number" => [5, 5, 5]},
 #       instance_ptr: JSI::Ptr["phone", 0],
 #       keyword: "properties",
-#       schema uri: JSI::URI["#/properties/phone/items"],
+#       schema_uri: JSI::URI["#/properties/phone/items"],
 #       nested_errors: JSI::Set[
 #         #<JSI::Validation::Error
 #           message: "instance type does not match `type` value",
 #           instance: [5, 5, 5],
 #           instance_ptr: JSI::Ptr["phone", 0, "number"],
 #           keyword: "type",
-#           schema uri: JSI::URI["#/properties/phone/items/properties/number"],
+#           schema_uri: JSI::URI["#/properties/phone/items/properties/number"],
 #           nested_errors: JSI::Set[]
 #         >
 #       ]
@@ -166,7 +166,7 @@ There's plenty more JSI has to offer, but this should give you a pretty good ide
 - a "JSI schema class" is a subclass of `JSI::Base` representing any number of JSON schemas. Instances of such a class are described by all of the represented schemas. A JSI schema class includes the JSI schema module of each represented schema.
 - "instance" is a term that is significantly overloaded in this space, so documentation will attempt to be clear what kind of instance is meant:
   - a schema instance refers broadly to a data structure that is described by a JSON schema.
-  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_instance`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
+  - a JSI instance (or just "a JSI") is a ruby object instantiating a JSI schema class (subclass of `JSI::Base`). This wraps the content of the schema instance (see `JSI::Base#jsi_node_content`), and ties it to the schemas which describe the instance (`JSI::Base#jsi_schemas`).
 - "schema" refers to either a parsed JSON schema (generally a ruby Hash) or a JSI schema.
 
 ## Supported specification versions

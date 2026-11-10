@@ -1,5 +1,6 @@
 require_relative('../test_helper')
 
+require("logger") # TODO rm
 require("active_support")
 require("active_support/core_ext/object/json")
 

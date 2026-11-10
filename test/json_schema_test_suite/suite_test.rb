@@ -28,34 +28,21 @@ end
 JSTS_REGISTRIES = Hash.new do |h, metaschema|
   jsts_registry = base_registry.dup
 
-  Dir.chdir(JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')) do
-    Dir.glob('**/*.json').each do |subpath|
-      remote_content = JSON.parse(File.open(subpath, 'r:UTF-8', &:read), freeze: true)
+  remotes_path = JSI::TEST_RESOURCES_PATH.join('JSON-Schema-Test-Suite/remotes')
+  Dir.chdir(remotes_path) { Dir.glob('**/*.json') }.each do |subpath|
       uri = File.join('http://localhost:1234/', subpath)
       jsts_registry.autoload_uri(uri) do |registry: |
-        if subpath == 'subSchemas.json' && !remote_content.key?('definitions') # TODO rm
-          subSchemas_schema = JSI.new_schema({
-            '$schema' => 'http://json-schema.org/draft-07/schema',
-            'additionalProperties' => {'$ref' => 'http://json-schema.org/draft-07/schema'},
-          })
-          subSchemas_schema.new_jsi(remote_content,
-            root_uri: uri,
-            registry: registry,
-          )
-        else
-          JSI.new_schema(remote_content,
+          JSI.new_schema(JSON.parse((remotes_path / subpath).open('r:UTF-8', &:read), freeze: true),
             root_uri: uri,
             default_metaschema: metaschema,
             registry: registry,
             after_initialize: proc do |node|
-              if node.jsi_ptr.root? && remote_content['$vocabulary']
+              if node.jsi_ptr.root? && node.keyword?('$vocabulary')
                 node.describes_schema!
               end
             end,
           )
-        end
       end
-    end
   end
   $test_report_time["remotes set up"]
 
@@ -77,20 +64,10 @@ describe 'JSON Schema Test Suite' do
           subpaths.each do |subpath|
             path = base.join(subpath)
             describe(subpath) do
-              begin
                 tests_desc_object = JSON.parse(path.open('r:UTF-8', &:read), freeze: true)
-              rescue JSON::ParserError => e
-                # :nocov:
-                # known json/pure issue https://github.com/flori/json/pull/483
-                raise unless e.message =~ /Encoding::CompatibilityError/
-                warn("JSON Schema Test Suite skipping #{path}")
-                warn(e)
-                tests_desc_object = []
-                # :nocov:
-              end
               JSONSchemaTestSchema.new_jsi(tests_desc_object).each do |tests_desc|
                 desc_registry = JSTS_REGISTRIES[metaschema].dup
-                desc_schema = JSI.new_schema(tests_desc.jsi_instance['schema'],
+                desc_schema = JSI.new_schema(tests_desc.jsi_node_content['schema'],
                   registry: desc_registry,
                   default_metaschema: metaschema,
                   reinstantiate_nonschemas: File.basename(subpath) == 'refOfUnknownKeyword.json',
@@ -100,7 +77,7 @@ describe 'JSON Schema Test Suite' do
 
                 bootstrap_registry = JSTS_REGISTRIES[metaschema].dup
                 desc_bootstrap_schema = dialect.bootstrap_schema(
-                  jsi_document: tests_desc.jsi_instance['schema'],
+                  jsi_document: tests_desc.jsi_node_content['schema'],
                   jsi_registry: bootstrap_registry,
                 )
                 bootstrap_registry.register(desc_bootstrap_schema)
@@ -122,7 +99,7 @@ describe 'JSON Schema Test Suite' do
                   tests_desc.tests.each do |test|
                       it(test.description) do
                         begin
-                          jsi = schema.new_jsi(test.jsi_instance['data'],
+                          jsi = schema.new_jsi(test.jsi_node_content['data'],
                             registry: nil,
                             application_collect_evaluated_validate: true,
                           )
@@ -134,7 +111,7 @@ describe 'JSON Schema Test Suite' do
                         result = jsi.jsi_validate
                         assert_equal(result.valid?, jsi.jsi_valid?)
 
-                        assert_equal(result.valid?, bootstrap_schema.instance_valid?(test.jsi_instance['data']))
+                        assert_equal(result.valid?, bootstrap_schema.instance_valid?(test.jsi_node_content['data']))
 
                         transform_errors = JSI::Util.ycomb do |rec|
                           proc do |errors|
@@ -147,7 +124,7 @@ describe 'JSON Schema Test Suite' do
                           end
                         end
 
-                        assert_transform_equal(result, bootstrap_schema.instance_validate(test.jsi_instance['data'])) do |r|
+                        assert_transform_equal(result, bootstrap_schema.instance_validate(test.jsi_node_content['data'])) do |r|
                           transform_errors[r.nested_validation_errors]
                         end
 

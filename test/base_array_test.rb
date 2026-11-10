@@ -115,7 +115,7 @@ describe 'JSI::Base array' do
       let(:instance) { [[2]] }
       it 'returns the nondefault value' do
         assert_schemas([schema.items], subject[0])
-        assert_equal([2], subject[0].jsi_instance)
+        assert_equal([2], subject[0].jsi_node_content)
       end
     end
 
@@ -151,7 +151,7 @@ describe 'JSI::Base array' do
       it 'returns the default value' do
         assert_schemas([schema.items], subject[1])
         assert_nil(subject[1, use_default: false])
-        assert_equal({'foo' => 2}, subject[1].jsi_instance)
+        assert_equal({'foo' => 2}, subject[1].jsi_node_content)
       end
     end
     describe("nondefault value (simple type)") do
@@ -165,7 +165,7 @@ describe 'JSI::Base array' do
       let(:instance) { [true, [2]] }
       it 'returns the nondefault value' do
         assert_schemas([schema.items], subject[1])
-        assert_equal([2], subject[1].jsi_instance)
+        assert_equal([2], subject[1].jsi_node_content)
       end
     end
 
@@ -194,19 +194,19 @@ describe 'JSI::Base array' do
 
       subject[2] = {'y' => 'z'}
 
-      assert_equal({'y' => 'z'}, subject[2].jsi_instance)
+      assert_equal({'y' => 'z'}, subject[2].jsi_node_content)
       assert_schemas([schema.items[2]], orig_2)
       assert_schemas([schema.items[2]], subject[2])
     end
     it 'modifies the instance, visible to other references to the same instance' do
-      orig_instance = subject.jsi_instance
+      orig_instance = subject.jsi_node_content
 
       subject[2] = {'y' => 'z'}
 
-      assert_equal(orig_instance, subject.jsi_instance)
+      assert_equal(orig_instance, subject.jsi_node_content)
       assert_equal({'y' => 'z'}, orig_instance[2])
-      assert_equal({'y' => 'z'}, subject.jsi_instance[2])
-      assert_equal(orig_instance.class, subject.jsi_instance.class)
+      assert_equal({'y' => 'z'}, subject.jsi_node_content[2])
+      assert_equal(orig_instance.class, subject.jsi_node_content.class)
     end
 
     describe 'negative index' do
@@ -455,7 +455,7 @@ describe 'JSI::Base array' do
       it('#size')      { assert_equal(3, subject.size) }
       it('#count')    { assert_equal(1, subject.count('foo')) }
       it('#slice')   { assert_equal(['foo'], subject.slice(0, 1)) }
-      it('#[]')     { assert_equal(SortOfArray.new(['q', 'r']), subject[2].jsi_instance) }
+      it('#[]')     { assert_equal(SortOfArray.new(['q', 'r']), subject[2].jsi_node_content) }
       it('#as_json') { assert_equal(['foo', {'lamp' => [3]}, ['q', 'r']], subject.as_json) }
     end
 

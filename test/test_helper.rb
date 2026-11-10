@@ -169,7 +169,7 @@ class JSISpec < Minitest::Spec
   end
 
   def assert_equal exp, act, msg = nil
-    msg = message(msg, E) do
+    msg = message(msg, '') do
       [].tap do |ms|
         ms << diff(exp, act)
         ms << "#{ANSI.red   { 'expected' }}: #{exp.inspect}"
@@ -244,9 +244,10 @@ class JSISpec < Minitest::Spec
       expected_missing = schemas - instance.jsi_schemas
       actual_missing = instance.jsi_schemas - schemas
       common = JSI::Set[].merge(schemas) & instance.jsi_schemas # TODO should compare_by_identity when available
+      ids = proc { |ss| ss.map { |s| s.jsi_schema_identifier(required: true) }.join(', ') }
       [
         msg.respond_to?(:call) ? msg.call : msg,
-        "Expected different schemas. #{common.size} in common; #{expected_missing.size} expected not in actual; #{actual_missing.size} actual not in expected",
+        "Expected different schemas. #{common.size} in common (#{ids[common]}); #{expected_missing.size} expected not in actual (#{ids[expected_missing]}); #{actual_missing.size} actual not in expected (#{ids[actual_missing]})",
         "diff schemas:",
         diff(schemas, instance.jsi_schemas),
         "expected not in actual:",
@@ -286,19 +287,29 @@ class JSISpec < Minitest::Spec
   end
 
   def assert_consistent_jsi_descendent_errors(jsi, result: jsi.jsi_validate)
+    raise unless jsi.jsi_ptr.root?
     result.each_validation_error do |result_error|
       # since the instance has an error at result_error.instance_ptr,
       # validation of the JSI descendent at that ptr should include that error,
       # as well as errors of its descendents.
 
-      errors_below_instance_ptr = result.each_validation_error.select do |e|
-        result_error.instance_ptr.ancestor_of?(e.instance_ptr)
-      end.to_set
+      next if result_error.instance_ptr.root?
 
-      descendent = jsi.jsi_descendent_node(result_error.instance_ptr)
-      descendent_errors = descendent.jsi_validate.each_validation_error.to_set
+      transform_errors = JSI::Util.ycomb do |rec|
+        proc do |errors|
+          errors.map do |error|
+            if result_error.instance_ptr.ancestor_of?(error.instance_ptr)
+              [error.merge(nested_errors: rec[error.nested_errors])]
+            else
+              rec[error.nested_errors]
+            end
+          end.inject(Set[], &:merge)
+        end
+      end
 
-      assert_equal(errors_below_instance_ptr, descendent_errors)
+      descendent_errors = jsi.jsi_descendent_node(result_error.instance_ptr).jsi_validate.nested_validation_errors
+
+      assert_transform_equal(result.nested_validation_errors, descendent_errors, &transform_errors)
     end
   end
 
@@ -324,7 +335,7 @@ describe("test helper assert_schemas") do
   it("errors informatively") do
     instance = BasicMetaSchema.new_schema('actual').new_jsi({})
     exp_schemas = [BasicMetaSchema.new_schema('expected')]
-    exp_msg = /custom message\nExpected different schemas\. 0 in common; 1 expected not in actual; 1 actual not in expected\ndiff schemas:\n.*\n-.*"expected".*\n\+.*"actual".*\nexpected not in actual:\n.*"expected".*\nactual not in expected:\n.*"actual"/m
+    exp_msg = /custom message\nExpected different schemas\. 0 in common \(\); 1 expected not in actual \(#\); 1 actual not in expected \(#\)\ndiff schemas:\n.*\n-.*"expected".*\n\+.*"actual".*\nexpected not in actual:\n.*"expected".*\nactual not in expected:\n.*"actual"/m
     assert_raises_msg(Minitest::Assertion, exp_msg) { assert_schemas(exp_schemas, instance, 'custom message') }
     assert_raises_msg(Minitest::Assertion, exp_msg) { assert_schemas(exp_schemas, instance, proc { 'custom message' }) }
   end

@@ -306,11 +306,11 @@ describe("JSI::Registry") do
       frozen = registry.freeze
       assert(frozen.equal?(registry))
       assert_equal(register_resource, registry.find(register_uri))
-      assert_raises(JSI::FrozenError) do
+      assert_raises(FrozenError) do
         registry.find(autoload_uri)
       end
       s = JSI.new_schema({'$schema' => 'http://json-schema.org/draft-07/schema', '$id' => 'http://jsi/registry/5h5c'})
-      assert_raises(JSI::FrozenError) do
+      assert_raises(FrozenError) do
         registry.register(s)
       end
     end

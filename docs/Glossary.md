@@ -45,7 +45,7 @@ It is generally a Ruby Hash, Array, String, Integer, Float or BigDecimal, true, 
 
 This content is referred to as the 'instance' in relation to [schema]s that describe it.
 
-See {JSI::Base#jsi_node_content} (also aliased as {JSI::Base#jsi_instance}.
+See {JSI::Base#jsi_node_content}.
 
 
 ### document
@@ -261,7 +261,7 @@ For a given node, its *resource root* is the nearest ancestor that is a resource
 
 Relative URIs and [pointer]s used by a schema (e.g. in `$ref` or `$id`) are resolved relative to its resource root and that resource's id.
 
-See {JSI::Schema#schema_resource_root}.
+See {JSI::Base#jsi_resource_root}.
 
 
 ### schema application
