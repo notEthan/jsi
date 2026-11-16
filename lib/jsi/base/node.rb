@@ -78,8 +78,8 @@ module JSI
     alias_method(:each_pair, :each)
 
     # Yields each key (property name)
-    # @param key_as_jsi [Boolean]
-    #   Instantiates and yields each property name (Hash key) as a JSI described by each `propertyNames` schema.
+    # @param key_as_jsi [Boolean] Whether each property name (Hash key) is instantiated and yielded
+    #   as a JSI instance described by any `propertyNames` schema.
     # @yield [String, Base]
     # @return [self, Enumerator] an Enumerator if invoked without a block, otherwise self
     def each_key(key_as_jsi: false, &block)
