@@ -101,7 +101,7 @@ bill.phone.map(&:location)
 # => ["home"]
 ```
 
-We also get validations, as you'd expect given that's largely what JSON Schema exists to do:
+We also get validations, as you'd expect given that's largely what JSON Schema was created to do:
 
 ```ruby
 bill.jsi_valid?
@@ -144,7 +144,7 @@ bad.phone[0].jsi_validate
 # >
 ```
 
-Since the underlying instance is a ruby hash (json object), we can use it like a hash with `#[]` or, say, `#transform_values`:
+Since the underlying instance content is a Ruby Hash (JSON object), we can use it like a hash with `#[]` or, say, `#transform_values`:
 
 ```ruby
 # note that #size here is actually referring to multiple different methods;
@@ -285,7 +285,11 @@ Schemas can automatically be lazily loaded by registering a block which instanti
 
 ## Validation
 
-JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications. To validate instances, see methods {JSI::Base#jsi_validate}, {JSI::Base#jsi_valid?}, {JSI::Schema#instance_validate}, {JSI::Schema#instance_valid?}.
+JSI implements all required features, and many optional features, for validation according to supported JSON Schema specifications.
+
+- To check validity (boolean), see {JSI::Schema#instance_valid?} and {JSI::Base#jsi_valid?}
+- For full validation results, see {JSI::Schema#instance_validate} and {JSI::Base#jsi_validate}
+- For exception-based validation, see {JSI::Schema#instance_valid!} and {JSI::Base#jsi_valid!}
 
 ## Meta-Schemas
 
@@ -312,8 +316,6 @@ end
 ```
 
 Now `user.contact_info` will be instantiated as a `Contact` JSI instance, from the JSON type in the database, with Contact's accessors, validations, and application-defined instance methods.
-
-See the gem [`arms`](https://github.com/notEthan/arms) if you wish to serialize the dumped JSON-compatible objects further as text.
 
 ## Hash keys (JSON Object property names)
 

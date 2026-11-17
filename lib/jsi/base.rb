@@ -89,7 +89,7 @@ module JSI
       end
     end
 
-    # initializes a JSI whose instance is in the given document at the given pointer.
+    # initializes a JSI whose content is in the given document at the given pointer.
     #
     # this is a private api - users should look elsewhere to instantiate JSIs, in particular:
     #
@@ -97,8 +97,8 @@ module JSI
     # - {Schema#new_jsi} to instantiate schema instances
     #
     # @api private
-    # @param jsi_document [Object] the document containing the instance
-    # @param jsi_ptr [JSI::Ptr] a pointer pointing to the JSI's instance in the document
+    # @param jsi_document [Object]
+    # @param jsi_ptr [Ptr]
     # @param jsi_base_uri [URI, nil] see {SchemaSet#new_jsi} param `base_uri`
     # @param jsi_schema_resource_ancestors [Array<JSI::Base + JSI::Schema>]
     # @param jsi_schema_dynamic_anchor_map [Schema::DynamicAnchorMap]
@@ -135,6 +135,7 @@ module JSI
       @root_rel_ptr = @jsi_ptr.relative_to(@jsi_root_node.jsi_ptr)
 
       # @memos does not freeze if/when the node freezes
+      # note: use memomap when mutable content should invalidate memo
       @memos = {}
       jsi_memomaps_initialize
       jsi_mutability_initialize
@@ -154,10 +155,10 @@ module JSI
     # note: defined on subclasses by JSI::SchemaClasses.class_for_schemas
 
 
-    # document containing the instance of this JSI at our {#jsi_ptr}
+    # document containing the content of this JSI at our {#jsi_ptr}
     attr_reader :jsi_document
 
-    # {JSI::Ptr} pointing to this JSI's instance within our {#jsi_document}
+    # {JSI::Ptr} pointing to this JSI node's content within our {#jsi_document}
     # @return [JSI::Ptr]
     attr_reader :jsi_ptr
 
@@ -183,13 +184,6 @@ module JSI
       # stub method for doc, overridden by Mutable/Immutable
     end
 
-    # The JSON schema instance this JSI represents - the underlying JSON data used to instantiate this JSI.
-    # The same as {#jsi_node_content} - 'node content' is usually preferable terminology, to avoid
-    # ambiguity in the heavily overloaded term 'instance'.
-    def jsi_instance
-      jsi_node_content
-    end
-
     # The schemas indicated as describing this instance, prior to in-place application.
     #
     # This is different from {#jsi_schemas}, which are the in-place applicator schemas
@@ -210,7 +204,7 @@ module JSI
     #   name (Hash key) of any descendent which is a hash/object.
     #   These are described by `propertyNames` subshemas of that object's schemas.
     #   They are not actual descendents of this node.
-    #   See {HashNode#jsi_each_propertyName}.
+    #   See {HashNode#each_key} param `key_as_jsi`.
     # @yield [JSI::Base] each descendent node, starting with self
     # @return [nil, Enumerator] an Enumerator if invoked without a block; otherwise nil
     def jsi_each_descendent_node(propertyNames: false, &block)
@@ -234,7 +228,7 @@ module JSI
       yield self
 
       if propertyNames && is_a?(HashNode)
-        jsi_each_propertyName do |propertyName|
+        each_key(key_as_jsi: true) do |propertyName|
           propertyName.jsi_each_descendent_node(propertyNames: propertyNames, &block)
         end
       end
@@ -281,9 +275,9 @@ module JSI
     # @yield [JSI::Base] each descendent node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_descendents_node_first(&block)
-      jsi_modified_copy do |instance|
+      jsi_modified_copy do |content|
         if jsi_array? || jsi_hash?
-          res = instance.class.new
+          res = content.class.new
           jsi_each_child_token do |token|
             v = jsi_child_node(token)
             if yield(v)
@@ -297,7 +291,7 @@ module JSI
           end
           res
         else
-          instance
+          content
         end
       end
     end
@@ -311,9 +305,9 @@ module JSI
     # @yield [JSI::Base] each descendent node below self
     # @return [JSI::Base] modified copy of self containing only the selected nodes
     def jsi_select_descendents_leaf_first(&block)
-      jsi_modified_copy do |instance|
+      jsi_modified_copy do |content|
         if jsi_array? || jsi_hash?
-          res = instance.class.new
+          res = content.class.new
           jsi_each_child_token do |token|
             v = jsi_child_node(token).jsi_select_descendents_leaf_first(&block)
             if yield(v)
@@ -327,7 +321,7 @@ module JSI
           end
           res
         else
-          instance
+          content
         end
       end
     end
@@ -435,7 +429,7 @@ module JSI
     # or the value of the instance hash/object for the given key.
     #
     # @return [Object, nil]
-    # @raise [SimpleNodeChildError] if this node is not complex (its instance is not array or hash)
+    # @raise [SimpleNodeChildError] if this node is not complex (its content is not array or hash)
     def jsi_node_content_child(token)
       # note: overridden by Base::HashNode, Base::ArrayNode
       jsi_simple_node_child_error(token)
@@ -532,7 +526,7 @@ module JSI
     #
     #   `nil` is returned (regardless of `as_jsi`) when there is no value to return because the token
     #   is not a hash key or array index of the instance and no default value applies.
-    #   (one exception is when this JSI's instance is a Hash with a default or default_proc, which has
+    #   (one exception is when this JSI's content is a Hash with a default or default_proc, which has
     #   unspecified behavior.)
     # @param use_default [true, false] (default is `false`)
     #   Whether to return a schema default value when the token refers to a child that is not in the document.
@@ -594,14 +588,14 @@ module JSI
       false
     end
 
-    # yields the content of this JSI's instance. the block must result in
-    # a modified copy of the yielded instance (not modified in place, which would alter this JSI
+    # Yields the content of this node. The block must result in
+    # a modified copy of the yielded content (not modified in place, which would alter this JSI
     # as well) which will be used to instantiate and return a new JSI with the modified content.
     #
     # the result may have different schemas which describe it than this JSI's schemas,
-    # if conditional applicator schemas apply differently to the modified instance.
+    # if conditional applicator schemas apply differently to the modified content.
     #
-    # @yield [Object] this JSI's instance. the block should result
+    # @yield [Object] this JSI node's content. the block should result
     #   in a nondestructively modified copy of this.
     # @return [Base] the modified copy of self
     def jsi_modified_copy(**conf_kw, &block)
@@ -666,14 +660,14 @@ module JSI
       # note: overridden by Base::Mutable / Immutable
     end
 
-    # validates this JSI's instance against its schemas
+    # validates this JSI instance against its schemas
     #
     # @return [JSI::Validation::Result::Full]
     def jsi_validate
       jsi_indicated_schemas.instance_validate(self)
     end
 
-    # whether this JSI's instance is valid against all of its schemas
+    # whether this JSI instance is valid against all of its schemas
     # @return [Boolean]
     def jsi_valid?
       jsi_indicated_schemas.instance_valid?(self)
@@ -760,7 +754,7 @@ module JSI
       resource_root.jsi_descendent_node(jsi_ptr.relative_to(jsi_resource_root.jsi_ptr))
     end
 
-    # This instantiates a new root node (its #jsi_root_node is itself).
+    # This instantiates a new root node (its #jsi_root_node is itself), if needed.
     # When the resource at `resource_root_ptr` is not the document root, the new root node has the
     # unusual property that its jsi_ptr is not the root ptr; it is the given `resource_root_ptr`.
     # (Calling this a 'root node' is questionable, but that is the name we use.)
@@ -771,6 +765,7 @@ module JSI
     private def jsi_dynamic_root_compute(resource_root_ptr: , dynamic_anchor_map: )
       # self is always the originally instantiated root node (with jsi_ptr = Ptr[])
       resource_root = jsi_descendent_node(resource_root_ptr)
+      # return descendent of the original root if it has the given dynamic_anchor_map
       if resource_root.jsi_schema_dynamic_anchor_map == dynamic_anchor_map
         return resource_root
       end
@@ -843,6 +838,8 @@ module JSI
           : schema.all? { |k, _| k == '$ref' || k == '$dynamicRef' } ?
             7
           : 5,
+
+          jsi_indicated_schemas.include?(schema) ? 0 : 1,
         ]
         [priority, i, schema]
       end.sort
@@ -882,19 +879,19 @@ module JSI
     end
 
     # A structure coerced to JSONifiable types from the instance content.
-    # Calls {Util.as_json} with the instance and any given options.
+    # Calls {Util.as_json} with the content and any given options.
     def as_json(options = {})
       Util.as_json(jsi_node_content, **options)
     end
 
     # A JSON encoded string of the instance content.
-    # Calls {Util.to_json} with the instance and any given options.
+    # Calls {Util.to_json} with the content and any given options.
     # @return [String]
     def to_json(options = {})
       Util.to_json(jsi_node_content, options)
     end
 
-    # Psych/YAML .dump calls this method; dumping a JSI as YAML will dump its instance.
+    # Psych/YAML .dump calls this method; dumping a JSI as YAML will dump its content.
     # @param coder [Psych::Coder]
     def encode_with(coder)
       coder.represent_object(nil, jsi_node_content)
@@ -939,7 +936,7 @@ module JSI
     def jsi_child_node_compute(token: , child_indicated_schemas: , child_applied_schemas: , includes: )
         metaschema = child_applied_schemas.detect(&:describes_schema?)
         # note: no memoized dialect.bootstrap_schema; this is only used once.
-        if metaschema && MetaSchemaNode::BootstrapSchema.new(dialect: metaschema.dialect, jsi_document: jsi_document, jsi_ptr: jsi_ptr[token], jsi_base_uri: jsi_next_base_uri).jsi_is_resource_root?
+        if metaschema && MetaSchemaNode::BootstrapSchema.new(dialect: metaschema.described_dialect, jsi_document: jsi_document, jsi_ptr: jsi_ptr[token], jsi_base_uri: jsi_next_base_uri).jsi_is_resource_root?
           # if the child is a resource root, compute dynamic scope for it.
           child_dynamic_anchor_map = jsi_next_schema_dynamic_anchor_map.without_node(self, ptr: jsi_ptr[token])
           if child_dynamic_anchor_map != jsi_next_schema_dynamic_anchor_map
@@ -1007,7 +1004,7 @@ module JSI
       raise(SimpleNodeChildError, [
         "cannot access a child of this JSI node because this node is not complex",
         "using token: #{token.inspect}",
-        "instance: #{jsi_node_content.pretty_inspect.chomp}",
+        "node content: #{jsi_node_content.pretty_inspect.chomp}",
       ].join("\n"))
     end
 

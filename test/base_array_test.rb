@@ -245,7 +245,7 @@ describe 'JSI::Base array' do
       let(:instance) { nil }
       it 'errors' do
         err = assert_raises(JSI::Base::SimpleNodeChildError) { subject[2] = 0 }
-        assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: 2\ninstance: nil), err.message)
+        assert_equal(%Q(cannot access a child of this JSI node because this node is not complex\nusing token: 2\nnode content: nil), err.message)
       end
     end
   end

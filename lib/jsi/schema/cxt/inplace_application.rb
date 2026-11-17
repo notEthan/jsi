@@ -6,9 +6,6 @@ module JSI
       visited_refs
     ))
 
-    # @!attribute collect_evaluated
-    #   Does application need to collect successful child evaluation?
-    #   @return [Boolean]
     class InplaceApplication < Block
       # @param subschema_ptr [Ptr, #to_ary]
       def inplace_subschema_applicate(subschema_ptr, **kw)
@@ -29,6 +26,9 @@ module JSI
       end
     end
 
+    # @!attribute collect_evaluated
+    #   Does application need to collect successful child evaluation?
+    #   @return [Boolean]
     InplaceApplication::WithInstance = InplaceApplication.subclass(*%i(
       instance
       collect_evaluated

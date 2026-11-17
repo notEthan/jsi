@@ -459,7 +459,7 @@
 
 - description: "conditional in-place child applicators : prefixItems"
   comment: >
-    allOf's prefixItems always applies at /0.
+    anyOf's prefixItems always applies at /0.
     unevaluatedItems applies at /0 when prefixItems fails to validate and always applies at /1.
   dialects:
     - https://json-schema.org/draft/2020-12/schema
